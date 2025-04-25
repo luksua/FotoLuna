@@ -1,0 +1,312 @@
+:root {
+    --navbar-bg-color: #fffffff8; /* Color de fondo */
+    --navbar-text-color: #000000; /* Color de texto */
+    --navbar-link-color: #6c757d; /* Color de los enlaces */
+    --navbar-hover-color: #495057; /* Color al pasar el mouse sobre los enlaces */
+    --navbar-border-color: #dee2e6; /* Color del borde */
+    --navbar-logo-size: 67px; /* Tamaño del logo */
+}
+
+:root{
+    --btn-primary-bg-color:#C792DF;
+    --btn-secundari-bg-color:#DCABDF;
+    --btn-terciary-bg-color:#D0C4DF;
+    --btn-cuarto-bg-color:#DDDDDF;
+    --btn-quinto-bg-color:#DDDFDF;
+    --btn-sexto-bg-color:#fafafa;
+
+
+
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--navbar-bg-color);
+    color: var(--navbar-text-color);
+    padding: 0 20px; /* Espaciado lateral */
+    height: 70px; /* Altura fija */
+ 
+}
+
+
+
+.logo{
+    font-family: 'Great vibes';
+    font-size: 20px;
+    display: inline-flex;
+    float: right;
+
+}
+h2 {
+    font-size:35px;
+}
+/* empleado + icono */
+.emple {
+    margin-top: 10px;
+    margin-left: 15px;
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+}
+.icon-button{
+    color: #dcabdf ;
+}
+
+.emple-text{
+    font-family: 'Nunito';
+    margin-left: 9px;
+    font-size: 20px;
+
+
+}
+.emple-text:hover{
+    color: #dcabdf  ;
+}
+.bi-person-circle {
+    font-style: normal !important;
+    font-size: 24px;
+    font-family: 'Nunito';
+
+
+}
+/* campana */
+.bi-bell-fill{
+    margin-left: 90px;
+    font-size: 22px;
+    cursor: pointer;
+    transform: scale(1.05); /* Engrandecer */
+   
+}
+.navbar-custom {
+    background-color: #ffffff; /* Usa el color de fondo del navbar */
+    border-bottom: 1px #d0c4df solid ;
+
+}
+
+
+/* tofo ixquiero */
+.border-right {
+    border-right: 1px solid #dddddf; /* Color morado */
+}
+.bg-body-tertiary {
+    margin: 0; /* Elimina los márgenes externos */
+    padding: -10p; /* Elimina el espacio interno */
+    height: auto; /* Asegúrate de que la altura no sea fija */
+    background-color: rgb(0, 139, 139);
+}
+.sidebar {
+    margin: 0; /* Elimina los márgenes externos */
+    padding: 0; /* Elimina el espacio interno */
+    width: 100%; /* Asegúrate de que la barra ocupe el ancho correcto */
+    box-sizing: border-box; /* Incluye el padding dentro del ancho */
+}
+
+/* Usuarios */
+.sidebar h6 {
+    font-family: 'Nunito';
+    font-size: 20px;
+    color: #dcabdf ;
+}
+.sidebar a {
+    display: block; /* Hace que cada enlace ocupe una línea completa */
+    padding: 8px 15px; /* Opcional: Espaciado interno */
+    text-decoration: none; /* Opcional: Quitar subrayado */
+    font-size: 18px;
+ 
+}
+
+.navbar-nav {
+    display: flex;
+    justify-content: flex-end; /* Alinea hacia la derecha */
+    align-items: center; /* Centra verticalmente */
+  
+
+}
+.nav-item {
+    margin-right: 30px; /* Espaciado entre elementos de la lista */
+    font-family: 'Raleway';
+    font-size: 20px;
+
+}
+/* BUSQUEDA */
+.form-control {
+    border: 1px solid #c792df; /* Borde */
+    border-radius: 5px; /* Bordes redondeados */
+}
+.form-control:focus {
+    outline: none;
+    border-color: #c792df; /* Color del borde al enfocar */
+    box-shadow: 0 0 5px #d0c4df; /* Sombra al enfocar */
+}
+/* boton */
+.icon-button {
+    border: none; /* Borde verde */
+    background-color: transparent; /* Fondo transparente */
+    cursor: pointer; 
+}
+.bi-search:focus{
+    outline: none;
+    border-color: #c792df; /* Color del borde al enfocar */
+    box-shadow: 0 0 5px #d0c4df; /* Sombra al enfocar */
+
+}
+
+/* colores */
+/* #dddfdf gris 
+dddddf gris oscuro
+d0c4df lila
+dcabdf rosa
+c792df morado
+
+
+
+/* iconos */
+.custom-icon {
+    color: #d0c4df; /* Color lila */
+    font-size: 19px;
+
+}
+/* iconnos  */
+.custom-icon-1{
+    color: #dddfdf ;
+}
+.custom-icon-2{
+    color: #dcabdf;
+}
+.sidebar hr {
+    border: 1px #d0c4df solid ;
+    margin-top: 5px;
+}
+/* nube */
+.bi-calendar-heart-fill a {
+    color: #dcabdf;
+}
+
+
+a {
+    color: var(--primary-text-color); /* Color del texto */
+    font-size: 300px; /* Tamaño del texto */
+    text-decoration: none; /* Quitar subrayado */
+    display: flex; /* Alineación de icono y texto */
+    align-items: center; /* Centrar verticalmente */
+    margin: 10px 0; /* Espaciado entre enlaces */
+    transition: color 0.3s ease; /* Suaviza el cambio de color */
+}
+
+a:hover {
+    color: #dddddf; /* Cambiar color al pasar el mouse */
+}
+
+.custom-icon {
+    font-size: var(--icon-size); /* Tamaño del ícono */
+    margin-right: 8px; /* Espacio entre ícono y texto */
+}
+/* icono salida */
+.custom-icon-3 {
+    position: absolute; /* Permite posicionar el ícono relativo al contenedor */
+    bottom: 10px; /* Ajusta la distancia desde el pie del contenedor */
+    left: 50%; /* Centra horizontalmente */
+    transform: translateX(-50%); /* Corrige el desplazamiento por el centrado */
+    font-size: 1.5rem; /* Tamaño del ícono */
+    background-color:  #dcabdf; /* Color de fondo del botón */
+    color: white; /* Color del ícono */
+    border: none; /* Elimina el borde del botón */
+    border-radius: 10px; /* Redondeo más sutil */
+    width: 50%; /* Ajusta el ancho del botón */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-bottom: -15px;
+  
+    
+}
+
+.sidebar {
+    position: relative; /* Necesario para usar `absolute` dentro del contenedor */
+    height: 600px; /* Asegura que el sidebar ocupe toda la altura */
+}
+
+/* Estilo del administrar */
+/* Para que las tarjetas sean cuadradas */
+.aspect-ratio {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* Relación 1:1 */
+  }
+  
+  .aspect-ratio > * {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+  }
+/* trancisiones */
+/* Botón interactivo */
+  
+/* Estilos generales */
+
+  
+  /* Botón interactivo */
+  .interactive-button {
+    width: 100%;
+    padding-top: 100%; /* Relación cuadrada */
+     background: linear-gradient(135deg,#d0c4df  , #c792df );
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .interactive-button:hover {
+    transform: scale(1.1); /* Zoom */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .interactive-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .interactive-label:hover {
+    color: #f1c40f; /* Destaca el ícono */
+  }
+  
+  /* Contenedor de imágenes */
+  .interactive-image-container {
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .interactive-image-container:hover {
+    transform: scale(1.05); /* Eleva ligeramente */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Imágenes */
+  .interactive-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease, filter 0.3s ease;
+  }
+  
+  .interactive-image-container:hover .interactive-image {
+    transform: scale(1.1); /* Zoom */
+    filter: brightness(1.2); /* Más brillo */
+  }
+  

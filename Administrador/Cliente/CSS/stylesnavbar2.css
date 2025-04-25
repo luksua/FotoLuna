@@ -1,0 +1,21 @@
+.btn-perfil2 {
+    background-color: #DDDDDF;
+    color: black;
+    border-radius: 25px;
+    font-weight: 500;
+}
+
+.btn-perfil2:hover {
+    background-color: #d4d4d6;
+    color: black;
+}
+
+.user-icon {
+    font-size: 2.5rem;
+    color: #aaa;
+}
+
+.bi-person-circle{
+    vertical-align: middle;
+    margin-bottom: 8px;
+}

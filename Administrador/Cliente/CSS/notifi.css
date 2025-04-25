@@ -1,0 +1,269 @@
+/* variables */
+:root {
+    --navbar-bg-color: #fffffff8; /* Color de fondo */
+    --navbar-text-color: #000000; /* Color de texto */
+    --navbar-link-color: #6c757d; /* Color de los enlaces */
+    --navbar-hover-color: #495057; /* Color al pasar el mouse sobre los enlaces */
+    --navbar-border-color: #dee2e6; /* Color del borde */
+    --navbar-logo-size: 67px; /* Tamaño del logo */
+}
+
+/* notificaciones */
+
+
+.bg-custom-1{
+    background-color: #ffffff;
+}
+
+.card-body {
+    text-align: justify;
+    
+}
+.icono-campana {
+    font-size: 80px;
+    margin-left: -5px;
+    margin-top: -20px;
+    color: #dcabdf;
+    
+}
+/* tarjeta */
+.card {
+    height: 120px;
+}
+.card-text {
+    font-size: 12px;
+    font-family: 'Nunito';
+}
+.card-title{
+    font-size: 14px;
+    font-family: 'Raleway';
+    font-weight: bold;
+}
+.bg-boton{
+    margin-top: -60px;
+    margin-left: 400px;
+    font-size: 10px;
+    background-color: #c792df;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+.bg-custom-9{
+    margin-left: 20px;
+}
+.shadow-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra inicial */
+}
+
+.shadow-card:hover {
+    transform: scale(1.05); /* Engrandecer */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más intensa */
+}
+
+.nav-item h5 {
+    font-family: 'Raleway';
+    cursor: pointer;
+    
+}
+.bg-custom {
+    margin-left: 30px;
+    margin-top: 10px;
+}
+.btn-primary {
+    background-color: #dcabdf !important; /* Cambia el color de fondo */
+    border-color: #dcabdf!important;    /* Cambia el color del borde */
+  }
+  
+  .btn-primary:hover {
+    background-color: #a770c6 !important; /* Color más oscuro en hover */
+    border-color: #a770c6 !important;
+  }
+.tab-pane p {
+    font-family: 'nunito';
+}
+
+/* esto yo */
+.title h2{
+    font-size: 40px;
+}
+
+.custom-upload-btn {
+    display: inline-flex; /* o puedes quitar el display flex de aquí si no es necesario */
+    align-items: center;
+    vertical-align: middle;
+    margin-bottom: 0; /* Corrige el error: falta el valor */
+    margin-top: 25px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fafafa;
+    min-width: 150px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 8px;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-button {
+    background-color: #D0C4DF;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.calendar-container {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    align-items: flex-start;
+    
+   
+  }
+
+.calendar {
+    width: 700px;
+    height: 465px;
+    background-color: var(--btn-sexto-bg-color);
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 40px;
+}
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    font-family: 'cinzel';
+    text-transform:uppercase;
+
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 20px;
+    margin-left: 15px;
+    
+    
+  }
+
+  .day {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: var();
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-family: 'Nunito';
+
+  }
+
+.day:hover {
+    background-color: var(--btn-cuarto-bg-color);
+    transform: scale(1.1);
+  }
+
+.day.selected {
+    background-color:var(--btn-terciary-bg-color);
+    color: white;
+  }
+
+
+
+.btn-action {
+    margin-top: 10px;
+    width: 70%;
+    border-radius: 20px;
+    background-color: var(--btn-primary-bg-color) !important;
+    border-color:var(--btn-primary-bg-color) !important;
+    
+    
+  
+}
+.btn-danger:hover {
+    background-color: var(--btn-terciary-bg-color) !important;
+    border-color: var(--btn-terciary-bg-color) !important;
+    color: black;
+}
+.btn-success:hover{
+    background-color: rgba(73, 142, 104, 0.84) !important;
+    border-color: var(--btn-terciary-bg-color) !important;
+
+}
+.boton {
+    margin-top: 150px;
+    text-align: center;
+}
+
+/* reserva */
+.highlight {
+    color: #C792DF;
+    font-size: 200px;
+}
+
+
+/* dias del calendario */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-family: 'cinzel';
+    font-size: 19px;
+}
+/* botones flecha */
+
+.btn-secondary {
+    background-color: #dcabdf !important; /* Cambia el color de fondo */
+    border-color: #dcabdf!important;    /* Cambia el color del borde */
+    border-radius: 100%;
+    width: 54px;
+    height: 56px;
+    
+    
+    
+}
+  
+.btn-secondary:hover {
+    background-color: var(--btn-primary-bg-color)!important; /* Color más oscuro en hover */
+    border-color: var(--btn-primary-bg-color) !important;
+}
+.icono-flecha  {
+    font-size: 35px;
+    margin-top: 100x;
+}
+
+/* info detallle */
+.info-panel p{
+    font-family: 'Nunito';
+
+
+}

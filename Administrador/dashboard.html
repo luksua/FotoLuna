@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="CSS/bootstrap.min.css">
+    <link rel="stylesheet" href="CSS/style_dashboard.css">
+    <link rel="stylesheet" href="CSS/responsive.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="JS/bootstrap.bundle.min.js"></script>
+
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.querySelector('.hamburger');
+    
+        const isActive = sidebar.classList.contains('active');
+    
+        if (isActive) {
+        sidebar.classList.remove('active');
+        hamburger.classList.remove('d-none');
+        } else {
+        sidebar.classList.add('active');
+        hamburger.classList.add('d-none');
+        }
+    }
+    </script>
+</head>
+
+<body>
+
+
+    <button class="hamburger d-lg-none" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="container-fluid">
+        <div class="row">
+
+        <!-- Menú lateral derecho -->
+        <div class="col-lg-3">
+            <div id="sidebar" class="sidebar border-right">
+
+            <!-- Botón de cerrar el SideBar-->
+            <div class="d-lg-none text-end mb-3">
+                <button class="btn-close" onclick="toggleSidebar()" aria-label="Cerrar"></button>
+            </div>
+            
+            <div class="emple">
+                <div class="admin-info">
+                    <i class="bi bi-person-circle custom-icon-1"></i>
+                    <span class="emple-text">Administrador</span>
+                </div>
+                <i class="bi bi-bell-fill custom-icon-2"></i>
+            </div>
+            <hr>
+
+            <a href="#dashboard" class="active-link">
+                <i class="bi bi-speedometer2 custom-icon"> </i> &nbsp;Dashboard
+            </a>
+            
+
+            
+            <hr>
+            <h6 class="nub px-3">Nube</h6>
+            <a href="#registrar"><i class="bi bi-file-earmark-person custom-icon"> </i> &nbsp;Registrar</a>
+            <a href="#administrarusuarios"><i class="bi bi-person-fill-gear custom-icon"></i> &nbsp;Administrar Usuarios </a>
+            <hr>
+            <a href="#aministrarroles"><i class="bi bi-person-fill-gear custom-icon"> </i> &nbsp;Administrar Roles</a>
+            <a href="#clientes"><i class="bi bi-person-vcard custom-icon"> </i> &nbsp;Clientes</a>
+            <hr>
+            <a href="#salir" class="btn icon-button">
+                <i class="bi bi-door-open-fill custom-icon-3"></i>
+            </a>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-lg-9">
+
+            <nav class="navbar navbar-expand-lg navbar-custom p-2">
+            <div class="container-fluid flex-column flex-md-row align-items-start align-items-md-center">
+                
+                <!-- Logo + Texto -->
+                <div class="d-flex align-items-center w-100 mb-3 mb-md-0">
+                <img src="image/logo1.png" alt="FotoLuna" width="50" class="me-2">
+                <div>
+                    <h2 class="mb-0" style="font-size: 20px;">FotoLuna</h2>
+                    <div class="slogan" style="font-size: 12px; font-family: 'Raleway'; color: #999;"></div>
+                </div>
+                </div>
+            
+                <!-- Buscador -->
+                <form class="d-flex w-100" role="search">
+                <input class="form-control me-2" type="search" placeholder="Buscar">
+                <button class="btn btn-outline-secondary" type="submit" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                </form>
+            </nav>
+            
+
+
+            <div class="d-none d-md-block" style="border-top: 1px solid #dee2e6;"></div>
+
+            <!-- Panel de tarjetas con logos y letras-->
+            <div class="container py-4">
+                <h2 class="mb-4 text-start">Dashboard panel</h2>
+                <div class="row g-4">
+                <!-- Tarjeta 1 -->
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-heart-fill fs-1 text-primary"></i>
+                        <h5 class="card-title mt-2">Citas</h5>
+                        <p class="card-text">12 programadas</p>
+                    </div>
+                    </div>
+                </div>
+            
+                <!-- Tarjeta 2 -->
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <i class="bi bi-people-fill fs-1 text-success"></i>
+                        <h5 class="card-title mt-2">Clientes</h5>
+                        <p class="card-text">34 registrados</p>
+                    </div>
+                    </div>
+                </div>
+            
+                <!-- Tarjeta 3 -->
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-cloud-arrow-up-fill fs-1 text-info"></i>
+                            <h5 class="card-title mt-2">Archivos Subidos</h5>
+                            <p class="card-text">8 esta semana</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+
+            <!-- Panel de tarjetas con logos nomas-->
+            <div class="container py-4">
+                <div class="row g-4 justify-content-center">
+
+                <!-- Tarjeta 1 -->
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-bar-chart-line-fill text-primary icon-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tarjeta 2 -->
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-pie-chart-fill text-info icon-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

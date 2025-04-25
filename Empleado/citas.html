@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empleado</title>
+    <link rel="stylesheet" href="CSS/bootstrap.min.css">
+    <link rel="stylesheet" href="CSS/cita.css">
+    <link rel="stylesheet" href="CSS/responsive.css">
+    <!-- fuente logo-->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+    </style>
+    <!-- fuente raleway para inicio -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+    </style>
+    <!-- iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script src="JS/bootstrap.bundle.min.js"></script>
+    
+
+</head>
+
+<body>
+    <!-- barra izquierda -->
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-3">
+                <div class="sidebar border-right">
+                    <div class="emple">
+                        <i class="bi bi-person-circle custom-icon-1"></i>
+                        <span class="emple-text">Empleado</span>
+                        <button class="icon-button" type="submit">
+                            <a href="notificaciones.html"> <i class="bi bi-bell-fill custom-icon-2"></i></a>
+                        </button>
+                    </div>
+                    <hr>
+                    <a href="citas.html"><i class="bi bi-calendar-heart-fill custom-icon"> </i> &nbsp;Citas </a>
+                    <hr>
+
+                    <h6 class="nub px-3">Nube</h6>
+
+                    <a href="subir.html"><i class="bi bi-cloud-arrow-up-fill custom-icon"> </i> &nbsp;Subir</a>
+
+                    <a href="administrar.html"><i class="bi bi-person-fill-gear custom-icon"></i> &nbsp;Administrar </a>
+
+                    <a href="clientes.html"><i class="bi bi-people-fill custom-icon"> </i> &nbsp;Clientes</a>
+                    <hr>
+
+                    <button class="icon-button" type="submit">
+                        <a href="empleado_login.html"><i class="bi bi-door-open-fill custom-icon-3"></i></a>
+                    </button> 
+                </div>
+
+            </div>
+<!-- barra vavegador  -->
+            <div class="col-9">
+                <nav class="navbar navbar-expand-lg navbar-custom" style="margin: 0; padding: 0;">
+                    <div class="container-fluid">
+                        <!-- Enlaces del menú a la izquierda -->
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <nav class="navbar navbar-custom" style="margin: 0; padding: 0;">
+                                <div class="container-fluid">
+                                    <form class="d-flex" role="search">
+                                        <input class="form-control me-2" type="search" placeholder="Buscar" style="margin: 0;">
+                                        <button class="icon-button" type="submit">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                  </form>
+                                </div>
+                            </nav>
+                           
+                        </div>
+
+                        <!-- Logo y texto a la derecha -->
+                        <div class=" logo d-flex align-items-center">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="#">Inicio</a>
+                                </li>
+                            
+                               
+                            </ul>
+                        
+                            <img src="img/logo1.png" alt="FotoLuna" width="67" class="me-2">
+                            <h2 class="mb-0">FotoLuna</h2>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- calendario -->
+                <div class="container mt-4">
+                    <ul class="nav nav-tabs" id="notificationTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <h5> Citas <span class="badge bg-custom"></span> </h5>
+                        </li>
+                    </ul>
+                    <div class="calendar-container mt-4">
+                        
+                        <div class="calendar">
+                            <div class="calendar-header">
+                                <button id="prev-month" class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-arrow-left-circle-fill icono-flecha"></i>
+                                </button>
+
+                                <h5 id="current-month">Abril 2025</h5>
+                                <button id="next-month" class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-arrow-right-circle-fill icono-flecha"></i>
+                                </button>
+                            </div>
+                            <!-- Encabezado de días de la semana -->
+                            <div class="calendar-weekdays">
+                                <div>L</div>
+                                <div>M</div>
+                                <div>M</div>
+                                <div>J</div>
+                                <div>V</div>
+                                <div>S</div>
+                                <div>D</div>
+                            </div>
+                        <div class="calendar-days">
+                            <!-- Días generados dinámicamente -->
+                        </div>
+                        </div>
+                    
+                        <!-- Panel de información -->
+                        <div class="info-panel">
+                            <h5>Datos de Cita</h5>
+
+                            <p id="info-details">Selecciona un día para ver los detalles.</p>
+                            <ul>
+                                <li id="citanom"></li>
+                                <li id="ubica"></li>
+                                <li id="hora"></li>
+                                <li id="est"></li>
+                            </ul>
+                            <div class="boton">
+                                <button class="btn btn-success btn-action">Cambiar Estado</button>
+                                <button class="btn btn-danger btn-action">Volver</button>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <!-- Bootstrap JS -->
+                    
+                    <script>
+                        const calendarDays = document.querySelector('.calendar-days');
+                        const currentMonth = document.getElementById('current-month');
+                        const prevMonthBtn = document.getElementById('prev-month');
+                        const nextMonthBtn = document.getElementById('next-month');
+                        const infoDetails = document.getElementById('info-details');
+                        const citanom = document.getElementById('citanom');
+                        const ubica = document.getElementById('ubica');
+                        const hora = document.getElementById('hora');
+                        const est = document.getElementById('est');
+                    
+                        let date = new Date();
+                        const months = [
+                        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                        ];
+                    
+                        const appointments = {
+                            '2025-04-15': {
+                                estado: 'pendiente',
+                                citanom: 'Cliente: Ángel\n',
+                                ubica: 'Ubicación: Galán #15-20',
+                                hora: 'Hora: 3:30 PM',
+                                est: 'Estado: Pendiente'
+
+                            },
+                            '2025-04-20': {
+                                estado: 'aceptada',
+                                citanom: 'Cliente: Maria Jose',
+                                ubica: 'Ubicación: Oficina Central',
+                                hora: 'Hora: 11:00 AM',
+                                est: 'Estado: Aceptada'
+
+                            },
+                            '2025-04-25': {
+                                estado: 'cancelada',
+                                citanom: 'Cliente: Nicolas Rubio',
+                                ubica: 'Ubicación: Multicentro local #207',
+                                hora: 'Hora: 2:00 PM',
+                                est: 'Estado: Cancelada'
+
+            
+                            }
+                        };
+                    
+                        function renderCalendar() {
+                        calendarDays.innerHTML = '';
+                        const year = date.getFullYear();
+                        const month = date.getMonth();
+                        currentMonth.textContent = `${months[month]} ${year}`;
+                    
+                        const firstDay = new Date(year, month, 1).getDay();
+                        const lastDate = new Date(year, month + 1, 0).getDate();
+                        
+                    
+                        // Generar días vacíos antes del primer día
+                        for (let i = 0; i < firstDay; i++) {
+                            const emptyCell = document.createElement('div');
+                            calendarDays.appendChild(emptyCell);
+                        }
+                    
+                        // Generar días del mes
+                        for (let day = 1; day <= lastDate; day++) {
+                            const dayCell = document.createElement('div');
+                            dayCell.className = 'day';
+                            dayCell.textContent = day;
+                    
+                            const fullDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    
+                            // Colores según el estado de la cita
+                            if (appointments[fullDate]) {
+                            const estado = appointments[fullDate].estado;
+                            if (estado === 'aceptada') {
+                                dayCell.style.backgroundColor = '#a0d468'; // Morado para aceptadas
+                            } else if (estado === 'cancelada') {
+                                dayCell.style.backgroundColor = '#d15d79'; // Verde para canceladas
+                            } else if (estado === 'pendiente') {
+                                dayCell.style.backgroundColor = '#c792df'; // Amarillo para pendientes
+                            }
+                            }
+                    
+                         
+
+                            // Evento de clic para mostrar detalles
+                            dayCell.addEventListener('click', () => {
+                            document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
+                            dayCell.classList.add('selected');
+                            const cita = appointments[fullDate];
+                            infoDetails.textContent= cita ? cita.detalle : 'No hay citas para este día.';
+                            citanom.textContent= cita ? cita.citanom : '';
+                            ubica.textContent= cita ? cita.ubica : '';
+                            hora.textContent= cita ? cita.hora : '';
+                            est.textContent= cita ? cita.est : '';
+                            });
+                    
+                            calendarDays.appendChild(dayCell);
+                            }
+                        }
+                            // Navegación entre meses
+                            prevMonthBtn.addEventListener('click', () => {
+                                date.setMonth(date.getMonth() - 1);
+                                renderCalendar();
+                            });
+
+                            nextMonthBtn.addEventListener('click', () => {
+                                date.setMonth(date.getMonth() + 1);
+                                renderCalendar();
+                            });
+                    
+                        
+                        renderCalendar();
+                    </script>
+
+                 
+                </div>  
+                  
+
+              
+
+               
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+
+    
+</body>
+</html>
