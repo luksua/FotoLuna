@@ -1,0 +1,382 @@
+/* variables */
+:root {
+    --navbar-bg-color: #fffffff8; /* Color de fondo */
+    --navbar-text-color: #000000; /* Color de texto */
+    --navbar-link-color: #6c757d; /* Color de los enlaces */
+    --navbar-hover-color: #495057; /* Color al pasar el mouse sobre los enlaces */
+    --navbar-border-color: #dee2e6; /* Color del borde */
+    --navbar-logo-size: 67px; /* Tamaño del logo */
+}
+
+:root{
+    --btn-primary-bg-color:#C792DF;
+    --btn-secundari-bg-color:#DCABDF;
+    --btn-terciary-bg-color:#D0C4DF;
+    --btn-cuarto-bg-color:#DDDDDF;
+    --btn-quinto-bg-color:#DDDFDF;
+    --btn-sexto-bg-color:#fafafa;
+
+
+
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--navbar-bg-color);
+    color: var(--navbar-text-color);
+    padding: 0 20px; /* Espaciado lateral */
+    height: 70px; /* Altura fija */
+ 
+}
+
+
+
+.logo{
+    font-family: 'Great vibes';
+    font-size: 20px;
+    display: inline-flex;
+    float: right;
+
+}
+h2 {
+    font-size:35px;
+}
+/* empleado + icono */
+.emple {
+    margin-top: 10px;
+    margin-left: 15px;
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+}
+.icon-button{
+    color: #dcabdf ;
+}
+
+.emple-text{
+    font-family: 'Nunito';
+    margin-left: 9px;
+    font-size: 20px;
+
+
+}
+.emple-text:hover{
+    color: #dcabdf  ;
+}
+.bi-person-circle {
+    font-style: normal !important;
+    font-size: 24px;
+    font-family: 'Nunito';
+
+
+}
+/* campana */
+.bi-bell-fill{
+    margin-left: 90px;
+    font-size: 22px;
+    cursor: pointer;
+    transform: scale(1.05); /* Engrandecer */
+   
+}
+.navbar-custom {
+    background-color: #ffffff; /* Usa el color de fondo del navbar */
+    border-bottom: 1px #d0c4df solid ;
+
+}
+
+
+/* tofo ixquiero */
+.border-right {
+    border-right: 1px solid #dddddf; /* Color morado */
+}
+.bg-body-tertiary {
+    margin: 0; /* Elimina los márgenes externos */
+    padding: -10p; /* Elimina el espacio interno */
+    height: auto; /* Asegúrate de que la altura no sea fija */
+    background-color: rgb(0, 139, 139);
+}
+.sidebar {
+    margin: 0; /* Elimina los márgenes externos */
+    padding: 0; /* Elimina el espacio interno */
+    width: 100%; /* Asegúrate de que la barra ocupe el ancho correcto */
+    box-sizing: border-box; /* Incluye el padding dentro del ancho */
+}
+
+/* Usuarios */
+.sidebar h6 {
+    font-family: 'Nunito';
+    font-size: 20px;
+    color: #dcabdf ;
+}
+.sidebar a {
+    display: block; /* Hace que cada enlace ocupe una línea completa */
+    padding: 8px 15px; /* Opcional: Espaciado interno */
+    text-decoration: none; /* Opcional: Quitar subrayado */
+    font-size: 18px;
+ 
+}
+
+.navbar-nav {
+    display: flex;
+    justify-content: flex-end; /* Alinea hacia la derecha */
+    align-items: center; /* Centra verticalmente */
+  
+
+}
+.nav-item {
+    margin-right: 30px; /* Espaciado entre elementos de la lista */
+    font-family: 'Raleway';
+    font-size: 20px;
+
+}
+/* BUSQUEDA */
+.form-control {
+    border: 1px solid #c792df; /* Borde */
+    border-radius: 5px; /* Bordes redondeados */
+}
+.form-control:focus {
+    outline: none;
+    border-color: #c792df; /* Color del borde al enfocar */
+    box-shadow: 0 0 5px #d0c4df; /* Sombra al enfocar */
+}
+/* boton */
+.icon-button {
+    border: none; /* Borde verde */
+    background-color: transparent; /* Fondo transparente */
+    cursor: pointer; 
+}
+.bi-search:focus{
+    outline: none;
+    border-color: #c792df; /* Color del borde al enfocar */
+    box-shadow: 0 0 5px #d0c4df; /* Sombra al enfocar */
+
+}
+
+/* colores */
+/* #dddfdf gris 
+dddddf gris oscuro
+d0c4df lila
+dcabdf rosa
+c792df morado
+
+
+
+/* iconos */
+.custom-icon {
+    color: #d0c4df; /* Color lila */
+    font-size: 19px;
+
+}
+/* iconnos  */
+.custom-icon-1{
+    color: #dddfdf ;
+}
+.custom-icon-2{
+    color: #dcabdf;
+}
+.sidebar hr {
+    border: 1px #d0c4df solid ;
+    margin-top: 5px;
+}
+/* nube */
+.bi-calendar-heart-fill a {
+    color: #dcabdf;
+}
+
+
+a {
+    color: var(--primary-text-color); /* Color del texto */
+    font-size: 300px; /* Tamaño del texto */
+    text-decoration: none; /* Quitar subrayado */
+    display: flex; /* Alineación de icono y texto */
+    align-items: center; /* Centrar verticalmente */
+    margin: 10px 0; /* Espaciado entre enlaces */
+    transition: color 0.3s ease; /* Suaviza el cambio de color */
+}
+
+a:hover {
+    color: #dddddf; /* Cambiar color al pasar el mouse */
+}
+
+.custom-icon {
+    font-size: var(--icon-size); /* Tamaño del ícono */
+    margin-right: 8px; /* Espacio entre ícono y texto */
+}
+/* icono salida */
+.custom-icon-3 {
+    position: absolute; /* Permite posicionar el ícono relativo al contenedor */
+    bottom: 10px; /* Ajusta la distancia desde el pie del contenedor */
+    left: 50%; /* Centra horizontalmente */
+    transform: translateX(-50%); /* Corrige el desplazamiento por el centrado */
+    font-size: 1.5rem; /* Tamaño del ícono */
+    background-color:  #dcabdf; /* Color de fondo del botón */
+    color: white; /* Color del ícono */
+    border: none; /* Elimina el borde del botón */
+    border-radius: 10px; /* Redondeo más sutil */
+    width: 50%; /* Ajusta el ancho del botón */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  
+    
+}
+
+.sidebar {
+    position: relative; /* Necesario para usar `absolute` dentro del contenedor */
+    height: 600px; /* Asegura que el sidebar ocupe toda la altura */
+}
+/* Estilo del calendario */
+.calendar-container {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    align-items: flex-start;
+    
+   
+  }
+
+.calendar {
+    width: 700px;
+    height: 465px;
+    background-color: var(--btn-sexto-bg-color);
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 40px;
+}
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    font-family: 'cinzel';
+    text-transform:uppercase;
+
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 20px;
+    margin-left: 15px;
+    
+    
+  }
+
+  .day {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: var();
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-family: 'Nunito';
+
+  }
+
+.day:hover {
+    background-color: var(--btn-cuarto-bg-color);
+    transform: scale(1.1);
+  }
+
+.day.selected {
+    background-color:var(--btn-terciary-bg-color);
+    color: white;
+  }
+
+.info-panel {
+    width: 260px;
+    background-color: #ddabdf72;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 20px;
+    padding-top: 20px;
+
+  }
+
+.info-panel h5 {
+    margin-bottom: 20px;
+    font-family: 'quicksand';
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 1px;
+}
+.info-panel ul {
+    font-family: 'Nunito';
+    list-style: none;
+}
+
+.btn-action {
+    margin-top: 10px;
+    width: 70%;
+    border-radius: 20px;
+    background-color: var(--btn-primary-bg-color) !important;
+    border-color:var(--btn-primary-bg-color) !important;
+    
+    
+  
+}
+.btn-danger:hover {
+    background-color: var(--btn-terciary-bg-color) !important;
+    border-color: var(--btn-terciary-bg-color) !important;
+    color: black;
+}
+.btn-success:hover{
+    background-color: rgba(73, 142, 104, 0.84) !important;
+    border-color: var(--btn-terciary-bg-color) !important;
+
+}
+.boton {
+    margin-top: 150px;
+    text-align: center;
+}
+
+/* reserva */
+.highlight {
+    color: #C792DF;
+    font-size: 200px;
+}
+
+
+/* dias del calendario */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-family: 'cinzel';
+    font-size: 19px;
+}
+/* botones flecha */
+
+.btn-secondary {
+    background-color: #dcabdf !important; /* Cambia el color de fondo */
+    border-color: #dcabdf!important;    /* Cambia el color del borde */
+    border-radius: 100%;
+    width: 54px;
+    height: 56px;
+    
+    
+    
+}
+  
+.btn-secondary:hover {
+    background-color: var(--btn-primary-bg-color)!important; /* Color más oscuro en hover */
+    border-color: var(--btn-primary-bg-color) !important;
+}
+.icono-flecha  {
+    font-size: 35px;
+    margin-top: 100x;
+}
+
+/* info detallle */
+.info-panel p{
+    font-family: 'Nunito';
+
+
+}
