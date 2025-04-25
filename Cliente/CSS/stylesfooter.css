@@ -1,0 +1,59 @@
+.carousel-item img {
+    height: 300px;
+    object-fit: cover;
+}
+
+/*boton de guasap*/
+.whatsapp-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color:#DCABDF;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    z-index: 1000;
+}
+
+/* Botón volver arriba (con JS) */
+.scroll-top {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 1000;
+    border-radius: 50%;
+    background-color: #DCABDF;
+    border-color: #DCABDF;
+}
+
+.footer {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+/* Animacion para el carrusel (creo pq en mi pc solo se ve que cambian las fotosxd) */
+.carouselInner {
+    display: flex;
+    animation: scroll 30s linear infinite;
+}
+
+.carouselInner .carousel-item {
+    flex: 0 0 auto;
+    width: 200px;
+    margin-right: auto;
+}
+
+@keyframes scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+

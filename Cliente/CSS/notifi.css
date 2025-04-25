@@ -1,0 +1,96 @@
+/* variables */
+:root {
+    --navbar-bg-color: #fffffff8; /* Color de fondo */
+    --navbar-text-color: #000000; /* Color de texto */
+    --navbar-link-color: #6c757d; /* Color de los enlaces */
+    --navbar-hover-color: #495057; /* Color al pasar el mouse sobre los enlaces */
+    --navbar-border-color: #dee2e6; /* Color del borde */
+    --navbar-logo-size: 67px; /* Tamaño del logo */
+}
+
+/* notificaciones */
+
+
+.bg-custom-1{
+    background-color: #ffffff;
+}
+
+.card-body {
+    text-align: justify;
+    
+}
+.icono-campana {
+    font-size: 80px;
+    margin-left: -5px;
+    margin-top: -20px;
+    color: #dcabdf;
+    
+}
+/* tarjeta */
+.card {
+    height: 120px;
+}
+.card-text {
+    font-size: 12px;
+    font-family: 'Nunito';
+}
+.card-title{
+    font-size: 14px;
+    font-family: 'Raleway';
+    font-weight: bold;
+}
+.bg-boton{
+    margin-top: -60px;
+    margin-left: 400px;
+    font-size: 10px;
+    background-color: #c792df;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+.bg-custom-9{
+    margin-left: 20px;
+}
+.shadow-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra inicial */
+}
+
+.shadow-card:hover {
+    transform: scale(1.05); /* Engrandecer */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más intensa */
+}
+
+.nav-item h5 {
+    font-family: 'Raleway';
+    cursor: pointer;
+    
+}
+.bg-custom {
+    margin-left: 30px;
+    margin-top: 10px;
+}
+.btn-primary {
+    background-color: #dcabdf !important; /* Cambia el color de fondo */
+    border-color: #dcabdf!important;    /* Cambia el color del borde */
+  }
+  
+  .btn-primary:hover {
+    background-color: #a770c6 !important; /* Color más oscuro en hover */
+    border-color: #a770c6 !important;
+  }
+.tab-pane p {
+    font-family: 'nunito';
+}
+
+/* esto yo */
+.title h2{
+    font-size: 40px;
+}
+
+.custom-upload-btn {
+    display: inline-flex; /* o puedes quitar el display flex de aquí si no es necesario */
+    align-items: center;
+    vertical-align: middle;
+    margin-bottom: 0; /* Corrige el error: falta el valor */
+    margin-top: 25px;
+}

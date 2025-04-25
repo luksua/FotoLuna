@@ -1,0 +1,44 @@
+
+.custom-button {
+    border-radius: 50px;
+    background-color: #D0C4DF;
+    transition: background-color 0.3s; 
+}
+
+.bg-custom-1{
+
+    background-color: #D0C4DF; 
+    border-radius: 50px ;
+    font-size: small;
+}
+
+.bg-custom-3{
+    background-color: #DCABDF;
+    border-radius: 50px;
+}
+
+.btn-light{
+ background-color: #D0C4DF;
+}
+
+.custom-button:hover {
+    background-color: #DCABDF;
+}
+
+.image-margin {
+    margin-right: 10000px;
+}
+
+.bg-custom {
+font-family: "Quicksand";
+
+}
+
+.bg-custom-1{
+    font-family: "Quicksand";
+}
+
+.nuevacontra{
+    font-family: "Quicksand";
+
+}
