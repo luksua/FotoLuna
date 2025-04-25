@@ -1,0 +1,102 @@
+/* responsive.css */
+
+@media (max-width: 992px) {
+  .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 220px;
+      background-color: #fff;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      z-index: 1050;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar.active {
+      transform: translateX(0);
+  }
+
+  .hamburger {
+      display: block;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1100;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #333;
+      cursor: pointer;
+  }
+
+  .content {
+      margin-left: 0;
+      padding: 15px;
+      transition: margin-left 0.3s ease-in-out;
+  }
+
+  .sidebar.active + .content {
+      margin-left: 220px;
+  }
+
+  .navbar {
+      padding: 10px;
+  }
+
+  .navbar .search-bar {
+      width: 100%;
+      margin-bottom: 10px;
+  }
+
+  .navbar img {
+      width: 50px;
+  }
+
+  .image-container {
+      position: relative;
+      margin: auto;
+      width: 90%;
+  }
+
+  .image-container img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+  }
+
+  .text-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #333;
+      font-family: 'Dancing Script', cursive;
+      font-size: 36px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@media (max-width: 576px) {
+  .sidebar {
+      width: 180px;
+  }
+
+  .content {
+      margin-left: 0;
+  }
+
+  .text-overlay {
+      font-size: 28px;
+  }
+
+  .navbar img {
+      width: 40px;
+  }
+  .navbar .search-bar {
+    margin-left: 5px;
+}
+
+}

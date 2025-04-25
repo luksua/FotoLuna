@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empleado</title>
+    <link rel="stylesheet" href="CSS/bootstrap.min.css">
+    <link rel="stylesheet" href="CSS/notifi.css">
+    <link rel="stylesheet" href="CSS/responsive.css">
+    <!-- fuente logo-->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+    </style>
+    <!-- fuente raleway para inicio -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+    </style>
+    <!-- iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script src="JS/bootstrap.bundle.min.js"></script>
+    
+
+</head>
+
+<body>
+    <!-- barra izquierda -->
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-3">
+                <div class="sidebar border-right">
+                    <div class="emple">
+                        <i class="bi bi-person-circle custom-icon-1"></i>
+                        <span class="emple-text">Empleado</span>
+                        <i class="bi bi-bell-fill custom-icon-2"></i>
+                    </div>
+                    <hr>
+                    <a href="#citas"><i class="bi bi-calendar-heart-fill custom-icon"> </i> &nbsp;Citas </a>
+                    <hr>
+
+                    <h6 class="nub px-3">Nube</h6>
+
+                    <a href="#subir"><i class="bi bi-cloud-arrow-up-fill custom-icon"> </i> &nbsp;Subir</a>
+
+                    <a href="#administrar"><i class="bi bi-person-fill-gear custom-icon"></i> &nbsp;Administrar </a>
+
+                    <a href="#clientes"><i class="bi bi-people-fill custom-icon"> </i> &nbsp;Clientes</a>
+                    <hr>
+
+                    <button class="icon-button" type="submit">
+                        <a href="#salir"><i class="bi bi-door-open-fill custom-icon-3"></i></a>
+                    </button> 
+                </div>
+
+            </div>
+<!-- barra vavegador  -->
+            <div class="col-9">
+                <nav class="navbar navbar-expand-lg navbar-custom" style="margin: 0; padding: 0;">
+                    <div class="container-fluid">
+                        <!-- Enlaces del menú a la izquierda -->
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <nav class="navbar navbar-custom" style="margin: 0; padding: 0;">
+                                <div class="container-fluid">
+                                    <form class="d-flex" role="search">
+                                        <input class="form-control me-2" type="search" placeholder="Buscar" style="margin: 0;">
+                                        <button class="icon-button" type="submit">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                  </form>
+                                </div>
+                            </nav>
+                           
+                        </div>
+
+                        <!-- Logo y texto a la derecha -->
+                        <div class=" logo d-flex align-items-center">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="#">Inicio</a>
+                                </li>
+                            
+                               
+                            </ul>
+                        
+                            <img src="img/logo1.png" alt="FotoLuna" width="67" class="me-2">
+                            <h2 class="mb-0">FotoLuna</h2>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- notificacion-->
+
+                <div class="content text-center">
+                
+                    <div class="container mt-4">
+                        <ul class="nav nav-tabs" id="notificationTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <h5> Mensajes <span class="badge bg-custom">3</span> </h5>
+                             
+
+                            </li>
+                        </ul>
+
+                        <div class="tab-content p-3" id="notificationContent">
+                            <div class="tab-pane fade show active" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+                                <p>Tienes 3 mensajes nuevos.</p>
+
+                                <!-- cards de notificacion -->
+
+                                <div class="card shadow-card">
+                                    <div class="card-body">
+                                    
+                                        <div class="d-flex align-items ">
+                                            
+                                            <i class="bi bi-bell-fill icono-campana"></i> 
+                                            
+                                            
+                                            <div class="texto">
+                                                <h5 class="card-title">Maria Perez hizo una reserva</h5>
+                                                <p class="card-text">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Numquam, deserunt. Reprehenderit doloremque accusantium omnis sapiente, voluptates labore odit earum quam enim nesciunt quidem quo at aliquam rerum voluptatem possimus. Magni.</p>
+                                            </div>
+                                        
+                                        </div>
+
+                                        <a href="#" class="btn btn-primary bg-boton">Ver detalle </a>
+                                    </div>
+                                </div>
+                                <hr>
+                                <!-- 2 card -->
+                                <div class="card shadow-card">
+                                    <div class="card-body">
+                                    
+                                        <div class="d-flex align-items ">
+                                            
+                                            <i class="bi bi-bell-fill  icono-campana"></i> 
+                                            
+                                            
+                                            <div class="texto">
+                                                <h5 class="card-title">Nicolas Rubio hizo una reserva</h5>
+                                                <p class="card-text">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Numquam, deserunt. Reprehenderit doloremque accusantium omnis sapiente, voluptates labore odit earum quam enim nesciunt quidem quo at aliquam rerum voluptatem possimus. Magni.</p>
+                                            </div>
+                                        
+                                        </div>
+
+                                        <a href="#" class="btn btn-primary bg-boton">Ver detalle </a>
+
+
+                                    
+                                    </div>
+                                </div>
+                                
+                                <hr>
+
+                                <div class="card shadow-card">
+                                    <div class="card-body">
+                                    
+                                        <div class="d-flex align-items ">
+                                            
+                                            <i class="bi bi-bell-fill icono-campana"></i> 
+                                            
+                                            
+                                            <div class="texto">
+                                                <h5 class="card-title">Nicolas Rubio hizo una reserva</h5>
+                                                <p class="card-text">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Numquam, deserunt. Reprehenderit doloremque accusantium omnis sapiente, voluptates labore odit earum quam enim nesciunt quidem quo at aliquam rerum voluptatem possimus. Magni.</p>
+                                            </div>
+                                        
+                                        </div>
+
+                                        <a href="#" class="btn btn-primary bg-boton">Ver detalle </a>
+
+
+                                    
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+               
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+
+    
+</body>
+</html>

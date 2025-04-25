@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empleado</title>
+    <link rel="stylesheet" href="CSS/bootstrap.min.css">
+    <link rel="stylesheet" href="CSS/cliente.css">
+    <link rel="stylesheet" href="CSS/responsive.css">
+    <!-- fuente logo-->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+    </style>
+    <!-- fuente raleway para inicio -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+    </style>
+    <!-- iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script src="JS/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+         flatpickr("#selectorMes", {
+            dateFormat: "Y-m", // para mantenerlo como mes
+            defaultDate: "2025-02"
+        });
+
+    </script>
+   
+   
+    
+
+</head>
+
+<body>
+    <!-- barra izquierda -->
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-3">
+                <div class="sidebar border-right">
+                    <div class="emple">
+                        <i class="bi bi-person-circle custom-icon-1"></i>
+                        <span class="emple-text">Empleado</span>
+                        <i class="bi bi-bell-fill custom-icon-2"></i>
+                    </div>
+                    <hr>
+                    <a href="#citas"><i class="bi bi-calendar-heart-fill custom-icon"> </i> &nbsp;Citas </a>
+                    <hr>
+
+                    <h6 class="nub px-3">Nube</h6>
+
+                    <a href="#subir"><i class="bi bi-cloud-arrow-up-fill custom-icon"> </i> &nbsp;Subir</a>
+
+                    <a href="#administrar"><i class="bi bi-person-fill-gear custom-icon"></i> &nbsp;Administrar </a>
+
+                    <a href="#clientes"><i class="bi bi-people-fill custom-icon"> </i> &nbsp;Clientes</a>
+                    <hr>
+
+                    <button class="icon-button" type="submit">
+                        <a href="#salir"><i class="bi bi-door-open-fill custom-icon-3"></i></a>
+                    </button> 
+                </div>
+
+            </div>
+<!-- barra vavegador  -->
+            <div class="col-9">
+                <nav class="navbar navbar-expand-lg navbar-custom" style="margin: 0; padding: 0;">
+                    <div class="container-fluid">
+                        <!-- Enlaces del menú a la izquierda -->
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <nav class="navbar navbar-custom" style="margin: 0; padding: 0;">
+                                <div class="container-fluid">
+                                    <form class="d-flex" role="search">
+                                        <input class="form-control me-2" type="search" placeholder="Buscar" style="margin: 0;">
+                                        <button class="icon-button" type="submit">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                  </form>
+                                </div>
+                            </nav>
+                           
+                        </div>
+
+                        <!-- Logo y texto a la derecha -->
+                        <div class=" logo d-flex align-items-center">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="#">Inicio</a>
+                                </li>
+                            
+                               
+                            </ul>
+                        
+                            <img src="img/logo1.png" alt="FotoLuna" width="67" class="me-2">
+                            <h2 class="mb-0">FotoLuna</h2>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- clientes-->
+                <div class="container my-4">
+                    <nav class="mb-4">
+                      <span class="text-muted">Nube</span> <i class="bi bi-chevron-right"></i> <span>Clientes</span>
+                    </nav>
+                
+                    <div class="bg-light rounded p-3">
+                      <!-- Encabezado de mes -->
+                        <div class="bg-lavender text-center py-2 mb-3 rounded month-header" onclick="document.getElementById('selectorMes').showPicker()">
+                            <strong id="mesActual">Abril</strong>
+                            <input type="month" id="selectorMes" onchange="mostrarClientesPorMes(this)">
+                        </div>
+                
+                      <!-- Clientes -->
+                        <div class="row text-center gy-4" id="contenedorClientes">
+
+                            <!-- Aquí se insertan dinámicamente los clientes -->
+                        </div>
+                    </div>
+                </div>
+                
+                  <!-- Modal reutilizable -->
+                <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content shadow">
+                                    <div class="modal-header bg-lavender">
+                                    <h5 class="modal-title" id="modalClienteLabel"></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+                                    <div class="modal-body" id="modalClienteBody">
+                                    <!-- Datos del cliente -->
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
+                            </div>
+                        </div>
+                </div>
+                
+                  <script>
+                        const clientesPorMes = {
+                        "febrero": [
+                            { nombre: "Camilo", imagen: "img/cliente.jpg", correo: "camilo@example.com", fecha: "05 de febrero" },
+                            { nombre: "Luisa", imagen: "img/cliente.jpg", correo: "luisa@example.com", fecha: "18 de febrero" },
+                            { nombre: "Juan", imagen: "img/cliente.jpg", correo: "juan@example.com", fecha: "22 de febrero" },
+                            { nombre: "Jose", imagen: "img/cliente.jpg", correo: "jose@example.com", fecha: "23 de febrero" },
+                            { nombre: "Nicolas", imagen: "img/cliente.jpg", correo: "nicolasa@example.com", fecha: "26 de febrero" },
+                            { nombre: "Andres", imagen: "img/cliente.jpg", correo: "andres@example.com", fecha: "27 de febrero" },
+                            { nombre: "Pepito", imagen: "img/cliente.jpg", correo: "pepito@example.com", fecha: "28 de febrero" },
+                            { nombre: "Nicolas", imagen: "img/cliente.jpg", correo: "nicolasa@example.com", fecha: "26 de febrero" },
+                            { nombre: "Andres", imagen: "img/cliente.jpg", correo: "andres@example.com", fecha: "27 de febrero" },
+                            { nombre: "Pepito", imagen: "img/cliente.jpg", correo: "pepito@example.com", fecha: "28 de febrero" }
+                        ],
+                        "marzo": [
+                            { nombre: "Valeria", imagen: "img/cliente.jpg", correo: "valeria@example.com", fecha: "15 de Marzo" },
+                            { nombre: "Andrés", imagen: "img/cliente.jpg", correo: "andres@example.com", fecha: "21 de Marzo" },
+                            { nombre: "Luisa", imagen: "img/cliente.jpg", correo: "luisa@example.com", fecha: "18 de Marzo" },
+                            { nombre: "Juan", imagen: "img/cliente.jpg", correo: "juan@example.com", fecha: "22 de Marzo" },
+                            { nombre: "Jose", imagen: "img/cliente.jpg", correo: "jose@example.com", fecha: "23 de Marzo" },
+                            { nombre: "Nicolas", imagen: "img/cliente.jpg", correo: "nicolasa@example.com", fecha: "26 de Marzo" },
+                            { nombre: "Andres", imagen: "img/cliente.jpg", correo: "andres@example.com", fecha: "27 de Marzo" },
+                            { nombre: "Pepito", imagen: "img/cliente.jpg", correo: "pepito@example.com", fecha: "28 de Marzo" }
+                        ],
+                        "abril": [
+                            { nombre: "Mariana", imagen: "img/cliente.jpg", correo: "mariana@example.com", fecha: "03 de Abril" },
+                            { nombre: "Santiago", imagen: "img/cliente.jpg", correo: "santiago@example.com", fecha: "19 de Abril" },
+                            { nombre: "Nicolas", imagen: "img/cliente.jpg", correo: "nicolasa@example.com", fecha: "26 de Marzo" },
+                            { nombre: "Andres", imagen: "img/cliente.jpg", correo: "andres@example.com", fecha: "27 de Marzo" },
+                            { nombre: "Pepito", imagen: "img/cliente.jpg", correo: "pepito@example.com", fecha: "28 de Marzo" }
+                        ]
+                        // Puedes agregar más meses...
+                        };
+                    
+                        function mostrarClientesPorMes(input) {
+                        const fecha = new Date(input.value +'-02');
+                        const nombreMes = fecha.toLocaleString('es-ES', { month: 'long' });
+                        const mes = nombreMes.toLowerCase();
+
+                    
+                        document.getElementById('mesActual').textContent = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+                        const contenedor = document.getElementById('contenedorClientes');
+                        contenedor.innerHTML = "";
+                    
+                        if (clientesPorMes[mes]) {
+                            clientesPorMes[mes].forEach((cliente, index) => {
+                            const div = document.createElement('div');
+                            div.className = "col-6 col-sm-4 col-md-3 col-lg-2 client-card";
+                            div.innerHTML = `
+                                <div class="d-flex flex-column align-items-center">
+                                <img src="${cliente.imagen}" class="rounded-circle border border-secondary mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                                <span class="fw-semibold">${cliente.nombre}</span>
+                                <button class="btn btn-lilac mt-2 rounded-pill px-3 py-1 fw-bold" onclick="mostrarModalCliente('${cliente.nombre}', '${cliente.correo}', '${cliente.fecha}')">VER MÁS</button>
+                                </div>`;
+                            contenedor.appendChild(div);
+                            });
+                        } else {
+                            contenedor.innerHTML = "<p class='text-muted'>No hay clientes para este mes.</p>";
+                        }
+                        }
+                    
+                        function mostrarModalCliente(nombre, correo, fecha) {
+                        document.getElementById('modalClienteLabel').textContent = `Información de ${nombre}`;
+                        document.getElementById('modalClienteBody').innerHTML = `
+                            <p><strong>Nombre:</strong> ${nombre}</p>
+                            <p><strong>Correo:</strong> ${correo}</p>
+                            <p><strong>Fecha reserva:</strong> ${fecha}</p>
+                        `;
+                        new bootstrap.Modal(document.getElementById('modalCliente')).show();
+                        }
+                    
+                        // Mostrar clientes de febrero al cargar
+                        window.onload = () => {
+                        document.getElementById('selectorMes').value = "2025-04";
+                        mostrarClientesPorMes(document.getElementById('selectorMes'));
+                        };
+
+                      
+                  </script>
+
+                   
+                  
+                 
+               
+
+                 
+                
+                  
+
+              
+
+               
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+
+    
+</body>
+</html>
