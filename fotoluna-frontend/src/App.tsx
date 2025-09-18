@@ -4,10 +4,8 @@ function App() {
 
   return (
     <>
-      <div>
         {/* Navbar con sidebar incluido */}
         <NavHome />
-      </div>
     </>
   )
 }

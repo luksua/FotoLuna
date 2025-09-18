@@ -9,7 +9,7 @@ const HomeLayout: React.FC<Props> = ({ children }) => {
     return (
         <div>
             <NavHome />
-            <main className="flex-1 p-6 bg-gray-100">{children}</main>
+            <main>{children}</main>
         </div>
     );
 };
