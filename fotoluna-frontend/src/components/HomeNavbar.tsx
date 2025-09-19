@@ -4,6 +4,7 @@ import "../styles/homeSideNav.css";
 import HomeSidebar from "./HomeSidebar";
 import logo from "../assets/img/logo.jpg";
 import perfil from "../assets/img/perfil.png";
+import HomeButton from "./HomeButton";
 
 const NavHome: React.FC = () => {
     return (
@@ -62,11 +63,18 @@ const NavHome: React.FC = () => {
                                 <img src={perfil} className="perfil-img" alt="Perfil" />
                             </button>
                         </li>
-                        <li className="nav-item registro">
-                            <a href="registro.html" className="btn btn-perfil w-100 mb-3">Crear Cuenta</a>
+                        <li className="nav-item registro mb-3">
+                            <HomeButton
+                                value="Iniciar Sesión"
+                                type="submit"
+                            />
                         </li>
                         <li className="nav-item iniciar">
-                            <a href="{{ route('customer.login') }}" className="btn btn-perfil w-100">Iniciar Sesión</a>
+                            {/* <a href="{{ route('customer.login') }}" className="btn btn-perfil w-100">Iniciar Sesión</a> */}
+                            <HomeButton
+                                value="Iniciar Sesión"
+                                type="submit"
+                            />
                         </li>
                     </ul>
                 </div>
