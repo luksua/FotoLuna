@@ -1,5 +1,6 @@
 import React from "react";
-import NavHome from "../components/HomeNavbar";
+import HomeNav from "../components/HomeNavbar";
+import HomeFooter from "../components/HomeFooter";
 
 type Props = {
     children: React.ReactNode;
@@ -8,8 +9,9 @@ type Props = {
 const HomeLayout: React.FC<Props> = ({ children }) => {
     return (
         <div>
-            <NavHome />
+            <HomeNav />
             <main>{children}</main>
+            <HomeFooter />
         </div>
     );
 };

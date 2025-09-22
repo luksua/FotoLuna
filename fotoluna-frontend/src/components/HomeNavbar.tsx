@@ -2,11 +2,9 @@ import React from "react"
 import "../styles/HomeNav.css";
 import "../styles/homeSideNav.css";
 import HomeSidebar from "./HomeSidebar";
-import logo from "../assets/img/logo.jpg";
-import perfil from "../assets/img/perfil.png";
 import HomeButton from "./HomeButton";
 
-const NavHome: React.FC = () => {
+const HomeNav: React.FC = () => {
     return (
         <>
             <nav className="navbar navbar-border navbar-expand-lg fixed-top navbar-custom">
@@ -14,7 +12,7 @@ const NavHome: React.FC = () => {
 
                 <div className="d-flex align-items-center">
                     <a className="navbar-brand d-flex align-items-center gap-2" href="{{ route('welcome') }}">
-                        <img src={logo} className="logo-img" alt="Logo" />
+                        <img src="/img/logo.jpg" className="logo-img" alt="Logo" />
                         <div className="fw-bold bg-custom-6 logo-text">
                             <h1> FotoLuna </h1>
                         </div>
@@ -60,20 +58,18 @@ const NavHome: React.FC = () => {
                         <li className="nav-item ms-3 d-none d-lg-block">
                             <button className="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="offcanvas"
                                 data-bs-target="#perfilMenu" aria-controls="perfilMenu">
-                                <img src={perfil} className="perfil-img" alt="Perfil" />
+                                <img src="/img/perfil.png" className="perfil-img" alt="Perfil" />
                             </button>
                         </li>
                         <li className="nav-item registro mb-3">
                             <HomeButton
-                                value="Iniciar Sesión"
-                                type="submit"
+                                value="Crear Cuenta"
                             />
                         </li>
                         <li className="nav-item iniciar">
                             {/* <a href="{{ route('customer.login') }}" className="btn btn-perfil w-100">Iniciar Sesión</a> */}
                             <HomeButton
                                 value="Iniciar Sesión"
-                                type="submit"
                             />
                         </li>
                     </ul>
@@ -84,4 +80,4 @@ const NavHome: React.FC = () => {
     )
 }
 
-export default NavHome;
+export default HomeNav;
