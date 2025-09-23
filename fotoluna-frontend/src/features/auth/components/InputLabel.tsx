@@ -33,8 +33,8 @@ const InputLabel: React.FC<Props> = ({
                     type={type}
                     value={value}
                     onChange={onChange}
-                    onBlur={onBlur}         // 👈 ahora sí pasa onBlur
-                    ref={inputRef}          // 👈 ahora sí pasa ref
+                    onBlur={onBlur}
+                    ref={inputRef}          
                     className={`form-control ${error ? "is-invalid" : ""}`}
                 />
                 {error && (

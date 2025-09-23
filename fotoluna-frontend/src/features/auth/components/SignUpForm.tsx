@@ -1,7 +1,13 @@
+import React, { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
-import type { SubmitHandler } from 'react-hook-form';
+import type { SubmitHandler } from "react-hook-form";
+import { Cropper } from "react-cropper";
+import type { ReactCropperElement } from "react-cropper";
+// import { Modal} from "bootstrap";
+import "../../../styles/cropper.css";
 import InputLabel from "./InputLabel";
 import Button from "./Button";
+import "../styles/signUp.css";
 
 type FormValues = {
     firstNameCustomer: string;
@@ -16,6 +22,11 @@ type FormValues = {
 };
 
 const SignUpForm: React.FC = () => {
+    const [profileImage, setProfileImage] = useState<string>("/img/imagenperfil.jpg");
+    const [cropData, setCropData] = useState<string>("");
+    const cropperRef = useRef<ReactCropperElement>(null);
+    const [showModal, setShowModal] = useState<boolean>(false);
+
     const {
         control,
         handleSubmit,
@@ -38,43 +49,68 @@ const SignUpForm: React.FC = () => {
         console.log("Datos del formulario:", data);
     };
 
+    const handleImageChange = (files: FileList | null) => {
+        if (files && files[0]) {
+            const file = files[0];
+            const imageUrl = URL.createObjectURL(file);
+            setProfileImage(imageUrl); // Mostrar la imagen en el cropper
+            setShowModal(true);
+        }
+    };
+
+    const getCropData = () => {
+        if (cropperRef.current && cropperRef.current.cropper) {
+            setCropData(cropperRef.current.cropper.getCroppedCanvas().toDataURL());
+            setShowModal(false);
+        }
+    };
+
     return (
-        <div className="form-section" >
+        <div className="form-section">
             <div className="row text-center">
-                <div className="col-lg-12 col-md-12 col-sm-12 bg-custom-2">
-                    Registro
-                </div>
+                <div className="col-lg-12 col-md-12 col-sm-12 bg-custom-2">Registro</div>
             </div>
             <div className="row bg-custom-9">
                 <div className="col-lg-6 col-md-6 col-sm-12 d-flex flex-column align-items-center">
-                    <img src="/img/imagenperfil.jpg" alt="Foto Perfil" id="profilePreview" className="profile-img mb-3" />
-                    {/* Foto */}
-                    <Controller
-                        name="photoCustomer"
-                        control={control}
-                        rules={{ required: "La foto es obligatoria" }}
-                        render={({ field }) => (
-                            <div className="mb-3">
-                                <label htmlFor="profileImage" className="btn custom-upload-btn custom-file-upload mb-3">
-                                    Subir Imagen
-                                </label>
-                                <input
-                                    type="file"
-                                    id="profileImage"
-                                    className="form-control"
-                                    onChange={(e) => field.onChange(e.target.files)}
-                                    onBlur={field.onBlur}
-                                    accept="image/*" hidden
-                                />
-                            </div>
-                        )}
+                    {/* Cropper para recortar la imagen */}
+                    <Cropper
+                        src={profileImage}
+                        style={{ height: 200, width: "100%" }}
+                        initialAspectRatio={1}
+                        aspectRatio={1}
+                        guides={false}
+                        cropBoxResizable={false}
+                        viewMode={1}
+                        ref={cropperRef}
+                    />
+                    <button className="btn custom-upload-btn" onClick={getCropData}>
+                        Recortar Imagen
+                    </button>
+                    {cropData && (
+                        <img
+                            src={cropData}
+                            alt="Foto Perfil Recortada"
+                            className="profile-img mt-3"
+                        />
+                    )}
+                    <label
+                        htmlFor="profileImage"
+                        className="btn custom-upload-btn custom-file-upload mt-3"
+                    >
+                        Subir Imagen
+                    </label>
+                    <input
+                        type="file"
+                        id="profileImage"
+                        className="form-control"
+                        onChange={(e) => handleImageChange(e.target.files)}
+                        accept="image/*"
+                        hidden
                     />
                 </div>
                 <div className="col-lg-6 col-md-6 col-sm-12">
-
-                    {/* Form */}
+                    {/* Formulario */}
                     <form onSubmit={handleSubmit(onSubmit)}>
-
                         {/* First Name */}
                         <Controller
                             name="firstNameCustomer"
@@ -231,9 +267,9 @@ const SignUpForm: React.FC = () => {
                             />
                         </div>
                     </form>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 };
 

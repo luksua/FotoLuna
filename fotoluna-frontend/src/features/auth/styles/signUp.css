@@ -1,0 +1,88 @@
+.btn-perfil {
+    z-index: 9999;
+    position: relative;
+}
+.form-section {
+    margin: auto;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 80px;
+    padding-top: 30px;
+}
+.texto{
+    width: 290px;
+}
+
+.profile-img {
+    width: 100%;
+    max-width: 55%;
+    height:auto;
+    border-radius: 50%;
+    object-fit: cover;
+    aspect-ratio: 1 / 1;
+    border: 2px solid #ccc;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    cursor: pointer;
+    margin-top: 10px;
+
+}
+.custom-upload-btn {
+    background-color: #C792DF; /* morado */
+    color: white;
+    border: none;
+}
+.custom2-upload-btn {
+    background-color: #b37cc5; /* morado */
+    color: white;
+    border: none;
+}
+.custom-upload-btn:hover {
+    background-color: #a47ec8;
+    color: white;
+}
+.custom2-upload-btn:hover {
+    background-color: #876ba0;
+    color: white;
+}
+.upload-icon {
+    width: 40px;
+}
+
+.form-section .bg-custom-2 {
+    font-size: 60px;
+    margin-bottom: 30px;
+}
+
+.form-control {
+    background-color: #D0C4DF;
+    border: 1px solid #D0C4DF;
+    color: white;
+}
+
+.form-control:focus {
+    background-color: #D0C4DF; /* Fondo al hacer clic */
+    border-color: #D0C4DF; /* Borde al hacer clic */
+    box-shadow: 0 0 0 0.2rem #DDDFDF;
+    color: white;
+}
+
+.form-select {
+    background-color: #D0C4DF; 
+    border: 1px solid #D0C4DF; 
+    color: white; 
+}
+
+.form-select:focus {
+    background-color: #D0C4DF;
+    border: 1px solid #D0C4DF;
+    box-shadow: 0 0 0 0.2rem #DDDFDF;
+    color: white;
+}
+input.form-control,
+select.form-select {
+    border-radius: 18px; /* Cambia este valor según lo redondo que lo quieras */
+}
