@@ -4,6 +4,7 @@ body {
 
 .navbar-custom {
     height: 110px;
+    background-color: white;
 }
 
 .perfil-img {
@@ -207,6 +208,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     padding: 80px;
+    padding-top: 30px;
 }
 .texto{
     width: 290px;

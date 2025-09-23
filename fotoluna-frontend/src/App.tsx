@@ -1,16 +1,9 @@
-import HomeFooter from './components/HomeFooter'
-import HomeNav from './components/HomeNavbar'
+import { useRoutes } from "react-router-dom";
+import { routes } from "./routes/routes";
 
+const App = () => {
+  const element = useRoutes(routes);
+  return element;
+};
 
-function App() {
-
-  return (
-    <>
-        {/* Navbar con sidebar incluido */}
-        <HomeNav />
-        <HomeFooter />
-    </>
-  )
-}
-
-export default App
+export default App;

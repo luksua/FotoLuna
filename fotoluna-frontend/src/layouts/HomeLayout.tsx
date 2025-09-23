@@ -1,6 +1,6 @@
 import React from "react";
-import HomeNav from "../components/HomeNavbar";
-import HomeFooter from "../components/HomeFooter";
+import HomeNav from "../components/Home/HomeNavbar";
+import HomeFooter from "../components/Home/HomeFooter";
 
 type Props = {
     children: React.ReactNode;

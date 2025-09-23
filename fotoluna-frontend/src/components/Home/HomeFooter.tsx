@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/HomeFooter.css";
+import "../../styles/homeFooter.css";
 
 const HomeFooter: React.FC = () => {
     return (

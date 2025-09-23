@@ -1,6 +1,6 @@
 import React from "react"
-import "../styles/HomeNav.css";
-import "../styles/homeSideNav.css";
+import "../../styles/HomeNav.css";
+import "../../styles/homeSideNav.css";
 import HomeSidebar from "./HomeSidebar";
 import HomeButton from "./HomeButton";
 
@@ -11,7 +11,7 @@ const HomeNav: React.FC = () => {
                 <div className="eslogan-border bg-custom-3">La fotografía recuerda lo que la mente olvida</div>
 
                 <div className="d-flex align-items-center">
-                    <a className="navbar-brand d-flex align-items-center gap-2" href="{{ route('welcome') }}">
+                    <a className="navbar-brand d-flex align-items-center gap-2" href="/">
                         <img src="/img/logo.jpg" className="logo-img" alt="Logo" />
                         <div className="fw-bold bg-custom-6 logo-text">
                             <h1> FotoLuna </h1>
@@ -63,11 +63,11 @@ const HomeNav: React.FC = () => {
                         </li>
                         <li className="nav-item registro mb-3">
                             <HomeButton
+                                to="/registrarse"
                                 value="Crear Cuenta"
                             />
                         </li>
                         <li className="nav-item iniciar">
-                            {/* <a href="{{ route('customer.login') }}" className="btn btn-perfil w-100">Iniciar Sesión</a> */}
                             <HomeButton
                                 value="Iniciar Sesión"
                             />

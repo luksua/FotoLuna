@@ -1,7 +1,7 @@
 import React from "react";
-import "../styles/HomeNav.css";
-import "../styles/homeSideNav.css";
-import HomeButton from "./HomeButton";
+import "../../styles/HomeNav.css";
+import "../../styles/homeSideNav.css";
+import HomeButton from "../Home/HomeButton";
 
 const HomeSidebar: React.FC = () => {
     return (
@@ -29,12 +29,11 @@ const HomeSidebar: React.FC = () => {
                     <div className="mb-3">
                         <HomeButton
                             value="Crear cuenta"
-                            type="submit"
+                            to="/registrarse"
                         />
                     </div>
                     <HomeButton
                         value="Iniciar Sesión"
-                        type="submit"
                     />
                 </div>
 
