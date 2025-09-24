@@ -1,13 +1,13 @@
 import HomeNavbar from "../../../components/Home/HomeNavbar";
-import SignUpForm from "../components/SignUpForm";
+import LoginForm from "../components/LoginForm";
 
-const Register: React.FC = () => {
+const Login: React.FC = () => {
     return (
         <>
             <HomeNavbar />
-            <SignUpForm />
+            <LoginForm />
         </>
     );
 };
 
-export default Register;
+export default Login;

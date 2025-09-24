@@ -34,6 +34,7 @@ const HomeSidebar: React.FC = () => {
                     </div>
                     <HomeButton
                         value="Iniciar Sesión"
+                        to="/iniciarSesion"
                     />
                 </div>
 

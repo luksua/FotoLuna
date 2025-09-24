@@ -69,6 +69,7 @@ const HomeNav: React.FC = () => {
                         </li>
                         <li className="nav-item iniciar">
                             <HomeButton
+                                to="/iniciarSesion"
                                 value="Iniciar Sesión"
                             />
                         </li>

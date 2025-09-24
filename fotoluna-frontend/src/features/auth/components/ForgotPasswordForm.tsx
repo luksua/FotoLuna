@@ -2,14 +2,14 @@ import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import InputLabel from "./InputLabel";
 import Button from "./Button";
-import "../styles/signUp.css";
+// import "../styles/signUp.css";
 
 type FormValues = {
     emailCustomer: string;
     password: string;
 };
 
-const LoginForm: React.FC = () => {
+const ForgotPasswordForm: React.FC = () => {
     const {
         control,
         handleSubmit,
@@ -89,4 +89,4 @@ const LoginForm: React.FC = () => {
     );
 };
 
-export default LoginForm;
+export default ForgotPasswordForm;
