@@ -3,7 +3,6 @@ import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { Cropper } from "react-cropper";
 import type { ReactCropperElement } from "react-cropper";
-// import { Modal} from "bootstrap";
 import "../../../styles/cropper.css";
 import InputLabel from "./InputLabel";
 import Button from "./Button";
@@ -22,10 +21,10 @@ type FormValues = {
 };
 
 const SignUpForm: React.FC = () => {
-    const [profileImage, setProfileImage] = useState<string>("/img/imagenperfil.jpg");
-    const [cropData, setCropData] = useState<string>("");
+    const [profileImage, setProfileImage] = useState("/img/imagenperfil.jpg");
+    const [cropData, setCropData] = useState("");
     const cropperRef = useRef<ReactCropperElement>(null);
-    const [showModal, setShowModal] = useState<boolean>(false);
+    const [showModal, setShowModal] = useState(false);
 
     const {
         control,
@@ -46,7 +45,11 @@ const SignUpForm: React.FC = () => {
     });
 
     const onSubmit: SubmitHandler<FormValues> = (data) => {
-        console.log("Datos del formulario:", data);
+        const formData = {
+            ...data,
+            photoCustomer: cropData 
+        };
+        console.log("Datos del formulario:", formData);
     };
 
     const handleImageChange = (files: FileList | null) => {
@@ -54,17 +57,18 @@ const SignUpForm: React.FC = () => {
             const file = files[0];
             const imageUrl = URL.createObjectURL(file);
             setProfileImage(imageUrl); // Mostrar la imagen en el cropper
-            setShowModal(true);
         }
     };
 
     const getCropData = () => {
-        if (cropperRef.current && cropperRef.current.cropper) {
-            setCropData(cropperRef.current.cropper.getCroppedCanvas().toDataURL());
-            setShowModal(false);
+        if (typeof cropperRef.current?.cropper !== "undefined") {
+            setCropData(cropperRef.current?.cropper.getCroppedCanvas().toDataURL());
         }
     };
 
+
+
+    // return
     return (
         <div className="form-section">
             <div className="row text-center">
@@ -72,32 +76,65 @@ const SignUpForm: React.FC = () => {
             </div>
             <div className="row bg-custom-9">
                 <div className="col-lg-6 col-md-6 col-sm-12 d-flex flex-column align-items-center">
-                    {/* Cropper para recortar la imagen */}
-                    <Cropper
-                        src={profileImage}
-                        style={{ height: 200, width: "100%" }}
-                        initialAspectRatio={1}
-                        aspectRatio={1}
-                        guides={false}
-                        cropBoxResizable={false}
-                        viewMode={1}
-                        ref={cropperRef}
+
+                    {/* View imagen */}
+                    <img
+                        src={cropData ? cropData : profileImage}
+                        alt="Foto Perfil Recortada"
+                        className="profile-img mt-3"
                     />
-                    <button className="btn custom-upload-btn" onClick={getCropData}>
-                        Recortar Imagen
-                    </button>
-                    {cropData && (
-                        <img
-                            src={cropData}
-                            alt="Foto Perfil Recortada"
-                            className="profile-img mt-3"
-                        />
+
+                    {/* <!-- Vertically centered modal --> */}
+                    {showModal && (
+                        <>
+                            <div className="modal fade show" style={{ display: "block" }}>
+                                <div className="modal-dialog modal-dialog-centered">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Recortar Imagen</h5>
+                                            <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            {/* Cropper para recortar la imagen */}
+                                            <Cropper
+                                                src={profileImage}
+                                                style={{ height: 300, width: "100%" }}
+                                                initialAspectRatio={1}
+                                                aspectRatio={1}
+                                                guides={true}
+                                                cropBoxResizable={false}
+                                                viewMode={1}
+                                                ref={cropperRef}
+                                                minCropBoxHeight={10}
+                                                minCropBoxWidth={10}
+                                                background={false}
+                                                responsive={true}
+                                                checkOrientation={false}
+                                            />
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                                                Cancelar
+                                            </button>
+                                            <button className="btn custom-upload-btn" onClick={() => { getCropData(); setShowModal(false); }}>
+                                                Recortar Imagen
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-backdrop fade show"></div>
+                        </>
                     )}
+
+                    {/* Button Open Modal */}
                     <label
                         htmlFor="profileImage"
                         className="btn custom-upload-btn custom-file-upload mt-3"
+                        onClick={() => setShowModal(true)}
+                        style={{ cursor: "pointer" }}
                     >
-                        Subir Imagen
+                        <i className="bi bi-camera"></i>
                     </label>
                     <input
                         type="file"
@@ -107,8 +144,10 @@ const SignUpForm: React.FC = () => {
                         accept="image/*"
                         hidden
                     />
+
                 </div>
                 <div className="col-lg-6 col-md-6 col-sm-12">
+
                     {/* Formulario */}
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* First Name */}

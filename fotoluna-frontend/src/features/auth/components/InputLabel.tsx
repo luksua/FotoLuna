@@ -4,8 +4,8 @@ interface Props {
     type?: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void; // <-- nuevo
-    inputRef?: React.Ref<HTMLInputElement>; // <-- nuevo
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void; 
+    inputRef?: React.Ref<HTMLInputElement>;
     error?: string;
 }
 

@@ -29,12 +29,15 @@ const ForgotPasswordForm: React.FC = () => {
         <div className="form-section">
             <div className="row bg-custom-9">
                 <div className="col-lg-6 col-md-6 d-none d-md-block">
-                    <img src="/img/fotoi.jpg" alt="Imagen de perfil" className="img-fluid rounded" />
+                    <img src="img/recupcontra1.png" alt="Imagen de perfil" className="img-fluid rounded" />
                 </div>
                 <div className="col-lg-6 col-md-6 col-sm-12 py-5 ps-lg-5">
-                    <h2 className="mb-4 text-center bg-custom-2">Inicio de Sesión</h2>
+                    <h2 className="mb-4 text-center bg-custom-2">
+                        Recuperar cuenta
+                    </h2>
                     {/* Formulario */}
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                    <form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column w-100 bg-custom">
+
                         {/* Email */}
                         <Controller
                             name="emailCustomer"
@@ -54,38 +57,17 @@ const ForgotPasswordForm: React.FC = () => {
                             )}
                         />
 
-                        {/* Password */}
-                        <Controller
-                            name="password"
-                            control={control}
-                            rules={{
-                                required: "Debe de escribir la contraseña",
-                            }}
-                            render={({ field }) => (
-                                <InputLabel
-                                    id="password"
-                                    label="Contraseña:"
-                                    type="password"
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    onBlur={field.onBlur}
-                                    inputRef={field.ref}
-                                    error={errors.password?.message}
-                                />
-                            )}
-                        />
-
-                        <a className="form-text mb-4 text-end" href="">Olvidé mi contraseña</a>
+                        
 
                         <div className="d-flex justify-content-center">
                             <Button
-                                value="Iniciar Sesión"
+                                value="Enviar codigo"
                             />
                         </div>
                     </form>
                 </div>
-            </div>
-        </div >
+            </div >
+        </div>
     );
 };
 

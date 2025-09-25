@@ -3,6 +3,7 @@ import type { SubmitHandler } from "react-hook-form";
 import InputLabel from "./InputLabel";
 import Button from "./Button";
 import "../styles/signUp.css";
+import { Link } from "react-router-dom";
 
 type FormValues = {
     emailCustomer: string;
@@ -75,7 +76,12 @@ const LoginForm: React.FC = () => {
                             )}
                         />
 
-                        <a className="form-text mb-4 text-end" href="">Olvidé mi contraseña</a>
+                        <Link
+                            to="/recuperarContrasena"
+                            className="form-text mb-4 text-end"
+                        >
+                            Olvidé mi contraseña
+                        </Link>
 
                         <div className="d-flex justify-content-center">
                             <Button

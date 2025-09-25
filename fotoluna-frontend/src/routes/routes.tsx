@@ -1,6 +1,7 @@
 import Home from "../features/home/pages/Home";
 import SignUp from "../features/auth/pages/SignUp";
 import Login from "../features/auth/pages/Login";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
 
 export const routes = [
     {
@@ -13,5 +14,8 @@ export const routes = [
     }, {
         path: "/iniciarSesion",
         element: <Login />
+    }, {
+        path: "/recuperarContrasena",
+        element: <ForgotPassword />
     }
 ];

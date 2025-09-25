@@ -2,13 +2,14 @@
     z-index: 9999;
     position: relative;
 }
+
 .form-section {
-    margin: auto;
+    margin-top: auto;
     background-color: white;
     border-radius: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     padding: 80px;
-    padding-top: 30px;
+    padding-top: auto;
 }
 .texto{
     width: 290px;
@@ -84,5 +85,10 @@
 }
 input.form-control,
 select.form-select {
-    border-radius: 18px; /* Cambia este valor según lo redondo que lo quieras */
+    border-radius: 18px;
+}
+
+.form-section .img-fluid{
+    border-radius: 50%;
+    box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.3);
 }
