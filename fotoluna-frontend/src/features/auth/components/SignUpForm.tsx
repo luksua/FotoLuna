@@ -148,7 +148,7 @@ const SignUpForm: React.FC = () => {
                 </div>
                 <div className="col-lg-6 col-md-6 col-sm-12">
 
-                    {/* Formulario */}
+                    {/* Form */}
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* First Name */}
                         <Controller

@@ -3,22 +3,33 @@
     position: relative;
 }
 
+
+body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .form-section {
-    margin-top: auto;
+    width: 100%;
+    height: auto;
     background-color: white;
     border-radius: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 80px;
-    padding-top: auto;
+    box-sizing: border-box;
 }
-.texto{
+
+.texto {
     width: 290px;
 }
 
 .profile-img {
     width: 100%;
     max-width: 55%;
-    height:auto;
+    height: auto;
     border-radius: 50%;
     object-fit: cover;
     aspect-ratio: 1 / 1;
@@ -31,24 +42,31 @@
     margin-top: 10px;
 
 }
+
 .custom-upload-btn {
-    background-color: #C792DF; /* morado */
+    background-color: #C792DF;
+    /* morado */
     color: white;
     border: none;
 }
+
 .custom2-upload-btn {
-    background-color: #b37cc5; /* morado */
+    background-color: #b37cc5;
+    /* morado */
     color: white;
     border: none;
 }
+
 .custom-upload-btn:hover {
     background-color: #a47ec8;
     color: white;
 }
+
 .custom2-upload-btn:hover {
     background-color: #876ba0;
     color: white;
 }
+
 .upload-icon {
     width: 40px;
 }
@@ -65,16 +83,18 @@
 }
 
 .form-control:focus {
-    background-color: #D0C4DF; /* Fondo al hacer clic */
-    border-color: #D0C4DF; /* Borde al hacer clic */
+    background-color: #D0C4DF;
+    /* Fondo al hacer clic */
+    border-color: #D0C4DF;
+    /* Borde al hacer clic */
     box-shadow: 0 0 0 0.2rem #DDDFDF;
     color: white;
 }
 
 .form-select {
-    background-color: #D0C4DF; 
-    border: 1px solid #D0C4DF; 
-    color: white; 
+    background-color: #D0C4DF;
+    border: 1px solid #D0C4DF;
+    color: white;
 }
 
 .form-select:focus {
@@ -83,12 +103,13 @@
     box-shadow: 0 0 0 0.2rem #DDDFDF;
     color: white;
 }
+
 input.form-control,
 select.form-select {
     border-radius: 18px;
 }
 
-.form-section .img-fluid{
+.form-section .img-fluid {
     border-radius: 50%;
     box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.3);
 }
