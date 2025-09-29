@@ -9,9 +9,26 @@ type Props = {
 }
 
 const HomeButton = ({ value, children, onClick, to }: Props) => {
+
+    const handleClick = () => {
+        // Limpiar el backdrop manualmente
+        const backdrop = document.querySelector('.offcanvas-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        
+        if (onClick) {
+            onClick();
+        }
+    };
+
     if (to) {
         return (
-            <Link to={to} className="btn btn-perfil w-100">
+            <Link 
+                to={to} 
+                className="btn btn-perfil w-100"
+                onClick={handleClick}
+            >
                 {children ?? value}
             </Link>
         );
@@ -19,7 +36,7 @@ const HomeButton = ({ value, children, onClick, to }: Props) => {
     return (
         <button
             type="button"
-            onClick={onClick}
+            onClick={handleClick}
             className="btn btn-perfil w-100"
         >
             {children ?? value}

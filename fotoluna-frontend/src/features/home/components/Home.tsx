@@ -1,62 +1,78 @@
+import { useState } from 'react';
+import "../styles/home.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+
 const Home = () => {
-    const track = document.getElementById('sliderTrack');
-    const items = document.querySelectorAll('.slider-item');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+    const images = [
+        { src: "img/boda.jpg", alt: "1" },
+        { src: "img/cumple.jpg", alt: "2" },
+        { src: "img/quince.jpg", alt: "3" },
+        { src: "img/bautizo.jpg", alt: "4" },
+        { src: "img/primerac.jpg", alt: "5" },
+        { src: "img/folclor.jpg", alt: "6" },
+    ];
 
-    const totalItems = 6;
+    const totalItems = images.length;
     const visibleItems = 3;
-    let currentIndex = 0;
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    const updateSlider = () => {
-        const percent = (100 / visibleItems) * currentIndex;
-        track.style.transform = `translateX(-${percent}%)`;
-        // Quitar clases anteriores
-        items.forEach(item => item.classList.remove('small', 'large'));
+    const updatePercent = () => (100 / visibleItems) * currentIndex;
 
-        // Asignar clases nuevas
-        const visible = [currentIndex, currentIndex + 1, currentIndex + 2];
-        visible.forEach((i, idx) => {
-            if (items[i]) {
-                items[i].classList.add(idx === 1 ? 'large' : 'small'); // el del medio grande
-            }
-        });
+    const handleNext = () => {
+        if (currentIndex < totalItems - visibleItems) {
+            setCurrentIndex((prev) => prev + 1);
+        }
     };
 
-    nextBtn.addEventListener('click', () => {
-        if (currentIndex < totalItems - visibleItems) {
-            currentIndex++;
-            updateSlider();
-        }
-    });
-
-    prevBtn.addEventListener('click', () => {
+    const handlePrev = () => {
         if (currentIndex > 0) {
-            currentIndex--;
-            updateSlider();
+            setCurrentIndex((prev) => prev - 1);
         }
-    });
-
-    // Inicializar estado
-    updateSlider();
+    };
 
     return (
         <div className="container-fluid my-5">
-            <div className="slider-container">
-                <div className="slider-track" id="sliderTrack">
-                    <div className="slider-item"><img src="image/boda.jpg" alt="1" /></div>
-                    <div className="slider-item"><img src="image/cumple.jpg" alt="2" /></div>
-                    <div className="slider-item"><img src="image/quince.jpg" alt="3" /></div>
-                    <div className="slider-item"><img src="image/bautizo.jpg" alt="4" /></div>
-                    <div className="slider-item"><img src="image/primerac.jpg" alt="5" /></div>
-                    <div className="slider-item"><img src="image/folclor.jpg" alt="6" /></div>
+            <div className="slider-container position-relative overflow-hidden">
+                {/* Track */}
+                <div
+                    className="slider-track d-flex transition-transform"
+                    style={{
+                        transform: `translateX(-${updatePercent()}%)`,
+                        transition: "transform 0.5s ease-in-out",
+                    }}
+                >
+                    {images.map((img, index) => {
+                        let extraClass = "";
+                        if (index === currentIndex + 1) {
+                            extraClass = "large";
+                        } else if (
+                            index === currentIndex ||
+                            index === currentIndex + 2
+                        ) {
+                            extraClass = "small";
+                        }
+
+                        return (
+                            <div className={`slider-item ${extraClass}`} key={index}>
+                                <img src={img.src} alt={img.alt} className="img-fluid" />
+                            </div>
+                        );
+                    })}
                 </div>
-                <div className="slider-buttons">
-                    <button id="prevBtn" className="btn btn-dark btn-lg rounded-circle">
-                        <i className="bi bi-caret-left-fill"></i> {/*<!-- Icono de flecha izquierda -->*/}
+
+                {/* Buttons */}
+                <div className="slider-buttons position-absolute top-50 start-0 end-0 d-flex justify-content-between px-3">
+                    <button
+                        onClick={handlePrev}
+                        className="btn btn-dark btn-lg rounded-circle"
+                    >
+                        <i className="bi bi-caret-left-fill"></i>
                     </button>
-                    <button id="nextBtn" className="btn btn-dark btn-lg rounded-circle">
-                        <i className="bi bi-caret-right-fill"></i> {/* <!-- Icono de flecha derecha --> */}
+                    <button
+                        onClick={handleNext}
+                        className="btn btn-dark btn-lg rounded-circle"
+                    >
+                        <i className="bi bi-caret-right-fill"></i>
                     </button>
                 </div>
             </div>
