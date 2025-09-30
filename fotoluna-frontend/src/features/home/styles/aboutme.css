@@ -1,0 +1,77 @@
+/* --- Hero container --- */
+.aboutme-hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    /* ocupa toda la pantalla */
+    background: url("img/boda.jpg") no-repeat center center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Overlay oscuro para mejor contraste --- */
+.aboutme-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(30, 15, 42, 0.55);
+    /* azul oscuro translúcido */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* --- Contenido (texto) --- */
+.aboutme-content {
+    max-width: 800px;
+    text-align: center;
+    color: #fff;
+    z-index: 2;
+}
+
+.text {
+    border-top: 3px solid transparent;
+    border-image: linear-gradient(to right, #ffffff, #4d125f);
+    border-image-slice: 1;
+    display: inline-block;
+    
+}
+
+/* --- Título --- */
+.aboutme-content h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    padding-bottom: 22px;
+}
+
+.aboutme-content h2 .highlight {
+    font-style: italic;
+    color: #dcc1de;
+    /* amarillo acento */
+}
+
+/* --- Párrafos --- */
+.aboutme-content p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #f1f5f9;
+    /* gris muy claro */
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .aboutme-content h2 {
+        font-size: 2.2rem;
+    }
+
+    .aboutme-content p {
+        font-size: 1rem;
+        text-align: center;
+    }
+}

@@ -6,6 +6,7 @@ const Home = () => {
     return (
         <HomeLayout>
             <HomeComponent />
+            <br /><br />
             <Comments />
         </HomeLayout>
     );

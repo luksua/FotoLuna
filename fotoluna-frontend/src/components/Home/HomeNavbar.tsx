@@ -52,7 +52,7 @@ const HomeNav: React.FC = () => {
                             </ul>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link" href="sobremi.html">Sobre Mí</a>
+                            <a className="nav-link" href="/sobreMi">Sobre Mí</a>
                         </li>
 
                         <li className="nav-item ms-3 d-none d-lg-block">
