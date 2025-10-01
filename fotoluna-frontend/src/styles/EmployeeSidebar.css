@@ -1,0 +1,162 @@
+.employee-sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: #ffffff;
+    border-right: #dddfdd 2px solid;
+    padding: 24px 0;
+    /* box-shadow: 2px 0 8px #e6e6e6; */
+    /* Elimina o comenta estas líneas:
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+}
+
+.EmployeeSidebar-header,
+.EmployeeSidebar-nav li {
+    font-family: 'quicksand';
+    font-size: 21px;
+    list-style: none;
+
+
+
+
+}
+
+.Employee-sidebar-icon-person {
+    font-size: 35px;
+    color: #ac98c4;
+    margin-bottom: 5px;
+    margin-right: 15px;
+
+
+}
+
+.EmployeeSidebar-header-row {
+    display: flex;
+    align-items: center;
+    padding-left: 27px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    
+}
+.EmployeeSidebar-header-row button{
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.Employee-sidebar-icon-notification {
+    font-size: 30px;
+    color: #dcabdf;
+    margin-left: auto;
+    /* Empuja el icono a la derecha dentro de un contenedor flex */
+    margin-right: 24px;
+    /* Espacio a la derecha */
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: color 0.3s;
+    /* <--- Agrega esta línea */
+
+}
+
+.Employee-sidebar-icon-notification:hover {
+    color: #dcabdf;
+    /* O el color que prefieras al pasar el mouse */
+    transform: scale(1.15);
+    /* Opcional: agranda el icono suavemente */
+}
+
+
+
+
+.EmployeeSidebar-header-citas a,
+.EmployeeSidebar-header-subir a,
+.EmployeeSidebar-header-admin a,
+.EmployeeSidebar-header-clientes a {
+    text-decoration: none;
+    padding: 8px 24px;
+    font-size: 18px;
+    color: black;
+    font-family: 'quicksand';
+
+
+
+
+
+}
+
+.EmployeeSidebar-header-citas,
+.EmployeeSidebar-header-subir,
+.EmployeeSidebar-header-admin,
+.EmployeeSidebar-header-clientes {
+    display: flex;
+    align-items: center;
+    padding-left: 15px;
+    margin-bottom: 16px;
+    margin-bottom: 30px;
+}
+
+.EmployeeSidebar-header-citas:hover,
+.EmployeeSidebar-header-subir:hover,
+.EmployeeSidebar-header-admin:hover,
+.EmployeeSidebar-header-clientes:hover {
+    /* O el color que prefieras al pasar el mouse */
+    transform: scale(1.15);
+
+}
+
+.Employee-sidebar-icon-calendar,
+.Employee-sidebar-icon-upload,
+.Employee-sidebar-icon-settings,
+.Employee-sidebar-icon-clients {
+    font-size: 25px;
+    margin-left: 20px;
+    color: #805fa6;
+
+
+
+}
+
+.EmployeeSidebar-header-nube {
+    font-family: 'quicksand';
+    font-size: 20px;
+    color: #dcabdf;
+    margin-left: 16px;
+    font-weight: 550;
+
+
+
+}
+
+.EmployeeSidebar-header-logout {
+    margin-top: auto;
+    padding: 24px 0 0 100px;
+    font-size: 1.9rem;
+    color: #dcabdf;
+    cursor: pointer;
+}
+
+.EmployeeSidebar-header-logout button {
+    border-radius: 20px;
+    padding: 4px 12px;
+    background-color: #dcabdf;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.EmployeeSidebar-header-logout:hover {
+    transform: scale(1.15);
+}
+
+hr {
+    border-top: 2px solid #b790b7;
+}
+
+

@@ -1,15 +1,9 @@
-import NavHome from './components/HomeNavbar'
+import { useRoutes } from "react-router-dom";
+import { routes } from "./routes/routes";
 
-function App() {
+const App = () => {
+  const element = useRoutes(routes);
+  return element;
+};
 
-  return (
-    <>
-      <div>
-        {/* Navbar con sidebar incluido */}
-        <NavHome />
-      </div>
-    </>
-  )
-}
-
-export default App
+export default App;
