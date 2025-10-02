@@ -8,57 +8,47 @@ const EmployeeSidebar: React.FC = () => {
             <div className="EmployeeSidebar-header-row">
                 <button type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     <i className="Employee-sidebar-icon-person bi bi-person-circle"></i>
-                    <span className="EmployeeSidebar-header">Empleado</span>
-
+                    <span className="EmployeeSidebar-header">Admin</span>
                 </button>
-
-
-
                 <i className="Employee-sidebar-icon-notification bi bi-bell-fill"></i>
             </div>
 
             <hr />
 
             <nav className="EmployeeSidebar-nav">
-
-                <div className="EmployeeSidebar-header-citas">
-                    <i className="Employee-sidebar-icon-calendar bi bi-calendar-event"></i>
-                    <li><a href="#">Citas</a>
-                    </li>
+                <div className="EmployeeSidebar-header-dashboard">
+                    <i className="Employee-sidebar-icon-dashboard bi bi-speedometer2"></i>
+                    <li><a href="#">Dashboard</a></li>
                 </div>
 
                 <hr />
-                <span className="EmployeeSidebar-header-nube">Nube</span>
+                <span className="EmployeeSidebar-header-usuarios">Usuarios</span>
 
-                <div className="EmployeeSidebar-header-subir">
-                    <i className="Employee-sidebar-icon-upload bi bi-upload"></i>
-                    <li><a href="#">Subir</a>
-
-                    </li>
+                <div className="EmployeeSidebar-header-registrar">
+                    <i className="Employee-sidebar-icon-register bi bi-journal-plus"></i>
+                    <li><a href="#">Registrar</a></li>
                 </div>
-                <div className="EmployeeSidebar-header-admin">
-                    <i className="Employee-sidebar-icon-settings bi bi-gear"></i>
-                    <li><a href="#">Administrar</a>
-
-                    </li>
-
+                <div className="EmployeeSidebar-header-administrar">
+                    <i className="Employee-sidebar-icon-settings bi bi-people"></i>
+                    <li><a href="#">Administrar</a></li>
+                </div>
+                <hr />
+                <span className="EmployeeSidebar-header-usuarios">Roles</span>
+                <div className="EmployeeSidebar-header-administrar">
+                    <i className="Employee-sidebar-icon-settings bi bi-person-gear"></i>
+                    <li><a href="#">Administrar</a></li>
                 </div>
                 <div className="EmployeeSidebar-header-clientes">
-                    <i className="Employee-sidebar-icon-clients bi bi-person-lines-fill"></i>
-                    <li><a href="#">Clientes</a>
-
-                    </li>
+                    <i className="Employee-sidebar-icon-clients bi bi-people-fill"></i>
+                    <li><a href="#">Clientes</a></li>
                 </div>
                 <hr />
-
             </nav>
             <div className="EmployeeSidebar-header-logout">
                 <button> <i className="bi bi-door-closed-fill"></i></button>
             </div>
         </aside>
-
     );
 };
-
 
 export default EmployeeSidebar;
