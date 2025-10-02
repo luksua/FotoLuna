@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 
@@ -10,15 +11,13 @@ const EmployeeNavbar: React.FC = () => {
                 <div className="d-flex align-items-center">
                     <form
                         className="d-flex my-2 my-lg-0 EmployeeNavbar-center-search"
-                        role="search"
-                    >
+                        role="search">
                         <input
                             className="EmployeeNavbar-search form-control me-2"
                             type="search"
                             placeholder="Search"
                             aria-label="Search"
-                            style={{ minWidth: 300, maxWidth: 500 }}
-                        />
+                            style={{ minWidth: 300, maxWidth: 500 }}/>
                         <button className="EmployeeNavbar-icon btn" type="submit">
                             <i className="bi bi-search"></i>
                         </button>
@@ -27,21 +26,21 @@ const EmployeeNavbar: React.FC = () => {
                     </form>
                     <ul className="navbar-nav mb-2 mb-lg-0 ms-3">
                         <li className="EmployeeNavbar-item-home nav-item">
-                            <a className="EmployeeNavbar-item-home-ini nav-link active" aria-current="page" href="#">
+                            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
                                 Inicio
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                 </div>
 
-                <a
+                <Link
                     className="navbar-brand d-flex flex-column align-items-center ms-3"
-                    href="#"
+                    to="#"
                     style={{ lineHeight: 0.3 }}
                 >
                     <img src={logoFotoluna} alt="Logo" className="EmployeeNavbar-logo mb-1" />
                     <span className="EmployeeNavbar-item-name-text">Fotoluna</span>
-                </a>
+                </Link>
             </div>
         </nav>
     );
