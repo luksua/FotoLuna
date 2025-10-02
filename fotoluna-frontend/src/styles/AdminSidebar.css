@@ -1,4 +1,4 @@
-.employee-sidebar {
+.Admin-sidebar {
     width: 260px;
     min-height: 100vh;
     background: #ffffff;
@@ -9,37 +9,35 @@
     justify-content: space-between;
 }
 
-.EmployeeSidebar-header,
-.EmployeeSidebar-nav li {
+.AdminSidebar-header,
+.AdminSidebar-nav li {
     font-family: 'quicksand';
     font-size: 21px;
     list-style: none;
-    
 }
 
-.Employee-sidebar-icon-person {
+.Admin-sidebar-icon-person {
     font-size: 35px;
     color: #ac98c4;
     margin-bottom: 5px;
     margin-right: 15px;
 }
 
-.EmployeeSidebar-header-row {
+.AdminSidebar-header-row {
     display: flex;
     align-items: center;
     padding-left: 27px;
     margin-bottom: 16px;
     cursor: pointer;
-
 }
 
-.EmployeeSidebar-header-row button {
+.AdminSidebar-header-row button {
     border: none;
     background: none;
     cursor: pointer;
 }
 
-.Employee-sidebar-icon-notification {
+.Admin-sidebar-icon-notification {
     font-size: 30px;
     color: #dcabdf;
     margin-left: auto;
@@ -49,16 +47,16 @@
     transition: color 0.3s;
 }
 
-.Employee-sidebar-icon-notification:hover {
+.Admin-sidebar-icon-notification:hover {
     color: #dcabdf;
     transform: scale(1.15);
 }
 
 
-.EmployeeSidebar-header-dashboard a,
-.EmployeeSidebar-header-registrar a,
-.EmployeeSidebar-header-administrar a,
-.EmployeeSidebar-header-clientes a {
+.AdminSidebar-header-dashboard a,
+.AdminSidebar-header-registrar a,
+.AdminSidebar-header-administrar a,
+.AdminSidebar-header-clientes a {
     text-decoration: none;
     padding: 8px 24px;
     font-size: 18px;
@@ -66,10 +64,10 @@
     font-family: 'quicksand';
 }
 
-.EmployeeSidebar-header-dashboard,
-.EmployeeSidebar-header-registrar,
-.EmployeeSidebar-header-administrar,
-.EmployeeSidebar-header-clientes {
+.AdminSidebar-header-dashboard,
+.AdminSidebar-header-registrar,
+.AdminSidebar-header-administrar,
+.AdminSidebar-header-clientes {
     display: flex;
     align-items: center;
     padding-left: 15px;
@@ -77,24 +75,24 @@
     margin-bottom: 30px;
 }
 
-.EmployeeSidebar-header-dashboard:hover,
-.EmployeeSidebar-header-registrar:hover,
-.EmployeeSidebar-header-administrar:hover,
-.EmployeeSidebar-header-clientes:hover {
+.AdminSidebar-header-dashboard:hover,
+.AdminSidebar-header-registrar:hover,
+.AdminSidebar-header-administrar:hover,
+.AdminSidebar-header-clientes:hover {
     transform: scale(1.15);
 }
 
-.Employee-sidebar-icon-dashboard,
-.Employee-sidebar-icon-register,
-.Employee-sidebar-icon-settings,
-.Employee-sidebar-icon-clients
+.Admin-sidebar-icon-dashboard,
+.Admin-sidebar-icon-register,
+.Admin-sidebar-icon-settings,
+.Admin-sidebar-icon-clients
 {
     font-size: 25px;
     margin-left: 20px;
     color: #805fa6;
 }
 
-.EmployeeSidebar-header-usuarios {
+.AdminSidebar-header-usuarios {
     font-family: 'quicksand';
     font-size: 20px;
     color: #dcabdf;
@@ -102,7 +100,7 @@
     font-weight: 550;
 }
 
-.EmployeeSidebar-header-logout {
+.AdminSidebar-header-logout {
     margin-top: auto;
     padding: 24px 0 0 100px;
     font-size: 1.9rem;
@@ -110,7 +108,7 @@
     cursor: pointer;
 }
 
-.EmployeeSidebar-header-logout button {
+.AdminSidebar-header-logout button {
     border-radius: 20px;
     padding: 4px 12px;
     background-color: #dcabdf;
@@ -119,7 +117,7 @@
     cursor: pointer;
 }
 
-.EmployeeSidebar-header-logout:hover {
+.AdminSidebar-header-logout:hover {
     transform: scale(1.15);
 }
 

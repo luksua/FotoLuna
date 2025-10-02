@@ -1,6 +1,6 @@
 import React from "react";
 import EmployeeNav from "../components/Admin&Employees/EmployeeNavbar";
-import EmployeeSidebar from "../components//Admin&Employees/EmployeeSidebar";
+import AdminSidebar from "../components/Admin&Employees/AdminSidebar";
 
 type Props = {
     children: React.ReactNode;
@@ -9,7 +9,7 @@ type Props = {
 const EmployeeLayout: React.FC<Props> = ({ children }) => {
     return (
         <div style={{ display: "flex", minHeight: "100vh" }}>
-            <EmployeeSidebar />
+            <AdminSidebar />
             <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 <EmployeeNav />
                 <main style={{ flex: 1, padding: "20px" }}>{children}</main>
