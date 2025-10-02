@@ -27,13 +27,13 @@ const resumen = [
 
 // Datos para el gráfico de barras
 const data = [
-    { name: "Enero", uv: 4000, pv: 2400, amt: 2400 },
-    { name: "Febrero", uv: 3000, pv: 1398, amt: 2210 },
-    { name: "Marzo", uv: 2000, pv: 9800, amt: 2290 },
-    { name: "Abril", uv: 2780, pv: 3908, amt: 2000 },
-    { name: "Mayo", uv: 1890, pv: 4800, amt: 2181 },
-    { name: "Junio", uv: 2390, pv: 8000, amt: 2500 },
-    { name: "Julio", uv: 3490, pv: 4300, amt: 2100 },
+    { name: "Enero", Gastos: 4000, Ganancias: 2400, amt: 2400 },
+    { name: "Febrero", Gastos: 3000, Ganancias: 1398, amt: 2210 },
+    { name: "Marzo", Gastos: 2000, Ganancias: 9800, amt: 2290 },
+    { name: "Abril", Gastos: 2780, Ganancias: 3908, amt: 2000 },
+    { name: "Mayo", Gastos: 1890, Ganancias: 4800, amt: 2181 },
+    { name: "Junio", Gastos: 2390, Ganancias: 8000, amt: 2500 },
+    { name: "Julio", Gastos: 3490, Ganancias: 4300, amt: 2100 },
 ];
 
 const Dashboard = () => {
@@ -59,7 +59,7 @@ const Dashboard = () => {
             {/* Gráfico de barras */}
             <Box sx={{ mt: 4, height: 350 }}>
                 <Typography variant="h6" gutterBottom>
-                    Ganancias y Gastos 
+                    Gastos y Ganancias 
                 </Typography>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -76,8 +76,8 @@ const Dashboard = () => {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="pv" fill="#8884d8" activeBar={<Rectangle fill="pink" stroke="blue" />} />
-                        <Bar dataKey="uv" fill="#82ca9d" activeBar={<Rectangle fill="gold" stroke="purple" />} />
+                        <Bar dataKey="Ganancias" fill="#8884d8" activeBar={<Rectangle fill="pink" stroke="blue" />} />
+                        <Bar dataKey="Gastos" fill="#82ca9d" activeBar={<Rectangle fill="gold" stroke="purple" />} />
                     </BarChart>
                 </ResponsiveContainer>
             </Box>
