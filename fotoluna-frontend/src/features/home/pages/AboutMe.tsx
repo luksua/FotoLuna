@@ -1,10 +1,10 @@
 import HomeLayout from "../../../layouts/HomeLayout";
-import AboutMePage from "../components/AboutMe";
+import AboutMeComponent from "../components/AboutMe";
 
 const AboutMe = () => {
     return (
         <HomeLayout>
-            <AboutMePage />
+            <AboutMeComponent />
         </HomeLayout>
     );
 };

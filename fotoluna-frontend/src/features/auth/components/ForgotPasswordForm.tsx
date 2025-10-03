@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import InputLabel from "./InputLabel";
-import Button from "./Button";
+import InputLabel from "../../../components/Home/InputLabel";
+import Button from "../../../components/Home/Button";
 // import "../styles/signUp.css";
 
 type FormValues = {

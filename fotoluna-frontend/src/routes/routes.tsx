@@ -3,6 +3,7 @@ import SignUp from "../features/auth/pages/SignUp";
 import Login from "../features/auth/pages/Login";
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import AboutMe from "../features/home/pages/AboutMe";
+import Contact from "../features/home/pages/Contact";
 
 export const routes = [
     {
@@ -21,5 +22,8 @@ export const routes = [
     }, {
         path: "/sobreMi",
         element: <AboutMe />
+    }, {
+        path: "/contacto",
+        element: <Contact />
     }
 ];

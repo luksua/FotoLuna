@@ -4,8 +4,8 @@ import type { SubmitHandler } from "react-hook-form";
 import { Cropper } from "react-cropper";
 import type { ReactCropperElement } from "react-cropper";
 import "../../../styles/cropper.css";
-import InputLabel from "./InputLabel";
-import Button from "./Button";
+import InputLabel from "../../../components/Home/InputLabel";
+import Button from "../../../components/Home/Button";
 import "../styles/signUp.css";
 
 type FormValues = {

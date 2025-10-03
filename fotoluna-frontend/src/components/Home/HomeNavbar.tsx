@@ -32,7 +32,7 @@ const HomeNav: React.FC = () => {
                 <div className="collapse navbar-collapse justify-content-end pe-3 " id="navbarContent">
                     <ul className="navbar-nav mobile-menu bg-custom-2 mb-2 mb-lg-0 d-flex align-items-center">
                         <li className="nav-item">
-                            <a className="nav-link" href="contacto.html">Contacto</a>
+                            <a className="nav-link" href="/contacto">Contacto</a>
                         </li>
                         <li className="nav-item dropdown">
                             <a className="nav-link portafolio-btn dropdown-toggle d-flex align-items-center justify-content-between"
