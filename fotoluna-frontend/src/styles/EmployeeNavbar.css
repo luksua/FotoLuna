@@ -42,14 +42,25 @@
     height: 40px;
     width: 40px;
     object-fit: contain;
-    margin-left: 0; /* Cambia esto a 0 */
+    margin-left: 0;
+    /* Cambia esto a 0 */
     border-radius: 8px;
-    
+
 }
-.EmployeeNavbar-item-name-text{
+
+.EmployeeNavbar-item-name-text {
     font-family: "Great Vibes";
     font-size: 21px;
 }
-.EmployeeNavbar-item-home-ini{
+
+.EmployeeNavbar-item-home-ini {
     font-size: 20px;
+    color: black;
+    cursor: pointer;
+}
+
+.EmployeeNavbar-item-home-ini li {
+    color: black;
+
+    text-decoration: underline;
 }

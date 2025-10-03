@@ -1,14 +1,13 @@
 import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
 
-
-const EmployeeHome = () => {
+const EmployeeAdmin = () => {
     return (
         <EmployeeLayout>
             <h1>Bienvenido a FotoLuna 📸</h1>
-           
+            <p>¡Hola, empleado! Aquí puedes gestionar la administración.</p>
 
         </EmployeeLayout>
     );
 };
 
-export default EmployeeHome;
+export default EmployeeAdmin;

@@ -1,5 +1,6 @@
 import React from "react";
 import "../../styles/EmployeeSidebar.css";
+import { Link } from "react-router-dom";
 
 const EmployeeSidebar: React.FC = () => {
     return (
@@ -13,17 +14,22 @@ const EmployeeSidebar: React.FC = () => {
                 </button>
 
 
+                <Link to="/employee/notifications" className="notification-link">
+                    <i className="Employee-sidebar-icon-notification bi bi-bell-fill"></i>
 
-                <i className="Employee-sidebar-icon-notification bi bi-bell-fill"></i>
+                </Link>
+
             </div>
 
             <hr />
 
             <nav className="EmployeeSidebar-nav">
 
+
                 <div className="EmployeeSidebar-header-citas">
                     <i className="Employee-sidebar-icon-calendar bi bi-calendar-event"></i>
-                    <li><a href="#">Citas</a>
+                    <li>
+                        <Link to="/employee/appointments">Citas</Link>
                     </li>
                 </div>
 
@@ -32,21 +38,21 @@ const EmployeeSidebar: React.FC = () => {
 
                 <div className="EmployeeSidebar-header-subir">
                     <i className="Employee-sidebar-icon-upload bi bi-upload"></i>
-                    <li><a href="#">Subir</a>
-
+                    <li>
+                        <Link to="/employee/upload">Subir</Link>
                     </li>
                 </div>
                 <div className="EmployeeSidebar-header-admin">
                     <i className="Employee-sidebar-icon-settings bi bi-gear"></i>
-                    <li><a href="#">Administrar</a>
-
+                    <li>
+                        <Link to="/employee/admin">Administrar</Link>
                     </li>
 
                 </div>
                 <div className="EmployeeSidebar-header-clientes">
                     <i className="Employee-sidebar-icon-clients bi bi-person-lines-fill"></i>
-                    <li><a href="#">Clientes</a>
-
+                    <li>
+                        <Link to="/employee/customers">Clientes</Link>
                     </li>
                 </div>
                 <hr />

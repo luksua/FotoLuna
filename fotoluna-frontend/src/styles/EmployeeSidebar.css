@@ -4,13 +4,6 @@
     background: #ffffff;
     border-right: #dddfdd 2px solid;
     padding: 24px 0;
-    /* box-shadow: 2px 0 8px #e6e6e6; */
-    /* Elimina o comenta estas líneas:
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -43,15 +36,17 @@
     padding-left: 27px;
     margin-bottom: 16px;
     cursor: pointer;
-    
-}
-.EmployeeSidebar-header-row button{
-    border: none;
-    background: none;
-    cursor: pointer;
+
 }
 
-.Employee-sidebar-icon-notification {
+.EmployeeSidebar-header-row button {
+    border: none;
+    background: none;
+}
+
+
+
+.notification-link {
     font-size: 30px;
     color: #dcabdf;
     margin-left: auto;
@@ -60,18 +55,14 @@
     /* Espacio a la derecha */
     margin-bottom: 0;
     cursor: pointer;
-    transition: color 0.3s;
-    /* <--- Agrega esta línea */
-
+    transition: color 0.3s, transform 0.2s;
 }
 
-.Employee-sidebar-icon-notification:hover {
-    color: #dcabdf;
-    /* O el color que prefieras al pasar el mouse */
+.notification-link:hover .Employee-sidebar-icon-notification {
+   
     transform: scale(1.15);
-    /* Opcional: agranda el icono suavemente */
+    
 }
-
 
 
 
@@ -158,5 +149,3 @@
 hr {
     border-top: 2px solid #b790b7;
 }
-
-

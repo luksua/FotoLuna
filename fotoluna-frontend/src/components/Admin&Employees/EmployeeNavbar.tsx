@@ -1,6 +1,7 @@
 import React from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
+import { Link } from "react-router-dom";
 
 const EmployeeNavbar: React.FC = () => {
     return (
@@ -23,12 +24,14 @@ const EmployeeNavbar: React.FC = () => {
                             <i className="bi bi-search"></i>
                         </button>
 
-                        
+
                     </form>
                     <ul className="navbar-nav mb-2 mb-lg-0 ms-3">
                         <li className="EmployeeNavbar-item-home nav-item">
                             <a className="EmployeeNavbar-item-home-ini nav-link active" aria-current="page" href="#">
-                                Inicio
+                                <li>
+                                    <Link to="/employee/HomeEmployee">Inicio</Link>
+                                </li>
                             </a>
                         </li>
                     </ul>
