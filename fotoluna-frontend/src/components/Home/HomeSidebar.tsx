@@ -21,7 +21,7 @@ const HomeSidebar: React.FC = () => {
             <div className="offcanvas-body bg-custom-2 d-flex flex-column justify-content-between">
 
                 {/* -------- Navbar SIN inicio de sesion -------- */}
-                <div className="text-center">
+                {/* <div className="text-center">
                     <div className="user-icon mb-4">
                         <i className="bi bi-person-circle"></i>
                     </div>
@@ -40,20 +40,20 @@ const HomeSidebar: React.FC = () => {
                 <div className="text-center mt-4 location-text">
                     <i className="bi bi-geo-alt-fill me-2"></i>
                     Carrera 9A #37-20 Gaitán, Ibagué
-                </div>
+                </div> */}
 
                 {/* -------- Navbar CON inicio de sesion -------- */}
-                {/* <div className="text-center">
+                <div className="text-center">
                     <div className="user-icon d-flex align-items-center justify-content-center mb-4 gap-4">
                         <i className="bi bi-person-circle fs-1"></i>
                         <HomeButton
                             value="Mi Cuenta"
-                            type="submit"
+                            to=""
                         />
                     </div>
-                    <a href="{{ route('appointment.index') }}" className="btn btn-perfil2 w-100 mb-3">Citas</a>
-                    <a href="" className="btn btn-perfil2 w-100 mb-3">Mis Fotos</a>
-                    <a href="" className="btn btn-perfil2 w-100 mb-3">Notificaciones</a>
+                    <a href="/citas" className="btn btn-perfil2 w-100 mb-3">Citas</a>
+                    <a href="/fotos" className="btn btn-perfil2 w-100 mb-3">Mis Fotos</a>
+                    <a href="/notificaciones" className="btn btn-perfil2 w-100 mb-3">Notificaciones</a>
                 </div>
 
                 <div className="text-center mt-4 location-text">
@@ -64,7 +64,7 @@ const HomeSidebar: React.FC = () => {
                         <i className="bi bi-arrow-left"></i>
                         Cerrar Sesión
                     </HomeButton>
-                </div> */}
+                </div>
             </div>
         </div>
     );

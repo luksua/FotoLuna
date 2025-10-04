@@ -1,8 +1,7 @@
 .btn-perfil {
-    z-index: 9999;
+    z-index: 1;
     position: relative;
 }
-
 
 .form-section {
     width: 100%;

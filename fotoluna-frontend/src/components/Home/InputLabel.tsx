@@ -21,7 +21,7 @@ const InputLabel: React.FC<Props> = ({
 }) => {
     return (
         <div className="row mb-3 align-items-center">
-            <div className="col-12 col-md-4 texto2">
+            <div className="col-12 col-md-4">
                 <label htmlFor={id} className="col-form-label">
                     {label}
                 </label>

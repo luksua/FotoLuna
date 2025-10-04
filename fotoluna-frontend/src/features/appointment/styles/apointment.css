@@ -1,0 +1,14 @@
+.appointment .bg-custom-2 {
+    font-size: 60px;
+    padding-bottom: 30px;
+}
+
+.appointment-section {
+    width: 100%;
+    height: auto;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 80px;
+    box-sizing: border-box;
+}

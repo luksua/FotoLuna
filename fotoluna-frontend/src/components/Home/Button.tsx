@@ -6,14 +6,15 @@ type Props = {
     children?: ReactNode;
     onClick?: () => void;
     to?: string;
+    className?: string;
 }
 
-const Button = ({ value, children, onClick, to }: Props) => {
+const Button = ({ value, children, onClick, to, className }: Props) => {
     if (to) {
         return (
             <Link
                 to={to}
-                className="btn btn-perfil w-100"
+                className={className}
                 onClick={onClick}
             >
                 {children ?? value}
@@ -24,7 +25,7 @@ const Button = ({ value, children, onClick, to }: Props) => {
         <button
             type="submit"
             onClick={onClick}
-            className="btn custom-upload-btn"
+            className={`btn custom-upload-btn ${className ?? ""}`}
         >
             {children ?? value}
         </button>

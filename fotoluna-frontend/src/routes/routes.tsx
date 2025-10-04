@@ -4,6 +4,8 @@ import Login from "../features/auth/pages/Login";
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import AboutMe from "../features/home/pages/AboutMe";
 import Contact from "../features/home/pages/Contact";
+import Appointment from "../features/appointment/pages/Appointment";
+import AppointmentForm from "../features/appointment/pages/AppointmentForm";
 
 export const routes = [
     {
@@ -25,5 +27,11 @@ export const routes = [
     }, {
         path: "/contacto",
         element: <Contact />
+    }, {
+        path: "/citas",
+        element: <Appointment />
+    }, {
+        path: "/nuevaCita",
+        element: <AppointmentForm />
     }
 ];
