@@ -4,7 +4,7 @@
     width: 100%;
     height: 100vh;
     /* ocupa toda la pantalla */
-    background: url("img/boda.jpg") no-repeat center center/cover;
+    background: url("img/sobremi.jpg") no-repeat center center/cover;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -14,7 +14,7 @@
 .aboutme-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(30, 15, 42, 0.55);
+    background: rgba(30, 15, 42, 0.75);
     /* azul oscuro translúcido */
     display: flex;
     align-items: center;

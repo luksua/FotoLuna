@@ -43,7 +43,7 @@ const HomeNav: React.FC = () => {
                             <ul className="dropdown-menu dropdown-menu-end">
                                 <li><a className="dropdown-item" href="cumpleaños.html">Maternidad</a></li>
                                 <li><a className="dropdown-item" href="cumpleaños.html">Cumpleaños</a></li>
-                                <li><a className="dropdown-item" href="quinceaños.html">Quince años</a></li>
+                                <li><a className="dropdown-item" href="/quince">Quince años</a></li>
                                 <li><a className="dropdown-item" href="bodas.html">Bodas</a></li>
                                 <li><a className="dropdown-item" href="bautizo.html">Bautizos</a></li>
                                 <li><a className="dropdown-item" href="familia.html">Familia</a></li>
