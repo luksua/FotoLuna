@@ -64,13 +64,13 @@ const Home = () => {
                 <div className="slider-buttons position-absolute top-50 start-0 end-0 d-flex justify-content-between px-3">
                     <button
                         onClick={handlePrev}
-                        className="btn btn-dark btn-lg rounded-circle"
+                        className="btn btn-lg rounded-circle"
                     >
                         <i className="bi bi-caret-left-fill"></i>
                     </button>
                     <button
                         onClick={handleNext}
-                        className="btn btn-dark btn-lg rounded-circle"
+                        className="btn btn-lg rounded-circle"
                     >
                         <i className="bi bi-caret-right-fill"></i>
                     </button>

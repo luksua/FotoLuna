@@ -116,6 +116,7 @@ const Contact = () => {
                                 render={({ field }) => (
                                     <Select
                                         id="select"
+                                        option="Seleccione una opcion"
                                         value={field.value}
                                         label="¿Qué estás buscando?"
                                         onChange={field.onChange}

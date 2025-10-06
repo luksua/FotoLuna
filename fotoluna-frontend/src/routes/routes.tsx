@@ -6,6 +6,7 @@ import AboutMe from "../features/home/pages/AboutMe";
 import Contact from "../features/home/pages/Contact";
 import Appointment from "../features/appointment/pages/Appointment";
 import AppointmentForm from "../features/appointment/pages/AppointmentForm";
+import Notification from "../features/notification/pages/NotificationCustomer";
 
 export const routes = [
     {
@@ -33,5 +34,8 @@ export const routes = [
     }, {
         path: "/nuevaCita",
         element: <AppointmentForm />
+    }, {
+        path: "/notificaciones",
+        element: <Notification />
     }
 ];

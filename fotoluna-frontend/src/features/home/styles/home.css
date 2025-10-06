@@ -2,7 +2,8 @@
 .slider-container {
     overflow: hidden;
     position: relative;
-    margin-top: -40px;
+    margin-top: 0;
+    /* Changed from -40px to 0 */
 }
 
 .slider-track {
@@ -16,15 +17,16 @@
     justify-content: center;
     align-items: center;
     transition: flex 0.3s ease;
-    flex: 0 0 calc(100% / 3); /* 3 visibles */
+    flex: 0 0 calc(100% / 3);
+    /* 3 visibles */
 }
 
-  /* Tamaño por defecto: pequeño */
+/* Tamaño por defecto: pequeño */
 .slider-item.small {
     flex: 0 0 25%;
 }
 
-  /* Tamaño grande: el del medio */
+/* Tamaño grande: el del medio */
 .slider-item.large {
     flex: 0 0 50%;
 }
@@ -35,68 +37,149 @@
     object-fit: cover;
     border-radius: 10px;
     transition: all 0.3s ease;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    box-shadow: -1px -1px 6px 0 rgb(199, 102, 221), 4px 4px 16px 2px rgb(92, 162, 235);
 }
 
 .slider-buttons {
     position: absolute;
-    top: 50%;
     transform: translateY(-50%);
     width: 100%;
     display: flex;
     justify-content: space-between;
-    padding: 0 10px;
+    padding: 0 30px;
+    /* Added padding for button spacing */
 }
 
 .slider-buttons button {
-    background-color: rgba(0,0,0,0.5);
-    border: none;
-    color: white;
-    padding: 10px;
+    width: 50px;
+    /* Fixed width */
+    height: 50px;
+    /* Fixed height */
+    background-color: rgba(94, 29, 111, 0.1);
+    /* Light purple background */
+    color: rgb(243, 215, 255);
     border-radius: 50%;
+    font-size: 1.5rem;
+    /* Larger icons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .slider-buttons button:hover {
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(94, 29, 111, 0.2);
+    transform: scale(1.1);
+    /* Slight grow effect on hover */
+    box-shadow: 0 0 10px rgba(94, 29, 111, 0.2);
+    /* Subtle shadow on hover */
 }
 
-  /* Responsividad para móviles */
+/* Responsividad para móviles */
 @media (max-width: 768px) {
+    .slider-buttons button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
     .slider-item.small {
         flex: 0 0 40%;
     }
-    
+
     .slider-item.large {
         flex: 0 0 60%;
     }
-    
+
+    .slider-item.small {
+        transform: scale(0.9);
+    }
+
+    .slider-item.large {
+        transform: scale(1);
+    }
+
     .slider-track {
+        /* Less negative margin for mobile */
         gap: 10px;
     }
-    
-    
-    .slider-buttons {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
+}
+
+/* Adjust image sizes for medium-large screens */
+
+
+/* Further reduce size for larger screens if needed */
+@media (min-width: 769px) {
+    .container-fluid.my-5 {
+        margin: 0 !important;
+        /* Changed to remove all margins */
+    }
+
+    .slider-container {
+        margin: 0 auto;
+        /* Remove top margin, keep horizontal centering */
+        max-width: 1200px;
+    }
+
+    .slider-item {
+        flex: 0 0 33.333%;
+        /* Limit maximum width */
+        padding: 0 20px;
+    }
+
+    .slider-item.small {
+        transform: scale(0.9);
+    }
+
+    .slider-item.large {
+        transform: scale(0.8);
+    }
+
+    .slider-container {
+        margin-top: 0;
+        max-width: 1200px;
+        /* Limit container width */
+        margin: 0 auto;
+        /* Center container */
+    }
+
+    .slider-track {
+        margin-top: -40px;
+        /* Medium negative margin for tablets */
+    }
+}
+
+@media (min-width: 1000px) {
+    .slider-container {
+        max-width: 1400px; /* Increased from 1200px */
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .slider-item {
+        flex: 0 0 33.333%;
+        padding: 0 25px; /* Increased padding for more space between images */
+    }
+
+    .slider-track {
+        margin-top: -150px;
         width: 100%;
         display: flex;
         justify-content: space-between;
-        padding: 0 1rem;
-        z-index: 5;
-        width: 100%;
     }
-    
-    .slider-buttons button {
-        background-color: rgba(0,0,0,0.5);
-        border: none;
-        color: white;
-        padding: 10px;
-        border-radius: 50%;
-        cursor: pointer;
+
+    /* Adjust scales for better proportions */
+    .slider-item.small {
+        transform: scale(0.8);
     }
-    
-    .slider-buttons button:hover {
-        background-color: rgba(0,0,0,0.7);
+
+    .slider-item.large {
+        transform: scale(0.6);
+    }
+
+    /* Adjust button positions for wider container */
+    .slider-buttons {
+        padding: 0 80px; /* Increased padding for wider spacing */
     }
 }

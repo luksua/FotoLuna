@@ -1,5 +1,6 @@
 interface SelectProps {
     id: string;
+    option: string;
     label: string;
     value: string;
     options: { value: string; label: string }[];
@@ -7,26 +8,31 @@ interface SelectProps {
     onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void;
     selectRef?: React.Ref<HTMLSelectElement>;
     error?: string;
+    labelClassName?: string;
+    selectClassName?: string;
 }
 
 const SelectLabel: React.FC<SelectProps> = ({
     id,
     label,
+    option,
     value,
     options,
     onChange,
     onBlur,
     selectRef,
     error,
+    labelClassName = "",
+    selectClassName = "",
 }) => {
     return (
         <div className="row mb-3 align-items-center">
-            <div className="col-12 col-md-4">
-                <label htmlFor={id} className="col-form-label">
+            <div className={labelClassName}>
+                <label htmlFor={id}>
                     {label}
                 </label>
             </div>
-            <div className="col-12 col-md-8">
+            <div className={selectClassName}>
                 <select
                     id={id}
                     name={id}
@@ -36,7 +42,7 @@ const SelectLabel: React.FC<SelectProps> = ({
                     ref={selectRef}
                     className={`form-select ${error ? "is-invalid" : ""}`}
                 >
-                    <option value="">Seleccione una opción</option>
+                    <option value="">{option}</option>
                     {options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                             {opt.label}

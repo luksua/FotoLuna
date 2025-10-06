@@ -68,31 +68,31 @@
 }
 
 .form-control {
-    background-color: #D0C4DF;
-    border: 1px solid #D0C4DF;
-    color: white;
+    background-color: #ffffff;
+    border: 3px solid #D0C4DF;
+    color: rgb(0, 0, 0);
 }
 
 .form-control:focus {
-    background-color: #D0C4DF;
+    background-color: #ffffff;
     /* Fondo al hacer clic */
     border-color: #D0C4DF;
     /* Borde al hacer clic */
     box-shadow: 0 0 0 0.2rem #DDDFDF;
-    color: white;
+    color: rgb(0, 0, 0);
 }
 
 .form-select {
-    background-color: #D0C4DF;
-    border: 1px solid #D0C4DF;
-    color: white;
+    background-color: #ffffff;
+    border: 3px solid #D0C4DF;
+    color: rgb(0, 0, 0);
 }
 
 .form-select:focus {
-    background-color: #D0C4DF;
-    border: 1px solid #D0C4DF;
+    background-color: #ffffff;
+    border: 1px solid #7c7288;
     box-shadow: 0 0 0 0.2rem #DDDFDF;
-    color: white;
+    color: rgb(0, 0, 0);
 }
 
 input.form-control,
