@@ -1,49 +1,93 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
+import { Link } from "react-router-dom";
+import EmployeeNotifications from "../../features/HomeEmployee/pages/notiprueba";
 
-const EmployeeNavbar: React.FC = () => {
+interface EmployeeNavbarProps {
+    userName?: string;
+    notificationCount?: number;
+}
+
+const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
+    userName = "Amalia",
+    notificationCount = 3
+}) => {
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Lógica de búsqueda aquí
+        console.log("Búsqueda realizada");
+    };
+
+    const handleNotificationClick = () => {
+        alert(`Tienes ${notificationCount} notificaciones nuevas`);
+    };
+    const [showNotifications, setShowNotifications] = useState(false);
+
+
     return (
-        <nav className="EmployeeNavbar navbar navbar-expand-lg bg-body-tertiary">
-            <div className="container-fluid d-flex align-items-center justify-content-between">
+        <nav className="EmployeeNavbar">
+            <div className="navbar-container">
+                {/* Logo y marca */}
+                <div className="navbar-brand">
+                    <div className="logo-icon">
+                        <img src={logoFotoluna} alt="Logo" className="EmployeeNavbar-logo mb-1" />
 
-                <div className="d-flex align-items-center">
-                    <form
-                        className="d-flex my-2 my-lg-0 EmployeeNavbar-center-search"
-                        role="search">
-                        <input
-                            className="EmployeeNavbar-search form-control me-2"
-                            type="search"
-                            placeholder="Search"
-                            aria-label="Search"
-                            style={{ minWidth: 300, maxWidth: 500 }}/>
-                        <button className="EmployeeNavbar-icon btn" type="submit">
-                            <i className="bi bi-search"></i>
-                        </button>
-
-                        
-                    </form>
-                    <ul className="navbar-nav mb-2 mb-lg-0 ms-3">
-                        <li className="EmployeeNavbar-item-home nav-item">
-                            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-                                Inicio
-                            </Link>
-                        </li>
-                    </ul>
+                    </div>
+                    <h1 className="logo-text">FotoLuna</h1>
                 </div>
 
-                <Link
-                    className="navbar-brand d-flex flex-column align-items-center ms-3"
-                    to="#"
-                    style={{ lineHeight: 0.3 }}
-                >
-                    <img src={logoFotoluna} alt="Logo" className="EmployeeNavbar-logo mb-1" />
-                    <span className="EmployeeNavbar-item-name-text">Fotoluna</span>
-                </Link>
+                {/* Barra de búsqueda */}
+                <div className="navbar-search">
+                    <form className="search-form" onSubmit={handleSearchSubmit}>
+                        <input
+                            type="text"
+                            className="search-input"
+                            placeholder="Buscar..."
+                            aria-label="Buscar"
+                        />
+                        <button type="submit" className="search-button">
+                            <i className="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                {/* Navegación y acciones */}
+                <div className="navbar-actions ">
+                    {/* <Link to="/employee/HomeEmployee" className="nav-link">
+                        <i className="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </Link> */}
+
+                    <button
+                        className="notification-btn"
+                        onClick={() => setShowNotifications(true)}
+                        aria-label="Notificaciones"
+                    >
+                        <i className="bi bi-bell-fill"></i>
+                        {notificationCount > 0 && (
+                            <span className="notification-badge">{notificationCount}</span>
+                        )}
+                    </button>
+
+                    <button className="settings-btn" aria-label="Configuración">
+                        <i className="bi bi-gear-fill"></i>
+                    </button>
+
+                    <div className="user-profile">
+                        <div className="user-avatar">
+                            {userName.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="user-name">{userName}</span>
+                    </div>
+                </div>
             </div>
+            {showNotifications && (
+                <EmployeeNotifications onClose={() => setShowNotifications(false)} />
+            )}
         </nav>
     );
 };
 
 export default EmployeeNavbar;
+

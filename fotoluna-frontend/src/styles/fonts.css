@@ -9,37 +9,31 @@ h1 {
 }
 
 .bg-custom-1 {
-    background-color: white;
+
     font-family: 'Dancing Script';
-    border: 2px black solid;
 }
 .bg-custom-2 {
-    background-color: white;
     font-family: 'Raleway';
 }
 .bg-custom-3 {
-    background-color: none;
     font-family: 'Quicksand';
 }
 .bg-custom-4  {
-    background-color: white;
     font-family: 'Poppins', sans-serif;
 }
 .bg-custom-5{
-    background-color: white;
     font-family: 'Cinzel';
 }
 .bg-custom-6{
-    background-color: white;
     font-family: 'Great vibes';
     border: none;
 }
 .bg-custom-7{
-    background-color: #DCABDF;
+  
     font-family: 'Futura';
 }
 .bg-custom-8{
-    background-color: #fafafa;
+
     font-family: 'Barlow';
 }
 .bg-custom-9{

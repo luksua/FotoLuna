@@ -1,5 +1,5 @@
 import React from "react";
-import AdminSidebar from "../components/Admin&Employees/AdminSidebar";
+import EmployeeSidebar from "../components/Admin&Employees/EmployeeSidebar";
 import EmployeeNavbar from "../components/Admin&Employees/EmployeeNavbar";
 import "../styles/ScrollAdmin.css";
 
@@ -10,7 +10,7 @@ type Props = {
 const HomeLayout: React.FC<Props> = ({ children }) => {
     return (
         <div className="layout-root">
-            <AdminSidebar />
+            <EmployeeSidebar />
             <div className="main-content">
                 <EmployeeNavbar />
                 <main className="scrollspy-example-2">
