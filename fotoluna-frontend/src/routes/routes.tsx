@@ -1,15 +1,17 @@
-import { Routes, Route } from "react-router-dom";
+
 import HomeAdmin from "../features/HomeEmployee/pages/HomeAdmin";
 import Dashboard from "../features/HomeEmployee/pages/Dashboard";
-import HomeAdminLayout from "../layouts/HomeAdminLayout";
+import RegisterUsers from "../features/HomeEmployee/pages/RegisterUsers";
 
-const AppRoutes = () => (
-    <Routes>
-        <Route path="/" element={<HomeAdminLayout />}>
-            <Route index element={<HomeAdmin />} />
-            <Route path="dashboard" element={<Dashboard />} />
-        </Route>
-    </Routes>
-);
+export const routes = [
+    {
+        path: "/",
+        element: <HomeAdmin />
+    },
+    { path: "dashboard", element: <Dashboard/> },
+    { path: "RegisterUsers", element: <RegisterUsers/> },
 
-export default AppRoutes;
+
+
+];
+    

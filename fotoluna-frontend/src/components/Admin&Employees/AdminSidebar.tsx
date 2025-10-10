@@ -19,32 +19,38 @@ const AdminSidebar: React.FC = () => {
             <nav className="AdminSidebar-nav">
                 <div
                     className="AdminSidebar-header-dashboard"
-                    onClick={() => navigate("/dashboard")}
-                    style={{ cursor: "pointer" }}
-                >
+                    onClick={() => navigate("/dashboard")}>
                     <i className="Admin-sidebar-icon-dashboard bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </div>
+
                 <span className="AdminSidebar-header-usuarios" >Usuarios</span>
-                <div className="AdminSidebar-header-registrar">
+                <div className="AdminSidebar-header-registrar"
+                    onClick={() => navigate("/RegisterUsers")}>
                     <i className="Admin-sidebar-icon-register bi bi-journal-plus"></i>
                     <span>Registrar</span>
                 </div>
+
                 <div className="AdminSidebar-header-administrar">
                     <i className="Admin-sidebar-icon-settings bi bi-people"></i>
                     <span>Administrar</span>
                 </div>
+
                 <hr />
+
                 <span className="AdminSidebar-header-usuarios">Roles</span>
                 <div className="AdminSidebar-header-administrar">
                     <i className="Admin-sidebar-icon-settings bi bi-person-gear"></i>
                     <span>Administrar</span>
                 </div>
+
                 <div className="AdminSidebar-header-clientes">
                     <i className="Admin-sidebar-icon-clients bi bi-people-fill"></i>
                     <span>Clientes</span>
                 </div>
+
                 <hr />
+
             </nav>
             <div className="AdminSidebar-header-logout">
                 <button>
