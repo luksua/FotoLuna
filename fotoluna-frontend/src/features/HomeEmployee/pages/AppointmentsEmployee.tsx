@@ -30,6 +30,8 @@ const EmployeeAppointments = () => {
     const [citas, setCitas] = useState<Cita[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+    const [showModal, setShowModal] = useState(false);
+    const [errorModal, setErrorModal] = useState<string[]>([]);
 
     const validate = () => {
         const newErrors: { [key: string]: string } = {};
@@ -72,8 +74,11 @@ const EmployeeAppointments = () => {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             setSuccess("");
+            // Muestra los errores en el modal
+            setErrorModal(Object.values(validationErrors));
             return;
         }
+
         const cita: Cita = {
             date: new Date(form.date),
             startTime: form.startTime,
@@ -84,9 +89,14 @@ const EmployeeAppointments = () => {
         };
         setCitas([...citas, cita]);
         setSuccess("Cita creada con éxito");
+        setTimeout(() => {
+            setShowModal(false);
+            setSuccess("");
+        }, 1000);
         setForm(initialForm);
         setSelectedDate(cita.date);
         setSelectedCita(cita);
+        setShowModal(false); // <-- CIERRA EL MODAL AL GUARDAR
     };
 
     // Cuando seleccionas un día en el calendario
@@ -117,15 +127,8 @@ const EmployeeAppointments = () => {
                 return (
                     <div
                         style={{
-                            background: bg,
-                            borderRadius: "50%",
-                            width: 28,
-                            height: 28,
-                            margin: "0 auto",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#222",
+                            backgroundColor: bg,
+
                         }}
                     >
                         {date.getDate()}
@@ -138,6 +141,8 @@ const EmployeeAppointments = () => {
 
     return (
         <EmployeeLayout>
+            <h3 className="bg-custom-3">Citas</h3>
+            <hr />
             <div className="appointments-container" style={{ display: "flex", gap: 24 }}>
                 <div className="calendar-section">
                     <Calendar
@@ -147,79 +152,29 @@ const EmployeeAppointments = () => {
 
                         locale="es-ES"
                     />
-                    <form className="appointment-form" onSubmit={handleSubmit} style={{ marginTop: 24 }}>
-                        <h2>Registrar nueva cita</h2>
-                        <div>
-                            <label>Fecha:</label>
-                            <input
-                                type="date"
-                                name="date"
-                                value={form.date}
-                                onChange={handleChange}
-                            />
-                            {errors.date && <span className="error">{errors.date}</span>}
-                        </div>
-                        <div>
-                            <label>Hora de inicio:</label>
-                            <input
-                                type="time"
-                                name="startTime"
-                                value={form.startTime}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label>Hora de fin:</label>
-                            <input
-                                type="time"
-                                name="endTime"
-                                value={form.endTime}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label>Cliente:</label>
-                            <input
-                                type="text"
-                                name="client"
-                                value={form.client}
-                                onChange={handleChange}
-                                placeholder="Nombre del cliente"
-                            />
-                            {errors.client && <span className="error">{errors.client}</span>}
-                        </div>
-                        <div>
-                            <label>Estado:</label>
-                            <select name="status" value={form.status} onChange={handleChange}>
-                                <option value="">Selecciona</option>
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="Confirmada">Confirmada</option>
-                                <option value="Cancelada">Cancelada</option>
-                            </select>
-                            {errors.status && <span className="error">{errors.status}</span>}
-                        </div>
-                        <div>
-                            <label>Ubicación:</label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={form.location}
-                                onChange={handleChange}
-                                placeholder="Dirección"
-                            />
-                            {errors.location && <span className="error">{errors.location}</span>}
-                        </div>
-                        <button type="submit" className="accept-btn">Aceptar</button>
-                        <button
-                            type="button"
-                            className="reject-btn"
-                            onClick={() => setForm(initialForm)}
-                        >
-                            Rechazar
-                        </button>
-                        {success && <div className="success">{success}</div>}
-                    </form>
+
+
                 </div>
+
+                {errorModal.length > 0 && (
+                    <div className="modal-error-backdrop" onClick={() => setErrorModal([])}>
+                        <div className="modal-error" onClick={e => e.stopPropagation()}>
+                            <h3>Errores de validación</h3>
+                            <ul>
+                                {errorModal.map((err, i) => (
+                                    <li key={i}>{err}</li>
+                                ))}
+                            </ul>
+                            <button
+                                className="accept-btn"
+                                onClick={() => setErrorModal([])}
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <div className="appointment-details">
                     <h3>DATOS DE CITA</h3>
                     {selectedCita ? (
@@ -286,14 +241,117 @@ const EmployeeAppointments = () => {
                                     )
                                     .map((c, i) => (
                                         <li key={i}>
-                                            {c.startTime} - {c.endTime} | {c.client} | {c.status}
+                                            {c.startTime} - {c.endTime} | {c.client} | {c.status} | {c.location}
                                         </li>
                                     ))}
                             </ul>
                         </div>
                     )}
+                    <button
+                        className="open-modal-btn"
+                        onClick={() => setShowModal(true)}
+                    >
+                        Registrar nueva cita
+                    </button>
                 </div>
             </div>
+
+            {showModal && (
+                <div className="modal-cita-backdrop" onClick={() => setShowModal(false)}>
+                    <div
+                        className="modal-cita"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h2>Registrar nueva cita</h2>
+
+                        <form className="row g-3 needs-validation appointment-form" onSubmit={handleSubmit}>
+                            <div className="col-mb-4">
+
+                                <label htmlFor="validationCustom01" className="form-label col-lg-3">Cliente: </label>
+                                <input type="text"
+                                    className="col-lg-9 form-control-s"
+                                    placeholder="Nombre del cliente"
+                                    name="client"
+                                    value={form.client}
+                                    onChange={handleChange} required
+                                />
+
+                            </div>
+
+                            <div className="col-mb-4">
+                                <label htmlFor="validationCustom01" className="form-label col-lg-3">Fecha: </label>
+                                <input
+                                    className="col-lg-9 form-control-s"
+                                    type="date"
+                                    name="date"
+                                    value={form.date}
+                                    onChange={handleChange} required />
+
+                            </div>
+
+                            <div className="col-mb-4">
+                                <label htmlFor="validationCustom01" className="form-label col-lg-3">Hora de Inicio: </label>
+                                <input
+                                    className="col-lg-9 form-control-s"
+                                    type="time"
+                                    name="startTime"
+                                    value={form.startTime}
+                                    onChange={handleChange} required />
+
+                                <div className="valid-feedback">
+                                    Looks good!
+                                </div>
+                            </div>
+                            <div className="col-mb-4">
+                                <label htmlFor="validationCustom01" className="form-label col-lg-3">Hora de Fin: </label>
+                                <input
+                                    className="col-lg-9 form-control-s"
+                                    type="time"
+                                    name="endTime"
+                                    value={form.endTime}
+                                    onChange={handleChange} required />
+
+                                <div className="valid-feedback">
+                                    Looks good!
+                                </div>
+                            </div>
+
+
+                            <div className="col-mb-4">
+                                <label htmlFor="validationCustom01" className="form-label col-lg-3">Estado</label>
+                                <select
+                                    className="col-lg-9 form-select-s"
+                                    name="status"
+                                    value={form.status}
+                                    onChange={handleChange}
+                                >
+                                    <option value="Pendiente">Pendiente</option>
+
+                                </select>
+                                <div className="valid-feedback">
+                                    Looks good!
+                                </div>
+                            </div>
+
+
+
+
+                            <div className="appointment-form-buttons">
+                                <button type="submit" className="accept-btn">Aceptar</button>
+                                <button
+                                    type="button"
+                                    className="reject-btn"
+                                    onClick={() => setShowModal(false)}
+                                >
+                                    Cancelar
+                                </button>
+                                {success && <div className="success">{success}</div>}
+                            </div>
+                            
+                        </form>
+                    </div>
+                </div>
+            )}
         </EmployeeLayout>
     );
 };

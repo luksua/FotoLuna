@@ -6,6 +6,7 @@ import CustomersEmployee from "../features/HomeEmployee/pages/CustomersEmployee"
 import EmployeeNotifications from "../features/HomeEmployee/pages/NotificationsEmployee";
 
 
+
 export const routes = [
     {
         path: "/",
@@ -15,7 +16,9 @@ export const routes = [
     { path: "/employee/upload", element: <UploadEmployee /> },
     { path: "/employee/admin", element: <AdminEmployee /> },
     { path: "/employee/customers", element: <CustomersEmployee /> },
-    { path: "/employee/notifications", element: <EmployeeNotifications /> }
+    { path: "/employee/notifications", element: <EmployeeNotifications /> }, 
+    
+
 
    
 ];

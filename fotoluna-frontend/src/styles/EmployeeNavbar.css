@@ -1,66 +1,262 @@
-.EmployeeNavbar .container-fluid {
-    display: flex;
-    align-items: center;
+/* EmployeeNavbar.css */
+:root {
+    --pastel-mint: #b8e0d2;
+    --pastel-lavender: #e6e6fa;
+    --pastel-peach: #ffdab9;
+    --pastel-blue: #b5d8eb;
+    --pastel-pink: #f8c8dc;
+    --pastel-lilac: #d8bfd8;
+    --white: #ffffff;
+    --light-gray: #f9f9f9;
+    --text-dark: #5a5a5a;
+    --text-light: #888888;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+    --black: #000000;
 }
 
 .EmployeeNavbar {
-    font-family: Quicksand, sans-serif;
+    background: var(--white);
+    color: var(--text-dark);
+    padding: 0 25px;
     height: 80px;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    font-family: 'quicksand';
+}
+
+.navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-
+    margin: 0;
+    max-width: none; /* Elimina o comenta esta línea si existe */
+    padding: 0;      /* Asegúrate que no haya padding extra */
 }
 
-.EmployeeNavbar-search {
-    background-color: #ddabdf50;
-    width: 330px;
+/* Logo y marca */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
-
-.EmployeeNavbar-search:focus {
-    background-color: #ffffff70;
-    border: 2px solid #e69eea;
-    transition: background-color 0.3s;
-    outline: none;
-    box-shadow: none;
-}
-
-.EmployeeNavbar-icon {
-    outline: none;
-    box-shadow: none;
-    border: none;
-    cursor: pointer;
-
-}
-
-.EmployeeNavbar-icon:hover {
-    color: #e69eea;
-    transition: color 0.3s;
-    transform: scale(1.3);
-}
-
 .EmployeeNavbar-logo {
-    height: 40px;
-    width: 40px;
-    object-fit: contain;
-    margin-left: 0;
-    /* Cambia esto a 0 */
+    height: 44px;
+    width: 56px;
     border-radius: 8px;
-
+    object-fit: cover;
 }
 
-.EmployeeNavbar-item-name-text {
-    font-family: "Great Vibes";
-    font-size: 21px;
+
+
+.logo-icon i {
+    font-size: 1.6rem;
 }
 
-.EmployeeNavbar-item-home-ini {
-    font-size: 20px;
-    color: black;
+.logo-text {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    
+}
+
+/* Barra de búsqueda */
+.navbar-search {
+    flex: 1;
+    max-width: 400px;
+    margin: 0 40px;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    background: var(--light-gray);
+    border-radius: 25px;
+    padding: 5px 15px;
+    transition: var(--transition);
+}
+
+.search-form:focus-within {
+    background: var(--white);
+    box-shadow: 0 0 0 2px var(--pastel-lavender);
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--text-dark);
+    outline: none;
+    width: 100%;
+}
+
+.search-input::placeholder {
+    color: var(--text-light);
+}
+
+.search-button {
+    background: none;
+    border: none;
+    color: var(--pastel-lilac);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.search-button:hover {
+    background: var(--pastel-lavender);
+    color: var(--text-dark);
+}
+
+/* Acciones de navegación */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text-dark);
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: var(--pastel-lavender);
+    color: var(--text-dark);
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+}
+
+.notification-btn,
+.settings-btn {
+    background: none;
+    border: none;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: var(--transition);
+    position: relative;
+    font-size: 1.2rem;
+}
+
+.notification-btn:hover,
+.settings-btn:hover {
+    background: var(--pastel-lavender);
+    color: var(--pastel-lilac);
+    transform: scale(1.1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--pastel-pink);
+    color: var(--text-dark);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid var(--white);
+}
+
+/* Perfil de usuario */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border-radius: 25px;
+    transition: var(--transition);
     cursor: pointer;
 }
 
-.EmployeeNavbar-item-home-ini li {
-    color: black;
+.user-profile:hover {
+    background: var(--pastel-lavender);
+}
 
-    text-decoration: underline;
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pastel-peach), var(--pastel-pink));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.user-name {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .EmployeeNavbar {
+        padding: 0 15px;
+    }
+
+    .navbar-container {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .navbar-search {
+        margin: 0 20px;
+        max-width: 300px;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .nav-link span {
+        display: none;
+    }
+
+    .nav-link {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-search {
+        display: none;
+    }
+
+    .navbar-actions {
+        gap: 10px;
+    }
+
+    .logo-text {
+        font-size: 1.4rem;
+    }
 }

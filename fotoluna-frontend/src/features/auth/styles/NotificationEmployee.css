@@ -1,0 +1,238 @@
+/* .notifications-list {
+    list-style: none;
+    padding: 0;
+    width: 95%;
+    font-family: "quicksand";
+}
+
+.notifications-list .unread {
+    font-weight: 400;
+    border-left: 4px solid #a06bb5;
+    font-family: "quicksand";
+}
+
+.notifications-list .read {
+    color: #888;
+}
+
+h2 {
+    font-family: "quicksand";
+    font-weight: 400;
+    padding: 10px;
+} */
+:root {
+    --primary-color: #8a2be2;
+    --secondary-color: #4a00e0;
+    --accent-color: #ff6b6b;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --gradient: linear-gradient(135deg, #8a2be2, #4a00e0);
+    --card-shadow: 0 10px 30px rgba(138, 43, 226, 0.15);
+    --hover-shadow: 0 15px 40px rgba(138, 43, 226, 0.25);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.notification-icon {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.notification-icon:hover {
+    transform: scale(1.1);
+}
+
+.dropdown-menu {
+    width: 380px;
+    max-height: 500px;
+    overflow-y: auto;
+    border: none;
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    animation: fadeInDown 0.3s;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-item {
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 12px 15px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.notification-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+    border-left-color: var(--primary-color);
+}
+
+.notification-item.read {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+}
+
+.notification-header {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--dark-color);
+}
+
+.notification-content {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #adb5bd;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+}
+
+.empty-notifications {
+    text-align: center;
+    padding: 30px 20px;
+    color: #6c757d;
+}
+
+.notification-priority-high {
+    border-left-color: #ff6b6b !important;
+}
+
+.notification-priority-medium {
+    border-left-color: #ffd166 !important;
+}
+
+.notification-priority-low {
+    border-left-color: #06d6a0 !important;
+}
+
+.modal-notification-icon {
+    font-size: 1.5rem;
+    margin-right: 10px;
+}
+
+.btn-primary {
+    background: var(--gradient);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 15px rgba(138, 43, 226, 0.3);
+}
+
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: var(--hover-shadow);
+}
+
+.modal-header {
+    background: var(--gradient);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    border: none;
+}
+
+.btn-close-white {
+    filter: invert(1);
+}
+
+.badge-priority {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.navbar {
+    background: var(--gradient);
+    box-shadow: 0 4px 20px rgba(138, 43, 226, 0.2);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.toast {
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+}
+
+.toast-header {
+    background: var(--gradient);
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
