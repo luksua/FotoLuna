@@ -9,7 +9,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { red, teal } from '@mui/material/colors';
 import HomeLayout from "../../../layouts/HomeAdminLayouts";
 import { BarChart } from "@mui/x-charts/BarChart";
-import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
+import { Gauge } from '@mui/x-charts/Gauge';
 import { PieChart } from '@mui/x-charts/PieChart';
 
 const estrellasData = [
