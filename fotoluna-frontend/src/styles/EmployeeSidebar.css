@@ -59,7 +59,7 @@
 }
 
 .notification-link:hover .Employee-sidebar-icon-notification {
-
+   
     transform: scale(1.15);
     
 }
@@ -215,6 +215,18 @@ hr {
     box-shadow: var(--shadow);
     transition: var(--transition);
     z-index: 999;
+}
+
+.menu-item {
+    text-decoration: none;
+}
+
+.menu-item:visited {
+    text-decoration: none;
+}
+
+.menu-item .menu-text {
+    text-decoration: none;
 }
 
 .sidebar-menu {

@@ -103,6 +103,11 @@ const Register = () => {
                 </form>
                 {message && <p style={{ color: "#a36fc2", marginTop: 16, textAlign: "center" }}>{message}</p>}
             </div>
+
+            <footer>
+                <p>FotoLuna &copy;  </p>
+            </footer>
+            
         </HomeLayout>
     );
 };
@@ -133,5 +138,7 @@ const fileLabelStyle = {
     cursor: "pointer",
     fontWeight: "bold"
 };
+
+
 
 export default Register;

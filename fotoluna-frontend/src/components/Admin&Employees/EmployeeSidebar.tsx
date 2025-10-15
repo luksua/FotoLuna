@@ -10,25 +10,23 @@ const EmployeeSidebar: React.FC = () => {
         { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/" },
         { id: "citas", icon: "bi bi-speedometer2", text: "Dashboard", path: "/dashboard" },
         { id: "subir", icon: "bi bi-journal-plus", text: "Registro Usuarios", path: "/RegisterUsers" },
-        { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/employee/admin" },
-        { id: "clientes", icon: "bi bi-people-fill", text: "Clientes", path: "/employee/customers" },
+        { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/admin" },
+        { id: "clientes", icon: "bi bi-people-fill", text: "Clientes", path: "/customers" },
     
     ];
 
     return (
-        <aside className="sidebar">
+         <aside className="sidebar">
             <ul className="sidebar-menu">
                 {menuItems.map((item) => (
-                    <li
+                    <Link
                         key={item.id}
+                        to={item.path}
                         className={`menu-item ${location.pathname === item.path ? 'active' : ''}`}
-                        onClick={() => setActiveItem(item.id)}
                     >
-                        <Link to={item.path} style={{ display: 'flex', alignItems: 'center', width: '100%', textDecoration: 'none', color: 'inherit' }}>
-                            <i className={item.icon} style={{ marginRight: 12 }}></i>
-                            <span className="menu-text">{item.text}</span>
-                        </Link>
-                    </li>
+                        <i className={item.icon}></i>
+                        <span className="menu-text">{item.text}</span>
+                    </Link>
                 ))}
             </ul>
         </aside>

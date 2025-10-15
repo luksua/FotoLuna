@@ -155,6 +155,10 @@ const Dashboard = () => {
                 </Box>
             </Box>
 
+            <footer>
+                <p>FotoLuna &copy;  </p>
+            </footer>
+
         </HomeLayout>
     );
 };

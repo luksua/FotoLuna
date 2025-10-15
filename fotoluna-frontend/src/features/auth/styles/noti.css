@@ -25,16 +25,23 @@
     right: 20px;
     top: 70px;
     z-index: 1000;
-    
-    
+
+
 }
 
 
 .notifications-header {
-    background: linear-gradient(135deg, var(--lila-pastel), var(--rosa-pastel));
-    color: var(--texto-oscuro);
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--borde-claro);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 3px 16px 32px; /* Más espacio a los lados */
+    position: relative;
+}
+
+.notifications-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .header-content {
@@ -57,12 +64,24 @@
 }
 
 .unread-count {
-    background: var(--lila-oscuro);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    margin-left: 18px;
+    padding: 4px 16px;
+    border-radius: 16px;
+    background: #cbb7f7;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.btn-close-panel {
+    position: absolute;
+    top: 11;
+    right: 20px; /* Esquina derecha */
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #a06bb5;
+    cursor: pointer;
 }
 
 .btn-mark-all {
@@ -263,15 +282,17 @@
 }
 
 @keyframes pulse {
-    0% { 
+    0% {
         transform: scale(1);
         opacity: 1;
     }
-    50% { 
+
+    50% {
         transform: scale(1.1);
         opacity: 0.7;
     }
-    100% { 
+
+    100% {
         transform: scale(1);
         opacity: 1;
     }
@@ -345,7 +366,7 @@
 
 .btn-view-all:hover {
     transform: translateY(-1px);
-    background: linear-gradient(135deg, var(--lila-medio), var(--rosa-medio));
+    background: #FF91A4;
 }
 
 /* Modal Styles */
@@ -371,9 +392,15 @@
     max-width: 400px;
     max-height: 80vh;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(255, 125, 225, 0.2);
+    box-shadow: 0 8px 32px rgba(183, 35, 148, 0.2);
     animation: modalSlideIn 0.3s ease-out;
     border: 1px solid var(--borde-claro);
+}
+
+.notification-modal .modal-header {
+    background: #ffffff67;
+    /* Cambia aquí el color del header */
+    color: #000000;
 }
 
 @keyframes modalSlideIn {
@@ -381,6 +408,7 @@
         opacity: 0;
         transform: scale(0.95) translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -472,7 +500,8 @@
     background: var(--fondo-claro);
 }
 
-.btn-secondary, .btn-primary {
+.btn-secondary,
+.btn-primary {
     padding: 8px 16px;
     border: none;
     border-radius: 8px;
@@ -485,18 +514,18 @@
 .btn-secondary {
     background: var(--lila-pastel);
     color: var(--texto-oscuro);
-    border: 1px solid var(--lila-medio);
+    border: 1px solid #E8E2F2;
 }
 
 .btn-secondary:hover {
-    background: var(--lila-medio);
+    background: #FFB6C1;
     transform: translateY(-1px);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--lila-medio), var(--rosa-medio));
-    color: var(--texto-oscuro);
-    border: 1px solid var(--lila-oscuro);
+    background: #FF91A4;
+    color: #fff;
+    border: 1px solid #E8E2F2;
 }
 
 .btn-primary:hover {
@@ -515,61 +544,62 @@
         max-width: none;
         margin-top: 0;
     }
-    
+
     .notifications-header {
         padding: 12px 16px;
     }
-    
+
     .header-content {
         flex-direction: column;
         gap: 8px;
         align-items: flex-start;
     }
-    
+
     .header-actions {
         width: 100%;
         justify-content: space-between;
     }
-    
+
     .notifications-tabs {
         padding: 0 16px;
     }
-    
+
     .tab {
         padding: 10px 0;
         font-size: 0.8rem;
     }
-    
+
     .notifications-list {
         padding: 8px 12px;
     }
-    
+
     .notification-item {
         padding: 12px;
         gap: 8px;
         min-height: 60px;
     }
-    
+
     .notification-icon {
         width: 28px;
         height: 28px;
         font-size: 0.9rem;
     }
-    
+
     .modal-header {
         padding: 16px;
     }
-    
+
     .modal-body {
         padding: 16px;
     }
-    
+
     .modal-footer {
         padding: 12px 16px;
         flex-direction: column;
     }
-    
-    .btn-secondary, .btn-primary {
+
+    .btn-secondary,
+    .btn-primary {
         width: 100%;
     }
 }
