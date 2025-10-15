@@ -18,102 +18,104 @@ type Props = {
 };
 
 const mockNotifications: Notification[] = [
-    { 
-        id: 1, 
-        title: "Sesión reprogramada", 
-        message: "La sesión con Mario González se ha movido al viernes 15.", 
+    {
+        id: 1,
+        title: "Sesión reprogramada",
+        message: "La sesión con Mario González se ha movido al viernes 15.",
         read: false,
         priority: 'high',
         date: "Hace 2 horas",
         category: 'today',
         icon: 'bi bi-calendar-check'
     },
-    { 
-        id: 2, 
-        title: "Pedido listo", 
-        message: "Tu pedido de fondos fotográficos está listo para recoger.", 
+    {
+        id: 2,
+        title: "Pedido listo",
+        message: "Tu pedido de fondos fotográficos está listo para recoger.",
         read: false,
         priority: 'medium',
         date: "Hoy, 11:30",
         category: 'today',
         icon: 'bi bi-box-seam'
     },
-    { 
-        id: 3, 
-        title: "Backup completado", 
-        message: "Se completó el backup automático de tus proyectos.", 
+    {
+        id: 3,
+        title: "Backup completado",
+        message: "Se completó el backup automático de tus proyectos.",
         read: true,
         priority: 'low',
         date: "Hoy, 09:15",
         category: 'today',
         icon: 'bi bi-cloud-check'
     },
-    { 
-        id: 4, 
-        title: "Nuevo cliente", 
-        message: "Ana Rodríguez está interesada en sesión de fotos.", 
+    {
+        id: 4,
+        title: "Nuevo cliente",
+        message: "Ana Rodríguez está interesada en sesión de fotos.",
         read: false,
         priority: 'medium',
         date: "Ayer, 16:20",
         category: 'week',
         icon: 'bi bi-person-plus'
     },
-    { 
-        id: 5, 
-        title: "Pago confirmado", 
-        message: "El pago de Carlos Mendoza ha sido procesado.", 
+    {
+        id: 5,
+        title: "Pago confirmado",
+        message: "El pago de Carlos Mendoza ha sido procesado.",
         read: true,
         priority: 'low',
         date: "15 Oct, 14:30",
         category: 'week',
         icon: 'bi bi-credit-card'
     },
-     { 
-        id: 5, 
-        title: "Pago confirmado", 
-        message: "El pago de Carlos Mendoza ha sido procesado.", 
+    {
+        id: 6,
+        title: "Pago confirmado",
+        message: "El pago de Carlos Mendoza ha sido procesado.",
         read: true,
         priority: 'low',
         date: "15 Oct, 14:30",
         category: 'week',
         icon: 'bi bi-credit-card'
-    }, { 
-        id: 5, 
-        title: "Pago confirmado", 
-        message: "El pago de Carlos Mendoza ha sido procesado.", 
+    }, {
+        id: 7,
+        title: "Pago confirmado",
+        message: "El pago de Carlos Mendoza ha sido procesado.",
         read: true,
         priority: 'low',
         date: "15 Oct, 14:30",
         category: 'week',
         icon: 'bi bi-credit-card'
-    }, { 
-        id: 5, 
-        title: "Pago confirmado", 
-        message: "El pago de Carlos Mendoza ha sido procesado.", 
+    }, {
+        id: 8,
+        title: "Pago confirmado",
+        message: "El pago de Carlos Mendoza ha sido procesado.",
         read: true,
         priority: 'low',
         date: "15 Oct, 14:30",
         category: 'week',
         icon: 'bi bi-credit-card'
-    }, { 
-        id: 5, 
-        title: "Pago confirmado", 
-        message: "El pago de Carlos Mendoza ha sido procesado.", 
+    }, {
+        id: 9,
+        title: "Pago confirmado",
+        message: "El pago de Carlos Mendoza ha sido procesado.",
         read: true,
         priority: 'low',
         date: "15 Oct, 14:30",
         category: 'week',
         icon: 'bi bi-credit-card'
-    }, { 
-        id: 5, 
-        title: "Pago confirmado", 
-        message: "El pago de Carlos Mendoza ha sido procesado.", 
+    }, {
+        id: 10,
+        title: "Pago confirmado",
+        message: "El pago de Carlos Mendoza ha sido procesado.",
         read: true,
         priority: 'low',
         date: "15 Oct, 14:30",
         category: 'week',
         icon: 'bi bi-credit-card'
     },
+
+
 
 ];
 
@@ -180,35 +182,33 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                     <div className="header-content">
                         <h2>Notificaciones</h2>
                         <div className="header-actions">
-                            <span className="unread-count">
-                                {unreadCount} no leídas
-                            </span>
-                            <button 
-                                className="btn-mark-all"
-                                onClick={handleMarkAllAsRead}
-                                disabled={unreadCount === 0}
-                            >
-                                Marcar todas como leídas
-                            </button>
+                            {activeTab !== "older" && (
+                                <span className="unread-count">
+                                    {unreadCount} no leídas
+                                </span>
+                            )}
                         </div>
+                        <button className="btn-close-panel" onClick={onClose} title="Cerrar panel">
+                            <i className="bi bi-x-lg"></i>
+                        </button>
                     </div>
                 </div>
 
                 {/* Tabs de Navegación */}
                 <div className="notifications-tabs">
-                    <button 
+                    <button
                         className={`tab ${activeTab === 'today' ? 'active' : ''}`}
                         onClick={() => setActiveTab('today')}
                     >
                         Hoy
                     </button>
-                    <button 
+                    <button
                         className={`tab ${activeTab === 'week' ? 'active' : ''}`}
                         onClick={() => setActiveTab('week')}
                     >
                         Esta semana
                     </button>
-                    <button 
+                    <button
                         className={`tab ${activeTab === 'older' ? 'active' : ''}`}
                         onClick={() => setActiveTab('older')}
                     >
@@ -223,18 +223,16 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                             {filteredNotifications.map(notif => (
                                 <div
                                     key={notif.id}
-                                    className={`notification-item ${getPriorityClass(notif.priority)} ${
-                                        notif.read ? 'read' : 'unread'
-                                    }`}
+                                    className={`notification-item ${getPriorityClass(notif.priority)} ${notif.read ? 'read' : 'unread'
+                                        }`}
                                     onClick={() => handleOpen(notif)}
                                 >
                                     <div className="notification-checkbox">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={notif.read}
-                                            onChange={() => {}}
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
+                                        {notif.read ? (
+                                            <i className="bi bi-bell" style={{ color: "#a06bb5", fontSize: "1.2rem" }}></i>
+                                        ) : (
+                                            <i className="bi bi-bell-fill" style={{ color: "#f72585", fontSize: "1.2rem" }}></i>
+                                        )}
                                     </div>
                                     <div className="notification-icon">
                                         <i className={notif.icon}></i>
@@ -247,7 +245,7 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                                             </p>
                                         </div>
                                         <div className="notification-meta">
-                                            <span 
+                                            <span
                                                 className="priority-badge"
                                                 style={{ backgroundColor: getPriorityColor(notif.priority) }}
                                             >
@@ -258,7 +256,7 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                                     </div>
                                     <div className="notification-actions">
                                         {!notif.read && <div className="unread-dot"></div>}
-                                        <button 
+                                        <button
                                             className="btn-delete"
                                             onClick={(e) => handleDelete(notif.id, e)}
                                             title="Eliminar notificación"
@@ -296,7 +294,7 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                                 <div>
                                     <h3>{selected.title}</h3>
                                     <div className="modal-meta">
-                                        <span 
+                                        <span
                                             className="priority-badge"
                                             style={{ backgroundColor: getPriorityColor(selected.priority) }}
                                         >
@@ -317,19 +315,6 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                             <button className="btn-secondary" onClick={handleClose}>
                                 Cerrar
                             </button>
-                            {!selected.read && (
-                                <button 
-                                    className="btn-primary"
-                                    onClick={() => {
-                                        setNotifications(notifications.map(n =>
-                                            n.id === selected.id ? { ...n, read: true } : n
-                                        ));
-                                        handleClose();
-                                    }}
-                                >
-                                    Marcar como leída
-                                </button>
-                            )}
                         </div>
                     </div>
                 </div>

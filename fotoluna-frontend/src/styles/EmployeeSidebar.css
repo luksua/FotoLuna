@@ -217,6 +217,18 @@ hr {
     z-index: 999;
 }
 
+.menu-item {
+    text-decoration: none;
+}
+
+.menu-item:visited {
+    text-decoration: none;
+}
+
+.menu-item .menu-text {
+    text-decoration: none;
+}
+
 .sidebar-menu {
     list-style: none;
     padding: 0;

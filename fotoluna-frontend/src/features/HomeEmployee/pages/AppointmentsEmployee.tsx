@@ -18,7 +18,7 @@ const initialForm = {
     startTime: "",
     endTime: "",
     client: "",
-    status: "",
+    status: "Pendiente",
     location: "",
 };
 
@@ -74,9 +74,6 @@ const EmployeeAppointments = () => {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             setSuccess("");
-            // Muestra los errores en el modal
-            setErrorModal(Object.values(validationErrors));
-            return;
         }
 
         const cita: Cita = {
@@ -84,7 +81,7 @@ const EmployeeAppointments = () => {
             startTime: form.startTime,
             endTime: form.endTime,
             client: form.client,
-            status: form.status,
+            status: "Pendiente", // <-- fuerza el estado
             location: form.location,
         };
         setCitas([...citas, cita]);
@@ -128,7 +125,14 @@ const EmployeeAppointments = () => {
                     <div
                         style={{
                             backgroundColor: bg,
-
+                            borderRadius: "50%",
+                            width: 32,
+                            height: 32,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            margin: "0 auto"
                         }}
                     >
                         {date.getDate()}
@@ -139,41 +143,81 @@ const EmployeeAppointments = () => {
         return null;
     };
 
+    const getDaysForColumn = (colIdx: number) => {
+        const startOfWeek = new Date(selectedDate!);
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + colIdx + 1);
+        return Array.from({ length: 5 }, (_, i) => {
+            const d = new Date(startOfWeek);
+            d.setDate(startOfWeek.getDate() + i);
+            return { date: d };
+        });
+    };
+
     return (
         <EmployeeLayout>
             <h3 className="bg-custom-3">Citas</h3>
             <hr />
             <div className="appointments-container" style={{ display: "flex", gap: 24 }}>
                 <div className="calendar-section">
-                    <Calendar
-                        onClickDay={handleDayClick}
-                        value={selectedDate}
-                        tileContent={tileContent}
+                    <div className="custom-calendar">
+                        <div className="calendar-grid">
+                            {["LUN", "MAR", "MIE", "JUE", "VIE", "SÁB", "DOM"].map((day, colIdx) => (
+                                <div className="day-column" key={day}>
+                                    <div className="day-header">{day}</div>
+                                    {getDaysForColumn(colIdx).map(dateObj => {
+                                        const cita = citas.find(
+                                            c =>
+                                                c.date.getFullYear() === dateObj.date.getFullYear() &&
+                                                c.date.getMonth() === dateObj.date.getMonth() &&
+                                                c.date.getDate() === dateObj.date.getDate()
+                                        );
+                                        const isSelected =
+                                            selectedDate &&
+                                            dateObj.date.getFullYear() === selectedDate.getFullYear() &&
+                                            dateObj.date.getMonth() === selectedDate.getMonth() &&
+                                            dateObj.date.getDate() === selectedDate.getDate();
 
-                        locale="es-ES"
-                    />
-
-
-                </div>
-
-                {errorModal.length > 0 && (
-                    <div className="modal-error-backdrop" onClick={() => setErrorModal([])}>
-                        <div className="modal-error" onClick={e => e.stopPropagation()}>
-                            <h3>Errores de validación</h3>
-                            <ul>
-                                {errorModal.map((err, i) => (
-                                    <li key={i}>{err}</li>
-                                ))}
-                            </ul>
-                            <button
-                                className="accept-btn"
-                                onClick={() => setErrorModal([])}
-                            >
-                                Cerrar
-                            </button>
+                                        return (
+                                            <span
+                                                key={dateObj.date.toISOString()}
+                                                className={
+                                                    "day-number" +
+                                                    (cita ? " has-appointment" : "") +
+                                                    (isSelected ? " active" : "")
+                                                }
+                                                style={{
+                                                    background: isSelected ? "#4361ee" : "transparent",
+                                                    color: isSelected ? "#fff" : "#212529",
+                                                    position: "relative",
+                                                    fontWeight: isSelected ? "bold" : "normal",
+                                                    cursor: "pointer",
+                                                }}
+                                                onClick={() => handleDayClick(dateObj.date)}
+                                            >
+                                                {dateObj.date.getDate()}
+                                                {cita && (
+                                                    <span
+                                                        style={{
+                                                            position: "absolute",
+                                                            top: 6,
+                                                            right: 6,
+                                                            width: 10,
+                                                            height: 10,
+                                                            background: "#f72585",
+                                                            borderRadius: "50%",
+                                                            display: "inline-block",
+                                                        }}
+                                                    ></span>
+                                                )}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            ))}
                         </div>
                     </div>
-                )}
+
+                </div>
 
                 <div className="appointment-details">
                     <h3>DATOS DE CITA</h3>
@@ -249,7 +293,15 @@ const EmployeeAppointments = () => {
                     )}
                     <button
                         className="open-modal-btn"
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                            setShowModal(true);
+                            if (selectedDate) {
+                                setForm(f => ({
+                                    ...f,
+                                    date: selectedDate.toISOString().slice(0, 10)
+                                }));
+                            }
+                        }}
                     >
                         Registrar nueva cita
                     </button>
@@ -333,6 +385,22 @@ const EmployeeAppointments = () => {
                                 </div>
                             </div>
 
+                            <div className="col-mb-4">
+                                <label htmlFor="validationCustom01" className="form-label col-lg-3">Localización</label>
+                                <input
+                                    placeholder="Localizacion"
+                                    className="col-lg-9 form-select-s"
+                                    name="location"
+                                    value={form.location}
+                                    onChange={handleChange}
+                                />
+
+                                <div className="valid-feedback">
+                                    Looks good!
+                                </div>
+                            </div>
+
+
 
 
 
@@ -347,7 +415,7 @@ const EmployeeAppointments = () => {
                                 </button>
                                 {success && <div className="success">{success}</div>}
                             </div>
-                            
+
                         </form>
                     </div>
                 </div>

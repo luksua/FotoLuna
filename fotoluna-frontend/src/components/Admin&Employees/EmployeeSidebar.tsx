@@ -12,23 +12,21 @@ const EmployeeSidebar: React.FC = () => {
         { id: "subir", icon: "bi bi-cloud-upload-fill", text: "Subir", path: "/employee/upload" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/employee/admin" },
         { id: "clientes", icon: "bi bi-people-fill", text: "Clientes", path: "/employee/customers" },
-     
+
     ];
 
     return (
         <aside className="sidebar">
             <ul className="sidebar-menu">
                 {menuItems.map((item) => (
-                    <li
+                    <Link
                         key={item.id}
+                        to={item.path}
                         className={`menu-item ${location.pathname === item.path ? 'active' : ''}`}
-                        onClick={() => setActiveItem(item.id)}
                     >
                         <i className={item.icon}></i>
-                        <span className="menu-text">
-                            <Link to={item.path}>{item.text}</Link>
-                        </span>
-                    </li>
+                        <span className="menu-text">{item.text}</span>
+                    </Link>
                 ))}
             </ul>
         </aside>
