@@ -1,5 +1,5 @@
 import React from "react";
-import EmployeeSidebar from "../components/Admin&Employees/EmployeeSidebar";
+import EmployeeSidebar from "../components/Admin&Employees/AdminSidebar";
 import EmployeeNavbar from "../components/Admin&Employees/EmployeeNavbar";
 import "../styles/ScrollAdmin.css";
 

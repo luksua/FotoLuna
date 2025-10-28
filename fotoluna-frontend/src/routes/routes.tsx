@@ -1,4 +1,3 @@
-
 // import HomeAdmin from "../features/HomeEmployee/pages/HomeAdmin";
 import Dashboard from "../features/HomeEmployee/pages/Dashboard";
 import RegisterUsers from "../features/HomeEmployee/pages/RegisterUsers";
@@ -20,7 +19,7 @@ export const routes = [
     { path: "/RegisterUsers", element: <RegisterUsers/> },
     { path: "/appointments", element: <AppointmentsEmployee /> },
     { path: "/upload", element: <UploadEmployee /> },
-    { path: "/admin", element: <AdminEmployee /> },
+    { path: "/AdminUsers", element: <AdminEmployee /> },
     { path: "/customers", element: <CustomersEmployee /> },
     { path: "/notifications", element: <NotificationsEmployee /> }, 
-];
+]; 
