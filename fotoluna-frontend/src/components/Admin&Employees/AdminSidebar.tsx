@@ -11,7 +11,7 @@ const AdminSidebar: React.FC = () => {
         { id: "citas", icon: "bi bi-speedometer2", text: "Dashboard", path: "/dashboard" },
         { id: "subir", icon: "bi bi-journal-plus", text: "Registro Usuarios", path: "/RegisterUsers" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/AdminUsers" },
-        { id: "clientes", icon: "bi bi-people-fill", text: "Clientes", path: "/customers" },
+        { id: "clientes", icon: "bi bi-people-fill", text: "Empleados", path: "/AdminEmployee" },
     
     ];
 

@@ -4,8 +4,8 @@ import RegisterUsers from "../features/HomeEmployee/pages/RegisterUsers";
 import HomeEmployee from "../features/HomeEmployee/pages/HomeEmployee";
 import AppointmentsEmployee from "../features/HomeEmployee/pages/AppointmentsEmployee";
 import UploadEmployee from "../features/HomeEmployee/pages/UploadEmployee";
+import AdminUsers from "../features/HomeEmployee/pages/AdminUsers";
 import AdminEmployee from "../features/HomeEmployee/pages/AdminEmployee";
-import CustomersEmployee from "../features/HomeEmployee/pages/CustomersEmployee";
 import NotificationsEmployee from "../features/HomeEmployee/pages/notiprueba";
 
 
@@ -19,7 +19,7 @@ export const routes = [
     { path: "/RegisterUsers", element: <RegisterUsers/> },
     { path: "/appointments", element: <AppointmentsEmployee /> },
     { path: "/upload", element: <UploadEmployee /> },
-    { path: "/AdminUsers", element: <AdminEmployee /> },
-    { path: "/customers", element: <CustomersEmployee /> },
+    { path: "/AdminUsers", element: <AdminUsers /> },
+    { path: "/AdminEmployee", element: <AdminEmployee /> },
     { path: "/notifications", element: <NotificationsEmployee /> }, 
 ]; 
