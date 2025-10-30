@@ -48,7 +48,7 @@ const HomeSidebar: React.FC = () => {
                         <i className="bi bi-person-circle fs-1"></i>
                         <HomeButton
                             value="Mi Cuenta"
-                            to=""
+                            to="/miCuenta"
                         />
                     </div>
                     <a href="/citas" className="btn btn-perfil2 w-100 mb-3">Citas</a>

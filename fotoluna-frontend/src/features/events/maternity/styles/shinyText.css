@@ -1,0 +1,58 @@
+.shiny-text {
+    display: inline-block;
+    color: #c85a8f;
+    border: 2px solid #c85a8f;
+    border-radius: 50px; /* borde estable */
+    padding: 8px 20px; /* borde consistente */
+    background: linear-gradient(120deg,
+            rgba(255, 255, 255, 0) 35%,
+            rgba(255, 200, 230, 0.6) 50%,
+            rgba(255, 255, 255, 0) 65%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shine 3s linear infinite;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.shiny-text:hover {
+    color: #fff;
+    background: linear-gradient(120deg,
+            rgba(200, 90, 143, 0.2) 40%,
+            rgba(255, 255, 255, 0.9) 50%,
+            rgba(200, 90, 143, 0.2) 60%);
+    background-size: 200% 100%;
+    transform: translateY(-2px);
+    text-shadow: 0 0 8px rgba(150, 46, 96, 1);
+    border-color: #c85a8f;
+    box-shadow: 0 0 12px rgba(200, 90, 143, 0.4);
+}
+
+
+
+@keyframes shine {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+
+@keyframes shine {
+    0% {
+        background-position: 100%;
+    }
+
+    100% {
+        background-position: -100%;
+    }
+}
+
+.shiny-text.disabled {
+    animation: none;
+}

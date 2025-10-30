@@ -15,7 +15,7 @@ body {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
-.logo-img{
+.logo-img {
     height: 45px;
     width: auto;
     object-fit: contain;
@@ -23,12 +23,12 @@ body {
     padding-left: 20px;
 }
 
-.logo-text{
+.logo-text {
     padding-top: 8px;
     text-align: left !important;
 }
 
-.navbar-border{
+.navbar-border {
     border: 5px solid #D0C4DF;
     border-bottom: 30px solid #D0C4DF;
 }
@@ -42,6 +42,7 @@ body {
     font-size: 1rem;
     color: #4a3f64;
 }
+
 .dropdown-menu {
     border: none !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -51,11 +52,13 @@ body {
     min-width: 180px;
     transition: all 0.3s ease;
 }
+
 .portafolio-btn {
     position: relative;
     padding-bottom: 5px;
     transition: color 0.3s ease;
 }
+
 .portafolio-btn::before {
     content: "";
     position: absolute;
@@ -63,17 +66,33 @@ body {
     bottom: 0;
     height: 2px;
     width: 100%;
-    background-color: #4a3f64; /* ajusta al color que desees */
+    background-color: #4a3f64;
+    /* ajusta al color que desees */
     transform: scaleX(0);
     transform-origin: center;
     transition: transform 0.3s ease;
 }
+
 .nav-item.dropdown:hover .portafolio-btn::before {
     transform: scaleX(1);
 }
 
+.dropdown-item:focus,
+.dropdown-item:active {
+    background-color: #D0C4DF;
+    /* Color cuando está activo/enfocado */
+    color: #4a3f64;
+    outline: none;
+}
+
+/* Eliminar el color azul de los enlaces visitados */
+.dropdown-item:visited {
+    color: #4a3f64;
+}
+
 .nav-item.dropdown .dropdown-menu {
-    top: 100%; /* Asegura que se pegue al botón */
+    top: 100%;
+    /* Asegura que se pegue al botón */
     border: none !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
@@ -83,21 +102,29 @@ body {
 }
 
 .offcanvas-custom {
-    top: auto;             /* Reset de valor top */
-    bottom: auto;          /* Reset de valor bottom */
-    height: 85%;          /* Altura automática según contenido */
-    max-height: 90vh;      /* Máximo alto del offcanvas */
-    margin-top: 60px;      /* Separación superior */
+    top: auto;
+    /* Reset de valor top */
+    bottom: auto;
+    /* Reset de valor bottom */
+    height: 85%;
+    /* Altura automática según contenido */
+    max-height: 90vh;
+    /* Máximo alto del offcanvas */
+    margin-top: 60px;
+    /* Separación superior */
     margin-bottom: 60px;
-    margin-right: 20px;   /* Separación inferior */
-    border-radius: 1rem; 
+    margin-right: 20px;
+    /* Separación inferior */
+    border-radius: 1rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     overflow: hidden;
 }
+
 .user-icon {
     font-size: 2.5rem;
     color: #aaa;
 }
+
 .btn-perfil {
     background-color: #DCABDF;
     color: white;
@@ -119,12 +146,13 @@ body {
     .nav-item.registro {
         display: none;
     }
+
     .nav-item.iniciar {
         display: none;
     }
 }
 
-@media (max-width: 991px){
+@media (max-width: 991px) {
     .eslogan-border {
         display: none;
     }
@@ -139,23 +167,28 @@ body {
         border-top: 1px solid #5a2a83;
         border-bottom: 1px solid #5a2a83;
         border-radius: 8px;
-        background-color: #fdfdfd; /* Por si quieres más contraste */
+        background-color: #fdfdfd;
+        /* Por si quieres más contraste */
         padding: 10px;
-        margin-top: 8px; /* opcional, si quieres separarlo del top */
+        margin-top: 8px;
+        /* opcional, si quieres separarlo del top */
     }
+
     .mobile-menu .nav-link,
     .mobile-menu .dropdown-menu {
         text-align: left !important;
-        width: 100%; /* Ocupa todo el ancho para que se vea alineado */
+        width: 100%;
+        /* Ocupa todo el ancho para que se vea alineado */
     }
+
     .mobile-menu .dropdown-menu {
         margin-left: 0;
     }
-    
+
     .mobile-menu .nav-item {
         width: 100%;
     }
-    
+
     .navbar-toggler {
         border: none;
         padding: 4px 9px;
@@ -164,7 +197,7 @@ body {
         outline: none;
         box-shadow: none;
     }
-    
+
     .navbar-toggler span {
         width: 25px;
         height: 2px;
@@ -172,28 +205,56 @@ body {
         margin: 4px 0;
         transition: 0.3s;
     }
-    
+
     .navbar-toggler:not(.collapsed) span:nth-child(1) {
         transform: translateY(10px) rotate(45deg);
     }
+
     .navbar-toggler:not(.collapsed) span:nth-child(2) {
         opacity: 0;
     }
+
     .navbar-toggler:not(.collapsed) span:nth-child(3) {
         transform: translateY(-10px) rotate(-45deg);
     }
+
     .nav-item.dropdown:hover .portafolio-btn::before {
         transform: scaleX(1);
     }
 }
+
 @media (min-width: 992px) {
     .nav-item.dropdown:hover .dropdown-menu {
         display: block;
         margin-top: 0;
     }
+
     .nav-item.dropdown .dropdown-menu {
         left: 50% !important;
         transform: translateX(-50%) !important;
     }
 }
 
+@media (max-width: 320px) {
+    .navbar-border {
+        border-left: 3px solid #D0C4DF !important;
+        border-right: 3px solid #D0C4DF !important;
+        border-bottom: 30px solid #D0C4DF !important;
+        border-top: 3px solid #D0C4DF !important;
+    }
+
+    .navbar-custom {
+        max-width: 100%;
+        left: 0;
+        right: 0;
+    }
+
+    body {
+        overflow-x: hidden;
+    }
+}
+
+html,
+body {
+    overflow-x: hidden;
+}

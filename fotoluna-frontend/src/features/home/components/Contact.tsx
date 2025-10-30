@@ -37,7 +37,7 @@ const Contact = () => {
     };
 
     return (
-        <div className="contact-section bg-custom-2">
+        <div className="bg-custom-2">
             {/* MAPA con overlay dentro */}
             <div className="map-wrapper">
                 <iframe

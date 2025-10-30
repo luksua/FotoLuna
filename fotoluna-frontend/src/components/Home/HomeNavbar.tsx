@@ -5,6 +5,21 @@ import HomeSidebar from "./HomeSidebar";
 import HomeButton from "./HomeButton";
 
 const HomeNav: React.FC = () => {
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+        e.preventDefault();
+        const element = document.getElementById(targetId);
+        if (element) {
+            const navbarHeight = 80; // Ajusta según la altura de tu navbar
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     return (
         <>
             <nav className="navbar navbar-border navbar-expand-lg fixed-top navbar-custom">
@@ -41,14 +56,51 @@ const HomeNav: React.FC = () => {
                             </a>
 
                             <ul className="dropdown-menu dropdown-menu-end">
-                                <li><a className="dropdown-item" href="cumpleaños.html">Maternidad</a></li>
-                                <li><a className="dropdown-item" href="cumpleaños.html">Cumpleaños</a></li>
-                                <li><a className="dropdown-item" href="/quince">Quince años</a></li>
-                                <li><a className="dropdown-item" href="bodas.html">Bodas</a></li>
-                                <li><a className="dropdown-item" href="bautizo.html">Bautizos</a></li>
-                                <li><a className="dropdown-item" href="familia.html">Familia</a></li>
-                                <li><a className="dropdown-item" href="grados.html">Grados</a></li>
-                                <li><a className="dropdown-item" href="otros.html">Otros</a></li>
+                                <li>
+                                    <a className="dropdown-item" href="#maternity"
+                                        onClick={(e) => handleNavClick(e, 'maternity')}>
+                                        Maternidad
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#birthday"
+                                        onClick={(e) => handleNavClick(e, 'birthday')}>
+                                        Cumpleaños
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#quinces"
+                                        onClick={(e) => handleNavClick(e, 'quinces')}>
+                                        Quince años
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#wedding"
+                                        onClick={(e) => handleNavClick(e, 'wedding')}>
+                                        Bodas
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#sacraments"
+                                        onClick={(e) => handleNavClick(e, 'sacraments')}>
+                                        Sacramentos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#documents">
+                                        Documento
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#graduation">
+                                        Grados
+                                    </a>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item" href="#others">
+                                        Otros
+                                    </a>
+                                    </li>
                             </ul>
                         </li>
                         <li className="nav-item">

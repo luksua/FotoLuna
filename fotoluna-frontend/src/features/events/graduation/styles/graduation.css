@@ -1,0 +1,493 @@
+.compact-graduation-section {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a2a6c 0%, #2c3e50 50%, #4A235A 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.compact-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.compact-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.2;
+}
+
+.compact-title-container {
+  margin-bottom: 2rem;
+}
+
+.compact-main-title {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.compact-divider {
+  margin: 1rem 0;
+}
+
+.compact-cap-icon {
+  font-size: 2rem;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.compact-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+/* Filtros Compactos */
+.compact-categories {
+  margin-bottom: 2rem;
+}
+
+.compact-filter-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.compact-filter-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compact-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.compact-filter-btn.active {
+  background: #FFD700;
+  border-color: #FFD700;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Cards Compactas */
+.compact-package-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  height: 100%;
+}
+
+.compact-package-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.compact-package-card.featured {
+  border: 2px solid #FFD700;
+}
+
+.compact-popular-badge {
+  position: absolute;
+  top: 10px;
+  right: -25px;
+  background: #FFD700;
+  color: #2c3e50;
+  padding: 4px 30px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transform: rotate(45deg);
+  z-index: 2;
+}
+
+.compact-card-content {
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header de la Card */
+.compact-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.8rem;
+}
+
+.compact-category-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.compact-category-badge.basic {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.compact-category-badge.standard {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.compact-category-badge.premium {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.compact-category-badge.deluxe {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.compact-package-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.compact-package-meta .duration,
+.compact-package-meta .photos {
+  font-size: 0.7rem;
+  color: #5D6D7E;
+  font-weight: 500;
+}
+
+/* Imagen */
+.compact-image-container {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 0.8rem;
+  background: #f8f9fa;
+  height: 120px;
+}
+
+.compact-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.compact-image-container:hover .compact-image {
+  transform: scale(1.05);
+}
+
+.compact-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(44, 62, 80, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.compact-image-container:hover .compact-image-overlay {
+  opacity: 1;
+}
+
+/* Información */
+.compact-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-package-name {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  line-height: 1.2;
+}
+
+.compact-package-desc {
+  color: #5D6D7E;
+  font-size: 0.75rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.3;
+}
+
+/* Precio */
+.compact-pricing {
+  margin-bottom: 0.8rem;
+}
+
+.compact-original-price {
+  color: #85929E;
+  text-decoration: line-through;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.compact-current-price {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Features */
+.compact-features {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.compact-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.feature-dot {
+  color: #27AE60;
+  font-weight: bold;
+  font-size: 0.8rem;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.feature-text {
+  color: #2c3e50;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.compact-feature-more {
+  color: #5D6D7E;
+  font-size: 0.7rem;
+  font-style: italic;
+  margin-top: 0.3rem;
+}
+
+/* Acciones */
+.compact-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.compact-primary-btn {
+  flex: 2;
+  background: linear-gradient(135deg, #2c3e50, #4A235A);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compact-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+}
+
+.compact-secondary-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #2c3e50;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  color: #2c3e50;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compact-secondary-btn:hover {
+  background: #2c3e50;
+  color: white;
+}
+
+/* Información Adicional Compacta */
+.compact-additional-info {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.compact-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.compact-info-item .info-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.compact-info-item .info-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-info-item strong {
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.compact-info-item span {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+}
+
+/* Modal Compacto */
+.compact-modal {
+  position: fixed;
+  top: 5%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.compact-modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.compact-modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact-modal-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .compact-main-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .col-xl-3 {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .compact-graduation-section {
+    padding: 1.5rem 0;
+  }
+  
+  .compact-main-title {
+    font-size: 1.8rem;
+  }
+  
+  .compact-card-content {
+    padding: 0.8rem;
+  }
+  
+  .compact-image-container {
+    height: 100px;
+  }
+}
+
+@media (max-width: 576px) {
+  .compact-main-title {
+    font-size: 1.5rem;
+  }
+  
+  .compact-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .compact-filter-container {
+    gap: 0.3rem;
+  }
+  
+  .compact-filter-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  .compact-actions {
+    flex-direction: column;
+  }
+  
+  .compact-info-item {
+    padding: 0.8rem;
+  }
+}

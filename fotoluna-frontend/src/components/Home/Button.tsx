@@ -25,7 +25,7 @@ const Button = ({ value, children, onClick, to, className }: Props) => {
         <button
             type="submit"
             onClick={onClick}
-            className={`btn custom-upload-btn ${className ?? ""}`}
+            className={`btn ${className ?? "custom-upload-btn"}`}
         >
             {children ?? value}
         </button>

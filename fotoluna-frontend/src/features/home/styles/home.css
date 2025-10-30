@@ -1,14 +1,24 @@
-/* Inicio */
+/* Inicio - CSS CORREGIDO CON MÁRGENES NEGATIVOS */
+* {
+    box-sizing: border-box;
+}
+
+/* Contenedor principal que previene el overflow horizontal */
+body {
+    overflow-x: hidden;
+}
+
 .slider-container {
     overflow: hidden;
     position: relative;
-    margin-top: 0;
-    /* Changed from -40px to 0 */
+    width: 100%;
 }
 
 .slider-track {
+    will-change: transform;
     display: flex;
-    transition: transform 0.5s ease;
+    transition: transform 1,3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 100%;
 }
 
 .slider-item {
@@ -18,7 +28,65 @@
     align-items: center;
     transition: flex 0.3s ease;
     flex: 0 0 calc(100% / 3);
-    /* 3 visibles */
+    cursor: pointer;
+}
+
+.hover-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    padding: 20px;
+    padding-bottom: 50px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.image-container-home:hover .hover-text {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.05);
+}
+
+.image-container-home:hover img {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: -2px -2px 8px 0 rgb(199, 102, 221), 6px 6px 18px 3px rgb(92, 162, 235);
+}
+
+.image-container-home {
+    position: relative;
+    width: 100%;
+}
+
+.hover-text h3 {
+    color: rgb(255, 255, 255);
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.slider-item.large .hover-text h3 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.slider-item.large .hover-text p {
+    font-size: 1.4rem;
+}
+
+.hover-text p {
+    font-size: 1rem;
+    margin: 0;
+    margin-bottom: 15px;
 }
 
 /* Tamaño por defecto: pequeño */
@@ -40,6 +108,12 @@
     box-shadow: -1px -1px 6px 0 rgb(199, 102, 221), 4px 4px 16px 2px rgb(92, 162, 235);
 }
 
+.slider-item img:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: -2px -2px 8px 0 rgb(199, 102, 221), 6px 6px 18px 3px rgb(92, 162, 235);
+    transition: all 0.3s ease;
+}
+
 .slider-buttons {
     position: absolute;
     transform: translateY(-50%);
@@ -47,20 +121,15 @@
     display: flex;
     justify-content: space-between;
     padding: 0 30px;
-    /* Added padding for button spacing */
 }
 
 .slider-buttons button {
     width: 50px;
-    /* Fixed width */
     height: 50px;
-    /* Fixed height */
     background-color: rgba(94, 29, 111, 0.1);
-    /* Light purple background */
     color: rgb(243, 215, 255);
     border-radius: 50%;
     font-size: 1.5rem;
-    /* Larger icons */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -71,115 +140,458 @@
 .slider-buttons button:hover {
     background-color: rgba(94, 29, 111, 0.2);
     transform: scale(1.1);
-    /* Slight grow effect on hover */
     box-shadow: 0 0 10px rgba(94, 29, 111, 0.2);
-    /* Subtle shadow on hover */
 }
 
-/* Responsividad para móviles */
-@media (max-width: 768px) {
+.slider-item.small-mobile {
+    opacity: 0.6;
+    transform: scale(0.9);
+    transition: all 0.3s ease;
+}
+
+/* ========== RESPONSIVIDAD CORREGIDA ========== */
+
+/* Para móviles muy pequeños (320px y menos) - SOLO AQUÍ ELIMINAMOS OVERFLOW */
+@media (max-width: 320px) {
+    .slider-container {
+        max-width: 100%;
+    }
+
+    .slider-track {
+        margin-top: -40px;
+        /* Sin márgenes negativos en móvil muy pequeño */
+        width: 100%;
+    }
+
+    .slider-item {
+        flex: 0 0 100% !important;
+        padding: 0 8px !important;
+        min-width: 0;
+    }
+
+    .slider-buttons {
+        padding: 0 8px !important;
+    }
+
+    .slider-buttons button {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .hover-text h3 {
+        font-size: 1.4rem !important;
+    }
+
+    .hover-text p {
+        font-size: 0.9rem !important;
+    }
+
+    .hover-text {
+        padding: 10px;
+        padding-bottom: 20px;
+    }
+}
+
+/* Para móviles normales */
+@media (max-width: 425px) {
+    .container-fluid.my-5 {
+        margin: 0 !important;
+        padding: 0 10px !important;
+        width: 100%;
+    }
+
+    .slider-container {
+        padding: 25px;
+        width: 100%;
+    }
+
+    .slider-track {
+        margin-top: 0 !important;
+        /* Sin márgenes negativos en móvil */
+        gap: 0;
+        width: 100%;
+    }
+
+    .slider-item {
+        flex: 0 0 100% !important;
+        padding: 0 10px !important;
+    }
+
+    .slider-buttons {
+        padding: 0 10px;
+    }
+
+    .slider-buttons button {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+
+    .hover-text h3 {
+        font-size: 1.6rem !important;
+    }
+
+    .hover-text p {
+        font-size: 1rem !important;
+    }
+
+    .hover-text {
+        padding: 15px;
+        padding-bottom: 30px;
+    }
+}
+
+/* Para tablets pequeñas */
+@media (min-width: 426px) and (max-width: 768px) {
+    .slider-item {
+        flex: 0 0 50% !important;
+        padding: 0 20px !important;
+    }
+
+    .slider-track {
+        margin-top: 40px;
+        /* Margen negativo moderado */
+    }
+
+    .slider-buttons {
+        padding: 0 20px;
+    }
+
     .slider-buttons button {
         width: 50px;
         height: 50px;
         font-size: 1.5rem;
     }
-
-    .slider-item.small {
-        flex: 0 0 40%;
-    }
-
-    .slider-item.large {
-        flex: 0 0 60%;
-    }
-
-    .slider-item.small {
-        transform: scale(0.9);
-    }
-
-    .slider-item.large {
-        transform: scale(1);
-    }
-
-    .slider-track {
-        /* Less negative margin for mobile */
-        gap: 10px;
-    }
 }
 
-/* Adjust image sizes for medium-large screens */
-
-
-/* Further reduce size for larger screens if needed */
+/* Para desktop - MÁRGENES NEGATIVOS Y MÁS ANCHO */
 @media (min-width: 769px) {
-    .container-fluid.my-5 {
-        margin: 0 !important;
-        /* Changed to remove all margins */
-    }
-
     .slider-container {
-        margin: 0 auto;
-        /* Remove top margin, keep horizontal centering */
-        max-width: 1200px;
-    }
-
-    .slider-item {
-        flex: 0 0 33.333%;
-        /* Limit maximum width */
+        max-width: 1400px !important;
+        /* Más ancho que antes */
         padding: 0 20px;
     }
 
+    .slider-item {
+        flex: 0 0 33.333%;
+        padding: 0 25px !important;
+        /* Más espacio entre imágenes */
+    }
+
+    .slider-track {
+        /* Margen negativo para mostrar más imagen */
+        gap: 0;
+    }
+
+    .slider-buttons {
+        padding: 0 40px;
+        /* Botones más separados */
+    }
+}
+
+/* Para pantallas grandes - MÁS ANCHO Y MÁRGENES NEGATIVOS */
+@media (min-width: 1000px) {
+    .slider-container {
+        margin-top: -40px;
+        max-width: 1600px !important;
+        /* Mucho más ancho */
+    }
+
+    .slider-item {
+        padding: 0 30px !important;
+        /* Aún más espacio entre imágenes */
+    }
+
+    .slider-buttons {
+        padding: 0 60px;
+    }
+
     .slider-item.small {
         transform: scale(0.9);
     }
 
+    /* Tamaño grande: el del medio */
     .slider-item.large {
-        transform: scale(0.8);
-    }
-
-    .slider-container {
-        margin-top: 0;
-        max-width: 1200px;
-        /* Limit container width */
-        margin: 0 auto;
-        /* Center container */
-    }
-
-    .slider-track {
-        margin-top: -40px;
-        /* Medium negative margin for tablets */
+        transform: scale(0.6);
+        /* Más grande */
+        transition: transform 0.3s ease;
+        z-index: 1;
+        /* Para que se muestre por encima de las otras */
     }
 }
 
-@media (min-width: 1000px) {
+@media (min-width: 1100px) {
     .slider-container {
-        max-width: 1400px; /* Increased from 1200px */
-        margin: 0 auto;
-        padding: 0;
-    }
-
-    .slider-item {
-        flex: 0 0 33.333%;
-        padding: 0 25px; /* Increased padding for more space between images */
+        max-width: 1700px !important;
     }
 
     .slider-track {
-        margin-top: -150px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
+        margin-top: -80px;
+        /* Margen negativo */
     }
 
-    /* Adjust scales for better proportions */
-    .slider-item.small {
-        transform: scale(0.8);
+    .slider-item {
+        padding: 0 40px !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    .slider-container {
+        max-width: 1800px !important;
+        /* Máximo ancho */
     }
 
-    .slider-item.large {
-        transform: scale(0.6);
+    .slider-track {
+        margin-top: -100px;
+        /* Margen negativo */
     }
 
-    /* Adjust button positions for wider container */
+    .slider-item {
+        padding: 0 40px !important;
+        /* Máximo espacio entre imágenes */
+    }
+
     .slider-buttons {
-        padding: 0 80px; /* Increased padding for wider spacing */
+        padding: 0 80px;
     }
+}
+
+@media (min-width: 1600px) {
+    .slider-container {
+        max-width: 1900px !important;
+    }
+
+    .slider-track {
+        margin-top: -120px;
+        /* Margen negativo máximo */
+    }
+
+    .slider-item {
+        padding: 0 45px !important;
+    }
+}
+
+/* Carrusel para móvil - Scroll horizontal */
+.slider-track-mobile {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 15px;
+    padding: 10px 15px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.slider-track-mobile::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.slider-item-mobile {
+    flex: 0 0 85%; /* Cada item ocupa 85% del ancho visible */
+    min-width: 85%;
+    scroll-snap-align: start;
+    padding: 0 5px;
+}
+
+.slider-item-mobile .image-container {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.slider-item-mobile .image-container:active {
+    transform: scale(0.98); /* Efecto de presionado */
+}
+
+.slider-item-mobile img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+/* Indicadores de scroll para móvil */
+.slider-indicators-mobile {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 10px;
+}
+
+.slider-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.slider-indicator.active {
+    background: #5a2a83;
+    transform: scale(1.2);
+}
+
+/* Indicadores del slider */
+.slider-indicators {
+    display: flex;
+    gap: 10px;
+    padding: 12px 20px;
+    background: rgba(138, 43, 226, 0.15);
+    backdrop-filter: blur(12px);
+    border-radius: 25px;
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    z-index: 5;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(138, 43, 226, 0.6);
+    background: rgba(255, 255, 255, 0.3);
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.indicator::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, 
+        rgba(176, 117, 225, 0.4));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.indicator:hover {
+    transform: scale(1.3);
+    border-color: rgba(176, 117, 225, 1);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.indicator:hover::before {
+    opacity: 1;
+}
+
+.indicator.active {
+    background:
+        rgb(182, 155, 205);
+    width: 35px;
+    border-radius: 12px;
+    border-color: rgba(176, 117, 225, 1);
+    box-shadow: 
+        0 2px 12px rgba(138, 43, 226, 0.6),
+        0 0 20px rgba(138, 43, 226, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.indicator.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        transparent 100%);
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Animación de pulso para el indicador activo */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 
+            0 2px 12px rgba(138, 43, 226, 0.6),
+            0 0 20px rgba(138, 43, 226, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 2px 16px rgba(138, 43, 226, 0.8),
+            0 0 30px rgba(138, 43, 226, 0.5);
+    }
+}
+
+/* Animación de brillo */
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Responsive para tablets */
+@media (max-width: 768px) {
+    .slider-indicators {
+        padding: 10px 16px;
+        gap: 8px;
+    }
+
+    .indicator {
+        width: 9px;
+        height: 9px;
+    }
+
+    .indicator.active {
+        width: 30px;
+    }
+}
+
+/* Responsive para móviles */
+@media (max-width: 425px) {
+    .slider-indicators {
+        padding: 8px 14px;
+        gap: 6px;
+        border-radius: 20px;
+    }
+
+    .indicator {
+        width: 8px;
+        height: 8px;
+        border-width: 1.5px;
+    }
+
+    .indicator.active {
+        width: 26px;
+        border-radius: 10px;
+    }
+}
+
+/* Mejoras de UX para scroll táctil */
+@media (max-width: 768px) {
+    .slider-container {
+        user-select: none; /* Previene selección de texto al hacer scroll */
+    }
+    
+    .slider-track-mobile {
+        cursor: grab;
+    }
+    
+    .slider-track-mobile:active {
+        cursor: grabbing;
+    }
+    
+    /* Efecto visual para items adyacentes */
+    .slider-item-mobile:not(:first-child) {
+        margin-left: -10px; /* Superposición sutil */
+    }
+}
+
+/* Asegurar que el carrusel desktop se mantenga igual */
+.slider-track {
+    display: flex;
+    transition: transform 0.5s ease;
 }

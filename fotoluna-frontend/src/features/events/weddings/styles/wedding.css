@@ -1,0 +1,858 @@
+.elegant-wedding-section {
+    background: linear-gradient(to top,#fef7f7, #f8f4f4 50%, #ffffff);
+    min-height: 100vh;
+    display: flex;
+    padding: 50px;
+    padding-bottom: 80px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Playfair Display', 'Times New Roman', serif;
+}
+
+/* Background decorative elements */
+.elegant-bg-element {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(255, 107, 107, 0.05), rgba(255, 182, 193, 0.03));
+    z-index: 0;
+}
+
+.elegant-bg-1 {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    right: -100px;
+}
+
+.elegant-bg-2 {
+    width: 200px;
+    height: 200px;
+    bottom: 100px;
+    left: -50px;
+}
+
+.elegant-bg-3 {
+    width: 150px;
+    height: 150px;
+    bottom: -50px;
+    right: 20%;
+}
+
+.elegant-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header Styles */
+.elegant-header {
+    margin-bottom: 3rem;
+}
+
+.elegant-title-wrapper {
+    margin-bottom: 1rem;
+}
+
+.elegant-main-title {
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: #2c2c2c;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.elegant-title-underline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.elegant-underline-dot {
+    width: 8px;
+    height: 8px;
+    background: #d4af37;
+    border-radius: 50%;
+}
+
+.elegant-underline-line {
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent);
+}
+
+.elegant-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    font-style: italic;
+    letter-spacing: 1px;
+    margin-top: 1rem;
+}
+
+/* Elegant Tabs */
+.elegant-tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.elegant-tab {
+    background: transparent;
+    border: 1px solid #e8e8e8;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    color: #666;
+    font-family: inherit;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.elegant-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #d4af37, #f4e4a9);
+    transition: left 0.4s ease;
+    z-index: -1;
+}
+
+.elegant-tab:hover {
+    color: #2c2c2c;
+    border-color: #d4af37;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+}
+
+.elegant-tab-active {
+    color: #2c2c2c;
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 25px rgba(212, 175, 55, 0.3);
+}
+
+.elegant-tab-active::before {
+    left: 0;
+}
+
+.elegant-tab-icon {
+    font-size: 0.8rem;
+    color: #d4af37;
+}
+
+/* Content Row */
+.elegant-content-row {
+    align-items: center;
+    margin: 0;
+}
+
+/* Image Section */
+.elegant-image-section {
+    padding-right: 2rem;
+}
+
+.elegant-image-wrapper {
+    position: relative;
+}
+
+.elegant-image-frame {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 8px solid white;
+}
+
+.elegant-main-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.elegant-image-frame:hover .elegant-main-image {
+    transform: scale(1.05);
+}
+
+.elegant-image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: 2rem;
+}
+
+.elegant-theme-badge {
+    background: linear-gradient(45deg, #d4af37, #f4e4a9);
+    color: #2c2c2c;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.elegant-theme-description {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0;
+    font-style: italic;
+}
+
+.elegant-image-decoration {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border: 2px solid #d4af37;
+    border-radius: 25px;
+    z-index: -1;
+    opacity: 0.3;
+}
+
+/* Packages Section */
+.elegant-packages-section {
+    padding-left: 2rem;
+}
+
+.elegant-packages-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.elegant-packages-title {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #2c2c2c;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.elegant-packages-subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.elegant-packages-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* Package Cards */
+.elegant-package-card-wrapper {
+    position: relative;
+}
+
+.elegant-package-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+    transition: all 0.4s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    height: 100%;
+}
+
+.elegant-package-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #d4af37, #f4e4a9);
+    transition: width 0.4s ease;
+}
+
+.elegant-package-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.elegant-package-card:hover::before {
+    width: 8px;
+}
+
+.elegant-package-featured {
+    border-color: #d4af37;
+    background: linear-gradient(135deg, #fff, #fffaf0);
+}
+
+.elegant-featured-badge {
+    position: absolute;
+    top: -0.2rem;
+    right: -2rem;
+    background: linear-gradient(45deg, #d4af37, #f4e4a9);
+    color: #2c2c2c;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    z-index: 2;
+}
+
+.elegant-featured-star {
+    color: #2c2c2c;
+    font-size: 0.7rem;
+}
+
+.elegant-package-header {
+    margin-bottom: 1.5rem;
+}
+
+.elegant-package-name-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.elegant-package-name {
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: #2c2c2c;
+    margin: 0;
+}
+
+.elegant-package-price {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #d4af37;
+    letter-spacing: 1px;
+}
+
+.elegant-package-features {
+    margin-bottom: 2rem;
+}
+
+.elegant-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f8f8f8;
+}
+
+.elegant-feature-item:last-child {
+    border-bottom: none;
+}
+
+.elegant-feature-icon {
+    color: #d4af37;
+    font-size: 0.8rem;
+    min-width: 20px;
+}
+
+.elegant-feature-text {
+    color: #555;
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+}
+
+.elegant-book-button {
+    width: 100%;
+    background: linear-gradient(45deg, #2c2c2c, #444);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.elegant-book-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #d4af37, #f4e4a9);
+    transition: left 0.4s ease;
+    z-index: 1;
+}
+
+.elegant-book-button:hover::before {
+    left: 0;
+}
+
+.elegant-book-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+}
+
+.elegant-button-text,
+.elegant-button-arrow {
+    position: relative;
+    z-index: 2;
+}
+
+.elegant-button-arrow {
+    transition: transform 0.3s ease;
+}
+
+.elegant-book-button:hover .elegant-button-arrow {
+    transform: translateX(5px);
+}
+
+/* ========== RESPONSIVE MEJORADO ========== */
+
+/* Tablets grandes (992px - 1199px) */
+@media (max-width: 1199px) {
+    .elegant-wedding-section {
+        padding: 40px 30px;
+    }
+
+    .elegant-main-title {
+        font-size: 3rem;
+    }
+
+    .elegant-image-section {
+        padding-right: 1.5rem;
+    }
+
+    .elegant-packages-section {
+        padding-left: 1.5rem;
+    }
+}
+
+/* Tablets (768px - 991px) */
+@media (max-width: 991px) {
+    .elegant-wedding-section {
+        padding: 30px 20px;
+        padding-bottom: 60px;
+    }
+
+    .elegant-header {
+        margin-bottom: 2rem;
+    }
+
+    .elegant-main-title {
+        font-size: 2.5rem;
+        letter-spacing: 1px;
+    }
+
+    .elegant-subtitle {
+        font-size: 1rem;
+    }
+
+    .elegant-tabs-container {
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+    }
+
+    .elegant-tab {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.85rem;
+    }
+
+    .elegant-image-section {
+        padding-right: 0;
+        margin-bottom: 2rem;
+    }
+
+    .elegant-packages-section {
+        padding-left: 0;
+    }
+
+    .elegant-main-image {
+        height: 350px;
+    }
+
+    .elegant-package-name {
+        font-size: 1.6rem;
+    }
+
+    .elegant-package-price {
+        font-size: 1.8rem;
+    }
+
+    .elegant-bg-1 {
+        width: 250px;
+        height: 250px;
+    }
+
+    .elegant-bg-2 {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+/* Tablets pequeñas (768px o menos) */
+@media (max-width: 768px) {
+    .elegant-wedding-section {
+        padding: 25px 15px;
+        padding-bottom: 50px;
+    }
+
+    .elegant-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .elegant-main-title {
+        font-size: 2.2rem;
+        letter-spacing: 0.5px;
+    }
+
+    .elegant-title-underline {
+        gap: 8px;
+    }
+
+    .elegant-underline-line {
+        width: 80px;
+    }
+
+    .elegant-underline-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    .elegant-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .elegant-tabs-container {
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .elegant-tab {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.8rem;
+    }
+
+    .elegant-image-section {
+        margin-bottom: 2rem;
+    }
+
+    .elegant-main-image {
+        height: 320px;
+    }
+
+    .elegant-image-overlay {
+        padding: 1.5rem;
+    }
+
+    .elegant-theme-badge {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .elegant-theme-description {
+        font-size: 0.85rem;
+    }
+
+    .elegant-packages-grid {
+        gap: 1rem;
+    }
+
+    .elegant-package-card {
+        padding: 1.5rem;
+    }
+
+    .elegant-package-name {
+        font-size: 1.5rem;
+    }
+
+    .elegant-package-price {
+        font-size: 1.6rem;
+    }
+
+    .elegant-feature-text {
+        font-size: 0.9rem;
+    }
+
+    .elegant-book-button {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* Ocultar decoraciones grandes */
+    .elegant-bg-3 {
+        display: none;
+    }
+
+    .elegant-image-decoration {
+        display: none;
+    }
+}
+
+/* Móviles grandes (426px - 767px) */
+@media (max-width: 576px) {
+    .elegant-wedding-section {
+        padding: 20px 10px;
+        padding-bottom: 40px;
+    }
+
+    .elegant-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .elegant-main-title {
+        font-size: 1.9rem;
+    }
+
+    .elegant-subtitle {
+        font-size: 0.9rem;
+        padding: 0 10px;
+    }
+
+    .elegant-tabs-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        padding: 0 10px;
+    }
+
+    .elegant-tab {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem 1rem;
+    }
+
+    .elegant-content-row {
+        margin: 0 !important;
+    }
+
+    .elegant-image-section,
+    .elegant-packages-section {
+        padding: 0 !important;
+    }
+
+    .elegant-main-image {
+        height: 280px;
+    }
+
+    .elegant-image-overlay {
+        padding: 1rem;
+    }
+
+    .elegant-theme-badge {
+        padding: 0.3rem 0.7rem;
+        font-size: 0.8rem;
+    }
+
+    .elegant-theme-description {
+        font-size: 0.8rem;
+    }
+
+    .elegant-packages-grid .row {
+        margin: 0 !important;
+    }
+
+    .elegant-package-card-wrapper {
+        padding: 0 !important;
+        margin-bottom: 1rem;
+    }
+
+    .elegant-package-card {
+        padding: 1.2rem;
+    }
+
+    .elegant-featured-badge {
+        right: 1rem;
+        top: -0.5rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    .elegant-package-name-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .elegant-package-name {
+        font-size: 1.4rem;
+    }
+
+    .elegant-package-price {
+        font-size: 1.5rem;
+    }
+
+    .elegant-package-features {
+        margin-bottom: 1.5rem;
+    }
+
+    .elegant-feature-item {
+        padding: 0.4rem 0;
+    }
+
+    .elegant-feature-text {
+        font-size: 0.85rem;
+    }
+
+    .elegant-book-button {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.8rem;
+    }
+
+    /* Ocultar todos los elementos decorativos de fondo */
+    .elegant-bg-element {
+        display: none;
+    }
+}
+
+/* Móviles pequeños (425px o menos) */
+@media (max-width: 425px) {
+    .elegant-wedding-section {
+        padding: 15px 8px;
+    }
+
+    .elegant-main-title {
+        font-size: 1.7rem;
+        line-height: 1.2;
+    }
+
+    .elegant-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .elegant-tab {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    .elegant-main-image {
+        height: 250px;
+    }
+
+    .elegant-image-overlay {
+        padding: 0.8rem;
+    }
+
+    .elegant-package-card {
+        padding: 1rem;
+    }
+
+    .elegant-package-name {
+        font-size: 1.3rem;
+    }
+
+    .elegant-package-price {
+        font-size: 1.4rem;
+    }
+
+    .elegant-feature-text {
+        font-size: 0.8rem;
+    }
+
+    .elegant-book-button {
+        padding: 0.7rem 1rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Móviles muy pequeños (375px o menos) */
+@media (max-width: 375px) {
+    .elegant-main-title {
+        font-size: 1.5rem;
+    }
+
+    .elegant-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .elegant-tab {
+        font-size: 0.7rem;
+        padding: 0.6rem 0.7rem;
+    }
+
+    .elegant-main-image {
+        height: 220px;
+    }
+
+    .elegant-package-name {
+        font-size: 1.2rem;
+    }
+
+    .elegant-package-price {
+        font-size: 1.3rem;
+    }
+
+    .elegant-featured-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+/* Landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .elegant-wedding-section {
+        padding: 15px 10px;
+        min-height: auto;
+    }
+
+    .elegant-header {
+        margin-bottom: 1rem;
+    }
+
+    .elegant-main-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .elegant-subtitle {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+
+    .elegant-tabs-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .elegant-tab {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+    }
+
+    .elegant-main-image {
+        height: 200px;
+    }
+
+    .elegant-package-card {
+        padding: 1rem;
+    }
+
+    .elegant-package-features {
+        margin-bottom: 1rem;
+    }
+
+    .elegant-book-button {
+        padding: 0.6rem 1rem;
+    }
+}

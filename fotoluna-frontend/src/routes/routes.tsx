@@ -8,6 +8,8 @@ import Appointment from "../features/appointment/pages/Appointment";
 import AppointmentForm from "../features/appointment/pages/AppointmentForm";
 import Notification from "../features/notification/pages/NotificationCustomer";
 import Quinces from "../features/events/quinces/pages/Quinces";
+import ProfilePage from "../features/home/pages/Account";
+import Photos from "../features/home/pages/Photos";
 
 export const routes = [
     {
@@ -41,5 +43,11 @@ export const routes = [
     }, {
         path: "/quince",
         element: <Quinces />
+    }, {
+        path: "/miCuenta",
+        element: <ProfilePage />
+    }, {
+        path: "/fotos",
+        element: <Photos />
     }
 ];
