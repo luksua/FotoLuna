@@ -20,7 +20,7 @@ const sampleEmployees: Employee[] = [
         nombre: "Ana María Gómez",
         telefono: "+57 300 123 4567",
         documento: "CC 1234567890",
-        correo: "ana.gomez@fotoluna.com",
+        correo: "ana.gomez@gmail.com",
         estado: true
     },
     {
@@ -28,7 +28,7 @@ const sampleEmployees: Employee[] = [
         nombre: "Carlos Rodríguez",
         telefono: "+57 310 987 6543",
         documento: "CC 0987654321",
-        correo: "carlos.rodriguez@fotoluna.com",
+        correo: "carlos.rodriguez@gmail.com",
         estado: true
     },
     {
@@ -38,6 +38,13 @@ const sampleEmployees: Employee[] = [
         documento: "CC 1072099798",
         correo: "wendyyuyie@gmail.com",
         estado: false
+    },{
+        id: 4,
+        nombre: "Sandy Diaz",
+        telefono: "+57 315 678 1234",
+        documento: "CC 12345678901",
+        correo: "ElDiablaso@gmail.com",
+        estado: true
     },
 ];
 
