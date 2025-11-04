@@ -1,12 +1,12 @@
 .employee-container {
-    padding: 20px;
-    max-width: 1200px;
+    padding: 30px;
+    max-width: 1400px; /* Aumentado de 1200px */
     margin: 0 auto;
 }
 
 /* Barra de búsqueda */
 .search-box {
-    margin: 20px 0;
+    margin: 25px 0;
 }
 
 .search-box input {
@@ -21,28 +21,31 @@
 .table-container {
     overflow-x: auto;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 25px;
 }
 
 /* Estilos de la tabla */
 .employee-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px;
+    min-width: 1000px;
 }
 
 .employee-table th,
 .employee-table td {
-    padding: 12px 15px;
+    padding: 16px 20px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    font-size: 15px;
 }
 
 .employee-table th {
     background-color: #f8f9fa;
     color: #333;
     font-weight: 600;
+    font-size: 16px;
 }
 
 .employee-table tr:hover {
