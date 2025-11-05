@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import InputLabel from "../../../components/Home/InputLabel";
 import Button from "../../../components/Home/Button";
 import "../styles/signUp.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import api from "../../../lib/api";
+import { useAuth } from "../../../context/useAuth";
 
 type FormValues = {
     emailCustomer: string;
@@ -18,12 +22,61 @@ const LoginForm: React.FC = () => {
     } = useForm<FormValues>({
         defaultValues: {
             emailCustomer: "",
-            password: ""
+            password: "",
         },
     });
 
-    const onSubmit: SubmitHandler<FormValues> = (data) => {
-        console.log("Datos del formulario:", data);
+    const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { loginWithToken } = useAuth();
+
+    const params = new URLSearchParams(location.search);
+    const next = params.get("next") || "/";
+
+    const serverErrorFor = (field: string) => {
+        return serverErrors[field] ? serverErrors[field].join(" ") : undefined;
+    };
+
+    const onSubmit: SubmitHandler<FormValues> = async (data) => {
+        setServerErrors({});
+        setLoading(true);
+
+        try {
+            // trim para evitar espacios accidentales
+            const payload = {
+                email: data.emailCustomer.trim(),
+                password: data.password,
+            };
+
+            // usa la instancia api; baseURL la controla en src/lib/api.ts
+            const res = await api.post("/api/login", payload);
+
+            const token = res.data?.access_token;
+            if (token) {
+                await loginWithToken(token);
+            } else if (res.data?.user && res.data?.token) {
+                await loginWithToken(res.data.token);
+            }
+
+            navigate(next, { replace: true });
+        } catch (err: any) {
+            console.error("Login error:", err?.response?.status, err?.response?.data);
+            if (err.response) {
+                if (err.response.status === 422) {
+                    setServerErrors(err.response.data.errors || {});
+                } else if (err.response.data?.message) {
+                    setServerErrors({ general: [err.response.data.message] });
+                } else {
+                    setServerErrors({ general: ["Error del servidor"] });
+                }
+            } else {
+                setServerErrors({ general: ["No se pudo conectar con el servidor"] });
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -35,13 +88,20 @@ const LoginForm: React.FC = () => {
                     </div>
                     <div className="col-lg-6 col-md-6 col-sm-12 py-5 ps-lg-5">
                         <h2 className="mb-4 text-center bg-custom-2">Inicio de Sesión</h2>
-                        {/* Formulario */}
-                        <form onSubmit={handleSubmit(onSubmit)}>
-                            {/* Email */}
+
+                        {serverErrors.general && <div className="alert alert-danger">{serverErrors.general.join(" ")}</div>}
+
+                        <form onSubmit={handleSubmit(onSubmit)} noValidate>
                             <Controller
                                 name="emailCustomer"
                                 control={control}
-                                rules={{ required: "El email es obligatorio" }}
+                                rules={{
+                                    required: "El email es obligatorio",
+                                    pattern: {
+                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                        message: "El correo debe ser una dirección de correo válida."
+                                    }
+                                }}
                                 render={({ field }) => (
                                     <InputLabel
                                         id="emailCustomer"
@@ -51,18 +111,15 @@ const LoginForm: React.FC = () => {
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.emailCustomer?.message}
+                                        error={errors.emailCustomer?.message || serverErrorFor("email")}
                                     />
                                 )}
                             />
 
-                            {/* Password */}
                             <Controller
                                 name="password"
                                 control={control}
-                                rules={{
-                                    required: "Debe de escribir la contraseña",
-                                }}
+                                rules={{ required: "Debe de escribir la contraseña" }}
                                 render={({ field }) => (
                                     <InputLabel
                                         id="password"
@@ -72,27 +129,22 @@ const LoginForm: React.FC = () => {
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.password?.message}
+                                        error={errors.password?.message || serverErrorFor("password")}
                                     />
                                 )}
                             />
 
-                            <Link
-                                to="/recuperarContrasena"
-                                className="form-text mb-4 text-end"
-                            >
+                            <Link to="/recuperarContrasena" className="form-text mb-4 text-end">
                                 Olvidé mi contraseña
                             </Link>
 
                             <div className="d-flex justify-content-center">
-                                <Button
-                                    value="Iniciar Sesión"
-                                />
+                                <Button value={loading ? "Ingresando..." : "Iniciar Sesión"} />
                             </div>
                         </form>
                     </div>
                 </div>
-            </div >
+            </div>
         </div>
     );
 };

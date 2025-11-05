@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
@@ -7,6 +8,8 @@ import "../../../styles/cropper.css";
 import InputLabel from "../../../components/Home/InputLabel";
 import Button from "../../../components/Home/Button";
 import "../styles/signUp.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 type FormValues = {
     firstNameCustomer: string;
@@ -17,14 +20,19 @@ type FormValues = {
     emailCustomer: string;
     password: string;
     confirmPassword: string;
-    photoCustomer: FileList;
+    photoCustomer?: FileList;
 };
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 const SignUpForm: React.FC = () => {
     const [profileImage, setProfileImage] = useState("/img/imagenperfil.jpg");
     const [cropData, setCropData] = useState("");
     const cropperRef = useRef<ReactCropperElement>(null);
     const [showModal, setShowModal] = useState(false);
+    const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const {
         control,
@@ -36,7 +44,7 @@ const SignUpForm: React.FC = () => {
             firstNameCustomer: "",
             lastNameCustomer: "",
             phoneCustomer: "",
-            documentType: "",
+            documentType: "CC",
             documentNumber: "",
             emailCustomer: "",
             password: "",
@@ -44,12 +52,71 @@ const SignUpForm: React.FC = () => {
         },
     });
 
-    const onSubmit: SubmitHandler<FormValues> = (data) => {
-        const formData = {
-            ...data,
-            photoCustomer: cropData
-        };
-        console.log("Datos del formulario:", formData);
+    // convierte dataURL (cropData) a File
+    function dataURLtoFile(dataurl: string, filename = "photo.jpg") {
+        const arr = dataurl.split(",");
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
+
+    const onSubmit: SubmitHandler<FormValues> = async (data) => {
+        setServerErrors({});
+        setLoading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("role", "cliente");
+            formData.append("firstNameCustomer", data.firstNameCustomer);
+            formData.append("lastNameCustomer", data.lastNameCustomer);
+            formData.append("phoneCustomer", data.phoneCustomer || "");
+            formData.append("documentType", data.documentType || "CC");
+            formData.append("documentNumber", data.documentNumber || "");
+            formData.append("email", data.emailCustomer);
+            formData.append("password", data.password);
+            formData.append("password_confirmation", data.confirmPassword);
+
+            // Si tienes cropData (dataURL) conviértelo a File y adjúntalo
+            if (cropData && cropData.startsWith("data:")) {
+                const file = dataURLtoFile(cropData, "photo.jpg");
+                formData.append("photoCustomer", file);
+            }
+            // Si no usas cropData pero tienes el File original (input file),
+            // en handleImageChange guarda el File y adjúntalo aquí en vez de convertir base64.
+
+            const res = await axios.post(`${API_BASE || ""}/api/register`, formData, {
+                headers: {
+                    Accept: "application/json",
+                    // NO pongan Content-Type: multipart/form-data aquí; axios lo establece automáticamente
+                },
+            });
+
+            if (res.data?.access_token) {
+                const token = res.data.access_token;
+                localStorage.setItem("token", token);
+                axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            }
+
+            navigate("/");
+        } catch (err: any) {
+            if (err.response) {
+                if (err.response.status === 422) {
+                    setServerErrors(err.response.data.errors || {});
+                } else {
+                    setServerErrors({ general: [err.response.data.message || "Error del servidor"] });
+                }
+            } else {
+                setServerErrors({ general: ["No se pudo conectar con el servidor"] });
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleImageChange = (files: FileList | null) => {
@@ -57,18 +124,21 @@ const SignUpForm: React.FC = () => {
             const file = files[0];
             const imageUrl = URL.createObjectURL(file);
             setProfileImage(imageUrl); // Mostrar la imagen en el cropper
+            // opcional: también podrías generar preview inmediato
         }
     };
 
     const getCropData = () => {
         if (typeof cropperRef.current?.cropper !== "undefined") {
-            setCropData(cropperRef.current?.cropper.getCroppedCanvas().toDataURL());
+            setCropData(cropperRef.current?.cropper.getCroppedCanvas().toDataURL("image/jpeg"));
         }
     };
 
+    // Helper para mostrar errores de servidor debajo del input
+    const serverErrorFor = (field: string) => {
+        return serverErrors[field] ? serverErrors[field].join(" ") : undefined;
+    };
 
-
-    // return
     return (
         <div className="container">
             <div className=" form-section ">
@@ -77,15 +147,12 @@ const SignUpForm: React.FC = () => {
                 </div>
                 <div className="row bg-custom-9">
                     <div className="col-lg-6 col-md-6 col-sm-12 d-flex flex-column align-items-center">
-
-                        {/* View imagen */}
                         <img
                             src={cropData ? cropData : profileImage}
                             alt="Foto Perfil Recortada"
                             className="profile-img mt-3"
                         />
 
-                        {/* <!-- Vertically centered modal --> */}
                         {showModal && (
                             <>
                                 <div className="modal fade show" style={{ display: "block" }}>
@@ -96,7 +163,6 @@ const SignUpForm: React.FC = () => {
                                                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
                                             </div>
                                             <div className="modal-body">
-                                                {/* Cropper para recortar la imagen */}
                                                 <Cropper
                                                     src={profileImage}
                                                     style={{ height: 300, width: "100%" }}
@@ -117,7 +183,13 @@ const SignUpForm: React.FC = () => {
                                                 <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                                                     Cancelar
                                                 </button>
-                                                <button className="btn custom-upload-btn" onClick={() => { getCropData(); setShowModal(false); }}>
+                                                <button
+                                                    className="btn custom-upload-btn"
+                                                    onClick={() => {
+                                                        getCropData();
+                                                        setShowModal(false);
+                                                    }}
+                                                >
                                                     Recortar Imagen
                                                 </button>
                                             </div>
@@ -128,7 +200,6 @@ const SignUpForm: React.FC = () => {
                             </>
                         )}
 
-                        {/* Button Open Modal */}
                         <label
                             htmlFor="profileImage"
                             className="btn custom-upload-btn custom-file-upload mt-3"
@@ -145,11 +216,9 @@ const SignUpForm: React.FC = () => {
                             accept="image/*"
                             hidden
                         />
-
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12">
 
-                        {/* Form */}
+                    <div className="col-lg-6 col-md-6 col-sm-12">
                         <form onSubmit={handleSubmit(onSubmit)}>
                             {/* First Name */}
                             <Controller
@@ -165,7 +234,7 @@ const SignUpForm: React.FC = () => {
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.firstNameCustomer?.message}
+                                        error={errors.firstNameCustomer?.message || serverErrorFor("firstNameCustomer")}
                                     />
                                 )}
                             />
@@ -184,7 +253,7 @@ const SignUpForm: React.FC = () => {
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.lastNameCustomer?.message}
+                                        error={errors.lastNameCustomer?.message || serverErrorFor("lastNameCustomer")}
                                     />
                                 )}
                             />
@@ -196,25 +265,54 @@ const SignUpForm: React.FC = () => {
                                 rules={{
                                     required: "El número de teléfono es obligatorio",
                                     pattern: {
-                                        value: /^[0-9]+$/, // solo números
-                                        message: "Solo se permiten números"
-                                    }
+                                        value: /^[0-9]+$/,
+                                        message: "Solo se permiten números",
+                                    },
                                 }}
                                 render={({ field }) => (
                                     <InputLabel
                                         id="phone"
                                         label="Teléfono:"
-                                        type="text"
+                                        type="number"
                                         value={field.value}
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.phoneCustomer?.message}
+                                        error={errors.phoneCustomer?.message || serverErrorFor("phoneCustomer")}
                                     />
                                 )}
                             />
 
-                            {/* Id number */}
+                            {/* Document Type - SELECT */}
+                            <Controller
+                                name="documentType"
+                                control={control}
+                                rules={{ required: "Seleccione el tipo de documento" }}
+                                render={({ field }) => (
+                                    <div className="mb-3">
+                                        <label htmlFor="documentType" className="form-label">
+                                            Tipo de Documento:
+                                        </label>
+                                        <select
+                                            id="documentType"
+                                            className={`form-select ${errors.documentType || serverErrorFor("documentType") ? "is-invalid" : ""}`}
+                                            value={field.value}
+                                            onChange={(e) => field.onChange(e.target.value)}
+                                            onBlur={field.onBlur}
+                                            ref={field.ref}
+                                        >
+                                            <option value="CC">Cédula de ciudadanía (CC)</option>
+                                            <option value="CE">Cédula de extranjería (CE)</option>
+                                            <option value="PAS">Pasaporte (PAS)</option>
+                                        </select>
+                                        <div className="invalid-feedback">
+                                            {errors.documentType?.message || serverErrorFor("documentType")}
+                                        </div>
+                                    </div>
+                                )}
+                            />
+
+                            {/* Document Number */}
                             <Controller
                                 name="documentNumber"
                                 control={control}
@@ -223,16 +321,17 @@ const SignUpForm: React.FC = () => {
                                     <InputLabel
                                         id="documentNumber"
                                         label="Número de Documento:"
-                                        type="text"
+                                        type="number"
                                         value={field.value}
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.documentNumber?.message}
+                                        error={errors.documentNumber?.message || serverErrorFor("documentNumber")}
                                     />
                                 )}
                             />
 
+                            {/* Email */}
                             <Controller
                                 name="emailCustomer"
                                 control={control}
@@ -241,12 +340,12 @@ const SignUpForm: React.FC = () => {
                                     <InputLabel
                                         id="emailCustomer"
                                         label="Correo:"
-                                        type="text"
+                                        type="email"
                                         value={field.value}
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.emailCustomer?.message}
+                                        error={errors.emailCustomer?.message || serverErrorFor("email")}
                                     />
                                 )}
                             />
@@ -268,7 +367,7 @@ const SignUpForm: React.FC = () => {
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.password?.message}
+                                        error={errors.password?.message || serverErrorFor("password")}
                                     />
                                 )}
                             />
@@ -280,11 +379,10 @@ const SignUpForm: React.FC = () => {
                                 rules={{
                                     required: "Confirma tu contraseña",
                                     validate: (value: string) => {
-                                        // watch is used to validate the password like an onChange
-                                        if (watch('password') != value) {
+                                        if (watch("password") !== value) {
                                             return "Las contraseñas no coinciden";
                                         }
-                                    }
+                                    },
                                 }}
                                 render={({ field }) => (
                                     <InputLabel
@@ -295,16 +393,19 @@ const SignUpForm: React.FC = () => {
                                         onChange={field.onChange}
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
-                                        error={errors.confirmPassword?.message}
+                                        error={errors.confirmPassword?.message || serverErrorFor("password_confirmation")}
                                     />
                                 )}
                             />
-                            <div id="emailHelp" className="form-text mb-4 text-end">La contraseña debe tener mínimo 8 caracteres</div>
+                            <div id="emailHelp" className="form-text mb-4 text-end">
+                                La contraseña debe tener mínimo 8 caracteres
+                            </div>
+
+                            {/* Server general error */}
+                            {serverErrors.general && <div className="alert alert-danger">{serverErrors.general.join(" ")}</div>}
 
                             <div className="d-flex justify-content-center">
-                                <Button
-                                    value="Crear Cuenta"
-                                />
+                                <Button value={loading ? "Creando..." : "Crear Cuenta"} />
                             </div>
                         </form>
                     </div>

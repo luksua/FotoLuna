@@ -17,7 +17,7 @@ body {
 .slider-track {
     will-change: transform;
     display: flex;
-    transition: transform 1,3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: transform 1, 3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     width: 100%;
 }
 
@@ -194,7 +194,7 @@ body {
 }
 
 /* Para móviles normales */
-@media (max-width: 425px) {
+@media (max-width: 376px) {
     .container-fluid.my-5 {
         margin: 0 !important;
         padding: 0 10px !important;
@@ -242,8 +242,76 @@ body {
     }
 }
 
+/* 🔹 Móviles grandes (425px) - una imagen por scroll */
+@media (min-width: 377px) and (max-width: 425px) {
+    .container-fluid.my-5 {
+        margin: 0 !important;
+        padding: 0 1px !important;
+        width: 100%;
+    }
+
+    .slider-container {
+        padding: 25px;
+        width: 100%;
+    }
+
+    .slider-track {
+        margin-top: 0 !important;
+        gap: 0;
+        width: 100%;
+    }
+
+    /* Solo una imagen visible por scroll */
+    .slider-item {
+        flex: 0 0 100% !important;
+        padding: 0 14px !important;
+    }
+
+    /* Botones un poco más grandes que en móviles pequeños */
+    .slider-buttons {
+        padding: 0 15px;
+    }
+
+    .slider-buttons button {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+    }
+
+    .hover-text h3 {
+        font-size: 1.7rem !important;
+    }
+
+    .hover-text p {
+        font-size: 1.1rem !important;
+    }
+
+    .hover-text {
+        padding: 18px;
+        padding-bottom: 35px;
+    }
+
+    /* Adaptar indicadores */
+    .slider-indicators {
+        padding: 8px 16px;
+        gap: 6px;
+        border-radius: 20px;
+    }
+
+    .indicator {
+        width: 8px;
+        height: 8px;
+        border-width: 1.5px;
+    }
+
+    .indicator.active {
+        width: 26px;
+        border-radius: 10px;
+    }
+}
+
 /* Para tablets pequeñas */
-@media (min-width: 426px) and (max-width: 768px) {
+@media (min-width: 425px) and (max-width: 768px) {
     .slider-item {
         flex: 0 0 50% !important;
         padding: 0 20px !important;
@@ -380,16 +448,20 @@ body {
     -webkit-overflow-scrolling: touch;
     gap: 15px;
     padding: 10px 15px;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
 }
 
 .slider-track-mobile::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
 }
 
 .slider-item-mobile {
-    flex: 0 0 85%; /* Cada item ocupa 85% del ancho visible */
+    flex: 0 0 85%;
+    /* Cada item ocupa 85% del ancho visible */
     min-width: 85%;
     scroll-snap-align: start;
     padding: 0 5px;
@@ -403,7 +475,8 @@ body {
 }
 
 .slider-item-mobile .image-container:active {
-    transform: scale(0.98); /* Efecto de presionado */
+    transform: scale(0.98);
+    /* Efecto de presionado */
 }
 
 .slider-item-mobile img {
@@ -444,7 +517,7 @@ body {
     background: rgba(138, 43, 226, 0.15);
     backdrop-filter: blur(12px);
     border-radius: 25px;
-    box-shadow: 
+    box-shadow:
         0 4px 20px rgba(0, 0, 0, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     z-index: 5;
@@ -469,8 +542,8 @@ body {
     position: absolute;
     inset: -2px;
     border-radius: 50%;
-    background: linear-gradient(135deg, 
-        rgba(176, 117, 225, 0.4));
+    background: linear-gradient(135deg,
+            rgba(176, 117, 225, 0.4));
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -491,7 +564,7 @@ body {
     width: 35px;
     border-radius: 12px;
     border-color: rgba(176, 117, 225, 1);
-    box-shadow: 
+    box-shadow:
         0 2px 12px rgba(138, 43, 226, 0.6),
         0 0 20px rgba(138, 43, 226, 0.3);
     animation: pulse 2s ease-in-out infinite;
@@ -502,22 +575,25 @@ body {
     position: absolute;
     inset: 0;
     border-radius: 12px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.4) 50%, 
-        transparent 100%);
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent 100%);
     animation: shimmer 2s ease-in-out infinite;
 }
 
 /* Animación de pulso para el indicador activo */
 @keyframes pulse {
-    0%, 100% {
-        box-shadow: 
+
+    0%,
+    100% {
+        box-shadow:
             0 2px 12px rgba(138, 43, 226, 0.6),
             0 0 20px rgba(138, 43, 226, 0.3);
     }
+
     50% {
-        box-shadow: 
+        box-shadow:
             0 2px 16px rgba(138, 43, 226, 0.8),
             0 0 30px rgba(138, 43, 226, 0.5);
     }
@@ -528,6 +604,7 @@ body {
     0% {
         transform: translateX(-100%);
     }
+
     100% {
         transform: translateX(100%);
     }
@@ -573,20 +650,22 @@ body {
 /* Mejoras de UX para scroll táctil */
 @media (max-width: 768px) {
     .slider-container {
-        user-select: none; /* Previene selección de texto al hacer scroll */
+        user-select: none;
+        /* Previene selección de texto al hacer scroll */
     }
-    
+
     .slider-track-mobile {
         cursor: grab;
     }
-    
+
     .slider-track-mobile:active {
         cursor: grabbing;
     }
-    
+
     /* Efecto visual para items adyacentes */
     .slider-item-mobile:not(:first-child) {
-        margin-left: -10px; /* Superposición sutil */
+        margin-left: -10px;
+        /* Superposición sutil */
     }
 }
 
