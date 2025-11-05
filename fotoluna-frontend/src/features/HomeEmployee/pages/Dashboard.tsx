@@ -95,7 +95,7 @@ const Dashboard = () => {
                     <Typography variant="h6" sx={{ mb: 1 }}>Media de satisfacción</Typography>
                     <Gauge
                         className="color-Dash"
-                        value={80}
+                        value={100}
                         startAngle={-110}
                         endAngle={110}
                         sx={{
@@ -131,7 +131,8 @@ const Dashboard = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
                     {estrellasData.map((item, idx) => {
                         const percent = totalVotos ? (item.cantidad / totalVotos) * 100 : 0;
-                        const bgColors = ["bg-danger", "bg-danger", "bg-primary", "bg-success", "bg-warning"];
+                        // Paleta morada coherente con la estética
+                        const purpleColors = ['#EFE6FF', '#E9D5FF', '#C4B5FD', '#9F7AEA', '#9569dbff'];
                         return (
                             <Box key={idx} sx={{ width: '100%' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
@@ -139,11 +140,16 @@ const Dashboard = () => {
                                     <span style={{ fontWeight: 500 }}>{item.estrellas} estrella{item.estrellas > 1 ? 's' : ''}</span>
                                     <span style={{ marginLeft: 8, color: '#888' }}>({item.cantidad})</span>
                                 </div>
-                                <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%' }}>
+                                <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%', backgroundColor: '#f5f3ff' }}>
                                     <div
-                                        className={`progress-bar ${bgColors[idx % bgColors.length]}`}
                                         role="progressbar"
-                                        style={{ width: `${percent}%` }}
+                                        style={{
+                                            width: `${percent}%`,
+                                            backgroundColor: purpleColors[idx % purpleColors.length],
+                                            height: '100%',
+                                            borderRadius: 9,
+                                            transition: 'width 400ms ease'
+                                        }}
                                         aria-valuenow={item.cantidad}
                                         aria-valuemin={0}
                                         aria-valuemax={totalVotos}

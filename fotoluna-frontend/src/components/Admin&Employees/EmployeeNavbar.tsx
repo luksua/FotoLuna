@@ -46,6 +46,8 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                             placeholder="Buscar..."
                             aria-label="Buscar"
                         />
+
+                        
                         <button type="submit" className="search-button">
                             <i className="bi bi-search"></i>
                         </button>

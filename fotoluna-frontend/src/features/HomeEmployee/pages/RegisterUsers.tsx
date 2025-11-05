@@ -11,7 +11,6 @@ const Register = () => {
         documentNumber: "",
         email: "",
         address: "",
-        password: "",
         photo: null,
         hojaDeVida: null
     });
@@ -22,7 +21,9 @@ const Register = () => {
         if (name === "photo" || name === "hojaDeVida") {
             setForm({ ...form, [name]: files && files[0] });
         } else {
-            setForm({ ...form, [name]: value });
+            setForm({ ...form, [name]: value }
+                
+            );
         }
     };
 
@@ -38,11 +39,11 @@ const Register = () => {
             documentNumber: "",
             email: "",
             address: "",
-            password: "",
             photo: null,
             hojaDeVida: null
         });
     };
+
 
     return (
         <HomeLayout>
@@ -57,13 +58,28 @@ const Register = () => {
                         <input type="text" name="phone" value={form.phone} onChange={handleChange} required style={inputStyle} />
 
                         <label>Tipo de Documento:</label>
-                        <input type="text" name="documentType" value={form.documentType} onChange={handleChange} required style={inputStyle} />
+                        <select 
+                            name="documentType" 
+                            value={form.documentType} 
+                            onChange={handleChange} 
+                            required 
+                            style={{
+                                ...inputStyle,
+                                appearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c5e8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 12px center',
+                                backgroundSize: '16px',
+                                paddingRight: '40px'
+                            }}
+                        >
+                            <option value="">Seleccione un tipo</option>
+                            <option value="TI">Tarjeta de Identidad</option>
+                            <option value="CC">Cédula de Ciudadanía</option>
+                        </select>
 
                         <label>Correo:</label>
                         <input type="email" name="email" value={form.email} onChange={handleChange} required style={inputStyle} />
-
-                        <label>Contraseña:</label>
-                        <input type="password" name="password" value={form.password} onChange={handleChange} required style={inputStyle} />
 
                         <label>Hoja de vida:</label>
 
