@@ -71,11 +71,11 @@ const Register = () => {
                                 backgroundPosition: 'right 12px center',
                                 backgroundSize: '16px',
                                 paddingRight: '40px'
-                            }}
-                        >
+                            }}> 
                             <option value="">Seleccione un tipo</option>
-                            <option value="TI">Tarjeta de Identidad</option>
                             <option value="CC">Cédula de Ciudadanía</option>
+                            <option value="CE">Cédula de Extranjería</option>
+                            <option value="PP">Pasaporte</option>
                         </select>
 
                         <label>Correo:</label>
