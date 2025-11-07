@@ -40,8 +40,8 @@ const sampleEmployees: Employee[] = [
         estado: false
     },{
         id: 4,
-        nombre: "Sandy Diaz",
-        telefono: "+57 315 678 1234",
+        nombre: "Daniel Diaz",
+        telefono: "+57 316 402 1627",
         documento: "CC 12345678901",
         correo: "ElDiablaso@gmail.com",
         estado: true
