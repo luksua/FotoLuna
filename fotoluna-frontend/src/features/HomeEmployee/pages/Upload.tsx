@@ -93,9 +93,11 @@ const Upload = () => {
     return (
         <EmployeeLayout>
             <div className="upload-container">
-                <h3 className="bg-custom-3">Subir Archivo</h3>
-                
                 <div className="upload-box">
+                <h3 className="bg-custom-3">Subir Archivo</h3>
+                <hr />
+
+                    
                     {/* Área de subida de archivos */}
                     <div 
                         className={`upload-dropzone ${dragActive ? 'drag-active' : ''} ${file ? 'has-file' : ''}`}

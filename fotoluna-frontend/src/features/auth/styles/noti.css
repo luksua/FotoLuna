@@ -75,11 +75,11 @@
 
 .btn-close-panel {
     position: absolute;
-    top: 15px;
-    right: 32px; /* Esquina derecha */
+    top: 11;
+    right: 20px; /* Esquina derecha */
     background: none;
     border: none;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #a06bb5;
     cursor: pointer;
 }
@@ -602,4 +602,4 @@
     .btn-primary {
         width: 100%;
     }
-}
+}   

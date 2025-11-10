@@ -1,12 +1,20 @@
 /* UploadEmployee.css */
 .upload-container {
-    width: 1300px;
-    margin: 1px 0 1px -10px;
-    padding: 0 20px ;
-   
+    width: 1310px;
+    margin: -10px 0 1px -20px;
+    padding: 0 2px;
+
+}
+h3 {
+    margin-top: -20px;
+    color: #5a5a5a;
+    font-size: 1.5rem;
 }
 
-
+hr {
+    border-top: 1px solid #b790b7;
+    margin-bottom: 20px;
+}
 
 .upload-box {
     background: white;
@@ -241,6 +249,7 @@
         opacity: 0;
         transform: scale(0.8);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -277,16 +286,21 @@
     border-top: 1px solid #e9ecef;
 }
 
-.accept-btn, .reject-btn {
-    padding: 20px 60px;
+.accept-btn,
+.reject-btn {
     border: none;
-    border-radius: 15px;
+    border-radius: 12px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 1.5rem;
+    font-size: 0.95rem;
     font-family: "quicksand", sans-serif;
-    min-width: 10px;
+    padding: 10px 12px;
+    /* ancho y alto del botón */
+    min-width: 1px;
+    /* ancho mínimo opcional */
+    width: auto;
+
 }
 
 .accept-btn {
@@ -296,7 +310,7 @@
 }
 
 .accept-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #dcabdf  0%, #dcabdf  100%);
+    background: linear-gradient(135deg, #dcabdf 0%, #dcabdf 100%);
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(220, 171, 223, 0.4);
 }
@@ -329,30 +343,31 @@
         margin: 20px auto;
         padding: 0 15px;
     }
-    
+
     .upload-box {
         padding: 30px 25px;
     }
-    
+
     .upload-title {
         font-size: 1.7rem;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .upload-dropzone {
         padding: 40px 20px;
     }
-    
+
     .upload-actions {
         flex-direction: column;
         gap: 15px;
     }
-    
-    .accept-btn, .reject-btn {
+
+    .accept-btn,
+    .reject-btn {
         width: 100%;
     }
 }
@@ -361,21 +376,21 @@
     .upload-box {
         padding: 25px 20px;
     }
-    
+
     .upload-dropzone {
         padding: 30px 15px;
     }
-    
+
     .upload-icon {
         font-size: 2.5rem;
     }
-    
+
     .file-preview {
         flex-direction: column;
         text-align: center;
         gap: 10px;
     }
-    
+
     .upload-title {
         font-size: 1.5rem;
     }

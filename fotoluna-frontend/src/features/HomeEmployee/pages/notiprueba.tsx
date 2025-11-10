@@ -13,9 +13,7 @@ type Notification = {
     icon: string;
 };
 
-type Props = {
-    onClose: () => void;
-};
+
 
 const mockNotifications: Notification[] = [
     {
@@ -119,10 +117,12 @@ const mockNotifications: Notification[] = [
 
 ];
 
-const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
+const EmployeeNotifications = () => {
     const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+    const [deletedNotifications, setDeletedNotifications] = useState<Notification[]>([]); // <-- nuevo estado para historial de eliminadas
     const [selected, setSelected] = useState<Notification | null>(null);
     const [activeTab, setActiveTab] = useState<'today' | 'week' | 'older'>('today');
+    const [showPanel, setShowPanel] = useState(true); // <-- Nuevo estado
 
     const handleOpen = (notif: Notification) => {
         setSelected(notif);
@@ -133,15 +133,22 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
         }
     };
 
-    const handleClose = () => setSelected(null);
-
-    const handleMarkAllAsRead = () => {
-        setNotifications(notifications.map(notif => ({ ...notif, read: true })));
+    const handleClosePanel = () => {
+        setShowPanel(false); // <-- Oculta el panel
     };
 
-    const handleDelete = (id: number, e: React.MouseEvent) => {
+    const handleCloseModal = () => {
+        setSelected(null);
+    };
+
+    const handleDelete = (id: number, e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        setNotifications(notifications.filter(notif => notif.id !== id));
+        const toDelete = notifications.find(n => n.id === id);
+        if (!toDelete) return;
+        // Marcar como eliminada y mover a historial (anotar tipo y clonar)
+        const moved: Notification = { ...toDelete, category: 'older', read: true };
+        setDeletedNotifications(prev => [{ ...moved }, ...(prev ?? [])]);
+        setNotifications(prev => prev.filter(notif => notif.id !== id));
     };
 
     const getPriorityClass = (priority: string) => {
@@ -171,122 +178,139 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
         }
     };
 
-    const filteredNotifications = notifications.filter(notif => notif.category === activeTab);
+    // Si estamos en "older", mostramos tanto notificaciones con category 'older' como las eliminadas (historial)
+    const filteredNotifications = activeTab === 'older'
+        ? [
+            ...notifications.filter(notif => notif.category === 'older'),
+            ...deletedNotifications
+        ]
+        : notifications.filter(notif => notif.category === activeTab);
+
     const unreadCount = notifications.filter(notif => !notif.read).length;
 
     return (
         <EmployeeLayout>
-            <div className="notifications-panel" onClick={e => e.stopPropagation()}>
-                {/* Header del Panel */}
-                <div className="notifications-header">
-                    <div className="header-content">
-                        <h2>Notificaciones</h2>
-                        <div className="header-actions">
-                            {activeTab !== "older" && (
-                                <span className="unread-count">
-                                    {unreadCount} no leídas
-                                </span>
+
+            {showPanel &&
+                (
+                    <div className="notifications-panel" onClick={e => e.stopPropagation()}>
+
+                        {/* Header del Panel */}
+                        <div className="notifications-header">
+                            <div className="header-content">
+                                <h2>Notificaciones</h2>
+                                <div className="header-actions">
+                                    {/* Mostrar el contador sólo si hay >=1 no leída.
+                                        Si hay 3 o más se muestra normal (sin truncar). */}
+                                    {activeTab !== "older" && unreadCount > 0 && (
+                                        <span className="unread-count">
+                                            {unreadCount} no leídas
+                                        </span>
+                                    )}
+                                </div>
+                                <button className="btn-close-panel" onClick={handleClosePanel} title="Cerrar panel">
+                                    <i className="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Tabs de Navegación */}
+                        <div className="notifications-tabs">
+                            <button
+                                className={`tab ${activeTab === 'today' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('today')}
+                            >
+                                Hoy
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'week' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('week')}
+                            >
+                                Esta semana
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'older' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('older')}
+                            >
+                                Anteriores
+                            </button>
+                        </div>
+
+                        {/* Lista de Notificaciones */}
+                        <div className="notifications-list-container">
+                            {filteredNotifications.length > 0 ? (
+                                <div className="notifications-list">
+                                    {filteredNotifications.map(notif => (
+                                        <div
+                                            key={notif.id}
+                                            className={`notification-item ${getPriorityClass(notif.priority)} ${notif.read ? 'read' : 'unread'
+                                                }`}
+                                            onClick={() => handleOpen(notif)}
+                                        >
+                                            <div className="notification-checkbox">
+                                                {notif.read ? (
+                                                    <i className="bi bi-bell" style={{ color: "#a06bb5", fontSize: "1.2rem" }}></i>
+                                                ) : (
+                                                    <i className="bi bi-bell-fill" style={{ color: "#f72585", fontSize: "1.2rem" }}></i>
+                                                )}
+                                            </div>
+                                            <div className="notification-icon">
+                                                <i className={notif.icon}></i>
+                                            </div>
+                                            <div className="notification-content">
+                                                <div className="notification-main">
+                                                    <h4 className="notification-title">{notif.title}{deletedNotifications.some(d => d.id === notif.id) ? ' (eliminada)' : ''}</h4>
+                                                    <p className="notification-preview">
+                                                        {notif.message}
+                                                    </p>
+                                                </div>
+                                                <div className="notification-meta">
+                                                    <span
+                                                        className="priority-badge"
+                                                        style={{ backgroundColor: getPriorityColor(notif.priority) }}
+                                                    >
+                                                        {getPriorityText(notif.priority)}
+                                                    </span>
+                                                    <span className="notification-date">{notif.date}</span>
+                                                </div>
+                                            </div>
+                                            <div className="notification-actions">
+                                                {!notif.read && <div className="unread-dot"></div>}
+                                                {/* No mostrar botón eliminar para elementos ya en historial si vienen de deletedNotifications */}
+                                                {!deletedNotifications.find(d => d.id === notif.id) && (
+                                                    <button
+                                                        className="btn-delete"
+                                                        onClick={(e) => handleDelete(notif.id, e)}
+                                                        title="Eliminar notificación"
+                                                    >
+                                                        <i className="bi bi-x-lg"></i>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state">
+                                    <i className="bi bi-bell"></i>
+                                    <h3>No hay notificaciones</h3>
+                                    <p>No tienes notificaciones en esta categoría</p>
+                                </div>
                             )}
                         </div>
-                        <button className="btn-close-panel" onClick={onClose} title="Cerrar panel">
-                            <i className="bi bi-x-lg"></i>
-                        </button>
+
+                        {/* Footer */}
+                        <div className="notifications-footer">
+                            <button className="btn-view-all">
+                                Ver todas las notificaciones
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                {/* Tabs de Navegación */}
-                <div className="notifications-tabs">
-                    <button
-                        className={`tab ${activeTab === 'today' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('today')}
-                    >
-                        Hoy
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'week' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('week')}
-                    >
-                        Esta semana
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'older' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('older')}
-                    >
-                        Anteriores
-                    </button>
-                </div>
-
-                {/* Lista de Notificaciones */}
-                <div className="notifications-list-container">
-                    {filteredNotifications.length > 0 ? (
-                        <div className="notifications-list">
-                            {filteredNotifications.map(notif => (
-                                <div
-                                    key={notif.id}
-                                    className={`notification-item ${getPriorityClass(notif.priority)} ${notif.read ? 'read' : 'unread'
-                                        }`}
-                                    onClick={() => handleOpen(notif)}
-                                >
-                                    <div className="notification-checkbox">
-                                        {notif.read ? (
-                                            <i className="bi bi-bell" style={{ color: "#a06bb5", fontSize: "1.2rem" }}></i>
-                                        ) : (
-                                            <i className="bi bi-bell-fill" style={{ color: "#f72585", fontSize: "1.2rem" }}></i>
-                                        )}
-                                    </div>
-                                    <div className="notification-icon">
-                                        <i className={notif.icon}></i>
-                                    </div>
-                                    <div className="notification-content">
-                                        <div className="notification-main">
-                                            <h4 className="notification-title">{notif.title}</h4>
-                                            <p className="notification-preview">
-                                                {notif.message}
-                                            </p>
-                                        </div>
-                                        <div className="notification-meta">
-                                            <span
-                                                className="priority-badge"
-                                                style={{ backgroundColor: getPriorityColor(notif.priority) }}
-                                            >
-                                                {getPriorityText(notif.priority)}
-                                            </span>
-                                            <span className="notification-date">{notif.date}</span>
-                                        </div>
-                                    </div>
-                                    <div className="notification-actions">
-                                        {!notif.read && <div className="unread-dot"></div>}
-                                        <button
-                                            className="btn-delete"
-                                            onClick={(e) => handleDelete(notif.id, e)}
-                                            title="Eliminar notificación"
-                                        >
-                                            <i className="bi bi-x-lg"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="empty-state">
-                            <i className="bi bi-bell"></i>
-                            <h3>No hay notificaciones</h3>
-                            <p>No tienes notificaciones en esta categoría</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer */}
-                <div className="notifications-footer">
-                    <button className="btn-view-all">
-                        Ver todas las notificaciones
-                    </button>
-                </div>
-            </div>
+                )}
 
             {/* Modal de Detalles */}
             {selected && (
-                <div className="notification-modal-overlay" onClick={onClose}>
+                <div className="notification-modal-overlay" onClick={handleCloseModal}>
                     <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-title-section">
@@ -304,7 +328,7 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                                     </div>
                                 </div>
                             </div>
-                            <button className="btn-close-modal" onClick={handleClose}>
+                            <button className="btn-close-modal" onClick={handleCloseModal}>
                                 <i className="bi bi-x-lg"></i>
                             </button>
                         </div>
@@ -312,7 +336,7 @@ const EmployeeNotifications: React.FC<Props> = ({ onClose }) => {
                             <p>{selected.message}</p>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn-secondary" onClick={handleClose}>
+                            <button className="btn-secondary" onClick={handleCloseModal}>
                                 Cerrar
                             </button>
                         </div>
