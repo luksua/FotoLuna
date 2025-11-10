@@ -30,7 +30,7 @@
 .employee-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1000px;
+    min-width: 900px;
 }
 
 .employee-table th,
@@ -69,3 +69,4 @@
     background-color: #ffebee;
     color: #d32f2f;
 }
+

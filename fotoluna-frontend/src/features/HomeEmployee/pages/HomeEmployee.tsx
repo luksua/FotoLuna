@@ -1,12 +1,12 @@
 
-import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
+import HomeLayout from "../../../layouts/HomeAdminLayout";
 import React from "react";
 import "../../../features/auth/styles/home.css";
 
 
 const EmployeeHome: React.FC = () => {
     return (
-        <EmployeeLayout>
+        <HomeLayout>
             <section className="welcome-section">
                 <div className="welcome-text">
                     <h2>¡Bienvenida, Amalia!</h2>
@@ -191,7 +191,7 @@ const EmployeeHome: React.FC = () => {
             <footer>
                 <p>FotoLuna &copy;  </p>
             </footer>
-        </EmployeeLayout>
+        </HomeLayout>
     );
 };
 

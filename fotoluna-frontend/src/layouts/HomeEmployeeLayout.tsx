@@ -10,8 +10,8 @@ const HomeEmployeeLayout: React.FC<Props> = ({ children }) => {
     return (
         <div className="employee-layout">
             <EmployeeNav />
-            <EmployeeSidebar />
             <main className="main-content">
+                <EmployeeSidebar />
                 {children}
             </main>
         </div>

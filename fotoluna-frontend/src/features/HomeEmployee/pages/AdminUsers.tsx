@@ -1,4 +1,4 @@
-import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
+import HomeLayout from "../../../layouts/HomeAdminLayout";
 import React, { useEffect, useMemo, useState } from "react";
 import "../../../styles/AdminUsers.css";
 import imgperfil from "../../../assets/Img/imgperfil.jpg";
@@ -116,7 +116,7 @@ const EmployeeAdmin: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     return (
-        <EmployeeLayout>
+        <HomeLayout>
             <div className="admin-root">
                 <header className="admin-head"> 
                     <div className="search-row">
@@ -193,7 +193,7 @@ const EmployeeAdmin: React.FC = () => {
                     onClose={() => setSelectedUser(null)}
                 />
             )}
-        </EmployeeLayout>
+        </HomeLayout>
     );
 };
 

@@ -1,6 +1,8 @@
-import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
+// import AdminLayout from "../../../layouts/HomeAdminLayout";
 import { useState } from "react";
+import HomeLayout from "../../../layouts/HomeAdminLayout";
 import "../../../styles/AdminEmployee.css";
+
 
 type Employee = {
     id: number;
@@ -60,7 +62,7 @@ const EmployeeCustomers = () => {
     );
 
     return (
-        <EmployeeLayout>
+        <HomeLayout>
             <div className="employee-container">
                 <div className="search-box">
                     <input type="text"
@@ -97,9 +99,10 @@ const EmployeeCustomers = () => {
                             ))}
                         </tbody>
                     </table>
+                    
                 </div>
             </div>
-        </EmployeeLayout>
+        </HomeLayout>
     );
 };
 
