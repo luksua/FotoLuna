@@ -2,7 +2,10 @@ import { useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 import { Link } from "react-router-dom";
-import EmployeeNotifications from "../../features/HomeEmployee/pages/notiprueba";
+import EmployeeNotifications from "../../features/Employee/Notification/Pages/NotiFicationEmploye";
+import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
+import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
+import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
 
 interface EmployeeNavbarProps {
     userName?: string;
@@ -13,17 +16,42 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
     userName = "Amalia",
     notificationCount = 3
 }) => {
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showUserProfile, setShowUserProfile] = useState(false);
+    const [showSettings, setShowSettings] = useState(false); // Nuevo estado para settings
+
+    // Estado para el perfil del usuario
+    const [userProfile, setUserProfile] = useState<UserProfileData>({
+        id: 1,
+        name: "Amalia",
+        email: "amalia@example.com",
+        bio: "Fotógrafa apasionada por los paisajes y la naturaleza.",
+        avatar: null
+    });
+
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Lógica de búsqueda aquí
         console.log("Búsqueda realizada");
     };
 
-    const handleNotificationClick = () => {
-        alert(`Tienes ${notificationCount} notificaciones nuevas`);
+    const handleProfileUpdate = (updatedProfile: UserProfileData) => {
+        setUserProfile(updatedProfile);
+        setShowUserProfile(false);
+        console.log("Perfil actualizado:", updatedProfile);
     };
-    const [showNotifications, setShowNotifications] = useState(false);
 
+    // Función para cerrar sesión
+    const handleLogout = () => {
+        // Aquí va tu lógica de logout
+        console.log('Cerrando sesión...');
+        // Ejemplo:
+        // localStorage.removeItem('token');
+        // localStorage.removeItem('user');
+        // window.location.href = '/login';
+
+        // Mostrar mensaje de confirmación
+        alert('Sesión cerrada correctamente');
+    };
 
     return (
         <nav className="EmployeeNavbar">
@@ -32,7 +60,6 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 <div className="navbar-brand">
                     <div className="logo-icon">
                         <img src={logoFotoluna} alt="Logo" className="EmployeeNavbar-logo mb-1" />
-
                     </div>
                     <h1 className="logo-text">FotoLuna</h1>
                 </div>
@@ -53,17 +80,11 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 </div>
 
                 {/* Navegación y acciones */}
-                <div className="navbar-actions ">
-                    {/* <Link to="/employee/HomeEmployee" className="nav-link">
-                        <i className="fas fa-home"></i>
-                        <span>Inicio</span>
-                    </Link> */}
-
+                <div className="navbar-actions">
                     <button
                         className="notification-btn"
                         onClick={() => setShowNotifications(true)}
                         aria-label="Notificaciones"
-
                     >
                         <i className="bi bi-bell-fill"></i>
                         {notificationCount > 0 && (
@@ -71,24 +92,58 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                         )}
                     </button>
 
-                    <button className="settings-btn" aria-label="Configuración">
+                    {/* Botón de Configuración (Settings) */}
+                    <button
+                        className="settings-btn"
+                        aria-label="Configuración"
+                        onClick={() => setShowSettings(true)}
+                    >
                         <i className="bi bi-gear-fill"></i>
                     </button>
 
-                    <div className="user-profile">
+                    {/* Área de Perfil de Usuario */}
+                    <div
+                        className="user-profile"
+                        onClick={() => setShowUserProfile(true)}
+                        style={{ cursor: 'pointer' }}
+                    >
                         <div className="user-avatar">
-                            {userName.charAt(0).toUpperCase()}
+                            {userProfile.avatar ? (
+                                <img
+                                    src={userProfile.avatar}
+                                    alt="Avatar"
+                                    className="avatar-image-small"
+                                />
+                            ) : (
+                                userProfile.name.charAt(0).toUpperCase()
+                            )}
                         </div>
-                        <span className="user-name">{userName}</span>
+                        <span className="user-name">{userProfile.name}</span>
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Notificaciones */}
             {showNotifications && (
                 <EmployeeNotifications onClose={() => setShowNotifications(false)} />
             )}
+
+            {/* Modal de Perfil de Usuario */}
+            <UserProfile
+                isOpen={showUserProfile}
+                onClose={() => setShowUserProfile(false)}
+                profile={userProfile}
+                onProfileUpdate={handleProfileUpdate}
+            />
+
+            {/* Modal de Configuración (Settings) */}
+            <SettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onLogout={handleLogout}
+            />
         </nav>
     );
 };
 
 export default EmployeeNavbar;
-

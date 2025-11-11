@@ -1,9 +1,9 @@
-import HomeEmployee from "../features/HomeEmployee/pages/HomeEmployee";
-import AppointmentsEmployee from "../features/HomeEmployee/pages/ApointmentsEmploye";
-import EmployeeUpload from "../features/HomeEmployee/pages/Upload";
-import AdminEmployee from "../features/HomeEmployee/pages/AdminEmployee";
-import CustomersEmployee from "../features/HomeEmployee/pages/Customers/CustomersEmployee";
-import EmployeeNotifications from "../features/HomeEmployee/pages/notiprueba";
+import HomeEmployee from "../features/Employee/Home/Pages/HomeEmployee";
+import AppointmentsEmployee from "../features/Employee/Appointment/Pages/ApointmentsEmploye";
+import EmployeeUpload from "../features/Employee/Upload/Pages/Upload";
+import AdminEmployee from "../features/Employee/PhotoAdmin/Pages/PhotoAdmin";
+import CustomersEmployee from "../features/Employee/Customers/Pages/CustomersEmployee";
+import EmployeeNotifications from "../features/Employee/Notification/Pages/NotiFicationEmploye";
 
 
 
