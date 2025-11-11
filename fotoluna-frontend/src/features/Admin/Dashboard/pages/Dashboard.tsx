@@ -6,7 +6,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { red, teal } from '@mui/material/colors';
-import HomeLayout from "../../../layouts/HomeAdminLayout";
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { Gauge } from '@mui/x-charts/Gauge';
 import { PieChart } from '@mui/x-charts/PieChart';

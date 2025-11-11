@@ -1,6 +1,6 @@
-import React, { useState } from "react"
-import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
-import "../../HomeEmployee/styles/noti.css";
+import React, { useState } from "react";
+import EmployeeLayout from "../../../../layouts/HomeAdminLayout";
+import "../Styles/noti.css";
 
 type Notification = {
     id: number;
@@ -11,7 +11,11 @@ type Notification = {
     date: string;
     category: 'today' | 'week' | 'older';
     icon: string;
+    onClose?: () => void;
+
 };
+
+
 
 
 const mockNotifications: Notification[] = [
@@ -116,8 +120,9 @@ const mockNotifications: Notification[] = [
 
 ];
 
-const NotificationsEmployee = () => {
+const EmployeeNotifications = () => {
     const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+    const [deletedNotifications, setDeletedNotifications] = useState<Notification[]>([]); // <-- nuevo estado para historial de eliminadas
     const [selected, setSelected] = useState<Notification | null>(null);
     const [activeTab, setActiveTab] = useState<'today' | 'week' | 'older'>('today');
     const [showPanel, setShowPanel] = useState(true); // <-- Nuevo estado
@@ -139,9 +144,14 @@ const NotificationsEmployee = () => {
         setSelected(null);
     };
 
-    const handleDelete = (id: number, e: React.MouseEvent) => {
+    const handleDelete = (id: number, e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        setNotifications(notifications.filter(notif => notif.id !== id));
+        const toDelete = notifications.find(n => n.id === id);
+        if (!toDelete) return;
+        // Marcar como eliminada y mover a historial (anotar tipo y clonar)
+        const moved: Notification = { ...toDelete, category: 'older', read: true };
+        setDeletedNotifications(prev => [{ ...moved }, ...(prev ?? [])]);
+        setNotifications(prev => prev.filter(notif => notif.id !== id));
     };
 
     const getPriorityClass = (priority: string) => {
@@ -171,20 +181,31 @@ const NotificationsEmployee = () => {
         }
     };
 
-    const filteredNotifications = notifications.filter(notif => notif.category === activeTab);
+    // Si estamos en "older", mostramos tanto notificaciones con category 'older' como las eliminadas (historial)
+    const filteredNotifications = activeTab === 'older'
+        ? [
+            ...notifications.filter(notif => notif.category === 'older'),
+            ...deletedNotifications
+        ]
+        : notifications.filter(notif => notif.category === activeTab);
+
     const unreadCount = notifications.filter(notif => !notif.read).length;
 
     return (
         <EmployeeLayout>
+
             {showPanel &&
                 (
                     <div className="notifications-panel" onClick={e => e.stopPropagation()}>
+
                         {/* Header del Panel */}
                         <div className="notifications-header">
                             <div className="header-content">
                                 <h2>Notificaciones</h2>
                                 <div className="header-actions">
-                                    {activeTab !== "older" && (
+                                    {/* Mostrar el contador sólo si hay >=1 no leída.
+                                        Si hay 3 o más se muestra normal (sin truncar). */}
+                                    {activeTab !== "older" && unreadCount > 0 && (
                                         <span className="unread-count">
                                             {unreadCount} no leídas
                                         </span>
@@ -241,7 +262,7 @@ const NotificationsEmployee = () => {
                                             </div>
                                             <div className="notification-content">
                                                 <div className="notification-main">
-                                                    <h4 className="notification-title">{notif.title}</h4>
+                                                    <h4 className="notification-title">{notif.title}{deletedNotifications.some(d => d.id === notif.id) ? ' (eliminada)' : ''}</h4>
                                                     <p className="notification-preview">
                                                         {notif.message}
                                                     </p>
@@ -258,13 +279,16 @@ const NotificationsEmployee = () => {
                                             </div>
                                             <div className="notification-actions">
                                                 {!notif.read && <div className="unread-dot"></div>}
-                                                <button
-                                                    className="btn-delete"
-                                                    onClick={(e) => handleDelete(notif.id, e)}
-                                                    title="Eliminar notificación"
-                                                >
-                                                    <i className="bi bi-x-lg"></i>
-                                                </button>
+                                                {/* No mostrar botón eliminar para elementos ya en historial si vienen de deletedNotifications */}
+                                                {!deletedNotifications.find(d => d.id === notif.id) && (
+                                                    <button
+                                                        className="btn-delete"
+                                                        onClick={(e) => handleDelete(notif.id, e)}
+                                                        title="Eliminar notificación"
+                                                    >
+                                                        <i className="bi bi-x-lg"></i>
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -285,9 +309,7 @@ const NotificationsEmployee = () => {
                             </button>
                         </div>
                     </div>
-
                 )}
-
 
             {/* Modal de Detalles */}
             {selected && (
@@ -327,4 +349,5 @@ const NotificationsEmployee = () => {
         </EmployeeLayout>
     );
 };
-export default NotificationsEmployee;
+
+export default EmployeeNotifications;

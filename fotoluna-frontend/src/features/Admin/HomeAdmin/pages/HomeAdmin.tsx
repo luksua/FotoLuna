@@ -1,7 +1,7 @@
 
-import HomeLayout from "../../../layouts/HomeAdminLayout";
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import React from "react";
-import "../../../features/HomeEmployee/styles/home.css";
+import "../../../homeAdmin/styles/home.css";
 
 
 const EmployeeHome: React.FC = () => {

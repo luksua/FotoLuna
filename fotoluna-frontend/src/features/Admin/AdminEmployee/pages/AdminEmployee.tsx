@@ -1,7 +1,7 @@
 // import AdminLayout from "../../../layouts/HomeAdminLayout";
 import { useState } from "react";
-import HomeLayout from "../../../layouts/HomeAdminLayout";
-import "../../../styles/AdminEmployee.css";
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
+import "../../../Admin/AdminEmployee/styles/AdminEmployee.css";
 
 
 type Employee = {

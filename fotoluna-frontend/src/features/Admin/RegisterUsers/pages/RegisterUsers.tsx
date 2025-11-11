@@ -1,4 +1,4 @@
-import HomeLayout from "../../../layouts/HomeAdminLayout";
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useState } from "react";
 
 const Register = () => {

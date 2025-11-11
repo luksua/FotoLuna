@@ -1,7 +1,7 @@
-import HomeLayout from "../../../layouts/HomeAdminLayout";
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import React, { useEffect, useMemo, useState } from "react";
-import "../../../styles/AdminUsers.css";
-import imgperfil from "../../../assets/Img/imgperfil.jpg";
+import "../../../Admin/AdminUsers/styles/AdminUsers.css";
+import imgperfil from "../../../../assets/Img/imgperfil.jpg";
 
 type User = {
     id: number;
