@@ -1,7 +1,7 @@
 
 import HomeLayout from "../../../layouts/HomeAdminLayout";
 import React from "react";
-import "../../../features/auth/styles/home.css";
+import "../../../features/HomeEmployee/styles/home.css";
 
 
 const EmployeeHome: React.FC = () => {

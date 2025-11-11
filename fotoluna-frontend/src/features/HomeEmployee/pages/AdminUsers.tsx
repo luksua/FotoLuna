@@ -17,7 +17,7 @@ const sampleUsers: User[] = Array.from({ length: 27 }).map((_, i) => {
     return {
         id: idx,
         name: `Usuario ${idx}`,
-        email: `usuario${idx}@example.com`,
+        email: `usuario${idx}@ejemplo.com`,
         phone: `+57 300 000 ${String(1000 + idx).slice(-4)}`,
         document: `CC ${10000000 + idx}`,
         avatar: imgperfil,

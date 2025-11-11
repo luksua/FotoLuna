@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
-import "../../auth/styles/noti.css";
+import "../../HomeEmployee/styles/noti.css";
 
 type Notification = {
     id: number;

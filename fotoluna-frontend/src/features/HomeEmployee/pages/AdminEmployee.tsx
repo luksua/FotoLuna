@@ -40,11 +40,12 @@ const sampleEmployees: Employee[] = [
         documento: "CC 1072099798",
         correo: "wendyyuyie@gmail.com",
         estado: false
-    },{
+    },
+    {
         id: 4,
         nombre: "Daniel Diaz",
-        telefono: "+57 316 402 1627",
-        documento: "CC 12345678901",
+        telefono: "+57 316 406 7657",
+        documento: "CC 1234567891",
         correo: "ElDiablaso@gmail.com",
         estado: true
     },

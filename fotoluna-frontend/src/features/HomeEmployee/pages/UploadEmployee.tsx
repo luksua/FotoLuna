@@ -1,5 +1,5 @@
 import EmployeeLayout from "../../../layouts/HomeEmployeeLayout";
-import "../../auth/styles/UploadEmployee.css";
+import "../styles/UploadEmployee.css";
 
 const EmployeeUpload = () => {
     return (
