@@ -1,0 +1,259 @@
+.appointment .bg-custom-2 {
+    font-size: 60px;
+    padding-bottom: 30px;
+}
+
+.appointment-section {
+    width: 100%;
+    height: auto;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 80px;
+    box-sizing: border-box;
+}
+
+.container-appointment {
+    display: flex;
+    flex-direction: column;
+    /* Organiza el contenido verticalmente */
+    align-items: center;
+    /* Centra horizontalmente los elementos hijos */
+    padding: 0 20px;
+}
+
+/* Si necesitas centrar elementos específicos dentro del contenedor */
+.container-appointment>* {
+    width: 100%;
+    text-align: center;
+    /* Centra el texto dentro de cada elemento hijo */
+}
+
+.title {
+    margin-top: -20px;
+}
+
+/* ---------- Utilidad: ancho auto a partir de 576px ---------- */
+@media (min-width: 576px) {
+    .w-sm-auto {
+        width: auto !important;
+    }
+}
+
+/* ---------- Ajustes generales ---------- */
+.appointment-header h1 {
+    font-size: 50px;
+}
+
+.appointment-section .bg-custom-9 {
+    border-radius: .75rem;
+}
+
+.appointment-table th,
+.appointment-table td {
+    vertical-align: middle;
+}
+
+/* Evitar saltos feos de texto en pantallas medianas/grandes */
+@media (min-width: 576px) {
+
+    .appointment-table td,
+    .appointment-table th {
+        white-space: nowrap;
+    }
+}
+
+/* ---------- Tabla -> tarjetas en móviles (<576px) ---------- */
+@media (max-width: 575.98px) {
+    .appointment-header h1 {
+        font-size: 35px;
+        padding-top: 19px;
+    }
+
+    /* Oculta cabecera y convierte estructura a bloques */
+    .appointment-table thead {
+        display: none;
+    }
+
+    .appointment-table,
+    .appointment-table tbody,
+    .appointment-table tr,
+    .appointment-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .appointment-table tr {
+        margin-bottom: 1rem;
+        border: 1px solid rgba(0, 0, 0, .08);
+        border-radius: .75rem;
+        background: var(--bs-body-bg, #fff);
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .04);
+    }
+
+    .appointment-table td {
+        padding: .75rem 1rem;
+        display: grid;
+        grid-template-columns: 9rem 1fr;
+        /* etiqueta | valor */
+        gap: .5rem;
+    }
+
+    /* Etiqueta (proviene del atributo data-label del <td>) */
+    .appointment-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        opacity: .7;
+    }
+
+    /* Si alguna columna estaba oculta en desktop/tablet,
+     vuelve a mostrarla en móvil (por ej. "Lugar") */
+    .appointment-table .d-none.d-md-table-cell {
+        display: block !important;
+    }
+
+    /* La celda de acciones se ve a ancho completo y el botón ocupa todo el ancho */
+    .appointment-table td[data-label="Acción"] {
+        grid-template-columns: 1fr;
+    }
+
+    .appointment-table td[data-label="Acción"] .btn {
+        width: 100%;
+    }
+
+    .appointment-section {
+        padding: 5px;
+    }
+}
+
+.package-photos {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+}
+
+.package-photos img {
+    flex: 0 0 auto;
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+
+.package-photos img:hover {
+    transform: scale(1.03);
+}
+/* ===== Carrusel infinito con drag + inercia ===== */
+.carousel-viewport {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    user-select: none;
+    -webkit-user-drag: none;
+    touch-action: none;
+    /* permite desplazamiento vertical de la página y drag horizontal interno */
+    cursor: grab;
+    padding: 8px 0;
+}
+
+.carousel-viewport.dragging {
+    cursor: grabbing;
+}
+
+.carousel-track {
+    display: flex;
+    will-change: transform;
+}
+
+.carousel-card {
+    flex: 0 0 280px;
+    margin-right: 16px;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    transition: transform .3s ease, border-color .25s ease, background-color .25s ease;
+    cursor: pointer;
+}
+
+.carousel-card:hover {
+    transform: translateY(-4px);
+    border-color: #DCABDF;
+}
+
+.carousel-card.selected {
+    border-color: #C792DF;
+    background-color: #faf4ff;
+}
+
+/* 🔹 Imagen dentro del carrusel (no debe bloquear el drag ni el click del contenedor) */
+.package-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    pointer-events: none;
+    /* evita “capturar” el drag en la imagen */
+}
+
+.package-image.placeholder {
+    background-color: #f5f5f5;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+}
+
+.package-info {
+    padding: 12px;
+}
+
+/* ===== Modo estático (3 o menos paquetes) ===== */
+.static-package-card {
+    background: #fff;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    transition: transform .3s ease, border-color .25s ease, background-color .25s ease;
+    cursor: pointer;
+}
+
+.static-package-card:hover {
+    transform: translateY(-4px);
+    border-color: #DCABDF;
+}
+
+.static-package-card.selected {
+    border-color: #C792DF;
+    background-color: #faf4ff;
+}
+
+/* 🔹 Imagen estática (sí debe aceptar clicks) */
+.static-package-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.static-package-image.placeholder {
+    background-color: #f5f5f5;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .carousel-card {
+        flex: 0 0 240px;
+    }
+
+    .package-image,
+    .static-package-image {
+        height: 150px;
+    }
+}

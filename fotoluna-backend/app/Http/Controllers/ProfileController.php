@@ -27,16 +27,16 @@ class ProfileController extends Controller
         $customer = $user->customer ?? Customer::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'firstNameCustomer' => $request->input('nombre', ''),
-                'lastNameCustomer' => $request->input('apellido', ''),
+                'firstNameCustomer' => $request->input('name', ''),
+                'lastNameCustomer' => $request->input('lastName', ''),
                 'emailCustomer' => $request->input('email', $user->email),
             ]
         );
 
         // Actualiza campos
         $customer->fill([
-            'firstNameCustomer' => $request->input('nombre', $customer->firstNameCustomer),
-            'lastNameCustomer' => $request->input('apellido', $customer->lastNameCustomer),
+            'firstNameCustomer' => $request->input('name', $customer->firstNameCustomer),
+            'lastNameCustomer' => $request->input('lastName', $customer->lastNameCustomer),
             'emailCustomer' => $request->input('email', $customer->emailCustomer),
         ]);
 

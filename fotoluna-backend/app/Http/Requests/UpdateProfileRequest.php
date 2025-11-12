@@ -17,11 +17,10 @@ class UpdateProfileRequest extends FormRequest
         $userId = $this->user()->id;
 
         return [
-            'name' => ['nullable', 'string', 'max:255'],
-            'lastName' => ['nullable', 'string', 'max:255'],
-            // Se valida unicidad contra la tabla users (si la email principal está ahí)
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
-            'avatar' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'name' => 'sometimes|required|string|max:100',
+            'lastName' => 'sometimes|required|string|max:100',
+            'email' => 'sometimes|required|email|max:150',
+            'avatar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
     }
 }

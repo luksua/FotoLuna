@@ -16,6 +16,45 @@ class EmployeeController extends Controller
     }
 
     /**
+     * Retorna empleados disponibles para asignación.
+     */
+    public function available()
+    {
+        $employees = Employee::availablePhotographers()
+            ->select(
+                'employeeId as id',
+                'firstNameEmployee',
+                'lastNameEmployee',
+                'photoEmployee',
+                'specialty',
+                'emailEmployee'
+            )
+            ->get();
+
+        if ($employees->isEmpty()) {
+            if ($employees->isEmpty()) {
+                return response()->json([], 200);
+            }
+            return response()->json($employees);
+
+        }
+
+        return response()->json(
+            $employees->map(function ($emp) {
+                return [
+                    'id' => $emp->id,
+                    'name' => "{$emp->firstNameEmployee} {$emp->lastNameEmployee}",
+                    'photo' => $emp->photoEmployee
+                        ? url('storage/' . $emp->photoEmployee)
+                        : url('images/default-user.jpg'),
+                    'specialty' => $emp->specialty ?? 'Fotografía general',
+                    'email' => $emp->emailEmployee,
+                ];
+            })
+        );
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

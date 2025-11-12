@@ -29,7 +29,26 @@ class Employee extends Model
         'employeeType',
         'gender',
         'EPS',
+        'role',
+        'specialty',
+        'isAvailable',
     ];
+
+    protected $casts = [
+        'isAvailable' => 'boolean',
+    ];
+
+    // Relación con reservas o bookings
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'employeeIdFK', 'employeeId');
+    }
+
+    // Filtro rápido para fotógrafos disponibles
+    public function scopeAvailablePhotographers($query)
+    {
+        return $query->where('role', 'Photographer')->where('isAvailable', true);
+    }
 
     public function user()
     {
