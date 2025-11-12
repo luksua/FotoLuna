@@ -2,7 +2,8 @@ import { useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 import { Link } from "react-router-dom";
-import EmployeeNotifications from "../../features/homeAdmin/pages/notiprueba";
+import EmployeeNotifications from "../../features/Admin/Notification/Pages/NotificationsEmployee";
+import "../../features/Admin/Notification/Styles/noti.css";
 
 interface EmployeeNavbarProps {
     userName?: string;
