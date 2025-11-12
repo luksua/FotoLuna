@@ -1,15 +1,20 @@
 import React from "react";
-import NavHome from "../components/HomeNavbar";
+import HomeNav from "../components/Home/HomeNavbar";
+import HomeFooter from "../components/Home/HomeFooter";
+import { useOffcanvasCleanup } from "../hooks/useOffcanvasCleanup";
 
 type Props = {
     children: React.ReactNode;
 };
 
 const HomeLayout: React.FC<Props> = ({ children }) => {
+    useOffcanvasCleanup();
+    
     return (
         <div>
-            <NavHome />
-            <main className="flex-1 p-6 bg-gray-100">{children}</main>
+            <HomeNav />
+            <main>{children}</main>
+            <HomeFooter />
         </div>
     );
 };
