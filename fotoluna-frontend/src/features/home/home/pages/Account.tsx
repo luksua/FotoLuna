@@ -4,8 +4,10 @@ import ProfilePage from "../components/Profile";
 const AboutMe = () => {
     return (
         <>
-            <HomeNav />
-            <ProfilePage />
+            <div className="home-layout">
+                <HomeNav />
+                <ProfilePage />
+            </div>
         </>
     );
 };

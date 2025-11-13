@@ -1,7 +1,6 @@
 import { useState } from "react";
 import SelectLabel from "../../../../components/Home/Select";
 import { useForm, Controller } from "react-hook-form";
-import '../styles/notifications.css';
 
 type Notification = {
     id: number;

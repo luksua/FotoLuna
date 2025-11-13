@@ -11,7 +11,7 @@ const HomeLayout: React.FC<Props> = ({ children }) => {
     useOffcanvasCleanup();
     
     return (
-        <div>
+        <div className="home-layout">
             <HomeNav />
             <main>{children}</main>
             <HomeFooter />

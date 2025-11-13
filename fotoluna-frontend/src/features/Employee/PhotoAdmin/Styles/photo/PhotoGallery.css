@@ -1,0 +1,103 @@
+.photo-gallery {
+  animation: fadeIn 0.6s ease-in;
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+}
+
+.empty-state i {
+  opacity: 0.5;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #6c757d;
+}
+
+/* Animaciones para la galería */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Transiciones suaves para los elementos de la galería */
+.photo-gallery .row > div {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efecto de aparición escalonada para las tarjetas */
+.photo-gallery .row > div:nth-child(1) { animation-delay: 0.1s; }
+.photo-gallery .row > div:nth-child(2) { animation-delay: 0.2s; }
+.photo-gallery .row > div:nth-child(3) { animation-delay: 0.3s; }
+.photo-gallery .row > div:nth-child(4) { animation-delay: 0.4s; }
+.photo-gallery .row > div:nth-child(5) { animation-delay: 0.5s; }
+.photo-gallery .row > div:nth-child(6) { animation-delay: 0.6s; }
+
+/* Estados de carga */
+.photo-gallery .spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-state i {
+    font-size: 4rem;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.5rem;
+  }
+  
+  .empty-state p {
+    font-size: 1rem;
+  }
+}
+
+/* Efecto hover para el botón de subir primera foto */
+.empty-state .btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 500;
+}
+
+.empty-state .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+/* Mejoras visuales para el estado de carga */
+.photo-gallery .text-muted {
+  font-size: 0.9rem;
+  font-weight: 500;
+}

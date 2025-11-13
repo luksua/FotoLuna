@@ -4,8 +4,10 @@ import AppointmentComponent from "../components/AppointmentForm";
 const AppointmentForm: React.FC = () => {
     return (
         <>
-            <HomeNavbar />
-            <AppointmentComponent />
+            <div className="home-layout">
+                <HomeNavbar />
+                <AppointmentComponent />
+            </div>
         </>
     );
 };

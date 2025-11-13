@@ -4,8 +4,10 @@ import SignUpForm from "../components/SignUpForm";
 const Register: React.FC = () => {
     return (
         <>
-            <HomeNavbar />
-            <SignUpForm />
+            <div className="home-layout">
+                <HomeNavbar />
+                <SignUpForm />
+            </div>
         </>
     );
 };

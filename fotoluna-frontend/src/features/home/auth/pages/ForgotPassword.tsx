@@ -4,8 +4,10 @@ import ForgotPasswordForm from "../components/ForgotPasswordForm";
 const ForgotPassword: React.FC = () => {
     return (
         <>
-            <HomeNavbar />
-            <ForgotPasswordForm />
+            <div className="home-layout">
+                <HomeNavbar />
+                <ForgotPasswordForm />
+            </div>
         </>
     );
 };

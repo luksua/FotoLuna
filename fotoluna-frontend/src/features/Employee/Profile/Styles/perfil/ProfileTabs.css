@@ -1,0 +1,54 @@
+.profile-tabs {
+  margin-top: 1rem;
+}
+
+.tab-nav {
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 1.5rem;
+}
+
+.tab-nav .nav-item {
+  margin-bottom: -1px;
+}
+
+.tab-nav .nav-link {
+  border: none;
+  background: none;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-nav .nav-link:hover {
+  color: #495057;
+  background-color: #f8f9fa;
+  border-bottom-color: #dee2e6;
+}
+
+.tab-nav .nav-link.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom-color: #0d6efd;
+}
+
+.tab-content {
+  min-height: 400px;
+}
+
+.tab-pane {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
