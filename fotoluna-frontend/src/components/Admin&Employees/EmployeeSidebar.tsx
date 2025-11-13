@@ -7,11 +7,13 @@ const AdminSidebar: React.FC = () => {
     const location = useLocation();
 
     const menuItems = [
-        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/admin" },
-        { id: "citas", icon: "bi bi-speedometer2", text: "Dashboard", path: "/dashboard" },
-        { id: "subir", icon: "bi bi-journal-plus", text: "Registro Usuarios", path: "/RegisterUsers" },
-        { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/AdminUsers" },
-        { id: "clientes", icon: "bi bi-people-fill", text: "Empleados", path: "/AdminEmployee" },
+        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/empleado" },
+        { id: "citas", icon: "bi bi-calendar2-heart-fill", text: "Citas", path: "/employee/appointments" },
+        { id: "subir", icon: "bi bi-cloud-upload-fill", text: "Subir", path: "/employee/upload" },
+        { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/employee/admin" },
+        { id: "clientes", icon: "bi bi-people-fill", text: "Clientes", path: "/employee/customers" },
+        { id: "pagos", icon: "bi bi-wallet", text: "Pagos", path: "/employee/pagos" }
+
     ];
 
     return (
@@ -33,5 +35,4 @@ const AdminSidebar: React.FC = () => {
 };
 
 export default AdminSidebar;
-
 
