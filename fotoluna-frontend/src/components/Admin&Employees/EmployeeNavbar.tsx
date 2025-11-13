@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
-import { Link } from "react-router-dom";
 import EmployeeNotifications from "../../features/Employee/Notification/Pages/NotiFicationEmploye";
 import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
 import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
@@ -13,7 +12,7 @@ interface EmployeeNavbarProps {
 }
 
 const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
-    userName = "Amalia",
+    // userName = "Amalia",
     notificationCount = 3
 }) => {
     const [showNotifications, setShowNotifications] = useState(false);
@@ -73,6 +72,8 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                             placeholder="Buscar..."
                             aria-label="Buscar"
                         />
+
+                        
                         <button type="submit" className="search-button">
                             <i className="bi bi-search"></i>
                         </button>

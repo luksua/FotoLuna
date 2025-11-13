@@ -1,11 +1,12 @@
 import { useLocation, useRoutes } from "react-router-dom";
 import { routes } from "./routes/routes";
 import { employeeRoutes } from "./routes/employeesRoutes";
+import { adminRoutes } from "./routes/adminRoutes";
 import { useEffect } from "react";
 
 const App = () => {
   const location = useLocation();
-  const element = useRoutes([...routes, ...employeeRoutes]);
+  const element = useRoutes([...routes, ...employeeRoutes, ...adminRoutes]);
 
   useEffect(() => {
     // Limpia clases previas

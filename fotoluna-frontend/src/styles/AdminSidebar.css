@@ -1,0 +1,117 @@
+.Admin-sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: #ffffff;
+    border-right: #dddfdd 2px solid;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.AdminSidebar-header,
+.AdminSidebar-nav li {
+    font-family: 'quicksand';
+    font-size: 21px;
+    list-style: none;
+}
+
+.Admin-sidebar-icon-person {
+    font-size: 35px;
+    color: #ac98c4;
+    margin-bottom: 5px;
+    margin-right: 15px;
+}
+
+.AdminSidebar-header-row {
+    display: flex;
+    align-items: center;
+    padding-left: 27px;
+    margin-bottom: 16px;
+    cursor: pointer;
+}
+
+.AdminSidebar-header-row button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.Admin-sidebar-icon-notification {
+    font-size: 30px;
+    color: #dcabdf;
+    margin-left: auto;
+    margin-right: 24px;
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.Admin-sidebar-icon-notification:hover {
+    color: #dcabdf;
+    transform: scale(1.15);
+}
+
+.AdminSidebar-header-dashboard,
+.AdminSidebar-header-registrar,
+.AdminSidebar-header-administrar,
+.AdminSidebar-header-clientes {
+    display: flex;
+    align-items: center;
+    padding-left: 15px;
+    margin-bottom: 16px;
+    margin-bottom: 30px;
+    cursor: pointer;
+}
+
+.AdminSidebar-header-dashboard:hover,
+.AdminSidebar-header-registrar:hover,
+.AdminSidebar-header-administrar:hover,
+.AdminSidebar-header-clientes:hover {
+    transform: scale(1.15);
+    transition: transform 0.3s;
+}
+
+.Admin-sidebar-icon-dashboard,
+.Admin-sidebar-icon-register,
+.Admin-sidebar-icon-settings,
+.Admin-sidebar-icon-clients
+{
+    font-size: 25px;
+    margin-left: 20px;
+    color: #805fa6;
+    margin-right: 15px;
+}
+
+.AdminSidebar-header-usuarios {
+    font-family: 'quicksand';
+    font-size: 20px;
+    color: #dcabdf;
+    margin-left: 16px;
+    font-weight: 550;
+}
+
+.AdminSidebar-header-logout {
+    margin-top: auto;
+    padding: 5px 0 0 100px;
+    font-size: 1.9rem;
+    color: #dcabdf;
+    cursor: pointer;
+}
+
+.AdminSidebar-header-logout button {
+    border-radius: 20px;
+    padding: 4px 12px;
+    background-color: #dcabdf;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.AdminSidebar-header-logout:hover {
+    transform: scale(1.15);
+}
+
+hr {
+    border-top: 2px solid #b790b7;
+}

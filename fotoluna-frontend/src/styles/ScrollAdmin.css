@@ -1,7 +1,7 @@
 .layout-root {
     display: flex;
     height: 100vh;
-    overflow: hidden; /* Evita scroll en el body */
+    overflow: hidden;
 }
 
 .main-content {
@@ -11,7 +11,7 @@
     height: 100vh;
 }
 
-.scrollspy-example-3 {
+.scrollspy-example-2 {
     flex: 1;
     overflow-y: auto;
     padding-left: 40px;
@@ -19,5 +19,5 @@
     padding-top: 15px;
     padding-bottom: 24px;
     background: #f7f3fa46;
-    min-height: 0; /* Importante para que flexbox calcule bien el alto */
-}
+    min-height: 0; 
+}   
