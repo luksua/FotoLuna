@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import type { SettingsModalProps, SettingsOption } from '../Components/types/Settings';
 import '../Styles/Settings/SettingsModal.css';
-
+import { ConfirmModal } from "../../../../components/ConfirmModal";
+import { useAuth } from '../../../../context/useAuth';
+import { useNavigate } from "react-router-dom";
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
-    isOpen,
     onClose,
     onLogout
 }) => {
@@ -59,6 +60,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         }
     ];
 
+    const [modal, setModal] = useState(false);
+
+    const navigate = useNavigate();
+
     const handleToggle = (settingId: string) => {
         setSettings(prev => ({
             ...prev,
@@ -66,14 +71,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         }));
     };
 
-    const handleLogout = () => {
-        if (window.confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-            onLogout();
-            onClose();
-        }
-    };
-
-    if (!isOpen) return null;
+    const { logout } = useAuth();
 
     return (
         <div className="settings-modal-overlay" onClick={onClose}>
@@ -187,11 +185,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                                 <button
                                     className="btn btn-danger logout-btn"
-                                    onClick={handleLogout}
-                                >
+                                    onClick={() => setModal(true)}>
                                     <i className="bi bi-box-arrow-right me-2"></i>
                                     Cerrar sesión
                                 </button>
+
+                                <ConfirmModal
+                                    isOpen={modal}
+                                    onClose={() => setModal(false)}
+                                    onConfirm={async () => {
+                                        await logout();
+                                        navigate("/", { replace: true });
+                                    }}
+
+                                    title="¿Está seguro de cerrar sesión?"
+                                    type="error"
+                                />
                             </div>
                         </div>
                     </div>

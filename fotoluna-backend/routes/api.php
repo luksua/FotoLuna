@@ -10,6 +10,21 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DocumentTypeController;
+// use App\Http\Controllers\AdminController;
+// use App\Http\Controllers\CustomerController;
+
+// Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
+//     Route::get('/admin/dashboard', [AdminController::class, 'index']);
+// });
+
+// Route::middleware(['auth:sanctum', 'ability:cliente'])->group(function () {
+//     Route::get('/cliente/home', [CustomerController::class, 'index']);
+// });
+
+// Route::middleware(['auth:sanctum', 'ability:empleado'])->group(function () {
+//     Route::get('/empleado/panel', [EmployeeController::class, 'index']);
+// });
+
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 

@@ -82,7 +82,6 @@
     align-items: center;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, var(--muted), #fff);
 }
 
 .shape {
