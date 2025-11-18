@@ -1,21 +1,54 @@
-// import HomeAdmin from "../features/HomeEmployee/pages/HomeAdmin";
-import Dashboard from "../features/Admin/Dashboard/pages/Dashboard";
-import RegisterUsers from "../features/Admin/RegisterUsers/pages/RegisterUsers";
-import HomeAdmin from "../features/Admin/HomeAdmin/pages/HomeAdmin";
-import AdminUsers from "../features/Admin/AdminUsers/pages/AdminUsers";
-import AdminEmployee from "../features/Admin/AdminEmployee/pages/AdminEmployee";
-import NotificationsEmployee from "../features/Admin/Notification/Pages/NotificationsEmployee";
-
+import Home from "../features/home/home/pages/Home";
+import SignUp from "../features/home/auth/pages/SignUp";
+import Login from "../features/home/auth/pages/Login";
+import ForgotPassword from "../features/home/auth/pages/ForgotPassword";
+import AboutMe from "../features/home/home/pages/AboutMe";
+import Contact from "../features/home/home/pages/Contact";
+import Appointment from "../features/home/appointment/pages/Appointment";
+import AppointmentForm from "../features/home/appointment/pages/AppointmentForm";
+import Notification from "../features/home/notification/pages/NotificationCustomer";
+import Quinces from "../features/home/events/quinces/pages/Quinces";
+import ProfilePage from "../features/home/home/pages/Account";
+import Photos from "../features/home/home/pages/Photos";
 
 
 export const routes = [
     {
         path: "/",
-        element: <HomeAdmin />
+        element: <Home />
     },
-    { path: "/dashboard", element: <Dashboard/> },
-    { path: "/RegisterUsers", element: <RegisterUsers/> },
-    { path: "/AdminUsers", element: <AdminUsers /> },
-    { path: "/AdminEmployee", element: <AdminEmployee /> },
-    { path: "/notifications", element: <NotificationsEmployee /> }, 
-]; 
+    {
+        path: "/registrarse",
+        element: <SignUp />
+    }, {
+        path: "/iniciarSesion",
+        element: <Login />
+    }, {
+        path: "/recuperarContrasena",
+        element: <ForgotPassword />
+    }, {
+        path: "/sobreMi",
+        element: <AboutMe />
+    }, {
+        path: "/contacto",
+        element: <Contact />
+    }, {
+        path: "/citas",
+        element: <Appointment />
+    }, {
+        path: "/nuevaCita",
+        element: <AppointmentForm />
+    }, {
+        path: "/notificaciones",
+        element: <Notification />
+    }, {
+        path: "/quince",
+        element: <Quinces />
+    }, {
+        path: "/miCuenta",
+        element: <ProfilePage />
+    }, {
+        path: "/fotos",
+        element: <Photos />
+    },
+];

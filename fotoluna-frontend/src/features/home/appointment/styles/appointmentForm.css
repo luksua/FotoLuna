@@ -1,0 +1,126 @@
+/* ---------- Utilidad: ancho auto a partir de 576px ---------- */
+@media (min-width: 576px) {
+    .w-sm-auto {
+        width: auto !important;
+    }
+}
+
+.form-appointment {
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+.form-appointment2 {
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+/* ---------- Estructura y look & feel ---------- */
+.appointment-form-section .form-header {
+    border-radius: .75rem;
+}
+
+.appointment-form-section .form-body,
+.appointment-form-section .form-illustration-card {
+    border-radius: .75rem;
+}
+
+/* ---------- Grid de campos del formulario ---------- */
+.appointment-form-section .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* móvil: una columna */
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .appointment-form-section .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* md+: dos columnas */
+        gap: 1.25rem;
+    }
+
+    .appointment-form-section .form-field.span-2 {
+        grid-column: 1 / -1;
+        /* ocupar ancho completo cuando corresponde */
+    }
+}
+
+/* ---------- Usabilidad móvil (inputs táctiles) ---------- */
+.appointment-form-section input,
+.appointment-form-section select,
+.appointment-form-section textarea,
+.appointment-form-section input[type="time"],
+.appointment-form-section input[type="date"] {
+    min-height: 44px;
+    /* objetivo táctil recomendado */
+    font-size: 16px;
+    /* evita zoom en iOS */
+}
+
+
+
+/* ---------- Imagen/ilustración ---------- */
+.appointment-form-section .form-illustration {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+.form-header h1 {
+    font-size: 50px;
+}
+
+/* Para pantallas muy pequeñas, recorta márgenes y da más “aire” a los campos */
+@media (max-width: 575.98px) {
+    .appointment-form-section .form-body {
+        padding: 1rem !important;
+    }
+
+    .form-appointment {
+        padding: 0 !important;
+    }
+
+    .form-appointment2 {
+        padding: 0 !important;
+        box-shadow: none;
+    }
+
+    .form-header h1 {
+        font-size: 25px;
+    }
+}
+
+@media (min-width: 425px) {
+    .form-appointment {
+        padding: 30px !important;
+    }
+}
+
+
+/* STEP 2 */
+
+.package-card {
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.package-card:hover {
+    border-color: #3949ab;
+    transform: translateY(-4px);
+}
+
+.package-card.selected {
+    border-color: #3949ab;
+    background-color: #f5f7ff;
+}
+
+@media (max-width: 767.98px) {
+    .package-card {
+        margin-bottom: 1rem;
+    }
+}

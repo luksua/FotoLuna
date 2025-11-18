@@ -1,0 +1,305 @@
+.other-services-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, 
+        rgba(138, 43, 226, 0.05) 0%, 
+        rgba(176, 117, 225, 0.08) 50%, 
+        rgba(138, 43, 226, 0.05) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Elementos decorativos de fondo */
+.other-services-section::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
+    top: -80px;
+    left: -80px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.other-services-section::after {
+    content: '';
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(176, 117, 225, 0.1) 0%, transparent 70%);
+    bottom: -60px;
+    right: -60px;
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-20px) scale(1.03);
+    }
+}
+
+/* Call to Action Container - MÁS PEQUEÑO */
+.other-services-cta {
+    position: relative;
+    z-index: 1;
+    max-width: 650px; /* Reducido de 800px */
+    width: 100%;
+    background: white;
+    border-radius: 25px; /* Reducido de 30px */
+    padding: 2.5rem 2rem; /* Reducido de 4rem 3rem */
+    box-shadow: 
+        0 20px 60px rgba(138, 43, 226, 0.15),
+        0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.other-services-cta:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+        0 25px 70px rgba(138, 43, 226, 0.2),
+        0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Content */
+.cta-content {
+    text-align: center;
+}
+
+.cta-title {
+    font-size: 2rem; /* Reducido de 2.5rem */
+    font-weight: 700;
+    margin-bottom: 1rem; /* Reducido de 1.5rem */
+    background: linear-gradient(135deg, #C792DF 0%, #b075e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.cta-description {
+    font-size: 1rem; /* Reducido de 1.2rem */
+    color: #5d6d7e;
+    line-height: 1.6; /* Reducido de 1.8 */
+    margin-bottom: 1.8rem; /* Reducido de 2.5rem */
+    max-width: 500px; /* Reducido de 600px */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Buttons Container */
+.cta-buttons {
+    display: flex;
+    gap: 1rem; /* Reducido de 1.5rem */
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* CTA Buttons - MÁS PEQUEÑOS */
+.cta-btn {
+    position: relative;
+    padding: 0.8rem 1.5rem; /* Reducido de 1rem 2rem */
+    border: none;
+    border-radius: 50px;
+    font-size: 0.95rem; /* Reducido de 1.1rem */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    min-width: 200px; /* Reducido de 250px */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cta-btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem; /* Reducido de 0.8rem */
+    position: relative;
+    z-index: 1;
+}
+
+.cta-btn-icon {
+    font-size: 1.1rem; /* Reducido de 1.3rem */
+    transition: transform 0.3s ease;
+}
+
+.cta-btn-text {
+    font-weight: 600;
+}
+
+/* Primary Button */
+.cta-btn.primary {
+    background: linear-gradient(135deg, #ecc3ef 0%, #e88fec 100%);
+    color: white;
+}
+
+.cta-btn.primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #b075e1 0%, #8a2be2 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cta-btn.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+}
+
+.cta-btn.primary:hover::before {
+    opacity: 1;
+}
+
+.cta-btn.primary:hover .cta-btn-icon {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.cta-btn.primary:active {
+    transform: translateY(-1px);
+}
+
+/* WhatsApp Button */
+.cta-btn.whatsapp {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+}
+
+.cta-btn.whatsapp::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cta-btn.whatsapp:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+}
+
+.cta-btn.whatsapp:hover::before {
+    opacity: 1;
+}
+
+.cta-btn.whatsapp:hover .cta-btn-icon {
+    transform: scale(1.2) rotate(-10deg);
+}
+
+.cta-btn.whatsapp:active {
+    transform: translateY(-1px);
+}
+
+/* ========== RESPONSIVE ========== */
+
+/* Tablets (768px - 991px) */
+@media (max-width: 991px) {
+    .other-services-cta {
+        padding: 2rem 1.5rem;
+        max-width: 600px;
+    }
+
+    .cta-title {
+        font-size: 1.8rem;
+    }
+
+    .cta-description {
+        font-size: 0.95rem;
+    }
+
+    .cta-btn {
+        min-width: 180px;
+        padding: 0.75rem 1.3rem;
+    }
+}
+
+/* Móviles (768px o menos) */
+@media (max-width: 768px) {
+    .other-services-section {
+        padding: 2rem 1rem;
+    }
+
+    .other-services-cta {
+        padding: 2rem 1.2rem;
+        border-radius: 20px;
+    }
+
+    .cta-title {
+        font-size: 1.6rem;
+    }
+
+    .cta-description {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .cta-btn {
+        min-width: 170px;
+    }
+}
+
+/* Móviles pequeños (576px o menos) */
+@media (max-width: 576px) {
+    .other-services-cta {
+        padding: 1.8rem 1rem;
+    }
+
+    .cta-title {
+        font-size: 1.5rem;
+    }
+
+    .cta-description {
+        font-size: 0.85rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .cta-btn {
+        width: 100%;
+        min-width: auto;
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Móviles muy pequeños (425px o menos) */
+@media (max-width: 425px) {
+    .other-services-cta {
+        padding: 1.5rem 0.8rem;
+    }
+
+    .cta-title {
+        font-size: 1.3rem;
+    }
+
+    .cta-description {
+        font-size: 0.8rem;
+    }
+
+    .cta-btn {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .cta-btn-icon {
+        font-size: 1rem;
+    }
+}

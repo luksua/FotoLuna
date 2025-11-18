@@ -10,9 +10,32 @@ class PackageController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function getByEvent($eventId)
+    {
+        $packages = Package::where('isGeneral', true)
+            ->orWhere('eventIdFK', $eventId)
+            ->with(['photos:photoId,packageIdFK,photoPath'])
+            ->get([
+                'packageId as id',
+                'packageName',
+                'packageDescription',
+                'price as packagePrice'
+            ]);
+
+        if ($packages->isEmpty()) {
+            return response()->json([
+                'message' => 'No hay paquetes disponibles para este evento.',
+                'packages' => []
+            ], 200);
+        }
+
+        return response()->json($packages);
+    }
+
     public function index()
     {
         //
+        return response()->json(Package::all());
     }
 
     /**

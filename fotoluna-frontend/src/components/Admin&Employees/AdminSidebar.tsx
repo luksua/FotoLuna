@@ -7,11 +7,12 @@ const AdminSidebar: React.FC = () => {
     const location = useLocation();
 
     const menuItems = [
-        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/" },
-        { id: "citas", icon: "bi bi-speedometer2", text: "Dashboard", path: "/dashboard" },
+        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/admin" },
+        { id: "citas", icon: "bi bi-graph-up", text: "Dashboard", path: "/dashboard" },
         { id: "subir", icon: "bi bi-journal-plus", text: "Registro Usuarios", path: "/RegisterUsers" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/AdminUsers" },
         { id: "clientes", icon: "bi bi-people-fill", text: "Empleados", path: "/AdminEmployee" },
+        { id: "Events", icon: "bi bi-calendar-event", text: "Eventos", path: "/Events" },
     ];
 
     return (
@@ -21,7 +22,8 @@ const AdminSidebar: React.FC = () => {
                     <Link
                         key={item.id}
                         to={item.path}
-                        className={`menu-item ${location.pathname === item.path ? 'active' : ''}`}>
+                        className={`menu-item ${location.pathname === item.path ? 'active' : ''}`}
+                    >
                         <i className={item.icon}></i>
                         <span className="menu-text">{item.text}</span>
                     </Link>
@@ -32,3 +34,5 @@ const AdminSidebar: React.FC = () => {
 };
 
 export default AdminSidebar;
+
+

@@ -65,7 +65,7 @@
     margin-bottom: 30px;
 }
 
-.card {
+.card-employee {
     background: var(--white);
     border-radius: 15px;
     padding: 25px;
@@ -78,7 +78,7 @@
     overflow: hidden;
 }
 
-.card::before {
+.card-employee::before {
     content: '';
     position: absolute;
     top: 0;
@@ -88,12 +88,12 @@
     background: linear-gradient(90deg, var(--pastel-mint), var(--pastel-lilac));
 }
 
-.card:hover {
+.card-employee:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.card-header {
+.card-header-employee {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
@@ -131,13 +131,13 @@
     background: var(--pastel-lavender);
 }
 
-.card h3 {
+.card-employee h3 {
     color: var(--text-dark);
     font-size: 1.3rem;
     margin-bottom: 10px;
 }
 
-.card p {
+.card-employee p {
     color: var(--text-light);
     line-height: 1.5;
     margin-bottom: 15px;
@@ -240,7 +240,7 @@ footer {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.card {
+.card-employee {
     animation: fadeIn 0.5s ease forwards;
 }
 

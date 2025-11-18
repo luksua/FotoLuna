@@ -1,6 +1,6 @@
-
-import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import React from "react";
+import "../Styles/home.css";
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import "../styles/home.css";
 
 
@@ -14,20 +14,19 @@ const EmployeeHome: React.FC = () => {
                 </div>
                 <div className="weather-info">
                     <div className="weather-icon">
-                        <i className="fas fa-cloud-sun"></i>
+                        <i className="bi bi-cloud-sun-fill"></i>
                     </div>
                     <div className="weather-details">
-                        <h3>25°C</h3>
                         <p>Parcialmente nublado</p>
                     </div>
                 </div>
             </section>
             
             <div className="dashboard">
-                <div className="card citos">
-                    <div className="card-header">
+                <div className="card-employee citos">
+                    <div className="card-header-employee">
                         <div className="card-icon">
-                            <i className="fas fa-calendar-alt"></i>
+                            <i className="bi bi-calendar-event"></i>
                         </div>
                         <h3>Citas</h3>
                     </div>
@@ -48,10 +47,10 @@ const EmployeeHome: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="card nube">
-                    <div className="card-header">
+                <div className="card-employee nube">
+                    <div className="card-header-employee">
                         <div className="card-icon">
-                            <i className="fas fa-cloud"></i>
+                            <i className="bi bi-cloud"></i>
                         </div>
                         <h3>Nube</h3>
                     </div>
@@ -68,10 +67,10 @@ const EmployeeHome: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="card subir">
-                    <div className="card-header">
+                <div className="card-employee subir">
+                    <div className="card-header-employee">
                         <div className="card-icon">
-                            <i className="fas fa-upload"></i>
+                            <i className="bi bi-upload"></i>
                         </div>
                         <h3>Subir</h3>
                     </div>
@@ -90,10 +89,10 @@ const EmployeeHome: React.FC = () => {
             </div>
 
             <div className="dashboard">
-                <div className="card administrar">
-                    <div className="card-header">
+                <div className="card-employee administrar">
+                    <div className="card-header-employee">
                         <div className="card-icon">
-                            <i className="fas fa-cogs"></i>
+                            <i className="bi bi-cogs"></i>
                         </div>
                         <h3>Administrar</h3>
                     </div>
@@ -110,10 +109,10 @@ const EmployeeHome: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="card clientes">
-                    <div className="card-header">
+                <div className="card-employee clientes">
+                    <div className="card-header-employee">
                         <div className="card-icon">
-                            <i className="fas fa-users"></i>
+                            <i className="bi bi-person-lines-fill"></i>
                         </div>
                         <h3>Clientes</h3>
                     </div>
@@ -130,10 +129,10 @@ const EmployeeHome: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="card">
-                    <div className="card-header">
+                <div className="card-employee">
+                    <div className="card-header-employee">
                         <div className="card-icon" style={{background: "var(--pastel-lilac)"}}>
-                            <i className="fas fa-chart-line"></i>
+                            <i className="bi bi-graph-up"></i>
                         </div>
                         <h3>Estadísticas</h3>
                     </div>

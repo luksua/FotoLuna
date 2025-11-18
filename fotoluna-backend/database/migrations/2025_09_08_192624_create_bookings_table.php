@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,6 +14,7 @@ return new class extends Migration
             $table->id('bookingId');
 
             $table->foreignId('employeeIdFK')
+                ->nullable()
                 ->constrained('employees', 'employeeId')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
@@ -29,11 +29,13 @@ return new class extends Migration
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
 
-            $table->enum('bookingStatus', ['Pending', 'Confirmed', 'Cancelled', 'Completed']);
+            $table->enum('bookingStatus', ['Pending', 'Confirmed', 'Cancelled', 'Completed'])
+                ->default('Pending');
 
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

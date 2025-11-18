@@ -501,7 +501,7 @@
 }
 
 .btn-secondary,
-.btn-primary {
+.btn-primary-employee {
     padding: 8px 16px;
     border: none;
     border-radius: 8px;
@@ -522,13 +522,13 @@
     transform: translateY(-1px);
 }
 
-.btn-primary {
+.btn-primary-employee {
     background: #FF91A4;
     color: #fff;
     border: 1px solid #E8E2F2;
 }
 
-.btn-primary:hover {
+.btn-primary-employee:hover {
     background: linear-gradient(135deg, var(--lila-oscuro), var(--rosa-oscuro));
     color: white;
     transform: translateY(-1px);
@@ -602,4 +602,4 @@
     .btn-primary {
         width: 100%;
     }
-}
+}   

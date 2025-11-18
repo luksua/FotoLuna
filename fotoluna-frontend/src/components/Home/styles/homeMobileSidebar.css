@@ -1,0 +1,178 @@
+/* ======== Sidebar principal ======== */
+.sidebar-fotoluna {
+    background-color: #ffffff;
+    color: #370a33;
+    width: 290px;
+    border: none;
+    border-radius: 18px 0 0 18px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    transition: transform 0.35s ease;
+    /* font-family: "Poppins", sans-serif; */
+}
+
+/* ======== Logo ======== */
+.sidebar-logo {
+    color: #370a33;
+    letter-spacing: 0.5px;
+}
+
+/* .sidebar-logo img {
+    color: #4d2a65;
+    height: 35px;
+    top: 20px;
+} */
+
+/* ======== Usuario ======== */
+.user-card {
+    background-color: #D0C4DF;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.user-card .user-subtext {
+    color: #591976;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.user-card .user-subtext:hover {
+    text-decoration: underline;
+}
+
+/* ======== Enlaces principales ======== */
+.nav-links .nav-link {
+    display: flex;
+    align-items: center;
+    color: #75557f;
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    font-weight: 500;
+}
+
+.nav-links .nav-link:hover {
+    background-color: #8f73b7;
+    color: #fff;
+}
+
+.nav-links .active {
+    background-color: #a494b7;
+    color: #fff;
+}
+
+/* ======== Submenú Portafolio ======== */
+.dropdown-toggle-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #ddd;
+    text-align: left;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: all 0.25s ease;
+}
+
+.dropdown-toggle-btn:hover {
+    background-color: #25163a;
+    color: #fff;
+}
+
+.submenu a {
+    display: block;
+    color: #75557f;
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 6px 0;
+    transition: color 0.25s ease;
+    border-bottom: 2px solid #DDDFDF;
+}
+
+.submenu a:hover {
+    color: #8f359b;
+}
+
+/* ======== Cerrar sesión ======== */
+.logout-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: #412c4e;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    color: #c672ff;
+    transform: translateX(3px);
+}
+
+/* ======== Cierre y responsive ======== */
+.btn-close {
+    filter: invert(0);
+    opacity: 0.8;
+}
+
+button.btn-close{
+    color: #000000;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .sidebar-fotoluna {
+        width: 85%;
+    }
+}
+
+/* ======== Contenedor del avatar ======== */
+.user-avatar-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    /* oculta cualquier parte sobrante de la imagen */
+    flex-shrink: 0;
+    /* evita que se reduzca con flex */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1e1430;
+    /* color de fondo por si no hay imagen */
+    border: 2px solid #f1dcff;
+    /* borde con color de la marca */
+}
+
+/* ======== Imagen del avatar ======== */
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* mantiene proporciones sin deformar */
+    border-radius: 50%;
+    /* asegura forma circular */
+}
+
+.offcanvas-backdrop {
+    transition: opacity 0.3s ease !important;
+}
+
+/* Asegura que el sidebar derecho tenga sombra hacia la izquierda */
+.offcanvas-end.sidebar-fotoluna {
+  box-shadow: -6px 0 15px rgba(0, 0, 0, 0.5);
+}
