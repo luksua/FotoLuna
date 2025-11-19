@@ -10,7 +10,7 @@
     margin-bottom: 24px;
     color: #111827;
 }
-
+x   
 /* Barra de búsqueda */
 .search-filter {
     margin-bottom: 32px;
@@ -46,6 +46,43 @@
     border-bottom: 2px solid #7c3aed;
 }
 
+/* Header de sección con botón */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #7c3aed;
+    flex: 1;
+}
+
+/* Botón Agregar Nuevo */
+.btn-add-new {
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
+    white-space: nowrap;
+    margin-left: 12px;
+}
+
+.btn-add-new:hover {
+    background: #6d28d9;
+}
+
 /* Grid de items */
 .items-grid {
     display: grid;
@@ -62,12 +99,21 @@
     flex-direction: column;
     gap: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
 }
 
 .item-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.item-card.disabled {
+    opacity: 0.6;
+    background: #f9fafb;
+}
+
+.item-content {
+    flex: 1;
 }
 
 .item-content h3 {
@@ -83,24 +129,71 @@
     color: #6b7280;
 }
 
-.item-content strong {
-    color: #374151;
+/* Badge de estado */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
 }
 
-/* Botón Editar */
-.btn-edit {
-    background: #7c3aed;
-    color: white;
-    border: none;
+.status-badge.active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Grupo de botones */
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit,
+.btn-disable {
+    flex: 1;
     padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
+    border: none;
     transition: background 0.2s;
+    font-size: 14px;
+}
+
+.btn-edit {
+    background: #7c3aed;
+    color: white;
 }
 
 .btn-edit:hover {
     background: #6d28d9;
+}
+
+.btn-disable {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-disable:hover {
+    background: #e5e7eb;
+}
+
+.btn-disable.active {
+    background: #fecaca;
+    color: #7f1d1d;
+    border-color: #fca5a5;
+}
+
+.btn-disable.active:hover {
+    background: #fca5a5;
 }
 
 /* Modal */

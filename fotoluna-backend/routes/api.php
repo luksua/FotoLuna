@@ -11,6 +11,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DocumentTypeController;
 
+
+
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
 
@@ -50,3 +52,66 @@ Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
 Route::get('/employees/available', [EmployeeController::class, 'available']);
 
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
+
+
+//Conexiones de Admin
+use App\Http\Controllers\Admin\DocumentTypeController as AdminDocumentTypeController;
+use App\Http\Controllers\Admin\PackageController as AdminPackageController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+
+Route::get('/events', [AdminEventController::class, 'index']);
+Route::get('/packages', [AdminPackageController::class, 'index']);
+Route::get('/document-types', [AdminDocumentTypeController::class, 'index']);
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/customer', [ProfileController::class, 'update']);
+    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
+    Route::post('/appointments', [AppointmentController::class, 'store']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/appointments', [AppointmentController::class, 'store']);
+    Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
+    Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
+    Route::get('/events/{eventId}/packages', [AdminPackageController::class, 'getByEvent']);
+});
+
+Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
+
+Route::get('/availability', [AppointmentController::class, 'availability']);
+Route::get('/employees/available', [EmployeeController::class, 'available']);
+
+Route::post('/email/resend', [AuthController::class, 'resendVerification']);
+
+// Rutas protegidas para Admin (CRUD completo)
+Route::middleware('auth:sanctum')->group(function () {
+    // Events
+    Route::post('/admin/events', [AdminEventController::class, 'store']);
+    Route::put('/admin/events/{event}', [AdminEventController::class, 'update']);
+    Route::delete('/admin/events/{event}', [AdminEventController::class, 'destroy']);
+    Route::get('/admin/events/{event}', [AdminEventController::class, 'show']);
+
+    // Packages
+    Route::post('/admin/packages', [AdminPackageController::class, 'store']);
+    Route::put('/admin/packages/{package}', [AdminPackageController::class, 'update']);
+    Route::delete('/admin/packages/{package}', [AdminPackageController::class, 'destroy']);
+    Route::get('/admin/packages/{package}', [AdminPackageController::class, 'show']);
+
+    // Document Types
+    Route::post('/admin/document-types', [AdminDocumentTypeController::class, 'store']);
+    Route::put('/admin/document-types/{documentType}', [AdminDocumentTypeController::class, 'update']);
+    Route::delete('/admin/document-types/{documentType}', [AdminDocumentTypeController::class, 'destroy']);
+    Route::get('/admin/document-types/{documentType}', [AdminDocumentTypeController::class, 'show']);
+});
