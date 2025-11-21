@@ -119,28 +119,98 @@ class AuthController extends Controller
         $user = User::where('email', $data['email'])->first();
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
-            return response()->json(['message' => 'Correo o contraseña invalidos'], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['message' => 'Correo o contraseña inválidos'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // (Opcional) Validar correo verificado
+        // if (!$user->hasVerifiedEmail()) {
+        //     return response()->json(['message' => 'Debe verificar su correo antes de iniciar sesión.'], Response::HTTP_FORBIDDEN);
+        // }
 
-        return response()->json([
+        // Crear token con rol como ability
+        $token = $user->createToken('auth_token', [$user->role])->plainTextToken;
+
+        // Construir respuesta base
+        $response = [
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
-        ], Response::HTTP_OK);
+            'role' => $user->role,
+        ];
+
+        // Agregar ruta de redirección según rol
+        switch ($user->role) {
+            case 'admin':
+                $response['redirect_to'] = '/admin';
+                break;
+
+            case 'empleado':
+                $response['redirect_to'] = '/empleado';
+                break;
+
+            case 'cliente':
+            default:
+                $response['redirect_to'] = '/';
+                break;
+        }
+
+        return response()->json($response, Response::HTTP_OK);
     }
+
+    // public function login(LoginRequest $request)
+    // {
+    //     $data = $request->validated();
+
+    //     $user = User::where('email', $data['email'])->first();
+
+    //     if (!$user || !Hash::check($data['password'], $user->password)) {
+    //         return response()->json(['message' => 'Correo o contraseña invalidos'], Response::HTTP_UNAUTHORIZED);
+    //     }
+
+    //     $token = $user->createToken('auth_token', [$user->role])->plainTextToken;
+
+    //     $response = [
+    //         'access_token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'role' => $user->role,
+    //         'user' => $user,
+    //     ];
+
+    //     // Retornar respuesta diferente según rol
+    //     switch ($user->role) {
+    //         case 'admin':
+    //             $response['redirect_to'] = '/admin';
+    //             break;
+    //         case 'empleado':
+    //             $response['redirect_to'] = '/empleado';
+    //             break;
+    //         case 'cliente':
+    //         default:
+    //             $response['redirect_to'] = '/';
+    //             break;
+    //     }
+
+    //     return response()->json($response, Response::HTTP_OK);
+    // }
 
     // Logout: elimina el token actual (logout desde un dispositivo)
     public function logout(Request $request)
     {
-        $token = $request->user()->currentAccessToken();
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 200);
+        }
+
+        $token = $user->currentAccessToken();
+
         if ($token) {
             $token->delete();
         }
 
-        return response()->json(['message' => 'Sesión cerrada'], Response::HTTP_OK);
+        return response()->json(['message' => 'Sesión cerrada'], 200);
     }
+
 
     // Logout all: opcional, elimina todos los tokens del usuario (cerrar sesión en todos los dispositivos)
     public function logoutAll(Request $request)

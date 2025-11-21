@@ -102,17 +102,45 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         }
     };
 
+    // const logout = async () => {
+    //     try {
+    //         await api.post("/api/logout");
+    //     } catch (err) {
+    //         console.warn("Logout backend error:", err);
+    //     }
+    //     setUser(null);
+    //     setToken(null);
+    //     setAuthToken(null);
+    //     localStorage.removeItem("token");
+    // };
+
     const logout = async () => {
         try {
-            await api.post("/api/logout");
+            const token = localStorage.getItem("token");
+            console.log("TOKEN PARA LOGOUT:", token);
+            await api.post(
+                "/api/logout",
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                }
+            );
+
+
         } catch (err) {
             console.warn("Logout backend error:", err);
         }
+
         setUser(null);
         setToken(null);
         setAuthToken(null);
         localStorage.removeItem("token");
+        window.location.href = "/"; 
     };
+
 
     const value: AuthContextType = {
         user,

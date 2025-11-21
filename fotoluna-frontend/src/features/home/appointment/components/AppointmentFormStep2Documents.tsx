@@ -8,6 +8,8 @@ interface Step3Props {
     eventId: number;
     onBack: () => void;
     onConfirm: (data: { bookingId: number }) => void;
+    place?: string;
+    preselectedDocumentTypeId?: number;
 }
 
 interface DocumentType {
@@ -25,6 +27,8 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     appointmentId,
     onConfirm,
     onBack,
+    place,
+    preselectedDocumentTypeId,
 }) => {
     const [documents, setDocuments] = useState<DocumentType[]>([]);
     const [selectedDoc, setSelectedDoc] = useState<number | null>(null);
@@ -45,10 +49,34 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     const speedRef = useRef(0.3);
     const clickGuardRef = useRef(false);
 
+    // lugar y archivo
+    const [localPlace, setLocalPlace] = useState(place ?? "");
+    const [file, setFile] = useState<File | null>(null);
+
+    const selectedDocObj = documents.find((d) => d.id === selectedDoc);
+    const requiresUpload = !!selectedDocObj?.requiresUpload;
+    const requiresPresence = !!selectedDocObj?.requiresPresence;
+    const needsPhotographerVisit =
+        !!selectedDocObj && !requiresUpload && !requiresPresence;
+
     // 🔹 Cargar tipos de documento
+    // useEffect(() => {
+    //     api.get("/api/document-types").then(({ data }) => setDocuments(data));
+    // }, []);
     useEffect(() => {
-        api.get("/api/document-types").then(({ data }) => setDocuments(data));
-    }, []);
+        api.get("/api/document-types").then(({ data }) => {
+            setDocuments(data);
+
+            // 👇 si viene un documentType preseleccionado, lo marcamos
+            if (preselectedDocumentTypeId) {
+                setSelectedDoc(preselectedDocumentTypeId);
+            } else if (data.length > 0) {
+                // opcional: seleccionar el primero por defecto
+                setSelectedDoc(data[0].id);
+            }
+        });
+    }, [preselectedDocumentTypeId]);
+
 
     // 🔁 Duplicar para scroll infinito
     const items = documents.length > 0 ? [...documents, ...documents] : [];
@@ -102,12 +130,67 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     const handleConfirm = async () => {
         if (!selectedDoc) return alert("Selecciona un tipo de documento");
 
+        const doc = documents.find((d) => d.id === selectedDoc);
+        if (!doc) return;
+
+        // decidir el lugar según el tipo de documento
+        let resolvedPlace: string | null = place ?? null;
+
+        if (requiresPresence && !requiresUpload) {
+            // Se toma en estudio, no necesitamos lugar del cliente
+            resolvedPlace = "Estudio";
+        } else if (needsPhotographerVisit) {
+            // El fotógrafo va donde el cliente → necesitamos lugar
+            if (!localPlace.trim()) {
+                alert("Ingresa el lugar donde debe ir el fotógrafo.");
+                return;
+            }
+            resolvedPlace = localPlace.trim();
+        } else if (requiresUpload && !requiresPresence) {
+            // Todo online, podrías marcarlo como Online o dejar null
+            resolvedPlace = null; // o "Online"
+        }
+
+        // si requiere upload, obligamos archivo
+        if (requiresUpload && !file) {
+            alert("Por favor adjunta la foto para este documento.");
+            return;
+        }
+
+        // ---- construir FormData ----
+        const formData = new FormData();
+        formData.append("documentTypeId", String(selectedDoc));
+
+        if (resolvedPlace !== null) {
+            formData.append("place", resolvedPlace);
+        }
+
+        if (file) {
+            // usa el nombre de campo que espere tu backend, por ejemplo "photo"
+            formData.append("photo", file);
+        }
+
         setLoading(true);
         try {
-            const { data } = await api.post(`/api/appointments/${appointmentId}/booking`, {
-                documentTypeId: selectedDoc,
-            });
-            onConfirm({ bookingId: data.id });
+            const { data } = await api.post(
+                `/api/appointments/${appointmentId}/booking`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            // onConfirm({ bookingId: data.id });
+
+            const bookingId = data.bookingId ?? data.id; // por si acaso
+            if (!bookingId) {
+                console.error("No llegó bookingId en la respuesta:", data);
+                alert("No se pudo obtener el identificador de la reserva.");
+                return;
+            }
+
+            onConfirm({ bookingId });
         } catch (err) {
             console.error("Error al confirmar cita:", err);
             alert("No se pudo confirmar la cita");
@@ -115,6 +198,33 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
             setLoading(false);
         }
     };
+
+    const formatPrice = (value: string | number) => {
+        const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
+        if (Number.isNaN(n)) return String(value);
+        // sin decimales:
+        return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        // si quieres decimales, usa:
+        // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    // const handleConfirm = async () => {
+    //     if (!selectedDoc) return alert("Selecciona un tipo de documento");
+
+    //     setLoading(true);
+    //     try {
+    //         const { data } = await api.post(`/api/appointments/${appointmentId}/booking`, {
+    //             documentTypeId: selectedDoc,
+    //             place,
+    //         });
+    //         onConfirm({ bookingId: data.id });
+    //     } catch (err) {
+    //         console.error("Error al confirmar cita:", err);
+    //         alert("No se pudo confirmar la cita");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     // 🔹 Render
     return (
@@ -200,10 +310,13 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                                 <div className="package-info">
                                     <h5 className="mb-1">{doc.name}</h5>
                                     <p className="text-muted mb-2">{doc.description}</p>
-                                    <p className="fw-bold">${doc.price.toLocaleString()}</p>
+                                    <p className="fw-bold">${formatPrice(doc.price)}</p>
                                     <p className="">Fotos a entregar: {doc.number_photos}</p>
-                                    {doc.requiresUpload && <small>Requiere subir foto</small>}
-                                    {doc.requiresPresence && <small> En estudio</small>}
+                                    {!!doc.requiresUpload && <small>Requiere subir foto</small>}
+                                    {!!doc.requiresPresence && <small> Se toma en el estudio</small>}
+                                    {!doc.requiresUpload && !doc.requiresPresence && (
+                                        <small>Un fotógrafo irá a tu ubicación</small>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -233,14 +346,56 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                                     <h5 className="mb-1">{doc.name}</h5>
                                     <p className="text-muted mb-2">{doc.description}</p>
                                     <p className="fw-bold">${doc.price.toLocaleString()}</p>
-                                    {doc.requiresUpload && <small>Requiere subir foto</small>}
-                                    {doc.requiresPresence && <small>En estudio</small>}
+                                    {!!doc.requiresUpload && <small>Requiere subir foto</small>}
+                                    {!!doc.requiresPresence && <small>En estudio</small>}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
+
+            {selectedDocObj && (
+                <div className="mt-4">
+                    {requiresUpload && (
+                        <div className="mb-3">
+                            <label className="form-label">Adjunta tu foto</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="form-control"
+                                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                            />
+                            <small className="text-muted">
+                                Podrás adjuntar tu foto desde casa.
+                            </small>
+                        </div>
+                    )}
+
+                    {needsPhotographerVisit && (
+                        <div className="mb-3">
+                            <label className="form-label">Lugar donde se tomará la foto</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={localPlace}
+                                onChange={(e) => setLocalPlace(e.target.value)}
+                                placeholder="Ej. Tu dirección o lugar de trabajo"
+                            />
+                            <small className="text-muted">
+                                Un fotógrafo irá a este lugar para tomar la foto.
+                            </small>
+                        </div>
+                    )}
+
+                    {requiresPresence && !requiresUpload && (
+                        <small className="text-muted">
+                            Esta foto se toma en el estudio.
+                        </small>
+                    )}
+                </div>
+            )}
+
 
             <div className="d-flex justify-content-between mt-4">
                 <Button value="Atrás" onClick={onBack} />

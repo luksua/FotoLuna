@@ -11,6 +11,7 @@ import Quinces from "../features/home/events/quinces/pages/Quinces";
 import ProfilePage from "../features/home/home/pages/Account";
 import Photos from "../features/home/home/pages/Photos";
 
+
 export const routes = [
     {
         path: "/",
@@ -49,5 +50,5 @@ export const routes = [
     }, {
         path: "/fotos",
         element: <Photos />
-    }
+    },
 ];

@@ -78,7 +78,6 @@ const HomeSidebar: React.FC = () => {
                             <HomeButton
                                 onClick={async () => {
                                     await logout();
-                                    // opcional: cerrar offcanvas manualmente si necesitas
                                 }}
                             >
                                 <i className="bi bi-door-open me-1"></i>

@@ -4,8 +4,10 @@ import Photos from "../components/Photos";
 const AboutMe = () => {
     return (
         <>
-            <HomeNav />
-            <Photos />
+            <div className="home-layout">
+                <HomeNav />
+                <Photos />
+            </div>
         </>
     );
 };

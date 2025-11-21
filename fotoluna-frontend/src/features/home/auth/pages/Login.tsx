@@ -4,8 +4,10 @@ import LoginForm from "../components/LoginForm";
 const Login: React.FC = () => {
     return (
         <>
-            <HomeNavbar />
-            <LoginForm />
+            <div className="home-layout">
+                <HomeNavbar />
+                <LoginForm />
+            </div>
         </>
     );
 };

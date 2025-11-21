@@ -54,13 +54,27 @@ const LoginForm: React.FC = () => {
             const res = await api.post("/api/login", payload);
 
             const token = res.data?.access_token;
+            const redirectTo = res.data?.redirect_to || next;
+            
             if (token) {
                 await loginWithToken(token);
             } else if (res.data?.user && res.data?.token) {
                 await loginWithToken(res.data.token);
             }
 
-            navigate(next, { replace: true });
+            // 👇 Redirige automáticamente según el rol o redirect_to
+            navigate(redirectTo, { replace: true });
+
+            // const res = await api.post("/api/login", payload);
+
+            // const token = res.data?.access_token;
+            // if (token) {
+            //     await loginWithToken(token);
+            // } else if (res.data?.user && res.data?.token) {
+            //     await loginWithToken(res.data.token);
+            // }
+
+            // navigate(next, { replace: true });
         } catch (err: any) {
             console.error("Login error:", err?.response?.status, err?.response?.data);
             if (err.response) {
