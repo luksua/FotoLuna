@@ -1,46 +1,80 @@
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useState } from "react";
+import "../styles/RegisterUsers.css";
 
 const Register = () => {
     const [form, setForm] = useState({
-        name: "",
-        lastName: "",
-        phone: "",
-        eps: "",
+        firstNameEmployee: "",
+        lastNameEmployee: "",
+        phoneEmployee: "",
+        EPS: "",
         documentType: "",
         documentNumber: "",
-        email: "",
+        emailEmployee: "",
         address: "",
-        photo: null,
-        hojaDeVida: null
+        photoEmployee: null,
+        password: "",
+        employeeType: "Employee",
+        role: "Photographer",
+        specialty: "",
+        isAvailable: true,
+        gender: "Female"
     });
     const [message, setMessage] = useState("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, files } = e.target as HTMLInputElement;
-        if (name === "photo" || name === "hojaDeVida") {
-            setForm({ ...form, [name]: files && files[0] });
-        } else {
-            setForm({ ...form, [name]: value }
-                
-            );
+        const target = e.target as HTMLInputElement;
+        const { name } = target;
+        if (target.type === "file") {
+            setForm({ ...form, [name]: target.files && target.files[0] });
+            return;
         }
+        if (target.type === "checkbox") {
+            setForm({ ...form, [name]: target.checked });
+            return;
+        }
+        setForm({ ...form, [name]: target.value });
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setMessage("Usuario registrado correctamente");
+        // Aquí construirías el payload para enviar al backend
+        const payload = {
+            firstNameEmployee: form.firstNameEmployee,
+            lastNameEmployee: form.lastNameEmployee,
+            phoneEmployee: form.phoneEmployee,
+            EPS: form.EPS,
+            documentType: form.documentType,
+            documentNumber: form.documentNumber,
+            emailEmployee: form.emailEmployee,
+            address: form.address,
+            // photoEmployee: form.photoEmployee (archivo, enviar con FormData)
+            password: form.password,
+            employeeType: form.employeeType,
+            role: form.role,
+            specialty: form.specialty,
+            isAvailable: form.isAvailable,
+            gender: form.gender
+        };
+
+        console.log("Payload register user:", payload);
+        setMessage("Usuario registrado correctamente (simulado)");
         setForm({
-            name: "",
-            lastName: "",
-            phone: "",
-            eps: "",
+            firstNameEmployee: "",
+            lastNameEmployee: "",
+            phoneEmployee: "",
+            EPS: "",
             documentType: "",
             documentNumber: "",
-            email: "",
+            emailEmployee: "",
             address: "",
-            photo: null,
-            hojaDeVida: null
+            photoEmployee: null,
+            password: "",
+            employeeType: "Employee",
+            role: "Photographer",
+            specialty: "",
+            isAvailable: true,
+            gender: "Female"
         });
     };
 
@@ -49,68 +83,85 @@ const Register = () => {
         <HomeLayout>
             <div className="admin-home-container" style={{ maxWidth: 700, margin: "0 auto", padding: 24, background: "#f5f5f8ff", borderRadius: 12 }}>
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: 32 }}>
-                    <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
 
                         <label>Nombre:</label>
-                        <input type="text" name="name" value={form.name} onChange={handleChange} required style={inputStyle} />
+                        <input type="text" name="firstNameEmployee" value={form.firstNameEmployee} onChange={handleChange} required className="register-input" />
+
+                        <label>Apellido:</label>
+                        <input type="text" name="lastNameEmployee" value={form.lastNameEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Teléfono:</label>
-                        <input type="text" name="phone" value={form.phone} onChange={handleChange} required style={inputStyle} />
+                        <input type="text" name="phoneEmployee" value={form.phoneEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Tipo de Documento:</label>
-                        <select 
-                            name="documentType" 
-                            value={form.documentType} 
-                            onChange={handleChange} 
-                            required 
-                            style={{
-                                ...inputStyle,
-                                appearance: 'none',
-                                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c5e8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 12px center',
-                                backgroundSize: '16px',
-                                paddingRight: '40px'
-                            }}> 
+                        <select
+                            name="documentType"
+                            value={form.documentType}
+                            onChange={handleChange}
+                            required
+                            className="register-select">
                             <option value="">Seleccione un tipo</option>
                             <option value="CC">Cédula de Ciudadanía</option>
                             <option value="CE">Cédula de Extranjería</option>
-                            <option value="PP">Pasaporte</option>
+                            <option value="PAS">Pasaporte</option>
                         </select>
 
                         <label>Correo:</label>
-                        <input type="email" name="email" value={form.email} onChange={handleChange} required style={inputStyle} />
-
-                        <label>Hoja de vida:</label>
-
-                        <div style={fileBoxStyle}>
-                            <input type="file" name="hojaDeVida" accept=".pdf,.doc,.docx" onChange={handleChange} style={{ display: "none" }} id="hojaDeVida" />
-                            <label htmlFor="hojaDeVida" style={fileLabelStyle}>Elegir archivo</label>
-                            {form.hojaDeVida && <span style={{ marginLeft: 8 }}>{(form.hojaDeVida as File).name}</span>}
-                        </div>
-
-                    </div>
-                    <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 16 }}>
-                        <label>Apellido:</label>
-                        <input type="text" name="lastName" value={form.lastName} onChange={handleChange} required style={inputStyle} />
-
-                        <label>EPS:</label>
-                        <input type="text" name="eps" value={form.eps} onChange={handleChange} required style={inputStyle} />
-
-                        <label>Número de Documento:</label>
-                        <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required style={inputStyle} />
-
-                        <label>Dirección:</label>
-                        <input type="text" name="address" value={form.address} onChange={handleChange} required style={inputStyle} />
+                        <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Foto:</label>
-                        <div style={fileBoxStyle}>
-                            <input type="file" name="photo" accept="image/*" onChange={handleChange} style={{ display: "none" }} id="photo" />
-                            <label htmlFor="photo" style={fileLabelStyle}>Elegir archivo</label>
-                            {form.photo && <span style={{ marginLeft: 8 }}>{(form.photo as File).name}</span>}
+
+                        <div className="register-filebox">
+                            <input type="file" name="photoEmployee" accept="image/*" onChange={handleChange} style={{ display: "none" }} id="photoEmployee" />
+                            <label htmlFor="photoEmployee" className="register-filelabel">Elegir archivo</label>
+                            {form.photoEmployee && <span style={{ marginLeft: 8 }}>{(form.photoEmployee as File).name}</span>}
                         </div>
+
                     </div>
-                    
+                    <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
+                        <label>EPS:</label>
+                        <input type="text" name="EPS" value={form.EPS} onChange={handleChange} required className="register-input" />
+
+                        <label>Número de Documento:</label>
+                        <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required className="register-input" />
+
+                        <label>Contraseña:</label>
+                        <input type="password" name="password" value={form.password} onChange={handleChange} required className="register-input" />
+
+                        <label>Dirección:</label>
+                        <input type="text" name="address" value={form.address} onChange={handleChange} required className="register-input" />
+
+                        <label>Tipo de empleado:</label>
+                        <select name="employeeType" value={form.employeeType} onChange={handleChange} className="register-select">
+                            <option value="Employee">Empleado</option>
+                            <option value="Admin">Administrador</option>
+                        </select>
+
+                        <label>Rol:</label>
+                        <select name="role" value={form.role} onChange={handleChange} className="register-select">
+                            <option value="Photographer">Fotógrafo</option>
+                            <option value="Assistant">Asistente</option>
+                            <option value="Admin">Administrador</option>
+                            <option value="Other">Otro</option>
+                        </select>
+
+                        <label>Especialidad:</label>
+                        <input type="text" name="specialty" value={form.specialty} onChange={handleChange} className="register-input" />
+
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <input type="checkbox" name="isAvailable" checked={form.isAvailable} onChange={handleChange} /> Disponible
+                        </label>
+
+                        <label>Género:</label>
+                        <select name="gender" value={form.gender} onChange={handleChange} className="register-select">
+                            <option value="Female">Mujer</option>
+                            <option value="Male">Hombre</option>
+                            <option value="Other">Otro</option>
+                        </select>
+
+                    </div>
+
                     <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 24 }}>
                         <button type="submit" style={{ padding: "12px 40px", fontSize: 18, background: "#d1a3e2", color: "#fff", border: "none", borderRadius: 24, fontWeight: "bold" }}>
                             Aceptar
@@ -123,37 +174,12 @@ const Register = () => {
             <footer>
                 <p>FotoLuna &copy;  </p>
             </footer>
-            
+
         </HomeLayout>
     );
 };
 
-const inputStyle = {
-    background: "#e6d6ed",
-    border: "none",
-    borderRadius: 8,
-    padding: "8px 12px",
-    fontSize: 16,
-    color: "#7c5e8c"
-};
-
-const fileBoxStyle = {
-    display: "flex",
-    alignItems: "center",
-    border: "2px dashed #d1a3e2",
-    borderRadius: 8,
-    padding: "8px 12px",
-    background: "#f3eaf7"
-};
-
-const fileLabelStyle = {
-    background: "#e6d6ed",
-    color: "#a36fc2",
-    padding: "6px 16px",
-    borderRadius: 8,
-    cursor: "pointer",
-    fontWeight: "bold"
-};
+// estilos movidos a src/features/Admin/RegisterUsers/styles/RegisterUsers.css
 
 
 

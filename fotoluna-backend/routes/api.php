@@ -32,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
 // });
 
 
+
+
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
 Route::middleware('auth:sanctum')->get('/bookings/{booking}', [BookingController::class, 'show']);

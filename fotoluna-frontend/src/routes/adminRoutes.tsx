@@ -5,6 +5,7 @@ import HomeAdmin from "../features/Admin/HomeAdmin/pages/HomeAdmin";
 import AdminUsers from "../features/Admin/AdminUsers/pages/AdminUsers";
 import AdminEmployee from "../features/Admin/AdminEmployee/pages/AdminEmployee";
 import NotificationsEmployee from "../features/Admin/Notification/Pages/NotificationsEmployee";
+import AdminEvents from "../features/Admin/AdminEvents/pages/AdminEvents";
 
 export const adminRoutes = [
     {
@@ -15,5 +16,7 @@ export const adminRoutes = [
     { path: "/RegisterUsers", element: <RegisterUsers/> },
     { path: "/AdminUsers", element: <AdminUsers /> },
     { path: "/AdminEmployee", element: <AdminEmployee /> },
-    { path: "/notifications", element: <NotificationsEmployee /> }, 
+    { path: "/notifications", element: <NotificationsEmployee /> },
+    { path: "/AdminEvents", element: <AdminEvents /> },
+
 ]; 

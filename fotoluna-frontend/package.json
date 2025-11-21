@@ -19,6 +19,7 @@
     "axios": "^1.13.1",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
+    "cropperjs": "^2.1.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",

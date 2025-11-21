@@ -1,0 +1,41 @@
+.register-input {
+    background: #e6d6ed;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 16px;
+    color: #7c5e8c;
+}
+
+.register-select {
+    background: #e6d6ed;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 16px;
+    color: #7c5e8c;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%237c5e8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3cpolyline points="6 9 12 15 18 9"%3e%3c/polyline%3e%3c/svg%3e');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.register-filebox {
+    display: flex;
+    align-items: center;
+    border: 2px dashed #d1a3e2;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: #f3eaf7;
+}
+
+.register-filelabel {
+    background: #e6d6ed;
+    color: #a36fc2;
+    padding: 6px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
