@@ -37,7 +37,7 @@ class AppointmentController extends Controller
                 'eventIdFK' => 'required|exists:events,eventId',
                 'appointmentDate' => 'required|date|after_or_equal:today',
                 'appointmentTime' => 'required|string',
-                'place' => 'required|string|max:100',
+                'place' => 'nullable|string|max:100',
                 'comment' => 'nullable|string|max:255',
             ]);
 
@@ -62,7 +62,7 @@ class AppointmentController extends Controller
                 'eventIdFK' => $request->eventIdFK,
                 'appointmentDate' => $request->appointmentDate,
                 'appointmentTime' => $request->appointmentTime,
-                'place' => $request->place,
+                'place' => $request->place ?? null,
                 'comment' => $request->comment,
                 'appointmentStatus' => 'Pending confirmation',
             ]);
@@ -282,6 +282,7 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'packageId' => 'nullable|exists:packages,id',
             'appointmentStatus' => 'required|string',
+            'place' => $request->place ?? $appointment->place,
         ]);
 
         $appointment->update($validated);

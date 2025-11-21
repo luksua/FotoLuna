@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
 import Button from "../../../../components/Home/Button";
 import "../styles/appointment.css";
 import axios from "axios";
-// import AppointmentStep2Documents from "./AppointmentFormStep2Documents";
 
 interface Photo {
     id: number;
@@ -15,6 +14,8 @@ interface Package {
     packagePrice: string;
     packageDescription: string;
     photos?: Photo[];
+    // opcional, si lo traes del backend:
+    // isGeneral?: boolean;
 }
 
 interface Step2Props {
@@ -22,6 +23,7 @@ interface Step2Props {
     eventId: number;
     onBack: () => void;
     onConfirm: (data: { bookingId: number }) => void;
+    preselectedPackageId?: number | null;
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
@@ -31,9 +33,12 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     eventId,
     onBack,
     onConfirm,
+    preselectedPackageId,
 }) => {
-    const [packages, setPackages] = useState<Package[]>([]);
+    const [packages] = useState<Package[]>([]);
     const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
+    const [generalPackages, setGeneralPackages] = useState<Package[]>([]);
+    const [specificPackages, setSpecificPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,15 +56,23 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     const speedRef = useRef(0.3);
     const clickGuardRef = useRef(false);
 
-    // 🔹 Cargar paquetes del backend
+    // 🔹 Cargar paquetes del backend (general + específicos)
     useEffect(() => {
         const fetchPackages = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await axios.get(`${API_BASE}/api/events/${eventId}/packages`, {
-                    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-                });
-                setPackages(res.data);
+                const res = await axios.get(
+                    `${API_BASE}/api/events/${eventId}/packages`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+                setGeneralPackages(res.data.general ?? []);
+                setSpecificPackages(res.data.specific ?? []);
             } catch (err) {
                 console.error("Error al cargar paquetes:", err);
                 setError("No se pudieron cargar los paquetes.");
@@ -69,8 +82,28 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         if (eventId) fetchPackages();
     }, [eventId]);
 
+    useEffect(() => {
+        if (preselectedPackageId && packages.length > 0) {
+            // Si el paquete existe en la lista, lo seleccionamos
+            const exists = packages.some((p) => p.id === preselectedPackageId);
+            if (exists) {
+                setSelectedPackage(preselectedPackageId);
+            }
+        }
+    }, [preselectedPackageId, packages]);
+
+
+    // ✅ Un solo arreglo combinado para mostrar en carrusel
+    const combinedPackages: Package[] = [
+        ...specificPackages,
+        ...generalPackages,
+    ];
+
     // 🔁 Duplicar paquetes para scroll infinito
-    const items = packages.length > 0 ? [...packages, ...packages] : [];
+    const items =
+        combinedPackages.length > 0
+            ? [...combinedPackages, ...combinedPackages]
+            : [];
 
     // 🔹 Medir el ancho del track
     useLayoutEffect(() => {
@@ -83,7 +116,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
 
     // 🔄 Animación de auto-scroll + loop infinito
     useEffect(() => {
-        if (packages.length <= 3) return;
+        if (combinedPackages.length <= 3) return;
 
         const step = () => {
             if (autoRef.current) {
@@ -110,7 +143,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
-    }, [packages.length]);
+    }, [combinedPackages.length]);
 
     // 🔹 Click en un paquete
     const handleCardClick = (pkgId: number) => {
@@ -132,9 +165,14 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
             const res = await axios.post(
                 `${API_BASE}/api/appointments/${appointmentId}/booking`,
                 { packageIdFK: selectedPackage },
-                { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                }
             );
-            const bookingId = res?.data?.id ?? res?.data?.bookingId ?? 0;
+            const bookingId = res?.data?.bookingId ?? res?.data?.id ?? 0;
             onConfirm({ bookingId });
         } catch (err) {
             console.error("Error al confirmar cita:", err);
@@ -144,13 +182,22 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         }
     };
 
+    const formatPrice = (value: string | number) => {
+        const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
+        if (Number.isNaN(n)) return String(value);
+        // sin decimales:
+        return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        // si quieres decimales, usa:
+        // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
     // 🔹 Render
     return (
         <div className="container py-4 appointment-step2 bg-custom-2">
             <h3 className="mb-4 fw-semibold text-center">Selecciona un paquete</h3>
             {error && <div className="alert alert-danger">{error}</div>}
 
-            {packages.length > 3 ? (
+            {combinedPackages.length > 3 ? (
                 <div
                     className="carousel-viewport"
                     ref={viewportRef}
@@ -171,7 +218,8 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
 
                         const dx = e.clientX - lastXRef.current;
                         lastXRef.current = e.clientX;
-                        if (Math.abs(e.clientX - dragStartXRef.current) > 5) clickGuardRef.current = true;
+                        if (Math.abs(e.clientX - dragStartXRef.current) > 5)
+                            clickGuardRef.current = true;
 
                         offsetRef.current += dx;
                         velocityRef.current = dx;
@@ -181,21 +229,28 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
                     }}
                     onPointerUp={(e) => {
                         const vp = viewportRef.current;
-                        if (vp && vp.hasPointerCapture(e.pointerId)) vp.releasePointerCapture(e.pointerId);
+                        if (vp && vp.hasPointerCapture(e.pointerId))
+                            vp.releasePointerCapture(e.pointerId);
                         if (!isDraggingRef.current) return;
 
                         isDraggingRef.current = false;
                         vp?.classList.remove("dragging");
 
                         const waitInertia = () => {
-                            if (Math.abs(velocityRef.current) > 0.4) requestAnimationFrame(waitInertia);
+                            if (Math.abs(velocityRef.current) > 0.4)
+                                requestAnimationFrame(waitInertia);
                             else setTimeout(() => (autoRef.current = true), 900);
                         };
                         requestAnimationFrame(waitInertia);
 
                         if (!clickGuardRef.current) {
-                            const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-                            el?.closest(".carousel-card")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+                            const el = document.elementFromPoint(
+                                e.clientX,
+                                e.clientY
+                            ) as HTMLElement | null;
+                            el
+                                ?.closest(".carousel-card")
+                                ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
                         }
                     }}
                     onPointerCancel={() => {
@@ -226,16 +281,18 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
                                 <div className="package-info">
                                     <h5 className="mb-1">{pkg.packageName}</h5>
                                     <p className="text-muted mb-2">{pkg.packageDescription}</p>
-                                    <p className="fw-bold">{pkg.packagePrice}</p>
+                                    <p className="fw-bold">${formatPrice(pkg.packagePrice)}</p>
+                                    {/* Opcional: si traes isGeneral del backend, puedes marcarlo */}
+                                    {/* {pkg.isGeneral && <span className="badge bg-secondary mt-1">General</span>} */}
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
             ) : (
-                // Fallback si hay 3 o menos paquetes
+                // Fallback si hay 3 o menos paquetes en total
                 <div className="row g-4">
-                    {packages.map((pkg) => (
+                    {combinedPackages.map((pkg) => (
                         <div key={pkg.id} className="col-12 col-md-4">
                             <div
                                 className={`static-package-card ${selectedPackage === pkg.id ? "selected" : ""
@@ -250,12 +307,14 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
                                         draggable={false}
                                     />
                                 ) : (
-                                    <div className="static-package-image placeholder">Sin imágenes</div>
+                                    <div className="static-package-image placeholder">
+                                        Sin imágenes
+                                    </div>
                                 )}
                                 <div className="package-info">
                                     <h5 className="mb-1">{pkg.packageName}</h5>
                                     <p className="text-muted mb-2">{pkg.packageDescription}</p>
-                                    <p className="fw-bold">{pkg.packagePrice}</p>
+                                    <p className="fw-bold">${formatPrice(pkg.packagePrice)}</p>
                                 </div>
                             </div>
                         </div>
@@ -263,41 +322,12 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
                 </div>
             )}
 
-
-            {/* // Fallback si hay 3 o menos paquetes
-  <div className="row g-4">
-    {packages.map((pkg) => (
-      <div key={pkg.id} className="col-12 col-md-4">
-        <div
-          className={`static-package-card ${
-            selectedPackage === pkg.id ? "selected" : ""
-          }`}
-          onClick={() => setSelectedPackage(pkg.id)}
-        >
-          {pkg.photos?.length ? (
-            <img
-              src={pkg.photos[0].url}
-              alt={pkg.packageName}
-              className="static-package-image"
-              draggable={false}
-            />
-          ) : (
-            <div className="static-package-image placeholder">Sin imágenes</div>
-          )}
-          <div className="package-info">
-            <h5 className="mb-1">{pkg.packageName}</h5>
-            <p className="text-muted mb-2">{pkg.packageDescription}</p>
-            <p className="fw-bold">{pkg.packagePrice}</p>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-) */}
-
             <div className="d-flex justify-content-between mt-4">
                 <Button value="Atrás" onClick={onBack} />
-                <Button value={loading ? "Cargando..." : "Siguiente"} onClick={handleConfirm} />
+                <Button
+                    value={loading ? "Cargando..." : "Siguiente"}
+                    onClick={handleConfirm}
+                />
             </div>
         </div>
     );

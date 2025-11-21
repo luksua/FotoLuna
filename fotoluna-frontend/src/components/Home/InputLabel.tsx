@@ -7,6 +7,7 @@ interface Props {
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void; 
     inputRef?: React.Ref<HTMLInputElement>;
     error?: string;
+    disabled?: boolean;
     labelClassName?: string; // New prop for label classes
     inputClassName?: string; // New prop for input classes
     containerClassName?: string; // New prop for container classes
@@ -21,6 +22,7 @@ const InputLabel: React.FC<Props> = ({
     onBlur,
     inputRef,
     error,
+    disabled,
     labelClassName = "", // Default empty string
     inputClassName = "", // Default empty string
     containerClassName = "row mb-3 align-items-center", // Default classes
@@ -44,6 +46,7 @@ const InputLabel: React.FC<Props> = ({
                     onBlur={onBlur}
                     ref={inputRef}          
                     className={`form-control ${error ? "is-invalid" : ""}`}
+                    disabled={disabled}
                 />
                 {error && (
                     <span className="invalid-feedback d-block" role="alert">

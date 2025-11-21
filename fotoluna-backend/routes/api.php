@@ -10,6 +10,12 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DocumentTypeController;
+use App\Http\Controllers\MercadoPagoController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/mercadopago/checkout/pay', [MercadoPagoController::class, 'pay']);
+});
+
 // use App\Http\Controllers\AdminController;
 // use App\Http\Controllers\CustomerController;
 
@@ -28,6 +34,7 @@ use App\Http\Controllers\DocumentTypeController;
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
+Route::middleware('auth:sanctum')->get('/bookings/{booking}', [BookingController::class, 'show']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -41,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 });
 
+Route::patch('/api/appointments/{id}', [AppointmentController::class, 'update']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/customer', [ProfileController::class, 'update']);
     Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
@@ -52,8 +61,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
-    Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
+
 });
+
+    Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
 
     Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
 
@@ -65,3 +76,10 @@ Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
 Route::get('/employees/available', [EmployeeController::class, 'available']);
 
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
+
+use App\Http\Controllers\PaymentController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/mercadopago/checkout/pay', [PaymentController::class, 'pay']);
+    Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
+});

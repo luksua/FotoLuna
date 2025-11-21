@@ -1,52 +1,107 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/baptisms.css";
 import { motion } from "framer-motion";
 import Button from "../../../../../components/Home/Button";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+const BAPTISM_EVENT_ID = 5;
+
+interface BaptismPackage {
+  id: number;
+  nombre: string;
+  precio: string;
+  descripcion: string;
+  caracteristicas: string[];
+  destacado?: boolean;
+}
 
 const Baptisms = () => {
-  const paquetes = [
-    {
-      id: 1,
-      nombre: "Esencial",
-      precio: "€299",
-      descripcion: "Para momentos simples pero especiales",
-      caracteristicas: [
-        "1 hora de sesión",
-        "15 fotos digitales",
-        "Álbum digital",
-        "Entrega en 7 días"
-      ],
-      destacado: false
-    },
-    {
-      id: 2,
-      nombre: "Premium",
-      precio: "€499",
-      descripcion: "La elección perfecta para familias",
-      caracteristicas: [
-        "2 horas de sesión",
-        "30 fotos digitales",
-        "Álbum físico",
-        "5 impresiones",
-        "Video slideshow"
-      ],
-      destacado: true
-    },
-    {
-      id: 3,
-      nombre: "Completo",
-      precio: "€799",
-      descripcion: "La elección perfecta para familias",
-      caracteristicas: [
-        "4 horas de sesión",
-        "50+ fotos digitales",
-        "Álbum premium",
-        "10 impresiones",
-        "Video profesional"
-      ],
-      destacado: false
-    }
-  ];
+  const navigate = useNavigate();
+
+  const [paquetes, setPaquetes] = useState<BaptismPackage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 🔹 Cargar paquetes desde el backend
+  useEffect(() => {
+    const fetchPackages = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${API_BASE}/api/events/${BAPTISM_EVENT_ID}/packages`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        );
+
+        // 👉 Opción 1: backend devuelve { general: [...], specific: [...] }
+        const general = res.data.general ?? [];
+        const specific = res.data.specific ?? [];
+
+        const combined = [...specific, ...general].map((pkg: any, index: number) => ({
+          id: pkg.id,
+          nombre: pkg.packageName,
+          precio: pkg.packagePrice,
+          descripcion: pkg.packageDescription,
+          // si tienes features en el backend, ajusta esto.
+          caracteristicas: pkg.features ?? [],
+          // por ejemplo, marcamos el primero específico como destacado
+          destacado: index === 0 && specific.length > 0,
+        }));
+
+        setPaquetes(combined);
+
+        // 👉 Si tu backend en realidad devuelve solo un array plano (sin general/specific),
+        // podrías usar algo así:
+        //
+        // const combined = res.data.map((pkg: any, index: number) => ({
+        //   id: pkg.id,
+        //   nombre: pkg.packageName,
+        //   precio: pkg.packagePrice,
+        //   descripcion: pkg.packageDescription,
+        //   caracteristicas: pkg.features ?? [],
+        //   destacado: index === 1, // por ejemplo
+        // }));
+        // setPaquetes(combined);
+
+      } catch (err) {
+        console.error("Error cargando paquetes de bautizos:", err);
+        setError("No se pudieron cargar los paquetes en este momento.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPackages();
+  }, []);
+
+  const handleReserve = (paqueteId: number) => {
+    navigate("/nuevaCita", {
+      state: {
+        eventId: BAPTISM_EVENT_ID,
+        packageId: paqueteId,
+      },
+    });
+  };
+
+  const formatPrice = (value: string | number) => {
+    const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
+    if (Number.isNaN(n)) return String(value);
+    // sin decimales:
+    return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    // si quieres decimales, usa:
+    // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   return (
     <section className="bautizos-comuniones-viewport" id="sacraments">
@@ -70,19 +125,12 @@ const Baptisms = () => {
                 Momentos Sagrados,
                 <span className="highlight"> Recuerdos Eternos</span>
               </motion.h1>
-              {/* <div className="bg-custom-2">
-                <h1 className="main-title">
-                  Momentos Sagrados,
-                  <span className="highlight"> Recuerdos Eternos</span>
-                </h1>
-              </div> */}
 
               <p className="main-description">
                 Capturamos la esencia espiritual y la inocencia de los momentos
                 más especiales en la vida de tu familia.
               </p>
 
-              {/* Features Grid */}
               <div className="features-grid">
                 <motion.div
                   className="featured-image-container"
@@ -135,36 +183,51 @@ const Baptisms = () => {
               <h2 className="packages-title">Nuestros Paquetes</h2>
               <p className="packages-subtitle">Elige el perfecto para tu celebración</p>
 
-              <div className="packages-grid">
-                {paquetes.map((paquete) => (
-                  <div key={paquete.id} className={`package-card ${paquete.destacado ? 'featured' : ''}`}>
-                    {paquete.destacado && <div className="popular-badge">MÁS POPULAR</div>}
+              {loading && <p className="text-muted">Cargando paquetes...</p>}
+              {error && <p className="text-danger">{error}</p>}
 
-                    <div className="package-header">
-                      <h3>{paquete.nombre}</h3>
-                      <div className="price">{paquete.precio}</div>
-                      <p className="package-desc">{paquete.descripcion}</p>
+              {!loading && !error && (
+                <div className="packages-grid">
+                  {paquetes.map((paquete) => (
+                    <div
+                      key={paquete.id}
+                      className={`package-card ${paquete.destacado ? "featured" : ""}`}
+                    >
+                      {paquete.destacado && (
+                        <div className="popular-badge">MÁS POPULAR</div>
+                      )}
+
+                      <div className="package-header">
+                        <h3>{paquete.nombre}</h3>
+                        <div className="price">${formatPrice(paquete.precio)}</div>
+                        <p className="package-desc">{paquete.descripcion}</p>
+                      </div>
+
+                      <div className="package-features">
+                        <ul>
+                          {paquete.caracteristicas.map((caracteristica, index) => (
+                            <li key={index}>
+                              <span className="check">✓</span>
+                              {caracteristica}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <Button
+                        className={`shiny-text-sacraments ${paquete.destacado ? "shiny-text-sacraments" : ""
+                          }`}
+                        onClick={() => handleReserve(paquete.id)}
+                      >
+                        Reservar Ahora
+                      </Button>
                     </div>
-
-                    <div className="package-features">
-                      <ul>
-                        {paquete.caracteristicas.map((caracteristica, index) => (
-                          <li key={index}>
-                            <span className="check">✓</span>
-                            {caracteristica}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <Button className={`shiny-text-sacraments ${paquete.destacado ? 'shiny-text-sacraments' : ''}`}>
-                      Reservar Ahora
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+
         </div>
       </div>
     </section>

@@ -1,14 +1,35 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import '../styles/maternity.css';
 import SplitText from "./SplitText";
 import "../styles/shinyText.css";
-// import AnimatedContent from './AnimatedContent'
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from "framer-motion";
 import Card from "react-bootstrap/Card";
 import Button from '../../../../../components/Home/Button';
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Maternity = () => {
+    const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+    const MATERNITY_EVENT_ID = 1;
+
     const contentRef = useRef<HTMLDivElement>(null);
+
+    const navigate = useNavigate();
+
+    interface MaternityPackage {
+        id: number;
+        title: string;
+        description: string;
+        price: string;
+        img: string;
+        isGeneral?: boolean;
+    }
+
+    const [packages, setPackages] = useState<MaternityPackage[]>([]);
+    const [loadingPackages, setLoadingPackages] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -34,28 +55,63 @@ const Maternity = () => {
         return () => observer.disconnect();
     }, []);
 
+    useEffect(() => {
+        const fetchPackages = async () => {
+            setLoadingPackages(true);
+            setError(null);
+            try {
+                const token = localStorage.getItem("token");
+                const res = await axios.get(
+                    `${API_BASE}/api/events/${MATERNITY_EVENT_ID}/packages`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/json",
+                        },
+                    }
+                );
 
-    const packages = [
-        {
-            title: "Paquete Esencial",
-            description: "10 fotos digitales editadas, 1 hora de sesión y 1 cambio de vestuario.",
-            img: "/img/maternitycard5.jpg",
-            price: "$180.000",
-            variant: "outline-pink",
-        }, {
-            title: "Paquete Esencial",
-            description: "10 fotos digitales editadas, 1 hora de sesión y 1 cambio de vestuario.",
-            img: "/img/maternitycard4.jpg",
-            price: "$180.000",
-            variant: "outline-pink",
-        }, {
-            title: "Paquete Esencial",
-            description: "10 fotos digitales editadas, 1 hora de sesión y 1 cambio de vestuario.",
-            img: "/img/maternitycard5.jpg",
-            price: "$180.000",
-            variant: "outline-pink",
-        }
-    ];
+                const general = res.data.general ?? [];
+                const specific = res.data.specific ?? [];
+
+                const combined = [...specific, ...general].map((pkg: any) => ({
+                    id: pkg.id,
+                    title: pkg.packageName,
+                    description: pkg.packageDescription,
+                    price: pkg.packagePrice,
+                    img: pkg.photos?.[0]?.url ?? "/img/maternitycard5.jpg", // fallback
+                    isGeneral: pkg.isGeneral ?? false,
+                }));
+
+                setPackages(combined);
+            } catch (err) {
+                console.error("Error cargando paquetes de maternidad:", err);
+                setError("No se pudieron cargar los paquetes en este momento.");
+            } finally {
+                setLoadingPackages(false);
+            }
+        };
+
+        fetchPackages();
+    }, [API_BASE]);
+
+    const handleReserve = (pkgId: number) => {
+        navigate("/nuevaCita", {
+            state: {
+                eventId: MATERNITY_EVENT_ID,
+                packageId: pkgId,
+            },
+        });
+    };
+
+    const formatPrice = (value: string | number) => {
+        const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
+        if (Number.isNaN(n)) return String(value);
+        // sin decimales:
+        return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        // si quieres decimales, usa:
+        // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
 
     return (
         <>
@@ -154,7 +210,13 @@ const Maternity = () => {
 
 
                     <div className="row justify-content-center cards">
-                        {packages.map((pkg, i) => (
+                        {loadingPackages && (
+                            <p className="text-muted">Cargando paquetes...</p>
+                        )}
+                        {error && (
+                            <p className="text-danger">{error}</p>
+                        )}
+                        {/* {packages.map((pkg, i) => (
                             <motion.div
                                 key={pkg.title}
                                 className="col-md-4 mb-4 d-flex justify-content-center bg-custom-2"
@@ -169,7 +231,49 @@ const Maternity = () => {
                                         <Card.Title className="fw-bold text-pink">{pkg.title}</Card.Title>
                                         <Card.Text className="text-muted">{pkg.description}</Card.Text>
                                         <h5 className="price-maternity mb-3">{pkg.price}</h5>
-                                            <Button className="shiny-text">Reservar</Button>
+                                        <Button className="shiny-text">Reservar</Button>
+                                    </Card.Body>
+                                </Card>
+                            </motion.div>
+                        ))} */}
+
+                        {!loadingPackages && !error && packages.map((pkg, i) => (
+                            <motion.div
+                                key={pkg.id}
+                                className="col-md-4 mb-4 d-flex justify-content-center bg-custom-2"
+                                initial={{ opacity: 0, y: 60 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, delay: i * 0.2 }}
+                                viewport={{ once: true }}
+                            >
+                                <Card className="package-card border-0 rounded-4 bg-custom-2">
+                                    <Card.Img
+                                        variant="top"
+                                        src={pkg.img}
+                                        className="card-img-top rounded-top-4"
+                                    />
+                                    <Card.Body>
+                                        <Card.Title className="fw-bold text-pink">
+                                            {pkg.title}
+                                        </Card.Title>
+                                        <Card.Text className="text-muted">
+                                            {pkg.description}
+                                        </Card.Text>
+                                        <h5 className="price-maternity mb-3">${formatPrice(pkg.price)}</h5>
+
+                                        {/* Opcional: marcar si es general */}
+                                        {/* {pkg.isGeneral && (
+                                            <span className="badge bg-secondary d-block mb-2">
+                                            Paquete general
+                                            </span>
+                                        )} */}
+
+                                        <Button
+                                            className="shiny-text"
+                                            onClick={() => handleReserve(pkg.id)}
+                                        >
+                                            Reservar
+                                        </Button>
                                     </Card.Body>
                                 </Card>
                             </motion.div>
