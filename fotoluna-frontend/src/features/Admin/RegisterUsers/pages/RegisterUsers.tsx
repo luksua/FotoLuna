@@ -36,46 +36,65 @@ const Register = () => {
         setForm({ ...form, [name]: target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Aquí construirías el payload para enviar al backend
-        const payload = {
-            firstNameEmployee: form.firstNameEmployee,
-            lastNameEmployee: form.lastNameEmployee,
-            phoneEmployee: form.phoneEmployee,
-            EPS: form.EPS,
-            documentType: form.documentType,
-            documentNumber: form.documentNumber,
-            emailEmployee: form.emailEmployee,
-            address: form.address,
-            // photoEmployee: form.photoEmployee (archivo, enviar con FormData)
-            password: form.password,
-            employeeType: form.employeeType,
-            role: form.role,
-            specialty: form.specialty,
-            isAvailable: form.isAvailable,
-            gender: form.gender
-        };
 
-        console.log("Payload register user:", payload);
-        setMessage("Usuario registrado correctamente (simulado)");
-        setForm({
-            firstNameEmployee: "",
-            lastNameEmployee: "",
-            phoneEmployee: "",
-            EPS: "",
-            documentType: "",
-            documentNumber: "",
-            emailEmployee: "",
-            address: "",
-            photoEmployee: null,
-            password: "",
-            employeeType: "Employee",
-            role: "Photographer",
-            specialty: "",
-            isAvailable: true,
-            gender: "Female"
-        });
+        try {
+            const formData = new FormData();
+            formData.append('firstNameEmployee', form.firstNameEmployee);
+            formData.append('lastNameEmployee', form.lastNameEmployee);
+            formData.append('phoneEmployee', form.phoneEmployee);
+            formData.append('EPS', form.EPS);
+            formData.append('documentType', form.documentType);
+            formData.append('documentNumber', form.documentNumber);
+            formData.append('emailEmployee', form.emailEmployee);
+            formData.append('address', form.address);
+            formData.append('password', form.password);
+            formData.append('employeeType', form.employeeType);
+            formData.append('gender', form.gender);
+
+            if (form.photoEmployee) {
+                formData.append('photoEmployee', form.photoEmployee as File);
+            }
+
+            // POST to backend; assumes backend is reachable at the same host + /api
+            const res = await fetch('/api/admin/employees', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ message: 'Error desconocido' }));
+                setMessage(`Error: ${err.message || 'No se pudo registrar'}.`);
+                return;
+            }
+
+            const data = await res.json();
+            if (data && data.success) {
+                setMessage('Usuario registrado correctamente');
+                setForm({
+                    firstNameEmployee: '',
+                    lastNameEmployee: '',
+                    phoneEmployee: '',
+                    EPS: '',
+                    documentType: '',
+                    documentNumber: '',
+                    emailEmployee: '',
+                    address: '',
+                    photoEmployee: null,
+                    password: '',
+                    employeeType: 'Employee',
+                    role: 'Photographer',
+                    specialty: '',
+                    isAvailable: true,
+                    gender: 'Female'
+                });
+            } else {
+                setMessage('No se pudo registrar el usuario');
+            }
+        } catch (error: any) {
+            setMessage(error?.message || 'Error en la petición');
+        }
     };
 
 
@@ -107,9 +126,15 @@ const Register = () => {
                             <option value="PAS">Pasaporte</option>
                         </select>
 
+                        <label>Número de Documento:</label>
+                        <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required className="register-input" />
+
                         <label>Correo:</label>
                         <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
 
+                        <label>Contraseña:</label>
+                        <input type="password" name="password" value={form.password} onChange={handleChange} required className="register-input" />
+                        
                         <label>Foto:</label>
 
                         <div className="register-filebox">
@@ -122,12 +147,6 @@ const Register = () => {
                     <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
                         <label>EPS:</label>
                         <input type="text" name="EPS" value={form.EPS} onChange={handleChange} required className="register-input" />
-
-                        <label>Número de Documento:</label>
-                        <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required className="register-input" />
-
-                        <label>Contraseña:</label>
-                        <input type="password" name="password" value={form.password} onChange={handleChange} required className="register-input" />
 
                         <label>Dirección:</label>
                         <input type="text" name="address" value={form.address} onChange={handleChange} required className="register-input" />
