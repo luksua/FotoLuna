@@ -11,10 +11,6 @@ use Illuminate\Http\JsonResponse;
 
 class RegisterEmployeeController extends Controller
 {
-    /**
-     * Store a newly created employee in storage.
-     * This is intentionally simple and straightforward.
-     */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -30,9 +26,11 @@ class RegisterEmployeeController extends Controller
             'employeeType' => 'required|in:Employee,Admin',
             'gender' => 'required|in:Female,Male,Other',
             'photoEmployee' => 'nullable|image|max:2048',
+            'role' => 'nullable|string|max:50',
+            'specialty' => 'nullable|string|max:255',
+            'isAvailable' => 'nullable|boolean',
         ]);
 
-        // handle file upload (store in storage/app/public/employees)
         if ($request->hasFile('photoEmployee')) {
             $path = $request->file('photoEmployee')->store('employees', 'public');
             $data['photoEmployee'] = $path;
@@ -40,10 +38,18 @@ class RegisterEmployeeController extends Controller
             $data['photoEmployee'] = '';
         }
 
-        // hash password
-        $data['password'] = Hash::make($data['password']);
+        $data['role'] = $request->input('role', $data['role'] ?? 'Other');
+        $data['specialty'] = $request->input('specialty', $data['specialty'] ?? null);
 
-        // create employee
+        if ($request->has('isAvailable')) {
+            $data['isAvailable'] = filter_var($request->input('isAvailable'), FILTER_VALIDATE_BOOLEAN);
+        } else {
+
+            $data['isAvailable'] = $data['isAvailable'] ?? true;
+        }
+
+        $data['password'] = Hash::make($data['password']); // hash contraseña
+
         $employee = Employee::create($data);
 
         return response()->json(['success' => true, 'employee' => $employee], 201);

@@ -1,5 +1,5 @@
 // import AdminLayout from "../../../layouts/HomeAdminLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import "../../../Admin/AdminEmployee/styles/AdminEmployee.css";
 
@@ -13,54 +13,71 @@ type Employee = {
     estado: boolean;
 };
 
-
-
-
-const sampleEmployees: Employee[] = [
-    {
-        id: 1,
-        nombre: "Ana María Gómez",
-        telefono: "+57 300 123 4567",
-        documento: "CC 1234567890",
-        correo: "ana.gomez@gmail.com",
-        estado: true
-    },
-    {
-        id: 2,
-        nombre: "Carlos Rodríguez",
-        telefono: "+57 310 987 6543",
-        documento: "CC 0987654321",
-        correo: "carlos.rodriguez@gmail.com",
-        estado: true
-    },
-    {
-        id: 3,
-        nombre: "Wendy yuyie",
-        telefono: "+57 316 402 1627",
-        documento: "CC 1072099798",
-        correo: "wendyyuyie@gmail.com",
-        estado: false
-    },
-    {
-        id: 4,
-        nombre: "Daniel Diaz",
-        telefono: "+57 316 406 7657",
-        documento: "CC 1234567891",
-        correo: "ElDiablaso@gmail.com",
-        estado: true
-    },
-];
-
 const EmployeeCustomers = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    
-    // Filtro
-    const filteredEmployees = sampleEmployees.filter(emp => 
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        setLoading(true);
+        fetch('/api/admin/employees')
+            .then((res) => res.json())
+            .then((data) => {
+                if (!mounted) return;
+                if (data && data.success) {
+                    const mapped = data.data.map((e: any) => ({
+                        id: e.id,
+                        nombre: e.name || '',
+                        telefono: e.phone || '',
+                        documento: e.document || '',
+                        correo: e.email || '',
+                        estado: !!e.isAvailable,
+                    }));
+                    setEmployees(mapped);
+                } else {
+                    setError('No se pudieron cargar los empleados');
+                }
+            })
+            .catch((err) => setError(err.message || 'Error al obtener empleados'))
+            .finally(() => setLoading(false));
+
+        return () => { mounted = false; };
+    }, []);
+
+    //////////////////// Filtro 
+    const filteredEmployees = employees.filter(emp => 
         Object.values(emp)
             .join(" ")
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
     );
+
+    const toggleAvailability = async (empId: number) => {
+        setEmployees(prev => prev.map(emp => emp.id === empId ? { ...emp, estado: !emp.estado } : emp));
+
+        try {
+            const res = await fetch(`/api/admin/employees/${empId}/availability`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+
+            if (!res.ok) throw new Error('No se pudo actualizar el estado');
+
+            const data = await res.json();
+            if (data && data.success) {
+                setEmployees(prev => prev.map(emp => emp.id === empId ? { ...emp, estado: !!data.isAvailable } : emp));
+            }
+        } catch (err: any) {
+            setEmployees(prev => prev.map(emp => emp.id === empId ? { ...emp, estado: !emp.estado } : emp));
+            setError(err.message || 'Error actualizando estado');
+        }
+    };
 
     return (
         <HomeLayout>
@@ -85,19 +102,28 @@ const EmployeeCustomers = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredEmployees.map((employee) => (
-                                <tr key={employee.id}>
-                                    <td>{employee.nombre}</td>
-                                    <td>{employee.telefono}</td>
-                                    <td>{employee.documento}</td>
-                                    <td>{employee.correo}</td>
-                                    <td>
-                                        <span className={`status ${employee.estado ? 'active' : 'inactive'}`}>
-                                            {employee.estado ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
+                            {loading ? (
+                                <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20 }}>Cargando...</td></tr>
+                            ) : filteredEmployees.length ? (
+                                filteredEmployees.map((employee) => (
+                                    <tr key={employee.id}>
+                                        <td>{employee.nombre}</td>
+                                        <td>{employee.telefono}</td>
+                                        <td>{employee.documento}</td>
+                                        <td>{employee.correo}</td>
+                                        <td>
+                                            <button
+                                                className={`status ${employee.estado ? 'active' : 'inactive'}`}
+                                                onClick={() => toggleAvailability(employee.id)}
+                                            >
+                                                {employee.estado ? 'Activo' : 'Inactivo'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20 }}>No se encontraron empleados.</td></tr>
+                            )}
                         </tbody>
                     </table>
                     

@@ -12,6 +12,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\Admin\RegisterEmployeeController;
+use App\Http\Controllers\Admin\AdminUsersController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/mercadopago/checkout/pay', [MercadoPagoController::class, 'pay']);
@@ -87,5 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
 });
 
-///////////////////////////// Registrar empleados (admin)
+
+/////////////////////////////  (admin)
 Route::post('/admin/employees', [RegisterEmployeeController::class, 'store']);
+
+Route::get('/admin/employees', [AdminUsersController::class, 'index']);
+
+Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);

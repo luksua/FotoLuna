@@ -51,13 +51,15 @@ const Register = () => {
             formData.append('address', form.address);
             formData.append('password', form.password);
             formData.append('employeeType', form.employeeType);
+            formData.append('role', form.role);
+            formData.append('specialty', form.specialty);
+            formData.append('isAvailable', form.isAvailable ? '1' : '0');
             formData.append('gender', form.gender);
 
             if (form.photoEmployee) {
                 formData.append('photoEmployee', form.photoEmployee as File);
             }
 
-            // POST to backend; assumes backend is reachable at the same host + /api
             const res = await fetch('/api/admin/employees', {
                 method: 'POST',
                 body: formData,
@@ -134,7 +136,7 @@ const Register = () => {
 
                         <label>Contraseña:</label>
                         <input type="password" name="password" value={form.password} onChange={handleChange} required className="register-input" />
-                        
+
                         <label>Foto:</label>
 
                         <div className="register-filebox">
@@ -197,9 +199,4 @@ const Register = () => {
         </HomeLayout>
     );
 };
-
-// estilos movidos a src/features/Admin/RegisterUsers/styles/RegisterUsers.css
-
-
-
 export default Register;
