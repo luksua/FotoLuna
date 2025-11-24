@@ -21,7 +21,7 @@ const EmployeeHome: React.FC = () => {
                     </div>
                 </div>
             </section>
-            
+
             <div className="dashboard">
                 <div className="card citos">
                     <div className="card-header">
@@ -46,27 +46,6 @@ const EmployeeHome: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-                <div className="card nube">
-                    <div className="card-header">
-                        <div className="card-icon">
-                            <i className="bi bi-cloud"></i>
-                        </div>
-                        <h3>Nube</h3>
-                    </div>
-                    <p>Accede a tus archivos y proyectos en la nube de forma segura</p>
-                    <div className="card-stats">
-                        <div className="stat">
-                            <div className="stat-value">78%</div>
-                            <div className="stat-label">Espacio usado</div>
-                        </div>
-                        <div className="stat">
-                            <div className="stat-value">247</div>
-                            <div className="stat-label">Archivos</div>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="card subir">
                     <div className="card-header">
                         <div className="card-icon">
@@ -83,28 +62,6 @@ const EmployeeHome: React.FC = () => {
                         <div className="stat">
                             <div className="stat-value">3.2GB</div>
                             <div className="stat-label">Total</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="dashboard">
-                <div className="card administrar">
-                    <div className="card-header">
-                        <div className="card-icon">
-                            <i className="bi bi-cogs"></i>
-                        </div>
-                        <h3>Administrar</h3>
-                    </div>
-                    <p>Gestiona configuraciones del sistema y preferencias de usuario</p>
-                    <div className="card-stats">
-                        <div className="stat">
-                            <div className="stat-value">8</div>
-                            <div className="stat-label">Ajustes</div>
-                        </div>
-                        <div className="stat">
-                            <div className="stat-value">3</div>
-                            <div className="stat-label">Pendientes</div>
                         </div>
                     </div>
                 </div>
@@ -131,10 +88,10 @@ const EmployeeHome: React.FC = () => {
 
                 <div className="card">
                     <div className="card-header">
-                        <div className="card-icon" style={{background: "var(--pastel-lilac)"}}>
+                        <div className="card-icon" style={{ background: "var(--pastel-lilac)" }}>
                             <i className="bi bi-graph-up"></i>
                         </div>
-                        <h3>Estadísticas</h3>
+                        <h3>Pagos</h3>
                     </div>
                     <p>Revisa el rendimiento y las métricas de tu trabajo</p>
                     <div className="card-stats">

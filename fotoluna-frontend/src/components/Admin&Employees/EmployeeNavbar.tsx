@@ -6,6 +6,7 @@ import EmployeeNotifications from "../../features/Employee/Notification/Pages/No
 import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
 import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
+import ThemeToggle from "./LightDarkTheme";
 
 interface EmployeeNavbarProps {
     userName?: string;
@@ -79,8 +80,17 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                     </form>
                 </div>
 
+
                 {/* Navegación y acciones */}
+
+
                 <div className="navbar-actions">
+                    <nav className="navbar">
+
+                        <ThemeToggle />
+                    </nav>
+
+
                     <button
                         className="notification-btn"
                         onClick={() => setShowNotifications(true)}
@@ -91,6 +101,18 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                             <span className="notification-badge">{notificationCount}</span>
                         )}
                     </button>
+
+                    {/* Botón de Tema */}
+                    {/* <button
+                        className="theme-toggle-btn"
+                        onClick={toggleTheme}
+                        aria-label={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
+                        title={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+                    >
+                        <i className={`bi ${isDarkMode ? 'bi-sun-fill' : 'bi-moon-stars-fill'}`}></i>
+                    </button> */}
+
+
 
                     {/* Botón de Configuración (Settings) */}
                     <button

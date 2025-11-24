@@ -34,7 +34,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 3px 16px 32px; /* Más espacio a los lados */
+    padding: 24px 3px 16px 32px;
+    /* Más espacio a los lados */
     position: relative;
 }
 
@@ -76,7 +77,8 @@
 .btn-close-panel {
     position: absolute;
     top: 11;
-    right: 20px; /* Esquina derecha */
+    right: 20px;
+    /* Esquina derecha */
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -602,4 +604,4 @@
     .btn-primary {
         width: 100%;
     }
-}   
+}

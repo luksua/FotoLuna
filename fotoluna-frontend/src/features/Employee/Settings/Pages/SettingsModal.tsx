@@ -26,30 +26,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             value: settings.notifications
         },
         {
-            id: 'autoSave',
-            label: 'Guardado automático',
-            description: 'Guardar automáticamente los cambios en las fotos',
-            icon: 'bi-cloud-arrow-down',
-            type: 'toggle',
-            value: settings.autoSave
-        },
-        {
-            id: 'highQuality',
-            label: 'Alta calidad',
-            description: 'Subir fotos en máxima calidad (usa más espacio)',
-            icon: 'bi-star',
-            type: 'toggle',
-            value: settings.highQuality
-        },
-        {
-            id: 'watermark',
-            label: 'Marca de agua',
-            description: 'Agregar marca de agua a las fotos subidas',
-            icon: 'bi-camera',
-            type: 'toggle',
-            value: settings.watermark
-        },
-        {
             id: 'theme',
             label: 'Tema',
             description: 'Seleccionar el tema de la aplicación',
@@ -152,23 +128,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                             <div className="storage-info">
                                 <div className="storage-progress">
-                                    <div className="storage-details">
-                                        <span className="storage-used">7.44 MB utilizados</span>
-                                        <span className="storage-total">de 100 MB</span>
-                                    </div>
+                                
                                     <div className="storage-bar">
                                         <div
                                             className="storage-progress-fill"
                                             style={{ width: '7.44%' }}
                                         ></div>
                                     </div>
-                                    <div className="storage-percentage">7.44%</div>
                                 </div>
-
-                                <button className="btn btn-outline-primary btn-sm storage-cleanup">
-                                    <i className="bi bi-trash me-1"></i>
-                                    Liberar espacio
-                                </button>
                             </div>
                         </div>
 
@@ -180,10 +147,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             </h3>
 
                             <div className="session-actions">
-                                <button className="btn btn-outline-secondary session-btn">
-                                    <i className="bi bi-arrow-clockwise me-2"></i>
-                                    Sincronizar datos
-                                </button>
 
                                 <button
                                     className="btn btn-danger logout-btn"

@@ -1,8 +1,8 @@
 :root {
-    --pastel-mint: #e1c0f7;
+    --pastel-mint: #e1c0f79e;
     --pastel-lavender: #e6e6fa;
     --pastel-peach: #ffdab9;
-    --pastel-blue: #ebb5ca;
+    --pastel-blue: #ebb5cac0;
     --pastel-pink: #f2c8f8;
     --pastel-lilac: #d8bfd8;
     --white: #ffffff;
@@ -15,18 +15,19 @@
 
 /* Main Content Styles */
 .main-content {
-    margin-left: 250px;
+    margin-left: 200px;
     margin-top: 70px;
-    padding: 30px;
-    width: calc(100% - 250px);
+    padding: 10px;
+    width: calc(100% - 200px);
     transition: var(--transition);
+    font-family: 'Quicksand';
 }
 
 .welcome-section {
     background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-blue));
     border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 30px;
+    padding: 10px 10px;
+    margin-bottom: 20px;
     box-shadow: var(--shadow);
     color: var(--text-dark);
     display: flex;
@@ -35,40 +36,54 @@
 }
 
 .welcome-text h2 {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     margin-bottom: 5px;
+    font-family: 'Quicksand';
 }
+
+.welcome-text p {
+    font-size: 0.9rem;
+    /* reducido */
+}
+
 
 .weather-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.7);
-    padding: 10px 20px;
+    padding: 5px 10px;
     border-radius: 10px;
+    white-space: nowrap;
+    /* evita que se quiebre */
 }
 
 .weather-icon {
-    font-size: 2rem;
+    font-size: 1.2rem;
     color: var(--pastel-lilac);
 }
 
 .weather-details h3 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
+    font-size: 1rem;
+    margin-bottom: 3px;
+}
+
+.weather-details p {
+    margin: 0;
+    font-size: 0.8rem;
 }
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
 .card {
     background: var(--white);
     border-radius: 15px;
-    padding: 25px;
+    padding: 10px;
     box-shadow: var(--shadow);
     transition: var(--transition);
     cursor: pointer;
@@ -76,6 +91,7 @@
     flex-direction: column;
     position: relative;
     overflow: hidden;
+
 }
 
 .card::before {
@@ -84,7 +100,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 5px;
+    height: 4px;
     background: linear-gradient(90deg, var(--pastel-mint), var(--pastel-lilac));
 }
 
@@ -96,23 +112,30 @@
 .card-header {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    gap: 2px;
+    width: 100%;
+    
+    
 }
 
 .card-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 15px;
-    font-size: 1.5rem;
+    margin-right: 5px;
+    font-size: 1rem;
     color: var(--text-dark);
+
 }
+
 
 .citos .card-icon {
     background: var(--pastel-peach);
+
 }
 
 .nube .card-icon {
@@ -133,48 +156,55 @@
 
 .card h3 {
     color: var(--text-dark);
-    font-size: 1.3rem;
-    margin-bottom: 10px;
+    font-size: 1rem;
+    margin-bottom: 0;
+    margin-top: 0px;
 }
 
 .card p {
     color: var(--text-light);
-    line-height: 1.5;
-    margin-bottom: 15px;
+    line-height: 1;
+    margin: 0 0 15px 0;
+    font-size: 0.7rem;
+    flex-grow: 1;
 }
 
 .card-stats {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
+    gap: 10px;
     margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
 }
 
 .stat {
     text-align: center;
+    flex: 1;
 }
 
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--text-dark);
 }
 
 .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-light);
 }
 
 .activity-section {
     background: var(--white);
     border-radius: 15px;
-    padding: 25px;
+    padding: 20px;
     box-shadow: var(--shadow);
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .section-title {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+    font-size: 1rem;
+    margin-bottom: 18px;
     color: var(--text-dark);
     display: flex;
     align-items: center;
@@ -188,14 +218,14 @@
 .activity-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
+    gap: 15px;
 }
 
 .activity-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 15px;
+    padding: 15px 12px;
     border-radius: 10px;
     background: var(--pastel-lavender);
     transition: var(--transition);
@@ -207,19 +237,19 @@
 }
 
 .activity-icon {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
     color: var(--text-dark);
 }
 
 .activity-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .activity-label {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-light);
     text-align: center;
 }
@@ -236,39 +266,69 @@ footer {
 
 /* Animaciones */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .card {
     animation: fadeIn 0.5s ease forwards;
 }
 
-.citos { animation-delay: 0.1s; }
-.nube { animation-delay: 0.2s; }
-.subir { animation-delay: 0.3s; }
-.administrar { animation-delay: 0.4s; }
-.clientes { animation-delay: 0.5s; }
+.citos {
+    animation-delay: 0.1s;
+}
+
+.nube {
+    animation-delay: 0.2s;
+}
+
+.subir {
+    animation-delay: 0.3s;
+}
+
+.administrar {
+    animation-delay: 0.4s;
+}
+
+.clientes {
+    animation-delay: 0.5s;
+}
 
 /* Responsive */
 @media (max-width: 992px) {
     .main-content {
         margin-left: 70px;
+        /* sidebar colapsado */
         width: calc(100% - 70px);
+        margin-top: 70px;
+        /* mantener espacio del navbar */
     }
 }
 
 @media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 70px;
+    }
+
     .dashboard {
         grid-template-columns: 1fr;
     }
-    
+
     .welcome-section {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
-    
+
     .welcome-text h2 {
         font-size: 1.5rem;
     }
@@ -278,5 +338,7 @@ footer {
     .main-content {
         margin-left: 0;
         width: 100%;
+        margin-top: 70px;
+        padding: 15px;
     }
 }
