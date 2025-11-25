@@ -70,3 +70,91 @@
     color: #d32f2f;
 }
 
+/* Responsive pal modal*/
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    /* default modal width for desktop */
+    max-width: 520px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    /* limit height and enable internal scroll */
+    max-height: 80vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.modal-title {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+}
+
+.modal-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.modal-row label {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+.modal-btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.modal-btn-primary {
+    background: #7a3fbf;
+    color: #fff;
+}
+
+.modal-btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+    .modal-content { padding: 14px; max-width: 95%; height: 96vh; max-height: 96vh; }
+    .modal-title { font-size: 18px; }
+    .modal-input { padding: 9px; }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .modal-content { max-width: 560px; }
+}
+

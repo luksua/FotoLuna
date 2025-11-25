@@ -167,9 +167,9 @@ const EmployeeAdmin: React.FC = () => {
                                 <img className="admin-avatar" src={u.avatar || imgperfil} alt={`Foto ${u.name}`} />
                                 <div className="admin-info">
                                     <h3>{u.name}</h3>
-                                    <p className="muted">Correo: {u.email}</p>
-                                    <p className="muted">Teléfono: {u.phone}</p>
-                                    <p className="muted small">Documento: {u.document}</p>
+                                    <p className="muted">{u.email}</p>
+                                    <p className="muted">{u.phone}</p>
+                                    <p className="muted small">{u.document}</p>
                                     <button
                                         className="ver-mas-btn"
                                         onClick={() => setSelectedUser(u)}

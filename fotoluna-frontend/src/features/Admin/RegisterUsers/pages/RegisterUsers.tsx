@@ -47,8 +47,8 @@ const Register = () => {
             return;
         }
 
-        if (form.password.length < 6) {
-            setMessage('La contraseña debe tener al menos 6 caracteres.');
+        if (form.password.length < 8) {
+            setMessage('La contraseña debe tener al menos 8 caracteres.');
             return;
         }
 
@@ -117,9 +117,10 @@ const Register = () => {
 
     return (
         <HomeLayout>
-            <div className="admin-home-container" style={{ maxWidth: 700, margin: "0 auto", padding: 24, background: "#f5f5f8ff", borderRadius: 12 }}>
-                <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: 32 }}>
-                    <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="admin-home-container register-container">
+                <h1 className="register-title">Registrar Usuarios</h1>
+                <form onSubmit={handleSubmit} className="register-form">
+                    <div className="register-col">
 
                         <label>Nombre:</label>
                         <input type="text" name="firstNameEmployee" value={form.firstNameEmployee} onChange={handleChange} required className="register-input" />
@@ -150,7 +151,7 @@ const Register = () => {
                         <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Contraseña:</label>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <div className="password-field-wrapper">
                             <input 
                                 type={showPassword ? "text" : "password"} 
                                 name="password" 
@@ -162,22 +163,8 @@ const Register = () => {
                             />
                             <button
                                 type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: 12,
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    padding: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 24,
-                                    height: 24,
-                                    color: '#7c5e8c'
-                                }}
-                            >
+                                className="password-toggle-button"
+                                onClick={() => setShowPassword(!showPassword)}>
                                 {showPassword ? (
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -193,7 +180,7 @@ const Register = () => {
                         </div>
 
                         <label>Confirmar Contraseña:</label>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <div className="password-field-wrapper">
                             <input 
                                 type={showPasswordConfirm ? "text" : "password"} 
                                 name="passwordConfirm" 
@@ -205,22 +192,8 @@ const Register = () => {
                             />
                             <button
                                 type="button"
-                                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                                style={{
-                                    position: 'absolute',
-                                    right: 12,
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    padding: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 24,
-                                    height: 24,
-                                    color: '#7c5e8c'
-                                }}
-                            >
+                                className="password-toggle-button"
+                                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}>
                                 {showPasswordConfirm ? (
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -244,7 +217,7 @@ const Register = () => {
                         </div>
 
                     </div>
-                    <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div className="register-col">
                         <label>EPS:</label>
                         <input type="text" name="EPS" value={form.EPS} onChange={handleChange} required className="register-input" />
 
@@ -282,12 +255,12 @@ const Register = () => {
                     </div>
 
                     <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 24 }}>
-                        <button type="submit" style={{ padding: "12px 40px", fontSize: 18, background: "#d1a3e2", color: "#fff", border: "none", borderRadius: 24, fontWeight: "bold" }}>
+                        <button type="submit" className="register-submit">
                             Aceptar
                         </button>
                     </div>
                 </form>
-                {message && <p style={{ color: "#a36fc2", marginTop: 16, textAlign: "center" }}>{message}</p>}
+                {message && <p className="register-message">{message}</p>}
             </div>
 
             <footer>

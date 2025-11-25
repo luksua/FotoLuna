@@ -1,7 +1,7 @@
 // import AdminLayout from "../../../layouts/HomeAdminLayout";
+import '../styles/AdminEmployee.css';
 import { useEffect, useState } from "react";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
-import "../../../Admin/AdminEmployee/styles/AdminEmployee.css";
 
 
 type Employee = {
@@ -41,6 +41,7 @@ const EmployeeCustomers = () => {
         EPS: '',
     });
     const [savingEdit, setSavingEdit] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -70,7 +71,6 @@ const EmployeeCustomers = () => {
 
         return () => { mounted = false; };
     }, []);
-
     //////////////////// Filtro 
     const filteredEmployees = employees.filter(emp => 
         Object.values(emp)
@@ -168,6 +168,10 @@ const EmployeeCustomers = () => {
                 ));
                 setError(null);
                 closeEditModal();
+                // Mostrar alerta de éxito
+                setShowSuccessAlert(true);
+                // Autoocultar después de 5 segundos
+                setTimeout(() => setShowSuccessAlert(false), 5000);
             }
         } catch (err: any) {
             setError(err.message || 'Error guardando cambios');
@@ -185,6 +189,13 @@ const EmployeeCustomers = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}/>
                 </div>
+
+                {showSuccessAlert && (
+                    <div className="alert alert-success alert-dismissible fade show" role="alert" style={{ margin: '15px 0', position: 'relative', zIndex: 999 }}>
+                        <strong>¡Éxito!</strong> Empleado Editado Exitosamente
+                        <button type="button" className="btn-close" onClick={() => setShowSuccessAlert(false)}></button>
+                    </div>
+                )}
 
                 {/* Tabla de empleados */}
                 <div className="table-container">
@@ -246,130 +257,86 @@ const EmployeeCustomers = () => {
                 {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
             </div>
 
-            {/* Modal de edición */}
+            {/* Modal de edición (responsive, con scroll interno) */}
             {selectedEmployee && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }} onClick={closeEditModal}>
-                    <div style={{
-                        backgroundColor: '#fff',
-                        borderRadius: '8px',
-                        padding: '24px',
-                        maxWidth: '500px',
-                        width: '90%',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                    }} onClick={(e) => e.stopPropagation()}>
-                        <h2 style={{ marginTop: 0, marginBottom: 24 }}>Editar Empleado</h2>
-                        
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Nombre:</label>
+                <div className="modal-overlay" onClick={closeEditModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-title">Editar Empleado</h2>
+
+                        <div className="modal-row">
+                            <label>Nombre:</label>
                             <input
                                 type="text"
                                 value={editForm.firstNameEmployee}
                                 onChange={(e) => handleEditFormChange('firstNameEmployee', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Apellido:</label>
+                        <div className="modal-row">
+                            <label>Apellido:</label>
                             <input
                                 type="text"
                                 value={editForm.lastNameEmployee}
                                 onChange={(e) => handleEditFormChange('lastNameEmployee', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Teléfono:</label>
+                        <div className="modal-row">
+                            <label>Teléfono:</label>
                             <input
                                 type="text"
                                 value={editForm.phoneEmployee}
                                 onChange={(e) => handleEditFormChange('phoneEmployee', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Correo:</label>
+                        <div className="modal-row">
+                            <label>Correo:</label>
                             <input
                                 type="email"
                                 value={editForm.emailEmployee}
                                 onChange={(e) => handleEditFormChange('emailEmployee', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Documento:</label>
+                        <div className="modal-row">
+                            <label>Documento:</label>
                             <input
                                 type="text"
                                 value={editForm.documentNumber}
                                 onChange={(e) => handleEditFormChange('documentNumber', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Dirección:</label>
+                        <div className="modal-row">
+                            <label>Dirección:</label>
                             <input
                                 type="text"
                                 value={editForm.address}
                                 onChange={(e) => handleEditFormChange('address', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ marginBottom: 24 }}>
-                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>EPS:</label>
+                        <div className="modal-row">
+                            <label>EPS:</label>
                             <input
                                 type="text"
                                 value={editForm.EPS}
                                 onChange={(e) => handleEditFormChange('EPS', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                                className="modal-input"
                             />
                         </div>
 
-                        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                            <button
-                                onClick={closeEditModal}
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontWeight: 500
-                                }}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={saveEditChanges}
-                                disabled={savingEdit}
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#d1a3e2',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: savingEdit ? 'not-allowed' : 'pointer',
-                                    fontWeight: 500,
-                                    opacity: savingEdit ? 0.6 : 1
-                                }}
-                            >
-                                {savingEdit ? 'Guardando...' : 'Guardar'}
+                        <div className="modal-actions">
+                            <button className="modal-btn modal-btn-secondary" onClick={closeEditModal} type="button">Cancelar</button>
+                            <button className="modal-btn modal-btn-primary" onClick={saveEditChanges} disabled={savingEdit} type="button">
+                                {savingEdit ? 'Guardando...' : 'Guardar cambios'}
                             </button>
                         </div>
                     </div>

@@ -39,3 +39,93 @@
     cursor: pointer;
     font-weight: bold;
 }
+
+.register-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #f5f5f8ff;
+    border-radius: 12px;
+}
+
+.register-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #7c5e8c;
+    margin: 0 0 24px 0;
+    text-align: center;
+}
+
+.register-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+}
+
+.register-col {
+    flex: 1 1 320px;
+    min-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.password-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle-button {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #7c5e8c;
+}
+
+/* Esconder el boton del ojito predeterminado y dejar el customizado*/
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+input[type="password"]::-webkit-textfield-decoration-button,
+input[type="password"]::-webkit-textfield-decoration-container,
+input[type="password"]::-webkit-clear-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+}
+
+.password-field-wrapper .register-input[type="password"] {
+    padding-right: 44px;
+}
+
+.register-submit {
+    padding: 12px 40px;
+    font-size: 18px;
+    background: #d1a3e2;
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.register-message {
+    color: #a36fc2;
+    margin-top: 16px;
+    text-align: center;
+}
+
+@media (max-width: 720px) {
+    .register-form { flex-direction: column; }
+    .register-col { min-width: auto; }
+}
