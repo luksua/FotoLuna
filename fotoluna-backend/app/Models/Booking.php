@@ -34,8 +34,24 @@ class Booking extends Model
         return $this->belongsTo(Package::class, 'packageIdFK', 'packageId');
     }
 
-        public function employee()
+    public function employee()
     {
         return $this->belongsTo(Employee::class, 'employeeIdFK', 'employeeId');
+    }
+
+    public function photographer()
+    {
+        // asumiendo que employeeIdFK apunta a employees.employeeId
+        return $this->belongsTo(Employee::class, 'employeeIdFK', 'employeeId');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'bookingIdFK', 'bookingId');
+    }
+
+    public function installments()
+    {
+        return $this->hasMany(BookingPaymentInstallment::class, 'bookingIdFK', 'bookingId');
     }
 }

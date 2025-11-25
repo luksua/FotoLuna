@@ -1,0 +1,69 @@
+/* CARD BASE */
+.storage-plan-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 18px;
+    text-align: left;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    
+    /* Sombra inicial sutil */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+}
+
+/* HOVER → un toque de morado suave */
+.storage-plan-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(150, 84, 160, 0.25); /* sombra morada */
+    border-color: #d6a1d8;
+}
+
+/* SELECCIONADO → borde morado + sombra morada suave + fondo lilac */
+.storage-plan-card.selected {
+    border-color: #C065C0 !important;
+    box-shadow: 0 0 0 3px rgba(192, 101, 192, 0.45);
+    background: #F8E7FF; /* fondo súper suave */
+    transform: translateY(-3px);
+}
+
+/* HEADER */
+.storage-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.storage-plan-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.storage-plan-price {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* DESCRIPTION */
+.storage-plan-description {
+    font-size: 0.92rem;
+    color: #6c6c6c;
+    margin-top: 4px;
+}
+
+/* FEATURES */
+.storage-plan-features li {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    color: #333;
+    font-family: Raleway;
+}
+
+@media (max-width: 425px) {
+    .plans h3 {
+        text-align: center !important;
+    }
+    .plan-description p {
+        text-align: center !important;
+    }
+}

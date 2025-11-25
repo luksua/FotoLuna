@@ -3,13 +3,89 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\StorageSubscription;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\Employee;
 use App\Models\BookingPhoto;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmedMail;
 
 class BookingController extends Controller
 {
+    public function summary(Booking $booking)
+    {
+        $booking->load([
+            'appointment.customer',
+            'appointment.photographer',
+            'appointment.event',
+            'package',
+            'payments' => function ($q) {
+                $q->orderByDesc('created_at');
+            },
+        ]);
+
+        $appointment = $booking->appointment;
+
+        $payment = $booking->payments->first(); // último pago
+
+        return response()->json([
+            'id' => $booking->bookingId,
+            'date' => optional($appointment)->date,
+            'time_start' => optional($appointment)->startTime ?? $appointment->time ?? null,
+            'time_end' => optional($appointment)->endTime ?? null,
+            'location' => optional($appointment)->place,
+            'eventName' => optional($appointment->event)->eventName,
+            'packageName' => optional($booking->package)->packageName,
+            'photographerName' => optional($appointment->photographer)->name,
+            'total' => optional($payment)->amount ?? 0,
+            'paymentId' => optional($payment)->paymentId ?? null,
+            'mpPaymentId' => optional($payment)->mp_payment_id ?? null,
+        ]);
+    }
+
+    public function sendConfirmation(Booking $booking)
+    {
+        $booking->load([
+            'appointment.customer',
+            'appointment.event',
+            'package',
+            'documentType',
+            'photographer',
+            'payments' => fn($q) => $q->orderByDesc('paymentDate'),
+        ]);
+
+        // Cliente
+        $customer = $booking->appointment?->customer;
+
+        if (!$customer || !$customer->emailCustomer) {
+            return response()->json([
+                'message' => 'No se encontró el email del cliente.',
+            ], 422);
+        }
+
+        // Plan de almacenamiento (si existe)
+        $storageSubscription = StorageSubscription::where('bookingIdFK', $booking->bookingId)
+            ->latest()
+            ->first();
+
+        // Último pago
+        $lastPayment = $booking->payments->first();
+
+        // Enviar correo
+        Mail::to($customer->emailCustomer)->send(
+            new BookingConfirmedMail(
+                $booking,
+                $storageSubscription,
+                $lastPayment
+            )
+        );
+
+        return response()->json([
+            'message' => 'Correo de confirmación enviado.',
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -92,7 +168,7 @@ class BookingController extends Controller
         // Cargar relaciones necesarias
         $booking->load([
             'appointment.customer',
-            'appointment.event',   // 👈 NECESARIO
+            'appointment.event',
             'package',
             'documentType'
         ]);

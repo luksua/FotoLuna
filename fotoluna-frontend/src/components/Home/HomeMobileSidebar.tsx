@@ -4,7 +4,6 @@ import "./styles/homeMobileSidebar.css";
 import { useAuth } from "../../context/useAuth";
 import { Link, useLocation } from "react-router-dom";
 import HomeButton from "./HomeButton";
-// @ts-expect-error No existen definiciones de tipos para Bootstrap JS (Offcanvas)
 import { Offcanvas } from "bootstrap";
 
 const HomeMobileSidebar: React.FC = () => {
@@ -52,7 +51,22 @@ const HomeMobileSidebar: React.FC = () => {
                     {/* <i className="bi bi-camera me-2"></i> */}
                     <span className="">Foto</span>Luna
                 </h1>
-                <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+                <button
+                    type="button"
+                    className="sidebar-close-btn"
+                    aria-label="Cerrar"
+                    onClick={() => {
+                        const mobileEl = document.getElementById("mobileMenu");
+                        if (mobileEl) {
+                            const instance =
+                                Offcanvas.getInstance(mobileEl) ?? new Offcanvas(mobileEl);
+                            instance.hide();
+                        }
+                    }}
+                >
+                    <i className="bi bi-x-lg"></i>
+                </button>
+
             </div>
 
             {/* ======== CUERPO ======== */}

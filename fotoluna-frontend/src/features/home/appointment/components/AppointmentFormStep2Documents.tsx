@@ -59,7 +59,6 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     const needsPhotographerVisit =
         !!selectedDocObj && !requiresUpload && !requiresPresence;
 
-    // 🔹 Cargar tipos de documento
     // useEffect(() => {
     //     api.get("/api/document-types").then(({ data }) => setDocuments(data));
     // }, []);
@@ -78,10 +77,10 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     }, [preselectedDocumentTypeId]);
 
 
-    // 🔁 Duplicar para scroll infinito
+    // Duplicar para scroll infinito
     const items = documents.length > 0 ? [...documents, ...documents] : [];
 
-    // 🔹 Medir ancho del track
+    // Medir ancho del track
     useLayoutEffect(() => {
         const track = trackRef.current;
         if (!track) return;
@@ -90,7 +89,7 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
         });
     }, [items.length]);
 
-    // 🔄 Auto-scroll + inercia
+    // Auto-scroll + inercia
     useEffect(() => {
         if (documents.length <= 3) return;
 
@@ -121,12 +120,12 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
         };
     }, [documents.length]);
 
-    // 🔹 Selección
+    // Selección
     const handleCardClick = (docId: number) => {
         if (!clickGuardRef.current) setSelectedDoc(docId);
     };
 
-    // 🔹 Confirmar selección
+    // Confirmar selección
     const handleConfirm = async () => {
         if (!selectedDoc) return alert("Selecciona un tipo de documento");
 

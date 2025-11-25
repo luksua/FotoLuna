@@ -3,7 +3,18 @@
     position: relative;
 }
 
-.form-section {
+.form-section-register {
+    width: 100%;
+    height: auto;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    padding-bottom: 50px;
+    box-sizing: border-box;
+}
+
+.form-section-login {
     width: 100%;
     height: auto;
     background-color: white;

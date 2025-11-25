@@ -14,6 +14,8 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import "../styles/appointmentCalendar.css";
 import "../styles/appointment.css";
+import Login from "../../auth/components/LoginForm";
+import Register from "../../auth/components/SignUpForm";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
@@ -74,9 +76,17 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
     const [allBlocked, setAllBlocked] = useState(false);
     const [unavailableDays, setUnavailableDays] = useState<string[]>([]);
 
+    // Modals
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMode, setAuthMode] = useState<"choose" | "login" | "register">("choose");
 
-    const { control, handleSubmit, formState: { errors }, setValue, register } = useForm<FormValues>({
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+        setValue,
+        register,
+    } = useForm<FormValues>({
         defaultValues: { eventIdFK: "", appointmentDate: "", appointmentTime: "", place: "", comment: "" },
     });
 
@@ -97,7 +107,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                 }));
                 setEventOptions(formatted);
 
-                // 👇 si viene initialEventId desde Maternity, lo seleccionamos
+                // si viene initialEventId desde Maternity, lo seleccionamos
                 if (initialEventId) {
                     const value = String(initialEventId);
                     setValue("eventIdFK", value);
@@ -119,34 +129,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
 
         fetchEvents();
     }, [initialEventId, setValue]);
-
-    // useEffect(() => {
-    //     const fetchEvents = async () => {
-    //         try {
-    //             const token = localStorage.getItem("token");
-    //             const res = await axios.get(`${API_BASE}/api/events`, {
-    //                 headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-    //             });
-
-    //             // ✅ guardamos los eventos completos
-    //             setEvents(res.data);
-
-    //             // Formateamos para el select
-    //             const formatted = res.data.map((e: any) => ({
-    //                 value: String(e.id),
-    //                 label: e.eventType,
-    //             }));
-
-    //             setEventOptions(formatted);
-    //         } catch (error) {
-    //             console.error("Error al cargar eventos:", error);
-    //         } finally {
-    //             setLoadingEvents(false);
-    //         }
-    //     };
-
-    //     fetchEvents();
-    // }, []);
 
     // Cargar fecha inicial (primer día disponible)
     useEffect(() => {
@@ -181,7 +163,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
         })();
     }, [selectedDate, initialResolved]);
 
-    // 🔹 Cargar días bloqueados del mes
+    // Cargar días bloqueados del mes
     useEffect(() => {
         (async () => {
             try {
@@ -201,14 +183,14 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
         })();
     }, []);
 
-    // 🔹 Envío del formulario
+    // Envío del formulario
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         setServerErrors({});
 
         const token = localStorage.getItem("token");
 
-        // 👇 Si NO hay token → mostrar modal
         if (!token) {
+            setAuthMode("choose");
             setShowAuthModal(true);
             return;
         }
@@ -250,55 +232,18 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
         }
     };
 
-    // const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    //     setServerErrors({});
-    //     setLoading(true);
-    //     try {
-    //         const token = localStorage.getItem("token");
-    //         const formattedTime = convertTo24Hour(data.appointmentTime);
-    //         const res = await axios.post(
-    //             `${API_BASE}/api/appointments`,
-    //             {
-    //                 ...data,
-    //                 appointmentTime: formattedTime,
-    //                 appointmentStatus: "Pending confirmation",
-    //             },
-    //             { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
-    //         );
-
-    //         // Encontramos el evento completo
-    //         const selectedEvent = events.find((e) => e.id === parseInt(data.eventIdFK));
-
-    //         if (onNext && selectedEvent) {
-    //             onNext({
-    //                 appointmentId: res.data.appointmentId,
-    //                 event: selectedEvent,
-    //                 place: data.place,  // 👈 aquí mandas el lugar al padre
-    //             });
-    //         }
-    //     } catch (err: any) {
-    //         console.error("❌ Error completo:", err);
-    //         if (err.response) {
-    //             if (err.response.status === 422)
-    //                 setServerErrors(err.response.data.errors || {});
-    //             else if (err.response.status === 401)
-    //                 alert("Tu sesión ha expirado. Inicia sesión nuevamente.");
-    //             else
-    //                 setServerErrors({ general: [err.response.data.message || "Error del servidor"] });
-    //         } else {
-    //             setServerErrors({ general: ["No se pudo conectar con el servidor."] });
-    //         }
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     const serverErrorFor = (field: string) =>
         serverErrors[field] ? serverErrors[field].join(" ") : undefined;
 
-    // 👇 nuevo estado
     const [isDocumentEvent, setIsDocumentEvent] = useState(false);
 
+    // 👉 callback cuando login/registro se completa correctamente
+    const handleAuthSuccess = () => {
+        setShowAuthModal(false);
+        setAuthMode("choose");
+        // Opcional: volver a intentar crear la cita automáticamente
+        // handleSubmit(onSubmit)();
+    };
 
     return (
         <div className="container py-4 appointment-step1">
@@ -356,7 +301,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                             </div>
 
                             {/* Time */}
-
                             <div className="time-grid-container mt-3">
                                 {/* Campo oculto para que react-hook-form pueda validar la hora */}
                                 <input
@@ -384,7 +328,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                                             onClick={() => {
                                                 if (!blockedTimes.includes(slot)) {
                                                     setSelectedTime(slot);
-                                                    // 👇 importante: validar al cambiar
                                                     setValue("appointmentTime", slot, { shouldValidate: true });
                                                 }
                                             }}
@@ -441,7 +384,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                                 name="place"
                                 control={control}
                                 rules={{
-                                    // solo es obligatorio si NO es evento de documento
                                     validate: (value) => {
                                         if (isDocumentEvent) return true;
                                         return value?.trim()
@@ -490,47 +432,116 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                     </div>
                 </div>
             </form>
+
             {showAuthModal && (
-                <div className="auth-modal-backdrop">
-                    <div className="auth-modal">
-                        <h3>¿Tienes una cuenta?</h3>
-                        <p>Debes iniciar sesión o registrarte para reservar una cita.</p>
+                <div
+                    className="auth-modal-backdrop"
+                    onClick={() => setShowAuthModal(false)}
+                >
+                    <div
+                        className="auth-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="auth-modal-close"
+                            onClick={() => setShowAuthModal(false)}
+                        >
+                            ✕
+                        </button>
 
-                        <div className="auth-modal-buttons">
-                            <div className="d-flex align-items-center justify-content-center mb-2">
-                                <Button
-                                    className="btn btn-perfil"
-                                    value="Inicia Sesión"
-                                    onClick={() => {
-                                        setShowAuthModal(false);
-                                        window.location.href = "/iniciarSesion";
-                                    }}
-                                />
+                        <div className="auth-modal-inner">
+                            {authMode === "choose" && (
+                                <div className="auth-modal-content">
+                                    <h3 className="auth-modal-title">¿Tienes una cuenta?</h3>
+                                    <p className="auth-modal-text">
+                                        Debes iniciar sesión o registrarte para reservar una cita.
+                                    </p>
 
-                                <span className="m-4">o</span>
+                                    <div className="auth-modal-buttons">
+                                        <Button
+                                            className="btn btn-perfil auth-modal-btn"
+                                            value="Inicia Sesión"
+                                            onClick={() => setAuthMode("login")}
+                                        />
 
-                                <Button
-                                    className="btn btn-perfil"
-                                    value="Crea Cuenta"
-                                    onClick={() => {
-                                        setShowAuthModal(false);
-                                        window.location.href = "/registrarse";
-                                    }}
-                                />
-                            </div>
+                                        <span className="auth-modal-divider">o</span>
 
-                            <button
-                                className="btn custom-upload-btn w-100"
-                                onClick={() => setShowAuthModal(false)}
-                            >
-                                Cancelar
-                            </button>
+                                        <Button
+                                            className="btn btn-perfil auth-modal-btn"
+                                            value="Crea Cuenta"
+                                            onClick={() => setAuthMode("register")}
+                                        />
+                                    </div>
+
+                                    <button
+                                        className="btn custom-upload-btn w-100 mt-3"
+                                        onClick={() => setShowAuthModal(false)}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            )}
+
+                            {authMode === "login" && (
+                                <div className="auth-modal-content auth-modal-form-content">
+                                    <Login
+                                        variant="modal"
+                                        onSuccess={handleAuthSuccess}
+                                        onCancel={() => setShowAuthModal(false)}
+                                    />
+                                    <button
+                                        className="btn custom-upload-btn w-100 mt-2"
+                                        onClick={() => setAuthMode("choose")}
+                                    >
+                                        Volver
+                                    </button>
+
+                                    <p className="auth-modal-switch text-center mt-3">
+                                        ¿No tienes cuenta?{" "}
+                                        <button
+                                            type="button"
+                                            className="btn btn-link p-0"
+                                            onClick={() => setAuthMode("register")}
+                                        >
+                                            Regístrate
+                                        </button>
+                                    </p>
+
+                                    
+                                </div>
+                            )}
+
+                            {authMode === "register" && (
+                                <div className="auth-modal-content auth-modal-form-content">
+                                    <Register
+                                        onSuccess={handleAuthSuccess}
+                                        onCancel={() => setShowAuthModal(false)}
+                                    />
+
+                                    <p className="auth-modal-switch text-center mt-3">
+                                        ¿Ya tienes cuenta?{" "}
+                                        <button
+                                            type="button"
+                                            className="btn btn-link p-0"
+                                            onClick={() => setAuthMode("login")}
+                                        >
+                                            Inicia sesión
+                                        </button>
+                                    </p>
+
+                                    <button
+                                        className="btn custom-upload-btn w-100 mt-2"
+                                        onClick={() => setAuthMode("choose")}
+                                    >
+                                        Volver
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
         </div>
-
     );
 };
 
