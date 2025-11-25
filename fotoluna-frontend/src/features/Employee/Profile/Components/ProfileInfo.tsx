@@ -51,11 +51,11 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
             {/* Name Field */}
             <div className="row mb-3">
                 <div className="col-md-6">
-                    <label htmlFor="name" className="form-label fw-semibold">Nombre</label>
+                    <label htmlFor="name" className="form-label form-label-employee fw-semibold">Nombre</label>
                     <div className="input-group">
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control form-control-employee"
                             id="name"
                             name="name"
                             value={formData.name}
@@ -65,12 +65,12 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
                     </div>
                 </div>
                 <div className="col-md-6">
-                    <label className="form-label fw-semibold d-block">&nbsp;</label>
+                    <label className="form-label form-label-employee fw-semibold d-block">&nbsp;</label>
                     <div className="d-flex gap-2">
-                        <button type="button" className="btn btn-outline-primary btn-sm">
+                        <button type="button" className="btn btn-employee btn-outline-primary btn-sm">
                             Cambiar
                         </button>
-                        <button type="button" className="btn btn-outline-danger btn-sm">
+                        <button type="button" className="btn btn-employee btn-outline-danger btn-sm">
                             Eliminar
                         </button>
                     </div>
@@ -79,10 +79,10 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
 
             {/* Email Field */}
             <div className="mb-3">
-                <label htmlFor="email" className="form-label fw-semibold">Correo electrónico</label>
+                <label htmlFor="email" className="form-label form-label-employee fw-semibold">Correo electrónico</label>
                 <input
                     type="email"
-                    className="form-control"
+                    className="form-control form-control-employee"
                     id="email"
                     name="email"
                     value={formData.email}
@@ -93,9 +93,9 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
 
             {/* Bio Field */}
             <div className="mb-4">
-                <label htmlFor="bio" className="form-label fw-semibold">Biografía</label>
+                <label htmlFor="bio" className="form-label form-label-employee fw-semibold">Biografía</label>
                 <textarea
-                    className="form-control"
+                    className="form-control form-control-employee"
                     id="bio"
                     name="bio"
                     rows={4}
@@ -119,7 +119,7 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
                 </button>
                 <button
                     type="submit"
-                    className="btn btn-primary"
+                    className="btn btn-primary-employee"
                 >
                     Guardar cambios
                 </button>

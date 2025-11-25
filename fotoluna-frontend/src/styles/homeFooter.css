@@ -1,0 +1,33 @@
+.carousel-item img {
+    height: 300px;
+    object-fit: cover;
+}
+
+/*boton de guasap*/
+.whatsapp-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color:#DCABDF;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    z-index: 1000;
+}
+
+
+.footer {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+.image {
+    width: 800px;
+}
+

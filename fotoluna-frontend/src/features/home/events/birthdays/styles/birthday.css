@@ -1,0 +1,311 @@
+.birthday-text .title {
+    color: #3b2662;
+    font-size: 70px;
+    padding-bottom: 15px;
+}
+
+.birthday-text {
+    padding-right: 70px
+}
+
+.birthday-section {
+    background: #fff;
+    overflow: hidden;
+}
+
+.birthday-text .description {
+    color: #4d4d4d;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+.card-grid {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.package-card {
+    border: 2px solid #5f6397;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.package-card:hover {
+    box-shadow: 0 0 35px rgba(72, 4, 37, 0.3);
+    transform: translateY(-5px);
+}
+
+.price-birthday {
+    color: #5a95c8;
+    font-weight: 700;
+}
+
+.text-blue {
+    color: #39398d;
+}
+
+/* BOTÓN ESTILO FOTO LUNA */
+
+
+.btn-outline-pink:hover {
+    background-color: #c85a8f;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* GALERÍA SIMULADA */
+.birthday-gallery {
+    background-color: #3b2662;
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(65, 51, 58, 0.4);;
+}
+
+.gallery-item {
+    border-radius: 15px;
+    background-size: cover;
+    background-position: center;
+    height: 470px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.gallery-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(65, 51, 58, 0.4);
+}
+
+.img1 {
+    background-image: url("/img/birthday1.jpg");
+}
+
+.img2 {
+    background-image: url("/img/birthday2.jpg");
+}
+
+.img3 {
+    background-image: url("/img/birthday3.jpg");
+}
+
+.img4 {
+    background-image: url("/img/birthday4.jpg");
+}
+
+.shiny-text-birthday {
+    display: inline-block;
+    color: #395f99;
+    border: 2px solid #0a507e;
+    border-radius: 50px;
+    /* borde estable */
+    padding: 8px 20px;
+    /* borde consistente */
+    background: linear-gradient(120deg,
+            rgba(132, 90, 200, 0.2) 40%,
+            rgba(255, 255, 255, 0.9) 50%,
+            rgba(125, 90, 200, 0.2) 60%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shine 3s linear infinite;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.shiny-text-birthday:hover {
+    color: #fff;
+    background: linear-gradient(120deg,
+            rgba(90, 132, 200, 0.2) 40%,
+            rgba(255, 255, 255, 0.9) 50%,
+            rgba(90, 123, 200, 0.2) 60%);
+    background-size: 200% 100%;
+    transform: translateY(-2px);
+    text-shadow: 0 0 8px rgb(39, 31, 96);
+    border-color:#0a4c7e;
+    box-shadow: 0 0 12px rgba(90, 136, 200, 0.4);
+    cursor: pointer;
+}
+
+/* ========== RESPONSIVE MÓVILES ========== */
+
+/* Tablets (768px o menos) */
+@media (max-width: 768px) {
+    .birthday-section {
+        padding: 2rem 1rem !important;
+    }
+
+    .birthday-text {
+        padding-right: 0;
+        padding-bottom: 2rem;
+    }
+
+    .birthday-text .title {
+        font-size: 3rem;
+        padding-bottom: 10px;
+    }
+
+    .birthday-text .description {
+        font-size: 1.1rem;
+        padding: 0 1rem;
+    }
+
+    .card-grid {
+        flex-direction: column;
+        max-width: 100%;
+        padding: 0 1rem;
+    }
+
+    .package-card {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto 1rem;
+    }
+
+    .birthday-gallery {
+        margin-top: 2rem;
+        width: 100%;
+    }
+
+    .gallery-item {
+        height: 350px;
+    }
+}
+
+/* Móviles (425px o menos) */
+@media (max-width: 425px) {
+    .birthday-section {
+        padding: 5rem 0.5rem !important;
+    }
+
+    .birthday-section br {
+        display: none;
+    }
+
+    .birthday-text .title {
+        font-size: 2.2rem;
+        padding-bottom: 8px;
+    }
+
+    .birthday-text .description {
+        font-size: 1rem;
+        padding: 0 0.5rem;
+        line-height: 1.5;
+    }
+
+    .card-grid {
+        padding: 0 0.5rem;
+        gap: 12px;
+    }
+
+    .package-card {
+        max-width: 100%;
+    }
+
+    .package-card .card-body {
+        padding: 1rem;
+    }
+
+    .package-card .card-title {
+        font-size: 1.2rem;
+    }
+
+    .package-card .card-text {
+        font-size: 0.9rem;
+    }
+
+    .price-birthday {
+        font-size: 1.3rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .shiny-text-birthday {
+        width: 100%;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+
+    .birthday-gallery {
+        padding: 8px;
+        margin-top: 1.5rem;
+    }
+
+    .gallery-item {
+        height: 280px;
+        border-radius: 12px;
+    }
+}
+
+/* Móviles muy pequeños (375px o menos) */
+@media (max-width: 375px) {
+
+    .birthday-text .title {
+        font-size: 1.9rem;
+    }
+
+    .card-grid {
+        padding: 0 0.3rem;
+    }
+
+    .package-card .card-body {
+        padding: 0.8rem;
+    }
+
+    .package-card .card-title {
+        font-size: 1.1rem;
+    }
+
+    .package-card .card-text {
+        font-size: 0.85rem;
+    }
+
+    .price-birthday {
+        font-size: 1.2rem;
+    }
+
+    .shiny-text-birthday {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    .gallery-item {
+        height: 250px;
+    }
+}
+
+/* Landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .birthday-section {
+        padding: 1rem !important;
+    }
+
+    .birthday-section br {
+        display: none;
+    }
+
+    .birthday-text .title {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .birthday-text .description {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-grid {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .package-card {
+        max-width: 48%;
+    }
+
+    .gallery-item {
+        height: 200px;
+    }
+}

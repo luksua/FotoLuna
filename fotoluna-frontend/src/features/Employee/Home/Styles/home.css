@@ -1,4 +1,4 @@
-:root {
+.employee-home{
     --pastel-mint: #e1c0f79e;
     --pastel-lavender: #e6e6fa;
     --pastel-peach: #ffdab9;
@@ -17,13 +17,13 @@
 .main-content {
     margin-left: 200px;
     margin-top: 70px;
-    padding: 10px;
+    padding: 0;
     width: calc(100% - 200px);
     transition: var(--transition);
     font-family: 'Quicksand';
 }
 
-.welcome-section {
+.employee-home .welcome-section {
     background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-blue));
     border-radius: 15px;
     padding: 10px 10px;
@@ -35,19 +35,19 @@
     align-items: center;
 }
 
-.welcome-text h2 {
+.employee-home .welcome-text h2 {
     font-size: 1.2rem;
     margin-bottom: 5px;
     font-family: 'Quicksand';
 }
 
-.welcome-text p {
+.employee-home .welcome-text p {
     font-size: 0.9rem;
     /* reducido */
 }
 
 
-.weather-info {
+.employee-home .weather-info {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -58,29 +58,29 @@
     /* evita que se quiebre */
 }
 
-.weather-icon {
+.employee-home .weather-icon {
     font-size: 1.2rem;
     color: var(--pastel-lilac);
 }
 
-.weather-details h3 {
+.employee-home .weather-details h3 {
     font-size: 1rem;
     margin-bottom: 3px;
 }
 
-.weather-details p {
+.employee-home .weather-details p {
     margin: 0;
     font-size: 0.8rem;
 }
 
-.dashboard {
+.employee-home .dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 }
 
-.card {
+.employee-home .card {
     background: var(--white);
     border-radius: 15px;
     padding: 10px;
@@ -94,7 +94,7 @@
 
 }
 
-.card::before {
+.employee-home .card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -104,22 +104,22 @@
     background: linear-gradient(90deg, var(--pastel-mint), var(--pastel-lilac));
 }
 
-.card:hover {
+.employee-home .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.card-header {
+.employee-home .card-header {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
     gap: 2px;
     width: 100%;
-    
-    
+
+
 }
 
-.card-icon {
+.employee-home .card-icon {
     width: 25px;
     height: 25px;
     border-radius: 5px;
@@ -133,35 +133,35 @@
 }
 
 
-.citos .card-icon {
+.employee-home .citos .card-icon {
     background: var(--pastel-peach);
 
 }
 
-.nube .card-icon {
+.employee-home .nube .card-icon {
     background: var(--pastel-blue);
 }
 
-.subir .card-icon {
+.employee-home .subir .card-icon {
     background: var(--pastel-pink);
 }
 
-.administrar .card-icon {
+.employee-home .administrar .card-icon {
     background: var(--pastel-mint);
 }
 
-.clientes .card-icon {
+.employee-home .clientes .card-icon {
     background: var(--pastel-lavender);
 }
 
-.card h3 {
+.employee-home .card h3 {
     color: var(--text-dark);
     font-size: 1rem;
     margin-bottom: 0;
     margin-top: 0px;
 }
 
-.card p {
+.employee-home .card p {
     color: var(--text-light);
     line-height: 1;
     margin: 0 0 15px 0;
@@ -169,7 +169,7 @@
     flex-grow: 1;
 }
 
-.card-stats {
+.employee-home .card-stats {
     display: flex;
     justify-content: space-around;
     gap: 10px;
@@ -178,23 +178,23 @@
     border-top: 1px solid #f0f0f0;
 }
 
-.stat {
+.employee-home .stat {
     text-align: center;
     flex: 1;
 }
 
-.stat-value {
+.employee-home .stat-value {
     font-size: 1.2rem;
     font-weight: bold;
     color: var(--text-dark);
 }
 
-.stat-label {
+.employee-home .stat-label {
     font-size: 0.7rem;
     color: var(--text-light);
 }
 
-.activity-section {
+.employee-home .activity-section {
     background: var(--white);
     border-radius: 15px;
     padding: 20px;
@@ -202,7 +202,7 @@
     margin-bottom: 25px;
 }
 
-.section-title {
+.employee-home .section-title {
     font-size: 1rem;
     margin-bottom: 18px;
     color: var(--text-dark);
@@ -211,17 +211,17 @@
     gap: 10px;
 }
 
-.section-title i {
+.employee-home .section-title i {
     color: var(--pastel-lilac);
 }
 
-.activity-grid {
+.employee-home .activity-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
 }
 
-.activity-item {
+.employee-home .activity-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -231,24 +231,24 @@
     transition: var(--transition);
 }
 
-.activity-item:hover {
+.employee-home .activity-item:hover {
     transform: translateY(-3px);
     background: var(--pastel-mint);
 }
 
-.activity-icon {
+.employee-home .activity-icon {
     font-size: 1.2rem;
     margin-bottom: 4px;
     color: var(--text-dark);
 }
 
-.activity-value {
+.employee-home .activity-value {
     font-size: 1.2rem;
     font-weight: bold;
     margin-bottom: 4px;
 }
 
-.activity-label {
+.employee-home .activity-label {
     font-size: 0.8rem;
     color: var(--text-light);
     text-align: center;
@@ -277,33 +277,33 @@ footer {
     }
 }
 
-.card {
+.employee-home .card {
     animation: fadeIn 0.5s ease forwards;
 }
 
-.citos {
+.employee-home .citos {
     animation-delay: 0.1s;
 }
 
-.nube {
+.employee-home .nube {
     animation-delay: 0.2s;
 }
 
-.subir {
+.employee-home .subir {
     animation-delay: 0.3s;
 }
 
-.administrar {
+.employee-home .administrar {
     animation-delay: 0.4s;
 }
 
-.clientes {
+.employee-home .clientes {
     animation-delay: 0.5s;
 }
 
 /* Responsive */
 @media (max-width: 992px) {
-    .main-content {
+    .employee-home .main-content {
         margin-left: 70px;
         /* sidebar colapsado */
         width: calc(100% - 70px);
@@ -313,29 +313,29 @@ footer {
 }
 
 @media (max-width: 768px) {
-    .main-content {
+    .employee-home .main-content {
         margin-left: 0;
         width: 100%;
         margin-top: 70px;
     }
 
-    .dashboard {
+    .employee-home .dashboard {
         grid-template-columns: 1fr;
     }
 
-    .welcome-section {
+    .employee-home .welcome-section {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
 
-    .welcome-text h2 {
+    .employee-home .welcome-text h2 {
         font-size: 1.5rem;
     }
 }
 
 @media (max-width: 576px) {
-    .main-content {
+    .employee-home .main-content {
         margin-left: 0;
         width: 100%;
         margin-top: 70px;

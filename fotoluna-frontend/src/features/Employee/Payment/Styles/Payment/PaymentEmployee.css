@@ -1,7 +1,6 @@
 /* styles/App.css */
 .app-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px 0;
 }
 
@@ -72,7 +71,7 @@
 }
 
 .payment-row:hover {
-  background-color: rgba(13, 110, 253, 0.05);
+  background-color: rgba(44, 49, 56, 0.05);
   transform: translateX(4px);
   transition: all 0.2s ease;
 }
@@ -119,7 +118,7 @@
 }
 
 .pagination .page-item.active .page-link {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+ 
   border: none;
 }
 

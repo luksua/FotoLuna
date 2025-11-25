@@ -1,0 +1,140 @@
+.calendar-container {
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+}
+
+.a {
+    align-items: flex-start !important;
+}
+
+
+.rdrCalendarWrapper {
+    width: auto !important;
+    height: auto !important;
+}
+
+/* aumenta espacio y tamaño real sin transform */
+.rdrCalendarWrapper {
+    width: 380px;
+    /* por defecto ~300px */
+}
+
+.rdrWeekDay {
+    font-size: 1rem;
+    color: #C792DF;
+    font-weight: 600;
+}
+
+.rdrDays span {
+    font-size: 1rem;
+    padding: 6px;
+}
+
+.rdrMonth {
+    margin: 0 20px;
+}
+
+.rdrMonthAndYearPickers select {
+    font-size: 1.1rem;
+}
+
+/* Contenedor de horarios en formato grid */
+.time-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* 🔹 dos por fila */
+    gap: 10px;
+    /* separación entre botones */
+    justify-items: center;
+}
+
+/* Ajustes de los botones */
+.time-btn {
+    width: 100%;
+    max-width: 140px;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Hover visual */
+.time-btn:hover:not(.disabled) {
+    transform: scale(1.03);
+}
+
+@media (min-width: 576px) {
+    .time-grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        /* dos columnas en pantallas medianas o más */
+    }
+}
+
+@media (max-width: 768px) {
+    .rdrCalendarWrapper {
+        transform: scale(0.7);
+        transform-origin: top center;
+    }
+}
+
+/* --- Contenedor de grilla --- */
+.time-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    justify-items: center;
+    margin-top: 10px;
+}
+
+/* --- Botón base de horario --- */
+.time-btn {
+    width: 100%;
+    max-width: 150px;
+    padding: 10px 22px;
+    border: 2px solid #C792DF;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #C792DF;
+    background-color: #fff;
+    transition: all 0.25s ease-in-out;
+    cursor: pointer;
+}
+
+/* --- Hover (solo si está disponible) --- */
+.time-btn:hover:not(.disabled) {
+    background-color: #C792DF;
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 2px 6px rgba(57, 73, 171, 0.25);
+}
+
+/* --- Seleccionado --- */
+.time-btn.btn-primary {
+    background-color: #C792DF !important;
+    color: #fff !important;
+    border-color: #C792DF !important;
+    box-shadow: 0 3px 8px rgba(57, 73, 171, 0.3);
+    transform: scale(1.05);
+}
+
+/* --- Ocupado/deshabilitado --- */
+.time-btn.btn-secondary.disabled {
+    background-color: #e0e0e0 !important;
+    border-color: #ccc !important;
+    color: #888 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* --- Animación sutil en hover --- */
+.time-btn {
+    transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+

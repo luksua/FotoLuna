@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import "../../styles/EmployeeSidebar.css";
 import { Link, useLocation } from "react-router-dom";
 
-const EmployeeSidebar: React.FC = () => {
+const AdminSidebar: React.FC = () => {
     const [activeItem, setActiveItem] = useState("inicio");
     const location = useLocation();
 
     const menuItems = [
-        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/" },
+        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/empleado" },
         { id: "citas", icon: "bi bi-calendar2-heart-fill", text: "Citas", path: "/employee/appointments" },
         { id: "subir", icon: "bi bi-cloud-upload-fill", text: "Subir", path: "/employee/upload" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/employee/admin" },
@@ -34,4 +34,5 @@ const EmployeeSidebar: React.FC = () => {
     );
 };
 
-export default EmployeeSidebar;
+export default AdminSidebar;
+

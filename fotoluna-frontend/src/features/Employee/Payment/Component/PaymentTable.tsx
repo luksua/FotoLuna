@@ -139,27 +139,15 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                         </td>
                                         <td>
                                             <div className="action-buttons">
-                                                {payment.status === 'paid' ? (
-                                                    <Button
-                                                        variant="outline-primary"
-                                                        size="sm"
-                                                        onClick={() => onDownloadInvoice(payment.id)}
-                                                        className="action-btn"
-                                                    >
-                                                        <i className="bi bi-download me-1"></i>
-                                                        Factura
-                                                    </Button>
-                                                ) : (
-                                                    <Button
-                                                        variant={payment.status === 'overdue' ? 'danger' : 'primary'}
-                                                        size="sm"
-                                                        onClick={() => onPayNow(payment.id)}
-                                                        className="action-btn"
-                                                    >
-                                                        <i className="bi bi-credit-card me-1"></i>
-                                                        Pagar
-                                                    </Button>
-                                                )}
+                                                <Button
+                                                    variant="outline-primary"
+                                                    size="sm"
+                                                    onClick={() => onDownloadInvoice(payment.id)}
+                                                    className="action-btn"
+                                                >
+                                                    <i className="bi bi-download me-1"></i>
+                                                    Factura
+                                                </Button>
                                             </div>
                                         </td>
                                     </tr>

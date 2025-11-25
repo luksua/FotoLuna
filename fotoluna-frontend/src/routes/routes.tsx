@@ -1,25 +1,54 @@
-import HomeEmployee from "../features/Employee/Home/Pages/HomeEmployee";
-import AppointmentsEmployee from "../features/Employee/Appointment/Pages/ApointmentsEmploye";
-import EmployeeUpload from "../features/Employee/Upload/Pages/Upload";
-import AdminEmployee from "../features/Employee/PhotoAdmin/Pages/PhotoAdmin";
-import CustomersEmployee from "../features/Employee/Customers/Pages/CustomersEmployee";
-import EmployeeNotifications from "../features/Employee/Notification/Pages/NotiFicationEmploye";
-import Payments from "../features/Employee/Payment/Pages/PaymentEmployee";
+import Home from "../features/home/home/pages/Home";
+import SignUp from "../features/home/auth/pages/SignUp";
+import Login from "../features/home/auth/pages/Login";
+import ForgotPassword from "../features/home/auth/pages/ForgotPassword";
+import AboutMe from "../features/home/home/pages/AboutMe";
+import Contact from "../features/home/home/pages/Contact";
+import Appointment from "../features/home/appointment/pages/Appointment";
+import AppointmentForm from "../features/home/appointment/pages/AppointmentForm";
+import Notification from "../features/home/notification/pages/NotificationCustomer";
+import Quinces from "../features/home/events/quinces/pages/Quinces";
+import ProfilePage from "../features/home/home/pages/Account";
+import Photos from "../features/home/home/pages/Photos";
 
 
 export const routes = [
     {
         path: "/",
-        element: <HomeEmployee />
+        element: <Home />
     },
-    { path: "/employee/appointments", element: <AppointmentsEmployee /> },
-    { path: "/employee/upload", element: <EmployeeUpload /> },
-    { path: "/employee/admin", element: <AdminEmployee /> },
-    { path: "/employee/customers", element: <CustomersEmployee /> },
-    { path: "/employee/notifications", element: <EmployeeNotifications /> },
-    { path: "/employee/payments", element: <Payments /> },
-
-
-
-   
+    {
+        path: "/registrarse",
+        element: <SignUp />
+    }, {
+        path: "/iniciarSesion",
+        element: <Login />
+    }, {
+        path: "/recuperarContrasena",
+        element: <ForgotPassword />
+    }, {
+        path: "/sobreMi",
+        element: <AboutMe />
+    }, {
+        path: "/contacto",
+        element: <Contact />
+    }, {
+        path: "/citas",
+        element: <Appointment />
+    }, {
+        path: "/nuevaCita",
+        element: <AppointmentForm />
+    }, {
+        path: "/notificaciones",
+        element: <Notification />
+    }, {
+        path: "/quince",
+        element: <Quinces />
+    }, {
+        path: "/miCuenta",
+        element: <ProfilePage />
+    }, {
+        path: "/fotos",
+        element: <Photos />
+    },
 ];

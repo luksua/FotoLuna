@@ -12,8 +12,10 @@ class EventController extends Controller
      */
     public function index()
     {
-        //
+        $events = Event::select('eventId as id', 'eventType', 'category')->get();
+        return response()->json($events);
     }
+
 
     /**
      * Show the form for creating a new resource.

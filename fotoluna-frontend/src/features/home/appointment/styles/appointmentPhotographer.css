@@ -1,0 +1,67 @@
+/* .photographer-card {
+  background: #fff;
+  border: 2px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.photographer-card:hover {
+  border-color: #d0c4f7;
+  background-color: #f8f9ff;
+}
+
+.photographer-card.selected {
+  border-color: #4a64f5;
+  background-color: #eef1ff;
+}
+
+.photographer-list img {
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+} */
+
+.photographer-card {
+    background-color: #fff;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.photographer-card:hover {
+    border-color: #c792df;
+    background-color: #f9f3fc;
+    transform: translateY(-2px);
+}
+
+.photographer-card.selected {
+    border-color: #c792df;
+    background-color: #faf4ff;
+    box-shadow: 0 0 6px rgba(199, 146, 223, 0.3);
+}
+
+.photographer-list img {
+    border: 2px solid #eee;
+}
+
+
+
+.appointment-step3 .form-check-input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #c792df;
+}
+
+.appointment-step3 .btn {
+    min-width: 140px;
+}
+
+@media (max-width: 576px) {
+    .photographer-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .photographer-card img {
+        width: 70px;
+        height: 70px;
+    }
+}

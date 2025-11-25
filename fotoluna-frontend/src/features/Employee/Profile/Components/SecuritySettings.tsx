@@ -8,20 +8,20 @@ const SecuritySettings: React.FC = () => {
                 <h5 className="fw-semibold mb-3">Cambiar Contraseña</h5>
 
                 <div className="mb-3">
-                    <label htmlFor="currentPassword" className="form-label">Contraseña actual</label>
+                    <label htmlFor="currentPassword" className="form-label form-label-employee">Contraseña actual</label>
                     <input
                         type="password"
-                        className="form-control"
+                        className="form-control form-control-employee"
                         id="currentPassword"
                         placeholder="Ingresa tu contraseña actual"
                     />
                 </div>
 
                 <div className="mb-3">
-                    <label htmlFor="newPassword" className="form-label">Nueva contraseña</label>
+                    <label htmlFor="newPassword" className="form-label form-label-employee">Nueva contraseña</label>
                     <input
                         type="password"
-                        className="form-control"
+                        className="form-control form-control-employee"
                         id="newPassword"
                         placeholder="Ingresa tu nueva contraseña"
                     />
@@ -31,13 +31,13 @@ const SecuritySettings: React.FC = () => {
                     <label htmlFor="confirmPassword" className="form-label">Confirmar nueva contraseña</label>
                     <input
                         type="password"
-                        className="form-control"
+                        className="form-control form-control-employee"
                         id="confirmPassword"
                         placeholder="Confirma tu nueva contraseña"
                     />
                 </div>
 
-                <button className="btn btn-primary">
+                <button className="btn btn-primary-employee">
                     Actualizar contraseña
                 </button>
             </div>
