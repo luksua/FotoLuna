@@ -14,7 +14,6 @@ interface Package {
     packagePrice: string;
     packageDescription: string;
     photos?: Photo[];
-    // opcional, si lo traes del backend:
     // isGeneral?: boolean;
 }
 
@@ -56,7 +55,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     const speedRef = useRef(0.3);
     const clickGuardRef = useRef(false);
 
-    // 🔹 Cargar paquetes del backend (general + específicos)
+    // Cargar paquetes del backend (general + específicos)
     useEffect(() => {
         const fetchPackages = async () => {
             try {
@@ -93,13 +92,13 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     }, [preselectedPackageId, packages]);
 
 
-    // ✅ Un solo arreglo combinado para mostrar en carrusel
+    // Un solo arreglo combinado para mostrar en carrusel
     const combinedPackages: Package[] = [
         ...specificPackages,
         ...generalPackages,
     ];
 
-    // 🔁 Duplicar paquetes para scroll infinito
+    // Duplicar paquetes para scroll infinito
     const items =
         combinedPackages.length > 0
             ? [...combinedPackages, ...combinedPackages]
@@ -114,7 +113,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         });
     }, [items.length]);
 
-    // 🔄 Animación de auto-scroll + loop infinito
+    // Animación de auto-scroll + loop infinito
     useEffect(() => {
         if (combinedPackages.length <= 3) return;
 
@@ -145,12 +144,12 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         };
     }, [combinedPackages.length]);
 
-    // 🔹 Click en un paquete
+    // Click en un paquete
     const handleCardClick = (pkgId: number) => {
         if (!clickGuardRef.current) setSelectedPackage(pkgId);
     };
 
-    // 🔹 Confirmar paquete seleccionado
+    // Confirmar paquete seleccionado
     const handleConfirm = async () => {
         if (!selectedPackage) {
             setError("Selecciona un paquete antes de confirmar.");
@@ -191,7 +190,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
-    // 🔹 Render
+    // Render
     return (
         <div className="container py-4 appointment-step2 bg-custom-2">
             <h3 className="mb-4 fw-semibold text-center">Selecciona un paquete</h3>

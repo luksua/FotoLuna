@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Appointment extends Model
 {
@@ -29,5 +30,17 @@ class Appointment extends Model
     public function event()
     {
         return $this->belongsTo(Event::class, 'eventIdFK', 'eventId');
+    }
+
+    // Si una cita puede tener varias reservas (bookings)
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'appointmentIdFK', 'appointmentId');
+    }
+
+    // Si solo hay una reserva por cita, puedes usar hasOne también:
+    public function booking()
+    {
+        return $this->hasOne(Booking::class, 'appointmentIdFK', 'appointmentId');
     }
 }

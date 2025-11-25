@@ -47,7 +47,7 @@ class Employee extends Model
     // Filtro rápido para fotógrafos disponibles
     public function scopeAvailablePhotographers($query)
     {
-        return $query->where('role', 'Photographer')->where('isAvailable', true);
+        return $query->where('employeeType', 'Employee')->where('isAvailable', true);
     }
 
     public function user()

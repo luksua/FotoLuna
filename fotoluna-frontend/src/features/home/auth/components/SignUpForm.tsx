@@ -23,9 +23,14 @@ type FormValues = {
     photoCustomer?: FileList;
 };
 
+interface SignUpFormProps {
+    onSuccess?: () => void;
+    onCancel?: () => void;
+}
+
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
-const SignUpForm: React.FC = () => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     const [profileImage, setProfileImage] = useState("/img/imagenperfil.jpg");
     const [cropData, setCropData] = useState("");
     const cropperRef = useRef<ReactCropperElement>(null);
@@ -33,6 +38,9 @@ const SignUpForm: React.FC = () => {
     const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const params = new URLSearchParams(location.search);
+    
+    const next = params.get("next") || "/";
 
     const {
         control,
@@ -96,6 +104,13 @@ const SignUpForm: React.FC = () => {
                     // NO pongan Content-Type: multipart/form-data aquí; axios lo establece automáticamente
                 },
             });
+            const redirectTo = res.data?.redirect_to || next;
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                // 👉 si no hay onSuccess, me comporto como la página normal
+                navigate(redirectTo, { replace: true });
+            }
 
             if (res.data?.access_token) {
                 const token = res.data.access_token;
@@ -141,12 +156,12 @@ const SignUpForm: React.FC = () => {
 
     return (
         <div className="container">
-            <div className=" form-section ">
+            <div className="form-section form-section-register">
                 <div className="row text-center">
                     <div className="col-lg-12 col-md-12 col-sm-12 bg-custom-2">Registro</div>
                 </div>
                 <div className="row bg-custom-9">
-                    <div className="col-lg-6 col-md-6 col-sm-12 d-flex flex-column align-items-center">
+                    <div className="col-lg-6 col-md-6 col-sm-12 d-flex flex-column align-items-center part1">
                         <img
                             src={cropData ? cropData : profileImage}
                             alt="Foto Perfil Recortada"
@@ -406,6 +421,15 @@ const SignUpForm: React.FC = () => {
 
                             <div className="d-flex justify-content-center">
                                 <Button value={loading ? "Creando..." : "Crear Cuenta"} />
+                                {/* {onCancel && (
+                                    <button
+                                        type="button"
+                                        className="btn custom-upload-btn mt-2"
+                                        onClick={onCancel}
+                                    >
+                                        Cancelar
+                                    </button>
+                                )} */}
                             </div>
                         </form>
                     </div>

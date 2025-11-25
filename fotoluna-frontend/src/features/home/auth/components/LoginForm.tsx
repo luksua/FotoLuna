@@ -14,7 +14,13 @@ type FormValues = {
     password: string;
 };
 
-const LoginForm: React.FC = () => {
+interface LoginFormProps {
+    onSuccess?: () => void;
+    onCancel?: () => void;
+    variant?: "page" | "modal"; // 👈 NUEVO
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, variant = "page" }) => {
     const {
         control,
         handleSubmit,
@@ -44,37 +50,27 @@ const LoginForm: React.FC = () => {
         setLoading(true);
 
         try {
-            // trim para evitar espacios accidentales
             const payload = {
                 email: data.emailCustomer.trim(),
                 password: data.password,
             };
 
-            // usa la instancia api; baseURL la controla en src/lib/api.ts
             const res = await api.post("/api/login", payload);
 
             const token = res.data?.access_token;
             const redirectTo = res.data?.redirect_to || next;
-            
+
             if (token) {
                 await loginWithToken(token);
             } else if (res.data?.user && res.data?.token) {
                 await loginWithToken(res.data.token);
             }
 
-            // 👇 Redirige automáticamente según el rol o redirect_to
-            navigate(redirectTo, { replace: true });
-
-            // const res = await api.post("/api/login", payload);
-
-            // const token = res.data?.access_token;
-            // if (token) {
-            //     await loginWithToken(token);
-            // } else if (res.data?.user && res.data?.token) {
-            //     await loginWithToken(res.data.token);
-            // }
-
-            // navigate(next, { replace: true });
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                navigate(redirectTo, { replace: true });
+            }
         } catch (err: any) {
             console.error("Login error:", err?.response?.status, err?.response?.data);
             if (err.response) {
@@ -93,9 +89,90 @@ const LoginForm: React.FC = () => {
         }
     };
 
+    // ====== RENDER DIFERENTE SEGÚN VARIANT ======
+    if (variant === "modal") {
+        // Versión compacta para el modal
+        return (
+            <div className="login-modal-wrapper">
+                <h2 className="login-modal-title">Inicio de sesión</h2>
+
+                {serverErrors.general && (
+                    <div className="alert alert-danger">
+                        {serverErrors.general.join(" ")}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                    <Controller
+                        name="emailCustomer"
+                        control={control}
+                        rules={{
+                            required: "El email es obligatorio",
+                            pattern: {
+                                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                message: "El correo debe ser una dirección de correo válida."
+                            }
+                        }}
+                        render={({ field }) => (
+                            <InputLabel
+                                id="emailCustomer"
+                                label="Correo:"
+                                type="text"
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                inputRef={field.ref}
+                                error={errors.emailCustomer?.message || serverErrorFor("email")}
+                            />
+                        )}
+                    />
+
+                    <Controller
+                        name="password"
+                        control={control}
+                        rules={{ required: "Debe de escribir la contraseña" }}
+                        render={({ field }) => (
+                            <InputLabel
+                                id="password"
+                                label="Contraseña:"
+                                type="password"
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                inputRef={field.ref}
+                                error={errors.password?.message || serverErrorFor("password")}
+                            />
+                        )}
+                    />
+
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <Link to="/recuperarContrasena" className="form-text">
+                            Olvidé mi contraseña
+                        </Link>
+                    </div>
+
+                    <div className="d-flex flex-column gap-2 justify-content-center">
+                        <Button value={loading ? "Ingresando..." : "Iniciar Sesión"} />
+
+                        {/* {onCancel && (
+                            <button
+                                type="button"
+                                className="btn custom-upload-btn"
+                                onClick={onCancel}
+                            >
+                                Cancelar
+                            </button>
+                        )} */}
+                    </div>
+                </form>
+            </div>
+        );
+    }
+
+    // Versión original de página
     return (
         <div className="container-sign">
-            <div className="form-section">
+            <div className="form-section form-section-login">
                 <div className="row bg-custom-9">
                     <div className="col-lg-6 col-md-6 d-none d-md-block">
                         <img src="/img/fotoi.jpg" alt="Imagen de perfil" className="img-fluid rounded" />
@@ -103,9 +180,14 @@ const LoginForm: React.FC = () => {
                     <div className="col-lg-6 col-md-6 col-sm-12 py-5 ps-lg-5">
                         <h2 className="mb-4 text-center bg-custom-2">Inicio de Sesión</h2>
 
-                        {serverErrors.general && <div className="alert alert-danger">{serverErrors.general.join(" ")}</div>}
+                        {serverErrors.general && (
+                            <div className="alert alert-danger">
+                                {serverErrors.general.join(" ")}
+                            </div>
+                        )}
 
                         <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                            {/* mismos campos que arriba */}
                             <Controller
                                 name="emailCustomer"
                                 control={control}

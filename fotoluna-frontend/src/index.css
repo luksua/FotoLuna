@@ -13,11 +13,11 @@
     -moz-osx-font-smoothing: grayscale;
 } */
 
-a {
+/* a {
     font-weight: 500;
     color: #646cff;
     text-decoration: inherit;
-}   
+}    */
 
 /* body {
     margin: 0;
@@ -26,6 +26,10 @@ a {
     min-width: 320px;
     min-height: 100vh;
 } */
+
+body {
+    padding-right: 0 !important;
+}
 
 h1 {
     font-size: 3.2em;

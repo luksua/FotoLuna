@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\ImageController;
 
+
+Route::get('/phpinfo', function () {
+    phpinfo();
+});
+
 Route::get('/', function () {
     return view('welcome');
 });

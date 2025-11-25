@@ -13,4 +13,9 @@ class Event extends Model
         'eventType',
         'category'
     ];
+
+        public function getNameAttribute()
+    {
+        return $this->eventType;
+    }
 }

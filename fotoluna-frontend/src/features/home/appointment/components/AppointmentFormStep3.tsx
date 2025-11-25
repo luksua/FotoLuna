@@ -25,7 +25,7 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({ bookingId, onBack,
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // 🔹 Cargar fotógrafos disponibles
+    // Cargar fotógrafos disponibles
     // useEffect(() => {
     //     const fetchEmployees = async () => {
     //         try {
@@ -68,7 +68,7 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({ bookingId, onBack,
     }, []);
 
 
-    // 🔹 Confirmar selección
+    // Confirmar selección
     const handleContinue = async () => {
         setLoading(true);
         setError(null);
