@@ -29,19 +29,19 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <div className="modal-tabs">
-                        <button 
+                        <button
                             className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
                             onClick={() => setActiveTab('info')}
                         >
                             Información
                         </button>
-                        <button 
+                        <button
                             className={`tab-button ${activeTab === 'reservas' ? 'active' : ''}`}
                             onClick={() => setActiveTab('reservas')}
                         >
                             Reservas
                         </button>
-                        <button 
+                        <button
                             className={`tab-button ${activeTab === 'historial' ? 'active' : ''}`}
                             onClick={() => setActiveTab('historial')}
                         >
@@ -143,7 +143,7 @@ const EmployeeAdmin: React.FC = () => {
     return (
         <HomeLayout>
             <div className="admin-root">
-                <header className="admin-head"> 
+                <header className="admin-head">
                     <div className="search-row">
                         <input
                             type="search"
@@ -157,7 +157,7 @@ const EmployeeAdmin: React.FC = () => {
                 </header>
             </div>
 
-            <div className="admin-content">  
+            <div className="admin-content">
                 <section className="admin-grid">
                     {loading ? (
                         <div style={{ gridColumn: "1/-1", textAlign: "center" }}>Cargando empleados...</div>
@@ -170,7 +170,7 @@ const EmployeeAdmin: React.FC = () => {
                                     <p className="muted">Correo: {u.email}</p>
                                     <p className="muted">Teléfono: {u.phone}</p>
                                     <p className="muted small">Documento: {u.document}</p>
-                                    <button 
+                                    <button
                                         className="ver-mas-btn"
                                         onClick={() => setSelectedUser(u)}
                                     >
@@ -208,18 +208,18 @@ const EmployeeAdmin: React.FC = () => {
                         &rarr;
                     </button>
                 </nav>
-
-                <footer className="admin-footer">
-                    <p>FotoLuna ©</p>
-                </footer>
             </div>
 
             {selectedUser && (
-                <UserModal 
-                    user={selectedUser} 
+                <UserModal
+                    user={selectedUser}
                     onClose={() => setSelectedUser(null)}
                 />
             )}
+
+            <footer className="admin-footer">
+                <p>FotoLuna ©</p>
+            </footer>
         </HomeLayout>
     );
 };

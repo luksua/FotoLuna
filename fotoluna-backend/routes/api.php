@@ -95,3 +95,5 @@ Route::post('/admin/employees', [RegisterEmployeeController::class, 'store']);
 Route::get('/admin/employees', [AdminUsersController::class, 'index']);
 
 Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
+
+Route::patch('/admin/employees/{id}', [AdminUsersController::class, 'update']);

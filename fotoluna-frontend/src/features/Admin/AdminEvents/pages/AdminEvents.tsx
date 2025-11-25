@@ -167,57 +167,81 @@ const AdminEvents: React.FC = () => {
                     <button className="btn btn-sm btn-info" onClick={() => handleAddNew("documentType")}>Agregar Documento</button>
                 </div>
                 <section className="mb-4">
-                    <h4>Eventos</h4>
-                    {filteredEvents.length === 0 ? <p>No hay eventos.</p> : (
-                        <ul className="list-group">
+                    <div className="section-header">
+                        <h4>Eventos</h4>
+                        <div>
+                            <button className="admin-events-btn edit" onClick={() => handleAddNew("event")}>Agregar Evento</button>
+                        </div>
+                    </div>
+                    {filteredEvents.length === 0 ? <p className="admin-events-no-results">No hay eventos.</p> : (
+                        <div className="card-grid">
                             {filteredEvents.map(e => (
-                                <li key={e.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>{e.nombre}</strong> — {e.descripcion} — {e.duracion} — ${e.precio}
+                                <div key={e.id} className={`admin-card ${e.estado ? '' : 'disabled'}`}>
+                                    <div className="card-title">{e.nombre}</div>
+                                    <div className="card-body">
+                                        <p className="muted">{e.descripcion}</p>
+                                        <p><strong>Duración:</strong> {e.duracion}</p>
+                                        <p><strong>Precio:</strong> ${e.precio}</p>
                                     </div>
-                                    <div>
-                                        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit("event", e)}>Editar</button>
-                                        <button className="btn btn-sm btn-outline-secondary" onClick={() => handleToggleStatus("event", e)}>{e.estado ? "Activo" : "Inactivo"}</button>
+                                    <div className="card-actions">
+                                        <button className="admin-events-btn edit" onClick={() => handleEdit('event', e)}>Editar</button>
+                                        <button className={`admin-events-btn toggle ${e.estado ? 'enabled' : 'disabled'}`} onClick={() => handleToggleStatus('event', e)}>{e.estado ? 'Activo' : 'Inactivo'}</button>
                                     </div>
-                                </li>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     )}
                 </section>
                 <section className="mb-4">
-                    <h4>Paquetes</h4>
-                    {filteredPackages.length === 0 ? <p>No hay paquetes.</p> : (
-                        <ul className="list-group">
+                    <div className="section-header">
+                        <h4>Paquetes</h4>
+                        <div>
+                            <button className="admin-events-btn edit" onClick={() => handleAddNew("package")}>Agregar Paquete</button>
+                        </div>
+                    </div>
+                    {filteredPackages.length === 0 ? <p className="admin-events-no-results">No hay paquetes.</p> : (
+                        <div className="card-grid">
                             {filteredPackages.map(p => (
-                                <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>{p.nombre}</strong> — {p.descripcion} — {p.cantidad_eventos} eventos — ${p.precio}
+                                <div key={p.id} className={`admin-card ${p.estado ? '' : 'disabled'}`}>
+                                    <div className="card-title">{p.nombre}</div>
+                                    <div className="card-body">
+                                        <p className="muted">{p.descripcion}</p>
+                                        <p><strong>Cantidad eventos:</strong> {p.cantidad_eventos}</p>
+                                        <p><strong>Precio:</strong> ${p.precio}</p>
                                     </div>
-                                    <div>
-                                        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit("package", p)}>Editar</button>
-                                        <button className="btn btn-sm btn-outline-secondary" onClick={() => handleToggleStatus("package", p)}>{p.estado ? "Activo" : "Inactivo"}</button>
+                                    <div className="card-actions">
+                                        <button className="admin-events-btn edit" onClick={() => handleEdit('package', p)}>Editar</button>
+                                        <button className={`admin-events-btn toggle ${p.estado ? 'enabled' : 'disabled'}`} onClick={() => handleToggleStatus('package', p)}>{p.estado ? 'Activo' : 'Inactivo'}</button>
                                     </div>
-                                </li>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     )}
                 </section>
                 <section className="mb-4">
-                    <h4>Tipos de Documento</h4>
-                    {filteredDocumentTypes.length === 0 ? <p>No hay tipos de documento.</p> : (
-                        <ul className="list-group">
+                    <div className="section-header">
+                        <h4>Tipos de Documento</h4>
+                        <div>
+                            <button className="admin-events-btn edit" onClick={() => handleAddNew("documentType")}>Agregar Documento</button>
+                        </div>
+                    </div>
+                    {filteredDocumentTypes.length === 0 ? <p className="admin-events-no-results">No hay tipos de documento.</p> : (
+                        <div className="card-grid">
                             {filteredDocumentTypes.map(d => (
-                                <li key={d.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>{d.nombre}</strong> — {d.descripcion} — Cant: {d.cantidad} — ${d.precio}
+                                <div key={d.id} className={`admin-card ${d.estado ? '' : 'disabled'}`}>
+                                    <div className="card-title">{d.nombre}</div>
+                                    <div className="card-body">
+                                        <p className="muted">{d.descripcion}</p>
+                                        <p><strong>Cantidad:</strong> {d.cantidad}</p>
+                                        <p><strong>Precio:</strong> ${d.precio}</p>
                                     </div>
-                                    <div>
-                                        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit("documentType", d)}>Editar</button>
-                                        <button className="btn btn-sm btn-outline-secondary" onClick={() => handleToggleStatus("documentType", d)}>{d.estado ? "Activo" : "Inactivo"}</button>
+                                    <div className="card-actions">
+                                        <button className="admin-events-btn edit" onClick={() => handleEdit('documentType', d)}>Editar</button>
+                                        <button className={`admin-events-btn toggle ${d.estado ? 'enabled' : 'disabled'}`} onClick={() => handleToggleStatus('documentType', d)}>{d.estado ? 'Activo' : 'Inactivo'}</button>
                                     </div>
-                                </li>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     )}
                 </section>
                 {/* Modal / Inline form para editar/crear */}

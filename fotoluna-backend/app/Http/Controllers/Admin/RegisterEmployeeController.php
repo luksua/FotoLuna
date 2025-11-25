@@ -22,7 +22,7 @@ class RegisterEmployeeController extends Controller
             'documentNumber' => 'required|string|max:255|unique:employees,documentNumber',
             'emailEmployee' => 'required|email|max:255|unique:employees,emailEmployee',
             'address' => 'required|string|max:255',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:6|confirmed',
             'employeeType' => 'required|in:Employee,Admin',
             'gender' => 'required|in:Female,Male,Other',
             'photoEmployee' => 'nullable|image|max:2048',

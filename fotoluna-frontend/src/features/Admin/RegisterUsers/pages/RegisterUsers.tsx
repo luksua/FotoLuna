@@ -14,6 +14,7 @@ const Register = () => {
         address: "",
         photoEmployee: null,
         password: "",
+        passwordConfirm: "",
         employeeType: "Employee",
         role: "Photographer",
         specialty: "",
@@ -21,6 +22,8 @@ const Register = () => {
         gender: "Female"
     });
     const [message, setMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target as HTMLInputElement;
@@ -39,6 +42,16 @@ const Register = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (form.password !== form.passwordConfirm) {
+            setMessage('Las contraseñas no coinciden.');
+            return;
+        }
+
+        if (form.password.length < 6) {
+            setMessage('La contraseña debe tener al menos 6 caracteres.');
+            return;
+        }
+
         try {
             const formData = new FormData();
             formData.append('firstNameEmployee', form.firstNameEmployee);
@@ -50,6 +63,7 @@ const Register = () => {
             formData.append('emailEmployee', form.emailEmployee);
             formData.append('address', form.address);
             formData.append('password', form.password);
+            formData.append('password_confirmation', form.passwordConfirm);
             formData.append('employeeType', form.employeeType);
             formData.append('role', form.role);
             formData.append('specialty', form.specialty);
@@ -85,6 +99,7 @@ const Register = () => {
                     address: '',
                     photoEmployee: null,
                     password: '',
+                    passwordConfirm: '',
                     employeeType: 'Employee',
                     role: 'Photographer',
                     specialty: '',
@@ -135,7 +150,90 @@ const Register = () => {
                         <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Contraseña:</label>
-                        <input type="password" name="password" value={form.password} onChange={handleChange} required className="register-input" />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                name="password" 
+                                value={form.password} 
+                                onChange={handleChange} 
+                                required 
+                                className="register-input"
+                                style={{ flex: 1, paddingRight: 40 }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{
+                                    position: 'absolute',
+                                    right: 12,
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 24,
+                                    height: 24,
+                                    color: '#7c5e8c'
+                                }}
+                            >
+                                {showPassword ? (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+
+                        <label>Confirmar Contraseña:</label>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input 
+                                type={showPasswordConfirm ? "text" : "password"} 
+                                name="passwordConfirm" 
+                                value={form.passwordConfirm} 
+                                onChange={handleChange} 
+                                required 
+                                className="register-input"
+                                style={{ flex: 1, paddingRight: 40 }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                                style={{
+                                    position: 'absolute',
+                                    right: 12,
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 24,
+                                    height: 24,
+                                    color: '#7c5e8c'
+                                }}
+                            >
+                                {showPasswordConfirm ? (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
 
                         <label>Foto:</label>
 

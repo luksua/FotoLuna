@@ -11,6 +11,18 @@ type Employee = {
     documento: string;
     correo: string;
     estado: boolean;
+    address?: string;
+    EPS?: string;
+};
+
+type EditFormData = {
+    firstNameEmployee: string;
+    lastNameEmployee: string;
+    phoneEmployee: string;
+    emailEmployee: string;
+    documentNumber: string;
+    address: string;
+    EPS: string;
 };
 
 const EmployeeCustomers = () => {
@@ -18,6 +30,17 @@ const EmployeeCustomers = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+    const [editForm, setEditForm] = useState<EditFormData>({
+        firstNameEmployee: '',
+        lastNameEmployee: '',
+        phoneEmployee: '',
+        emailEmployee: '',
+        documentNumber: '',
+        address: '',
+        EPS: '',
+    });
+    const [savingEdit, setSavingEdit] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -34,6 +57,8 @@ const EmployeeCustomers = () => {
                         documento: e.document || '',
                         correo: e.email || '',
                         estado: !!e.isAvailable,
+                        address: e.address || '',
+                        EPS: e.EPS || '',
                     }));
                     setEmployees(mapped);
                 } else {
@@ -79,6 +104,78 @@ const EmployeeCustomers = () => {
         }
     };
 
+    const openEditModal = (employee: Employee) => {
+        setSelectedEmployee(employee);
+        setEditForm({
+            firstNameEmployee: employee.nombre.split(' ')[0],
+            lastNameEmployee: employee.nombre.split(' ').slice(1).join(' '),
+            phoneEmployee: employee.telefono,
+            emailEmployee: employee.correo,
+            documentNumber: employee.documento,
+            address: employee.address || '',
+            EPS: employee.EPS || '',
+        });
+    };
+
+    const closeEditModal = () => {
+        setSelectedEmployee(null);
+        setEditForm({
+            firstNameEmployee: '',
+            lastNameEmployee: '',
+            phoneEmployee: '',
+            emailEmployee: '',
+            documentNumber: '',
+            address: '',
+            EPS: '',
+        });
+    };
+
+    const handleEditFormChange = (field: keyof EditFormData, value: string) => {
+        setEditForm(prev => ({ ...prev, [field]: value }));
+    };
+
+    const saveEditChanges = async () => {
+        if (!selectedEmployee) return;
+        setSavingEdit(true);
+
+        try {
+            const res = await fetch(`/api/admin/employees/${selectedEmployee.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(editForm)
+            });
+
+            if (!res.ok) throw new Error('No se pudo guardar los cambios');
+
+            const data = await res.json();
+            if (data && data.success) {
+                //////// Actualizar la lista con los nuevos datos
+                setEmployees(prev => prev.map(emp => 
+                    emp.id === selectedEmployee.id 
+                        ? {
+                            ...emp,
+                            nombre: editForm.firstNameEmployee + ' ' + editForm.lastNameEmployee,
+                            telefono: editForm.phoneEmployee,
+                            correo: editForm.emailEmployee,
+                            documento: editForm.documentNumber,
+                            address: editForm.address,
+                            EPS: editForm.EPS,
+                        }
+                        : emp
+                ));
+                setError(null);
+                closeEditModal();
+            }
+        } catch (err: any) {
+            setError(err.message || 'Error guardando cambios');
+        } finally {
+            setSavingEdit(false);
+        }
+    };
+
     return (
         <HomeLayout>
             <div className="employee-container">
@@ -99,11 +196,12 @@ const EmployeeCustomers = () => {
                                 <th>Documento</th>
                                 <th>Correo</th>
                                 <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20 }}>Cargando...</td></tr>
+                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: 20 }}>Cargando...</td></tr>
                             ) : filteredEmployees.length ? (
                                 filteredEmployees.map((employee) => (
                                     <tr key={employee.id}>
@@ -119,16 +217,169 @@ const EmployeeCustomers = () => {
                                                 {employee.estado ? 'Activo' : 'Inactivo'}
                                             </button>
                                         </td>
+                                        <td>
+                                            <button
+                                                onClick={() => openEditModal(employee)}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    backgroundColor: '#d1a3e2',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    fontWeight: '500'
+                                                }}
+                                            >
+                                                Editar
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20 }}>No se encontraron empleados.</td></tr>
+                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: 20 }}>No se encontraron empleados.</td></tr>
                             )}
                         </tbody>
                     </table>
                     
                 </div>
+                {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
             </div>
+
+            {/* Modal de edición */}
+            {selectedEmployee && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }} onClick={closeEditModal}>
+                    <div style={{
+                        backgroundColor: '#fff',
+                        borderRadius: '8px',
+                        padding: '24px',
+                        maxWidth: '500px',
+                        width: '90%',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <h2 style={{ marginTop: 0, marginBottom: 24 }}>Editar Empleado</h2>
+                        
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Nombre:</label>
+                            <input
+                                type="text"
+                                value={editForm.firstNameEmployee}
+                                onChange={(e) => handleEditFormChange('firstNameEmployee', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Apellido:</label>
+                            <input
+                                type="text"
+                                value={editForm.lastNameEmployee}
+                                onChange={(e) => handleEditFormChange('lastNameEmployee', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Teléfono:</label>
+                            <input
+                                type="text"
+                                value={editForm.phoneEmployee}
+                                onChange={(e) => handleEditFormChange('phoneEmployee', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Correo:</label>
+                            <input
+                                type="email"
+                                value={editForm.emailEmployee}
+                                onChange={(e) => handleEditFormChange('emailEmployee', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Documento:</label>
+                            <input
+                                type="text"
+                                value={editForm.documentNumber}
+                                onChange={(e) => handleEditFormChange('documentNumber', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Dirección:</label>
+                            <input
+                                type="text"
+                                value={editForm.address}
+                                onChange={(e) => handleEditFormChange('address', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: 24 }}>
+                            <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>EPS:</label>
+                            <input
+                                type="text"
+                                value={editForm.EPS}
+                                onChange={(e) => handleEditFormChange('EPS', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={closeEditModal}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: '#e0e0e0',
+                                    color: '#333',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontWeight: 500
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={saveEditChanges}
+                                disabled={savingEdit}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: '#d1a3e2',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: savingEdit ? 'not-allowed' : 'pointer',
+                                    fontWeight: 500,
+                                    opacity: savingEdit ? 0.6 : 1
+                                }}
+                            >
+                                {savingEdit ? 'Guardando...' : 'Guardar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <footer>
+                <p>FotoLuna &copy;  </p>
+            </footer>
+            
         </HomeLayout>
     );
 };
