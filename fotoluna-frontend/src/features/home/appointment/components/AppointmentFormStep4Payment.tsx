@@ -19,21 +19,22 @@ type OnlinePaymentMethod = "Card" | "PSE";
 interface Props {
   bookingId: number;
   total: number;
-  currency?: string; // "COP" si luego quieres mostrar
+  currency?: string;
   userEmail: string;
   onBack: () => void;
-  onSuccess: () => void;           // el padre pasa a paso 5, etc.
-  paymentMethod: OnlinePaymentMethod; // "Card" o "PSE"
+  onSuccess: () => void;
+  paymentMethod: OnlinePaymentMethod;
+  storagePlanId?: number | null;
 }
 
 const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
   bookingId,
   total,
-  // currency = "COP",
   userEmail,
   onBack,
   onSuccess,
   paymentMethod,
+  storagePlanId,
 }) => {
   const bricksContainerRef = useRef<HTMLDivElement | null>(null);
   const brickControllerRef = useRef<any | null>(null);
@@ -113,7 +114,6 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
               console.log("Payment Brick listo");
             },
 
-            // 👇 AQUÍ está la clave: devolvemos una Promesa y llamamos resolve/reject
             onSubmit: ({
               formData,
               selectedPaymentMethod,
@@ -151,6 +151,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       },
                       raw_form: formData,
                       client_payment_method: paymentMethod, // "Card" o "PSE"
+                      storage_plan_id: storagePlanId,
                     },
                     {
                       headers: {
@@ -162,16 +163,16 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
 
                   const { status, status_detail } = res.data;
 
-                  if (status === "approved") {
+                  if (status === "approved" || status === "in_process") {
                     onSuccess();
-                    resolve(); // 👉 le decimos al Brick que todo ok
+                    resolve();
                   } else {
                     setErrorMessage(
                       `Pago con estado: ${status}. ${status_detail ? `Detalle: ${status_detail}. ` : ""
                       }Verifica tu medio de pago o intenta nuevamente.`
                     );
                     setShowErrorModal(true);
-                    reject(); // 👉 el Brick sabe que falló, re-habilita el botón
+                    reject();
                   }
                 } catch (err: any) {
                   console.error("ERROR PAGO MP =>", err);
@@ -184,7 +185,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                   setErrorMessage(backendMessage);
                   setShowErrorModal(true);
 
-                  reject(err); // 👉 avisamos al Brick del error
+                  reject(err);
                 } finally {
                   // setLoading(false);
                 }
@@ -217,7 +218,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
         brickControllerRef.current = null;
       }
     };
-  }, [total, bookingId, userEmail, onSuccess, paymentMethod]);
+  }, [total, bookingId, userEmail, onSuccess, paymentMethod, storagePlanId]);
 
   // Si el monto no es válido o hubo error de montaje
   if (total == null || Number.isNaN(total) || total <= 0 || mountError) {
@@ -248,8 +249,6 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
             className="payment-brick-container"
           />
         </div>
-
-
 
         <PaymentErrorModal
           show={showErrorModal}

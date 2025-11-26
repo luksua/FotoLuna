@@ -1,4 +1,3 @@
-// components/appointments/AppointmentModal.tsx
 import React from "react";
 import type { CitaFormData } from "../Components/Types/types";
 
@@ -9,7 +8,9 @@ interface AppointmentModalProps {
     errors: { [key: string]: string };
     success: string;
     onChange: (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >
     ) => void;
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
@@ -45,24 +46,28 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     className="row g-3 needs-validation appointment-form"
                     onSubmit={onSubmit}
                 >
+                    {/* Cliente (solo lectura al editar) */}
                     <div className="col-mb-4">
                         <label htmlFor="client" className="form-label col-lg-3">
                             Cliente:
                         </label>
                         <input
-                            type="text"
                             className="col-lg-9 form-control-s"
-                            placeholder="Nombre del cliente"
+                            type="text"
                             name="client"
                             value={form.client}
                             onChange={onChange}
                             required
+                            disabled={isEditing}
                         />
                         {errors.client && (
-                            <div className="text-danger small">{errors.client}</div>
+                            <div className="text-danger small">
+                                {errors.client}
+                            </div>
                         )}
                     </div>
 
+                    {/* Fecha */}
                     <div className="col-mb-4">
                         <label htmlFor="date" className="form-label col-lg-3">
                             Fecha:
@@ -76,12 +81,18 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             required
                         />
                         {errors.date && (
-                            <div className="text-danger small">{errors.date}</div>
+                            <div className="text-danger small">
+                                {errors.date}
+                            </div>
                         )}
                     </div>
 
+                    {/* Hora inicio */}
                     <div className="col-mb-4">
-                        <label htmlFor="startTime" className="form-label col-lg-3">
+                        <label
+                            htmlFor="startTime"
+                            className="form-label col-lg-3"
+                        >
                             Hora de Inicio:
                         </label>
                         <input
@@ -93,30 +104,19 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             required
                         />
                         {errors.startTime && (
-                            <div className="text-danger small">{errors.startTime}</div>
+                            <div className="text-danger small">
+                                {errors.startTime}
+                            </div>
                         )}
                     </div>
 
-                    <div className="col-mb-4">
-                        <label htmlFor="endTime" className="form-label col-lg-3">
-                            Hora de Fin:
-                        </label>
-                        <input
-                            className="col-lg-9 form-control-s"
-                            type="time"
-                            name="endTime"
-                            value={form.endTime}
-                            onChange={onChange}
-                            required
-                        />
-                        {errors.endTime && (
-                            <div className="text-danger small">{errors.endTime}</div>
-                        )}
-                    </div>
-
+                    {/* Estado solo al editar */}
                     {isEditing && (
                         <div className="col-mb-4">
-                            <label htmlFor="status" className="form-label col-lg-3">
+                            <label
+                                htmlFor="status"
+                                className="form-label col-lg-3"
+                            >
                                 Estado
                             </label>
                             <select
@@ -133,8 +133,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         </div>
                     )}
 
+                    {/* Localización */}
                     <div className="col-mb-4">
-                        <label htmlFor="location" className="form-label col-lg-3">
+                        <label
+                            htmlFor="location"
+                            className="form-label col-lg-3"
+                        >
                             Localización
                         </label>
                         <input
@@ -146,10 +150,13 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             required
                         />
                         {errors.location && (
-                            <div className="text-danger small">{errors.location}</div>
+                            <div className="text-danger small">
+                                {errors.location}
+                            </div>
                         )}
                     </div>
 
+                    {/* Notas */}
                     <div className="col-mb-4">
                         <label htmlFor="notes" className="form-label col-lg-3">
                             Notas
@@ -164,6 +171,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         />
                     </div>
 
+                    {/* Botones */}
                     <div className="appointment-form-buttons">
                         <button type="submit" className="accept-btn">
                             <i className="fas fa-save me-1" />

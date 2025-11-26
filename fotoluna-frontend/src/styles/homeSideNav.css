@@ -15,11 +15,58 @@
     color: #aaa;
 }
 
-.bi-person-circle{
+.bi-person-circle {
     vertical-align: middle;
     margin-bottom: 8px;
 }
 
 .text-start {
     font-size: 25px;
+}
+
+.offcanvas-custom {
+    position: fixed;
+}
+
+/* Botón de cerrar del sidebar */
+.sidebar-close-btn {
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    width: 32px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #111827;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.sidebar-close-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+}
+
+/* Botón menú mobile */
+.menu-toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-toggle-btn i {
+    color: #4a3f64; /* combínalo con tu paleta */
+}
+
+/* Ocultar contenedor .menu en escritorio por seguridad extra (ya tiene d-lg-none) */
+@media (min-width: 992px) {
+    .menu {
+        display: none;
+    }
 }

@@ -1,4 +1,3 @@
-// components/appointments/AppointmentDetails.tsx
 import React, { useMemo, useState } from "react";
 import type { Cita } from "../Components/Types/types";
 
@@ -42,10 +41,10 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 
     const formattedTitleDate = titleDate
         ? titleDate.toLocaleDateString("es-ES", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-          })
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        })
         : "Selecciona una fecha";
 
     const filteredCitas = useMemo(() => {
@@ -63,12 +62,12 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
     const totalTexto = isEmptyForDay
         ? "No hay citas para este día."
         : citasDelDia.length === 1
-        ? "1 cita reservada para este día."
-        : `${citasDelDia.length} citas reservadas para este día.`;
+            ? "1 cita reservada para este día."
+            : `${citasDelDia.length} citas reservadas para este día.`;
 
     return (
         <div className="appointment-details">
-            {/* Header tipo “Citas para …” + botón nueva */}
+            {/* Header + botón nueva cita */}
             <div className="appointments-panel-header">
                 <div>
                     <h3 className="appointments-panel-title">
@@ -85,24 +84,30 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 
             {/* Filtros por estado */}
             <div className="appointments-filters">
-                {(["Todas", "Pendiente", "Confirmada", "Cancelada", "Completada"] as StatusFilter[]).map(
-                    (value) => (
-                        <button
-                            key={value}
-                            type="button"
-                            className={
-                                "appointments-filter-chip" +
-                                (statusFilter === value ? " active" : "")
-                            }
-                            onClick={() => setStatusFilter(value)}
-                        >
-                            {value === "Todas" ? "Todas" : value}
-                        </button>
-                    )
-                )}
+                {(
+                    [
+                        "Todas",
+                        "Pendiente",
+                        "Confirmada",
+                        "Cancelada",
+                        "Completada",
+                    ] as StatusFilter[]
+                ).map((value) => (
+                    <button
+                        key={value}
+                        type="button"
+                        className={
+                            "appointments-filter-chip" +
+                            (statusFilter === value ? " active" : "")
+                        }
+                        onClick={() => setStatusFilter(value)}
+                    >
+                        {value === "Todas" ? "Todas" : value}
+                    </button>
+                ))}
             </div>
 
-            {/* Lista de citas filtradas */}
+            {/* Lista de citas */}
             <div className="appointments-list">
                 {filteredCitas.map((cita, index) => {
                     const key = getCitaKey(cita, index);
@@ -137,14 +142,13 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                                 <div className="appointment-card-title">
                                     {cita.client}
                                 </div>
-                                <div className="appointment-card-subtitle">
-                                    {cita.location || "Sin ubicación"}
-                                </div>
                             </div>
 
                             {/* hora */}
                             <div className="appointment-card-time">
-                                {cita.startTime} - {cita.endTime}
+                                {cita.endTime
+                                    ? `${cita.startTime} - ${cita.endTime}`
+                                    : cita.startTime}
                             </div>
 
                             {/* editar */}
@@ -159,13 +163,66 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                                 <i className="bi bi-pencil-square" />
                             </button>
 
-                            {/* bloque expandido */}
+                            {/* detalles expandido */}
                             <div className="appointment-card-body">
+                                {cita.client && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Cliente:</strong> {cita.client}
+                                    </p>
+                                )}
+
+                                {cita.document && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Documento:</strong>{" "}
+                                        {cita.document}
+                                    </p>
+                                )}
+
+                                {cita.email && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Correo:</strong> {cita.email}
+                                    </p>
+                                )}
+
+                                {cita.phone && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Teléfono:</strong> {cita.phone}
+                                    </p>
+                                )}
+
+                                {cita.eventName && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Evento:</strong>{" "}
+                                        {cita.eventName}
+                                    </p>
+                                )}
+
+                                {cita.packageName && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Paquete:</strong>{" "}
+                                        {cita.packageName}
+                                    </p>
+                                )}
+
+                                {cita.location && (
+                                    <p className="appointment-card-body-meta">
+                                        <strong>Dirección:</strong>{" "}
+                                        {cita.location}
+                                    </p>
+                                )}
+
+                                <p className="appointment-card-body-meta">
+                                    <strong>Horario:</strong>{" "}
+                                    {cita.startTime}{" "}
+                                    {cita.endTime ? `- ${cita.endTime}` : ""}
+                                </p>
+
                                 {cita.notes && (
                                     <p className="appointment-card-body-text">
                                         <strong>Notas:</strong> {cita.notes}
                                     </p>
                                 )}
+
                                 <p className="appointment-card-body-meta">
                                     <strong>Estado:</strong>{" "}
                                     <span className="badge bg-light text-dark">

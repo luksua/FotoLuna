@@ -528,4 +528,14 @@
     background: #fce7f5;
     border-color: #f3b3d4;
     color: #c23c82;
+    
+}
+.appointment-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ff4fb3; /* color normal */
+}
+.appointment-dot.cancelada {
+  background-color: #ff4d4f; /* rojo para canceladas */
 }

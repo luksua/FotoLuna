@@ -1,8 +1,38 @@
 import { useState, useEffect } from 'react';
 import "../styles/home.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useLocation } from 'react-router-dom';
+
+const SCROLL_NAVBAR_HEIGHT = 80;
+
+const scrollToHash = (hash: string) => {
+    if (!hash) return;
+    const id = hash.startsWith("#") ? hash.slice(1) : hash;
+    const el = document.getElementById(id);
+    if (el) {
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - SCROLL_NAVBAR_HEIGHT;
+        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+    } else {
+        let attempts = 0;
+        const maxAttempts = 10;
+        const interval = setInterval(() => {
+            attempts++;
+            const el2 = document.getElementById(id);
+            if (el2) {
+                clearInterval(interval);
+                const elementPosition = el2.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - SCROLL_NAVBAR_HEIGHT;
+                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+            }
+        }, 150);
+    }
+};
 
 const Home = () => {
+    const location = useLocation();
     const images = [
         {
             src: "img/maternidad.jpg",
@@ -44,7 +74,7 @@ const Home = () => {
             alt: "Documento",
             title: "Documento",
             description: "La belleza de nuestras tradiciones",
-            sectionId: "document"
+            sectionId: "documents"
         },
         {
             src: "img/folclor.jpg",
@@ -148,6 +178,22 @@ const Home = () => {
 
     const handleMouseEnter = () => setAutoplay(false);
     const handleMouseLeave = () => setAutoplay(true);
+
+    useEffect(() => {
+        // 1) Si viene un hash, hacer scroll
+        if (location.hash) {
+            // Pequeño timeout para asegurar montaje; si tus secciones ya están montadas puede no ser necesario
+            setTimeout(() => scrollToHash(location.hash), 50);
+            return;
+        }
+
+        // 2) Soporte para ?section=birthday
+        const params = new URLSearchParams(location.search);
+        const section = params.get("section");
+        if (section) {
+            setTimeout(() => scrollToHash(`#${section}`), 50);
+        }
+    }, [location]);
 
     return (
         <div className="container-fluid">

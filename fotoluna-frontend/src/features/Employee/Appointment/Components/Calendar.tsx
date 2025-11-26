@@ -1,4 +1,3 @@
-// components/appointments/Calendar.tsx
 import React from "react";
 import type { Cita } from "../Components/Types/types";
 
@@ -15,14 +14,14 @@ interface CalendarProps {
 
 const WEEK_DAYS = ["LUN", "MAR", "MIE", "JUE", "VIE", "SÁB", "DOM"];
 
-// Función corregida para generar días del calendario
+// Genera los días que se muestran en el calendario (6 semanas)
 const getCalendarDays = (month: Date): Date[] => {
     const year = month.getFullYear();
     const m = month.getMonth();
     const firstOfMonth = new Date(year, m, 1);
     const lastOfMonth = new Date(year, m + 1, 0);
 
-    // Ajuste para que la semana empiece en Lunes (0 = Lunes, 6 = Domingo)
+    // Semana empezando en lunes
     const firstWeekDay = (firstOfMonth.getDay() + 6) % 7;
 
     const days: Date[] = [];
@@ -39,8 +38,8 @@ const getCalendarDays = (month: Date): Date[] => {
         days.push(new Date(year, m, d));
     }
 
-    // Días del siguiente mes para completar 6 semanas (42 días)
-    const totalCells = 42; // 6 semanas * 7 días
+    // Días del siguiente mes hasta completar 42 celdas
+    const totalCells = 42;
     while (days.length < totalCells) {
         const last = days[days.length - 1];
         const next = new Date(last);
@@ -71,7 +70,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
     return (
         <div className="custom-calendar">
-            {/* Header del calendario */}
+            {/* Header */}
             <div className="calendar-header">
                 <button
                     className="btn"
@@ -102,7 +101,7 @@ const Calendar: React.FC<CalendarProps> = ({
                 ))}
             </div>
 
-            {/* Grid del calendario - CORREGIDO */}
+            {/* Grid */}
             <div className="calendar-grid">
                 {calendarDays.map((date, index) => {
                     const citasDelDia = getCitasDelDia(date);
@@ -112,7 +111,9 @@ const Calendar: React.FC<CalendarProps> = ({
                         date.getMonth() === selectedDate.getMonth() &&
                         date.getFullYear() === selectedDate.getFullYear();
 
-                    const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+                    const isCurrentMonth =
+                        date.getMonth() === currentMonth.getMonth();
+
                     const today = new Date();
                     const isToday =
                         date.getDate() === today.getDate() &&
@@ -122,11 +123,14 @@ const Calendar: React.FC<CalendarProps> = ({
                     return (
                         <div
                             key={`${date.toISOString()}-${index}`}
-                            className={`day-column ${isSelected ? "selected" : ""} ${!isCurrentMonth ? "other-month" : ""
-                                } ${isToday ? "today" : ""}`}
+                            className={`day-column ${isSelected ? "selected" : ""
+                                } ${!isCurrentMonth ? "other-month" : ""} ${isToday ? "today" : ""
+                                }`}
                             onClick={() => onDayClick(date)}
                         >
                             <div className="day-number">{date.getDate()}</div>
+
+                            {/* Puntos por cita (color según estado) */}
                             <div className="appointment-dots">
                                 {citasDelDia.map((cita) => (
                                     <div

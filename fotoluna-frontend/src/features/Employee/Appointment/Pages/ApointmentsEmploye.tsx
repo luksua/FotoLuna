@@ -1,5 +1,5 @@
-// ApointmentsEmploye.tsx
-import React, { useMemo, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useMemo, useState } from "react";
 import "react-calendar/dist/Calendar.css";
 import "../Styles/apo.css";
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
@@ -7,7 +7,8 @@ import Calendar from "../Components/Calendar";
 import AppointmentDetails from "../Components/ApointmentsDetails";
 import AppointmentModal from "../Components/ApointmentsModal";
 
-import type { Cita, CitaFormData } from "../Components/Types/types";
+import type { Cita, CitaFormData, CitaStatus } from "../Components/Types/types";
+import api from "../../../../lib/api";
 
 // Utilidad para comparar si dos fechas caen en el mismo día (ignorando hora)
 const isSameDay = (a: Date, b: Date): boolean => {
@@ -33,8 +34,48 @@ const createId = () =>
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+// Corrige el tema de zonas horarias y soporta null / "YYYY-MM-DD HH:MM:SS"
+const parseYMDToLocalDate = (raw: unknown): Date => {
+    if (typeof raw !== "string" || raw.trim() === "") {
+        console.warn("Fecha inválida en cita del backend:", raw);
+        return new Date();
+    }
+
+    const [ymd] = raw.split(" ");
+
+    const parts = ymd.split("-");
+    if (parts.length !== 3) {
+        console.warn("Formato de fecha inesperado en cita del backend:", raw);
+        return new Date();
+    }
+
+    const [yearStr, monthStr, dayStr] = parts;
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10) - 1; // JS: 0 = enero
+    const day = parseInt(dayStr, 10);
+
+    if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+        console.warn("No se pudo parsear la fecha de la cita:", raw);
+        return new Date();
+    }
+
+    return new Date(year, month, day);
+};
+
+// Mapea el status del backend al tipo CitaStatus (en español)
+const mapStatus = (status?: string | null): CitaStatus => {
+    const s = (status ?? "").toLowerCase();
+    if (s.startsWith("confirm")) return "Confirmada";
+    if (s.startsWith("cancel")) return "Cancelada";
+    if (s.startsWith("complet")) return "Completada";
+    return "Pendiente";
+};
+
 const EmployeeAppointments: React.FC = () => {
     const today = new Date();
+
+    // Por ahora fijo (el que usaste en Thunder); luego se puede sacar del usuario logueado
+    const EMPLOYEE_ID = 1;
 
     const [citas, setCitas] = useState<Cita[]>([]);
     const [currentMonth, setCurrentMonth] = useState<Date>(today);
@@ -56,6 +97,62 @@ const EmployeeAppointments: React.FC = () => {
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [success, setSuccess] = useState("");
 
+    // ================== CARGAR CITAS DEL BACKEND ==================
+    useEffect(() => {
+        const fetchEmployeeAppointments = async () => {
+            try {
+                const res = await api.get(
+                    `/api/employee/${EMPLOYEE_ID}/appointments`
+                );
+
+                console.log("RES EMPLOYEE APPOINTMENTS", res.data);
+
+                const data = Array.isArray(res.data)
+                    ? res.data
+                    : res.data.data ?? [];
+
+                const citasFromApi: Cita[] = data.map((row: any) => ({
+                    // id solo para React (key)
+                    id: String(row.appointmentId ?? row.bookingId),
+                    // este es el que usa el PUT
+                    appointmentId: Number(row.appointmentId),
+                    date: parseYMDToLocalDate(row.date),
+                    startTime: row.startTime,
+                    endTime: row.endTime ?? "",
+                    client: row.clientName ?? "",
+                    status: mapStatus(row.status),
+                    location: row.place ?? "",
+                    notes: row.comment ?? "",
+                    document: row.clientDocument ?? "",
+                    email: row.clientEmail ?? "",
+                    phone: row.clientPhone ?? "",
+                    eventName: row.eventName ?? "",
+                    packageName: row.packageName ?? "",
+                }));
+
+                console.log("CITAS MAPEADAS", citasFromApi);
+
+                setCitas(citasFromApi);
+
+                if (citasFromApi.length > 0) {
+                    const hoy = new Date();
+                    const hoyCitas = citasFromApi.filter((c) =>
+                        isSameDay(c.date, hoy)
+                    );
+                    if (hoyCitas.length > 0) {
+                        setSelectedDate(hoy);
+                        setSelectedCita(hoyCitas[0]);
+                    }
+                }
+            } catch (error) {
+                console.error("Error cargando citas del empleado", error);
+            }
+        };
+
+        fetchEmployeeAppointments();
+    }, [EMPLOYEE_ID]);
+    // ================================================================
+
     // Citas del día seleccionado, ordenadas por hora
     const citasDelDia = useMemo(() => {
         if (!selectedDate) return [];
@@ -76,20 +173,20 @@ const EmployeeAppointments: React.FC = () => {
         });
     };
 
-    // Cuando se hace clic en un día del calendario
+    // Click en un día del calendario
     const handleDayClick = (date: Date) => {
         setSelectedDate(date);
         const delDia = citas.filter((c) => isSameDay(c.date, date));
         setSelectedCita(delDia[0] ?? null);
     };
 
-    // Cuando se hace clic en una bolita de cita dentro del día
+    // Click en un punto de cita del calendario
     const handleDotClick = (cita: Cita) => {
         setSelectedDate(cita.date);
         setSelectedCita(cita);
     };
 
-    // Abrir modal para nueva cita
+    // Nueva cita (solo en memoria de momento)
     const handleNewClick = () => {
         const baseDate = selectedDate ?? new Date();
         setIsEditing(false);
@@ -108,7 +205,6 @@ const EmployeeAppointments: React.FC = () => {
         setShowModal(true);
     };
 
-    // Cuando se selecciona una tarjeta en el panel derecho
     const handleSelectCita = (cita: Cita) => {
         setSelectedCita(cita);
     };
@@ -160,31 +256,41 @@ const EmployeeAppointments: React.FC = () => {
         if (!form.startTime) {
             newErrors.startTime = "La hora de inicio es obligatoria";
         }
-        if (!form.endTime) {
-            newErrors.endTime = "La hora de fin es obligatoria";
-        }
 
         const startMinutes = timeToMinutes(form.startTime);
-        const endMinutes = timeToMinutes(form.endTime);
-        if (!Number.isNaN(startMinutes) && !Number.isNaN(endMinutes)) {
+        const hasEndTime = !!form.endTime;
+        const endMinutes = hasEndTime ? timeToMinutes(form.endTime) : NaN;
+
+        // Solo validamos orden si hay hora fin
+        if (
+            hasEndTime &&
+            !Number.isNaN(startMinutes) &&
+            !Number.isNaN(endMinutes)
+        ) {
             if (endMinutes <= startMinutes) {
                 newErrors.endTime =
                     "La hora de fin debe ser mayor que la de inicio";
             }
         }
 
-        // Validar solapamientos con otras citas del mismo día
-        if (form.date && !Number.isNaN(startMinutes) && !Number.isNaN(endMinutes)) {
-            const dateObj = new Date(form.date);
+        // Validar solapamientos SOLO si hay hora de fin
+        if (
+            hasEndTime &&
+            form.date &&
+            !Number.isNaN(startMinutes) &&
+            !Number.isNaN(endMinutes)
+        ) {
+            const dateObj = parseYMDToLocalDate(form.date);
+
             const overlapping = citas.some((cita) => {
                 if (!isSameDay(cita.date, dateObj)) return false;
-                // si estamos editando, ignoramos la misma cita
                 if (isEditing && selectedCita && cita.id === selectedCita.id)
                     return false;
 
                 const cStart = timeToMinutes(cita.startTime);
                 const cEnd = timeToMinutes(cita.endTime);
-                // hay solapamiento si: inicio < fin existente y fin > inicio existente
+                if (Number.isNaN(cStart) || Number.isNaN(cEnd)) return false;
+
                 return startMinutes < cEnd && endMinutes > cStart;
             });
 
@@ -201,7 +307,8 @@ const EmployeeAppointments: React.FC = () => {
         return newErrors;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Guardar (editar o crear)
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const validationErrors = validate();
@@ -211,44 +318,86 @@ const EmployeeAppointments: React.FC = () => {
             return;
         }
 
-        const dateObj = new Date(form.date);
+        const dateObj = parseYMDToLocalDate(form.date);
 
+        // EDITAR cita existente
         if (isEditing && selectedCita) {
-            // Editar cita existente
-            const citaActualizada: Cita = {
-                ...selectedCita,
-                date: dateObj,
-                startTime: form.startTime,
-                endTime: form.endTime,
-                client: form.client.trim(),
-                status: form.status,
-                location: form.location.trim(),
-                notes: form.notes?.trim() || "",
-            };
+            try {
+                const payload = {
+                    appointmentDate: form.date, // "YYYY-MM-DD"
+                    appointmentTime: form.startTime,
+                    place: form.location || null,
+                    comment: form.notes || null,
+                    appointmentStatus:
+                        form.status === "Confirmada"
+                            ? "Scheduled"
+                            : form.status === "Completada"
+                                ? "Completed"
+                                : form.status === "Cancelada"
+                                    ? "Cancelled"
+                                    : "Pending confirmation",
+                };
 
-            setCitas((prev) =>
-                prev.map((c) => (c.id === selectedCita.id ? citaActualizada : c))
-            );
-            setSelectedCita(citaActualizada);
-            setSuccess("Cita actualizada correctamente");
-        } else {
-            // Crear nueva cita
-            const nuevaCita: Cita = {
-                id: createId(),
-                date: dateObj,
-                startTime: form.startTime,
-                endTime: form.endTime,
-                client: form.client.trim(),
-                status: form.status,
-                location: form.location.trim(),
-                notes: form.notes?.trim() || "",
-            };
-            setCitas((prev) => [...prev, nuevaCita]);
-            setSelectedCita(nuevaCita);
-            setSuccess("Cita registrada correctamente");
+                const res = await api.put(
+                    `/api/employee/appointments/${selectedCita.appointmentId}`,
+                    payload
+                );
+
+                const updated = res.data?.appointment ?? {};
+
+                const citaActualizada: Cita = {
+                    ...selectedCita,
+                    date: parseYMDToLocalDate(
+                        updated.appointmentDate ?? form.date
+                    ),
+                    startTime: updated.appointmentTime ?? form.startTime,
+                    endTime: selectedCita.endTime,
+                    location: updated.place ?? form.location,
+                    notes: updated.comment ?? form.notes,
+                    status: form.status,
+                };
+
+                setCitas((prev) =>
+                    prev.map((c) =>
+                        c.appointmentId === selectedCita.appointmentId
+                            ? citaActualizada
+                            : c
+                    )
+                );
+
+                setSelectedCita(citaActualizada);
+                setSelectedDate(dateObj);
+                setSuccess("Cita actualizada correctamente");
+                setShowModal(false);
+            } catch (err: any) {
+                console.error("Error actualizando cita del empleado", err);
+                setErrors({
+                    general:
+                        err?.response?.data?.message ||
+                        "Error al actualizar la cita",
+                });
+            }
+
+            return;
         }
 
+        // CREAR cita nueva (solo en memoria por ahora)
+        const nuevaCita: Cita = {
+            id: createId(),
+            appointmentId: Date.now(),
+            date: dateObj,
+            startTime: form.startTime,
+            endTime: form.endTime,
+            client: form.client.trim(),
+            status: form.status,
+            location: form.location.trim(),
+            notes: form.notes?.trim() || "",
+        };
+
+        setCitas((prev) => [...prev, nuevaCita]);
+        setSelectedCita(nuevaCita);
         setSelectedDate(dateObj);
+        setSuccess("Cita registrada correctamente");
         setShowModal(false);
     };
 
@@ -276,7 +425,7 @@ const EmployeeAppointments: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Panel de detalles / lista de citas */}
+                        {/* Panel derecho */}
                         <div className="col-12 col-lg-4">
                             <div className="card shadow-sm border-0 p-3 h-100">
                                 <AppointmentDetails
@@ -291,7 +440,7 @@ const EmployeeAppointments: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Modal de creación / edición */}
+                    {/* Modal */}
                     <AppointmentModal
                         show={showModal}
                         isEditing={isEditing}
