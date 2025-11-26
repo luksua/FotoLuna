@@ -22,6 +22,7 @@ const Register = () => {
         gender: "Female"
     });
     const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState<"success" | "error" | "">("");
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -44,11 +45,13 @@ const Register = () => {
 
         if (form.password !== form.passwordConfirm) {
             setMessage('Las contraseñas no coinciden.');
+            setMessageType('error');
             return;
         }
 
         if (form.password.length < 8) {
             setMessage('La contraseña debe tener al menos 8 caracteres.');
+            setMessageType('error');
             return;
         }
 
@@ -79,15 +82,25 @@ const Register = () => {
                 body: formData,
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                const err = await res.json().catch(() => ({ message: 'Error desconocido' }));
-                setMessage(`Error: ${err.message || 'No se pudo registrar'}.`);
+                // Manejar errores de validación
+                if (data.errors) {
+                    const errorMessages = Object.values(data.errors)
+                        .map((msgs: any) => Array.isArray(msgs) ? msgs[0] : msgs)
+                        .join('\n');
+                    setMessage(errorMessages);
+                } else {
+                    setMessage(data.message || 'No se pudo registrar el usuario.');
+                }
+                setMessageType('error');
                 return;
             }
 
-            const data = await res.json();
             if (data && data.success) {
                 setMessage('Usuario registrado correctamente');
+                setMessageType('success');
                 setForm({
                     firstNameEmployee: '',
                     lastNameEmployee: '',
@@ -107,10 +120,12 @@ const Register = () => {
                     gender: 'Female'
                 });
             } else {
-                setMessage('No se pudo registrar el usuario');
+                setMessage(data.message || 'No se pudo registrar el usuario');
+                setMessageType('error');
             }
         } catch (error: any) {
             setMessage(error?.message || 'Error en la petición');
+            setMessageType('error');
         }
     };
 
@@ -260,7 +275,7 @@ const Register = () => {
                         </button>
                     </div>
                 </form>
-                {message && <p className="register-message">{message}</p>}
+                {message && <p className={`register-message ${messageType}`}>{message}</p>}
             </div>
 
             <footer>

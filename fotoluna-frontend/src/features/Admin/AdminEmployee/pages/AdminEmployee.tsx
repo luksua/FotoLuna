@@ -31,6 +31,7 @@ const EmployeeCustomers = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
     const [editForm, setEditForm] = useState<EditFormData>({
         firstNameEmployee: '',
         lastNameEmployee: '',
@@ -42,6 +43,8 @@ const EmployeeCustomers = () => {
     });
     const [savingEdit, setSavingEdit] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    
+    const itemsPerPage = 10;
 
     useEffect(() => {
         let mounted = true;
@@ -78,6 +81,18 @@ const EmployeeCustomers = () => {
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
     );
+
+    //////////////////// Paginación
+    const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+    // Resetear a página 1 cuando se busca
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+    };
 
     const toggleAvailability = async (empId: number) => {
         setEmployees(prev => prev.map(emp => emp.id === empId ? { ...emp, estado: !emp.estado } : emp));
@@ -187,7 +202,7 @@ const EmployeeCustomers = () => {
                     <input type="text"
                         placeholder="Buscar empleados..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}/>
+                        onChange={(e) => handleSearchChange(e.target.value)}/>
                 </div>
 
                 {showSuccessAlert && (
@@ -213,8 +228,8 @@ const EmployeeCustomers = () => {
                         <tbody>
                             {loading ? (
                                 <tr><td colSpan={6} style={{ textAlign: 'center', padding: 20 }}>Cargando...</td></tr>
-                            ) : filteredEmployees.length ? (
-                                filteredEmployees.map((employee) => (
+                            ) : paginatedEmployees.length ? (
+                                paginatedEmployees.map((employee) => (
                                     <tr key={employee.id}>
                                         <td>{employee.nombre}</td>
                                         <td>{employee.telefono}</td>
@@ -253,6 +268,30 @@ const EmployeeCustomers = () => {
                         </tbody>
                     </table>
                     
+                    {/* Controles de paginación */}
+                    {totalPages > 1 && (
+                        <div className="pagination-controls">
+                            <button 
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="pagination-btn"
+                            >
+                                ← Anterior
+                            </button>
+                            
+                            <div className="pagination-info">
+                                Página {currentPage} de {totalPages}
+                            </div>
+                            
+                            <button 
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="pagination-btn"
+                            >
+                                Siguiente →
+                            </button>
+                        </div>
+                    )}
                 </div>
                 {error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
             </div>
