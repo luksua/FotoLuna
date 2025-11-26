@@ -15,10 +15,12 @@ type DocumentType = {
 
 type Installment = {
     id: number;
-    due_date: string;
     amount: number;
+    due_date: string;
     paid: boolean;
     paid_at?: string | null;
+    receipt_path?: string | null;
+    is_overdue?: boolean;
 };
 
 type Payment = {
@@ -56,6 +58,8 @@ const Apointment: React.FC = () => {
     const [paymentBookingId, setPaymentBookingId] = useState<number | null>(null);
     const [paymentTotal, setPaymentTotal] = useState<number | null>(null);
     const [paymentEmail, setPaymentEmail] = useState<string>("");
+
+    const [paymentInstallmentId, setPaymentInstallmentId] = useState<number | null>(null);
 
     // Helper token
     const getAuthHeaders = () => {
@@ -175,18 +179,35 @@ const Apointment: React.FC = () => {
     };
 
     // Abre el modal de pago (brick MP)
-    const openPaymentFor = (a: Appointment) => {
+    const openPaymentFor = (a: Appointment, installment?: Installment) => {
         if (!a.payment) {
             alert("No hay información de pago asociada a esta cita.");
             return;
         }
-        setPaymentBookingId(a.id);
-        setPaymentTotal(a.payment.total);
 
-        const email = a.payment.payer?.email || localStorage.getItem("user_email") || "";
+        // ID de la reserva
+        setPaymentBookingId(a.id);
+
+        if (installment) {
+            // 🟦 Pago de cuota específica
+            setPaymentTotal(installment.amount);
+            setPaymentInstallmentId(installment.id);
+        } else {
+            // 🟩 Pago del saldo completo
+            const pending = calcPending(a.payment);
+            setPaymentTotal(pending);
+            setPaymentInstallmentId(null); // 👈 importante: NO cuota específica
+        }
+
+        const email =
+            a.payment.payer?.email ||
+            localStorage.getItem("user_email") ||
+            "";
+
         setPaymentEmail(email);
         setShowPaymentModal(true);
     };
+
 
     const closePaymentModal = () => {
         setShowPaymentModal(false);
@@ -212,11 +233,11 @@ const Apointment: React.FC = () => {
 
         return (
             <div className="custom-modal-overlay" role="dialog" aria-modal="true">
-                <div className="custom-modal">
+                <div className="custom-modal bg-custom-2">
                     <div className="modal-header">
                         <div>
                             <h5 className="modal-title">
-                                Historial de Pagos y cuotas — {active.event_type}
+                                Historial de Pagos y cuotas
                             </h5>
                             {/* línea pequeña de contexto, opcional */}
                             <small className="text-muted">
@@ -339,6 +360,20 @@ const Apointment: React.FC = () => {
 
                                                             {/* Recibo por cuota (luego lo conectas a tu endpoint) */}
                                                             <td>
+                                                                {ins.receipt_path ? (
+                                                                    <a
+                                                                        href={`${API_BASE}/api/appointments/${active.id}/installments/${ins.id}/receipt`}
+                                                                        className="btn btn-sm custom2-upload-btn"
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                    >
+                                                                        Recibo
+                                                                    </a>
+                                                                ) : (
+                                                                    <span className="text-muted small">No disponible</span>
+                                                                )}
+                                                            </td>
+                                                            {/* <td>
                                                                 <Button
                                                                     className="btn btn-sm custom2-upload-btn"
                                                                     onClick={() =>
@@ -349,16 +384,14 @@ const Apointment: React.FC = () => {
                                                                 >
                                                                     Recibo
                                                                 </Button>
-                                                            </td>
+                                                            </td> */}
 
                                                             {/* Pagar esa cuota */}
                                                             <td className="text-end">
                                                                 {!isPaid && (
                                                                     <Button
                                                                         className="btn btn-sm btn-outline-primary"
-                                                                        onClick={() =>
-                                                                            openPaymentFor(active)
-                                                                        }
+                                                                        onClick={() => openPaymentFor(active, ins)}   // 👈 le pasas la cuota
                                                                     >
                                                                         Pagar cuota
                                                                     </Button>
@@ -390,7 +423,7 @@ const Apointment: React.FC = () => {
                     </div>
 
                     <div className="modal-footer">
-                        <Button className="btn btn-secondary" onClick={closeDetails}>
+                        <Button className="btn custom-upload-btn" onClick={closeDetails}>
                             Cerrar
                         </Button>
                         {payment && pending > 0 && (
@@ -675,8 +708,9 @@ const Apointment: React.FC = () => {
                             userEmail={paymentEmail}
                             onBack={closePaymentModal}
                             onSuccess={onPaymentSuccess}
-                            paymentMethod={"Card"} // puedes cambiar a "PSE" o permitir elegir
+                            paymentMethod={"Card"}
                             storagePlanId={null}
+                            installmentId={paymentInstallmentId}
                         />
                     </div>
                 </div>
@@ -732,7 +766,6 @@ const Apointment: React.FC = () => {
                                             <tr>
                                                 <th scope="col">Evento</th>
                                                 <th scope="col">Fecha y Hora</th>
-                                                <th scope="col">Lugar</th>
                                                 <th scope="col">Estado reserva</th>
                                                 <th scope="col">Pago</th>
                                                 <th scope="col">Saldo / Cuotas</th>
@@ -765,7 +798,6 @@ const Apointment: React.FC = () => {
                                                         <td data-label="Fecha y Hora">
                                                             {formatDateTime(c.datetime)}
                                                         </td>
-                                                        <td data-label="Lugar">{c.place || "—"}</td>
                                                         <td data-label="Estado reserva">
                                                             {c.reservation_status}
                                                         </td>

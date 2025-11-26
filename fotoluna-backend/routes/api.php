@@ -32,6 +32,13 @@ Route::middleware('auth:sanctum')->get(
     [AppointmentController::class, 'downloadReceipt']
 );
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get(
+        '/appointments/{appointment}/installments/{installment}/receipt',
+        [AppointmentController::class, 'downloadReceipt']
+    );
+});
+
 Route::get('/bookings/{booking}/summary', [BookingController::class, 'summary']);
 Route::post('/bookings/{booking}/send-confirmation', [BookingController::class, 'sendConfirmation']);
 

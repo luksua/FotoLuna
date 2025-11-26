@@ -25,6 +25,7 @@ interface Props {
   onSuccess: () => void;
   paymentMethod: OnlinePaymentMethod;
   storagePlanId?: number | null;
+  installmentId?: number | null
 }
 
 const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
@@ -35,6 +36,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
   onSuccess,
   paymentMethod,
   storagePlanId,
+  installmentId,
 }) => {
   const bricksContainerRef = useRef<HTMLDivElement | null>(null);
   const brickControllerRef = useRef<any | null>(null);
@@ -152,6 +154,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       raw_form: formData,
                       client_payment_method: paymentMethod, // "Card" o "PSE"
                       storage_plan_id: storagePlanId,
+                      installment_id: installmentId,
                     },
                     {
                       headers: {
@@ -218,7 +221,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
         brickControllerRef.current = null;
       }
     };
-  }, [total, bookingId, userEmail, onSuccess, paymentMethod, storagePlanId]);
+  }, [total, bookingId, userEmail, onSuccess, paymentMethod, storagePlanId, installmentId]);
 
   // Si el monto no es válido o hubo error de montaje
   if (total == null || Number.isNaN(total) || total <= 0 || mountError) {

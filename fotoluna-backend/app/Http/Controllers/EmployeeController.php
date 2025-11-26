@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Package;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
@@ -18,9 +19,29 @@ class EmployeeController extends Controller
     /**
      * Retorna empleados disponibles para asignación.
      */
-    public function available()
+    public function available(Request $request)
     {
-        $employees = Employee::availablePhotographers()
+        $date = $request->input('appointmentDate');
+        $time = $request->input('appointmentTime');
+        $packageId = $request->input('packageIdFK');
+
+        if (!$packageId) {
+            return response()->json([
+                'error' => 'packageIdFK es requerido'
+            ], 422);
+        }
+
+        $package = Package::find($packageId);
+
+        if (!$package) {
+            return response()->json([
+                'error' => 'El paquete no existe'
+            ], 404);
+        }
+
+        $duration = $package->durationMinutes; // minutos del paquete
+
+        $employees = Employee::availablePhotographers($date, $time, $duration)
             ->select(
                 'employeeId as id',
                 'firstNameEmployee',
@@ -32,11 +53,7 @@ class EmployeeController extends Controller
             ->get();
 
         if ($employees->isEmpty()) {
-            if ($employees->isEmpty()) {
-                return response()->json([], 200);
-            }
-            return response()->json($employees);
-
+            return response()->json([], 200);
         }
 
         return response()->json(
@@ -53,6 +70,44 @@ class EmployeeController extends Controller
             })
         );
     }
+
+
+
+    // public function available()
+    // {
+    //     $employees = Employee::availablePhotographers()
+    //         ->select(
+    //             'employeeId as id',
+    //             'firstNameEmployee',
+    //             'lastNameEmployee',
+    //             'photoEmployee',
+    //             'specialty',
+    //             'emailEmployee'
+    //         )
+    //         ->get();
+
+    //     if ($employees->isEmpty()) {
+    //         if ($employees->isEmpty()) {
+    //             return response()->json([], 200);
+    //         }
+    //         return response()->json($employees);
+
+    //     }
+
+    //     return response()->json(
+    //         $employees->map(function ($emp) {
+    //             return [
+    //                 'id' => $emp->id,
+    //                 'name' => "{$emp->firstNameEmployee} {$emp->lastNameEmployee}",
+    //                 'photo' => $emp->photoEmployee
+    //                     ? url('storage/' . $emp->photoEmployee)
+    //                     : url('images/default-user.jpg'),
+    //                 'specialty' => $emp->specialty ?? 'Fotografía general',
+    //                 'email' => $emp->emailEmployee,
+    //             ];
+    //         })
+    //     );
+    // }
 
     /**
      * Show the form for creating a new resource.

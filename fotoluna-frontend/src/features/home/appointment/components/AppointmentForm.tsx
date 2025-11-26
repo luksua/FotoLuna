@@ -63,6 +63,11 @@ const AppointmentForm: React.FC = () => {
         useState<StoragePlan | null>(null);
     const [grandTotal, setGrandTotal] = useState(0); // sesión + plan nube
 
+    const [appointmentDate, setAppointmentDate] = useState<string>("");
+    const [appointmentTime, setAppointmentTime] = useState<string>("");
+    const [packageIdFK, setPackageIdFK] = useState<number | null>(null);
+
+
     const [summary, setSummary] = useState<{
         eventName: string;
         packageName: string;
@@ -191,6 +196,18 @@ const AppointmentForm: React.FC = () => {
                     time: res.data.appointment?.time ?? "",
                     place: res.data.appointment?.place ?? "",
                 });
+
+                setAppointmentDate(res.data.appointment?.date ?? "");
+                setAppointmentTime(res.data.appointment?.time ?? "");
+
+                // Dependiendo de cómo se llame en tu backend:
+                setPackageIdFK(
+                    res.data.packageIdFK ??
+                    res.data.package?.id ??
+                    res.data.package?.packageId ??
+                    null
+                );
+
             } catch (err) {
                 console.error("Error obteniendo booking:", err);
             }
@@ -273,7 +290,10 @@ const AppointmentForm: React.FC = () => {
                     <AppointmentStep3Photographer
                         bookingId={bookingId}
                         onBack={() => setStep(2)}
-                        onNext={handlePhotographerNext} // pasa al Plan de almacenamiento
+                        onNext={handlePhotographerNext}
+                        appointmentDate={appointmentDate}
+                        appointmentTime={appointmentTime}
+                        packageIdFK={packageIdFK}
                     />
                 )}
 

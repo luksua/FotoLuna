@@ -211,7 +211,7 @@ class AppointmentController extends Controller
             'event',
             'booking.package',
             'booking.documentType',
-            'booking.installments'
+            'booking.installments',   // cuotas
         ])
             ->where('customerIdFK', $customerId)
             ->orderByDesc('appointmentDate')
@@ -222,11 +222,14 @@ class AppointmentController extends Controller
 
             $booking = $a->booking;
 
+            // Si por algún motivo no hay booking asociado
             if (!$booking) {
                 return [
                     'id' => $a->appointmentId,
                     'event_type' => $a->event?->eventType,
-                    'datetime' => $a->appointmentDate . ' ' . $a->appointmentTime,
+                    'datetime' => Carbon::parse(
+                        ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
+                    )->toIso8601String(),
                     'place' => $a->place,
                     'reservation_status' => $a->appointmentStatus,
                     'payment_status' => 'Sin información',
@@ -243,24 +246,34 @@ class AppointmentController extends Controller
                 $documentTypes[] = [
                     'id' => $booking->documentType->id,
                     'name' => $booking->documentType->name,
-                    'url' => $booking->documentType->url ?? null
+                    'url' => $booking->documentType->url ?? null,
                 ];
             }
 
             /** --------------------
              *  CUOTAS / PAGOS
              * --------------------*/
-            $installments = $booking->installments;
+            $installments = $booking->installments ?? collect();
 
-            $total = $installments->sum('amount');
-            $paid = $installments->where('status', 'paid')->sum('amount');
-            $pending = max(0, $total - $paid);
+            $total = (float) $installments->sum('amount');
+            $paid = (float) $installments->where('status', 'paid')->sum('amount');
+            $pendingAmount = max(0, $total - $paid);
 
-            /** estado del pago */
-            if ($pending == 0 && $total > 0) {
+            $paidCount = $installments->where('status', 'paid')->count();
+            $pendingCount = $installments->where('status', 'pending')->count();
+            $overdueCount = $installments->where('status', 'overdue')->count();
+
+            // ------- Estado de pago (usando SOLO las cuotas) -------
+            if ($installments->isEmpty()) {
+                $paymentStatus = 'Sin información';
+            } elseif ($pendingAmount == 0 && $total > 0) {
                 $paymentStatus = 'Pagado';
-            } elseif ($paid > 0) {
+            } elseif ($overdueCount > 0) {
+                $paymentStatus = 'Vencido';
+            } elseif ($paidCount > 0 && $pendingCount > 0) {
                 $paymentStatus = 'En cuotas';
+            } elseif ($total > 0 && $paid == 0) {
+                $paymentStatus = 'Pendiente';
             } else {
                 $paymentStatus = 'Pendiente';
             }
@@ -268,7 +281,9 @@ class AppointmentController extends Controller
             return [
                 'id' => $a->appointmentId,
                 'event_type' => $a->event?->eventType ?? '—',
-                'datetime' => Carbon::parse($a->appointmentDate . ' ' . $a->appointmentTime)->toIso8601String(),
+                'datetime' => Carbon::parse(
+                    ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
+                )->toIso8601String(),
                 'place' => $a->place,
                 'reservation_status' => $a->appointmentStatus,
                 'payment_status' => $paymentStatus,
@@ -281,32 +296,67 @@ class AppointmentController extends Controller
                         return [
                             'id' => $ins->id,
                             'amount' => (float) $ins->amount,
-                            'due_date' => $ins->due_date ? Carbon::parse($ins->due_date)->toIso8601String() : null,
+                            'due_date' => $ins->due_date
+                                ? ($ins->due_date instanceof Carbon
+                                    ? $ins->due_date->toIso8601String()
+                                    : Carbon::parse($ins->due_date)->toIso8601String())
+                                : null,
                             'paid' => $ins->status === 'paid',
-                            'paid_at' => $ins->paid_at ? Carbon::parse($ins->paid_at)->toIso8601String() : null,
+                            'paid_at' => $ins->paid_at
+                                ? ($ins->paid_at instanceof Carbon
+                                    ? $ins->paid_at->toIso8601String()
+                                    : Carbon::parse($ins->paid_at)->toIso8601String())
+                                : null,
+                            'status' => $ins->status,
                             'receipt_path' => $ins->receipt_path,
-                            'is_overdue' => !$ins->paid && $ins->due_date && Carbon::parse($ins->due_date)->isPast(),
+                            'is_overdue' => $ins->status === 'overdue',
                         ];
-                    })
-                ]
+                    })->values(),
+                ],
             ];
         });
 
         return response()->json(['data' => $data]);
     }
 
-    public function downloadReceipt(Appointment $appointment, BookingPaymentInstallment $installment)
+    // public function downloadReceipt(Appointment $appointment, BookingPaymentInstallment $installment)
+    // {
+    //     // Seguridad: asegurar que la cuota pertenece a esa cita y al cliente logueado
+    //     if ($installment->booking->appointmentIdFK !== $appointment->appointmentId) {
+    //         abort(403);
+    //     }
+
+    //     if (!$installment->receipt_path || !Storage::exists($installment->receipt_path)) {
+    //         abort(404, 'Recibo no disponible');
+    //     }
+
+    //     return Storage::download($installment->receipt_path);
+    // }
+    public function downloadReceipt(Request $request, Appointment $appointment, BookingPaymentInstallment $installment)
     {
-        // Seguridad: asegurar que la cuota pertenece a esa cita y al cliente logueado
+        $user = $request->user();
+
+        // Asegurar que el appointment pertenece al cliente logueado
+        if (!$user || !$user->customer || $appointment->customerIdFK !== $user->customer->customerId) {
+            abort(403, 'No autorizado');
+        }
+
+        // Asegurar que la cuota pertenece a esa cita
         if ($installment->booking->appointmentIdFK !== $appointment->appointmentId) {
-            abort(403);
+            abort(403, 'No autorizado');
         }
 
-        if (!$installment->receipt_path || !Storage::exists($installment->receipt_path)) {
-            abort(404, 'Recibo no disponible');
+        if (!$installment->receipt_path) {
+            abort(404, 'No hay recibo para esta cuota');
         }
 
-        return Storage::download($installment->receipt_path);
+        $fullPath = storage_path("app/public/" . $installment->receipt_path);
+
+        if (!file_exists($fullPath)) {
+            abort(404, 'Archivo no encontrado');
+        }
+
+        return response()->download($fullPath);
     }
 
     /**

@@ -161,9 +161,6 @@
 
     {{-- FIRMA / PIE --}}
     <div style="margin-top: 40px; text-align: center;">
-        <img src="{{ public_path('img/firma.png') }}" alt="Firma" style="width: 230px; opacity: 0.8;">
-        <p style="font-size: 12px; margin-top: 5px;">Responsable de FotoLuna</p>
-
         <p style="font-size: 10px; color: #777; margin-top: 20px;">
             Este documento es generado automáticamente y no requiere firma física.<br>
             Para dudas o reclamos comunícate con soporte@fotoluna.com
