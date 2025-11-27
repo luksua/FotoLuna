@@ -2,6 +2,7 @@
 import '../styles/AdminEmployee.css';
 import { useEffect, useState } from "react";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
+import SuccessAlert from "../components/SuccessAlert";
 
 
 type Employee = {
@@ -206,10 +207,12 @@ const EmployeeCustomers = () => {
                 </div>
 
                 {showSuccessAlert && (
-                    <div className="alert alert-success alert-dismissible fade show" role="alert" style={{ margin: '15px 0', position: 'relative', zIndex: 999 }}>
-                        <strong>¡Éxito!</strong> Empleado Editado Exitosamente
-                        <button type="button" className="btn-close" onClick={() => setShowSuccessAlert(false)}></button>
-                    </div>
+                    <SuccessAlert 
+                        message="¡Empleado Editado Exitosamente!"
+                        visible={showSuccessAlert}
+                        onClose={() => setShowSuccessAlert(false)}
+                        type="success"
+                    />
                 )}
 
                 {/* Tabla de empleados */}

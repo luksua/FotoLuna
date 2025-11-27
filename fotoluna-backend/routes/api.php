@@ -13,6 +13,9 @@ use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\MercadoPagoController;
 use App\Http\Controllers\Admin\RegisterEmployeeController;
 use App\Http\Controllers\Admin\AdminUsersController;
+use App\Http\Controllers\Admin\AdminEventsController;
+use App\Http\Controllers\Admin\AdminPackagesController;
+use App\Http\Controllers\Admin\AdminDocumentTypesController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/mercadopago/checkout/pay', [MercadoPagoController::class, 'pay']);
@@ -97,3 +100,27 @@ Route::get('/admin/employees', [AdminUsersController::class, 'index']);
 Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
 
 Route::patch('/admin/employees/{id}', [AdminUsersController::class, 'update']);
+
+Route::get('/admin/events', [AdminEventsController::class, 'index']);
+
+Route::post('/admin/events', [AdminEventsController::class, 'store']);
+
+Route::patch('/admin/events/{id}', [AdminEventsController::class, 'update']);
+
+Route::patch('/admin/events/{id}/status', [AdminEventsController::class, 'updateStatus']);
+
+Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
+
+Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
+
+Route::patch('/admin/packages/{id}', [AdminPackagesController::class, 'update']);
+
+Route::patch('/admin/packages/{id}/status', [AdminPackagesController::class, 'updateStatus']);
+
+Route::get('/admin/document-types', [AdminDocumentTypesController::class, 'index']);
+
+Route::post('/admin/document-types', [AdminDocumentTypesController::class, 'store']);
+
+Route::patch('/admin/document-types/{id}', [AdminDocumentTypesController::class, 'update']);
+
+Route::patch('/admin/document-types/{id}/status', [AdminDocumentTypesController::class, 'updateStatus']);
