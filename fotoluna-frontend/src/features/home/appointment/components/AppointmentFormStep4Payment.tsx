@@ -17,7 +17,7 @@ declare global {
 type OnlinePaymentMethod = "Card" | "PSE";
 
 interface Props {
-  bookingId: number;
+  bookingId?: number | null;
   total: number;
   currency?: string;
   userEmail: string;
@@ -86,12 +86,12 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
     const paymentMethodsConfig =
       paymentMethod === "Card"
         ? {
-            creditCard: "all",
-            debitCard: "all",
-          }
+          creditCard: "all",
+          debitCard: "all",
+        }
         : {
-            bankTransfer: "all", // PSE
-          };
+          bankTransfer: "all", // PSE
+        };
 
     const renderPaymentBrick = async () => {
       if (!bricksContainerRef.current) return;
@@ -146,23 +146,36 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
 
                   const token = localStorage.getItem("token");
 
-                  const res = await axios.post(
-                    `${API_BASE}/api/mercadopago/checkout/pay`,
-                    {
-                      booking_id: bookingId,
+                  let endpoint = "/api/mercadopago/checkout/pay";
+                  let payload: any = {
+                    booking_id: bookingId,
+                    transaction_amount: total,
+                    payment_method_id: paymentMethodId,
+                    token: formData?.token,
+                    installments: formData?.installments,
+                    payer: { email: userEmail },
+                    raw_form: formData,
+                    client_payment_method: paymentMethod,
+                    installment_id: installmentIdRef.current ?? null,
+                  };
+
+                  // 👇 SI ES COMPRA DE PLAN, USAR OTRO ENDPOINT Y OTRO PAYLOAD
+                  if (storagePlanId) {
+                    endpoint = "/api/mercadopago/storage/pay";
+                    payload = {
+                      storage_plan_id: storagePlanId,
                       transaction_amount: total,
                       payment_method_id: paymentMethodId,
                       token: formData?.token,
                       installments: formData?.installments,
-                      payer: {
-                        email: userEmail,
-                      },
-                      raw_form: formData,
-                      client_payment_method: paymentMethod, // "Card" o "PSE"
-                      storage_plan_id: storagePlanId,
-                      // 👇 aquí usamos SIEMPRE el valor del ref, que está actualizado
-                      installment_id: installmentIdRef.current ?? null,
-                    },
+                      payer: { email: userEmail },
+                      client_payment_method: paymentMethod,
+                    };
+                  }
+
+                  const res = await axios.post(
+                    `${API_BASE}${endpoint}`,
+                    payload,
                     {
                       headers: {
                         Authorization: `Bearer ${token}`,
@@ -171,6 +184,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                     }
                   );
 
+
                   const { status, status_detail } = res.data;
 
                   if (status === "approved" || status === "in_process") {
@@ -178,8 +192,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                     resolve();
                   } else {
                     setErrorMessage(
-                      `Pago con estado: ${status}. ${
-                        status_detail ? `Detalle: ${status_detail}. ` : ""
+                      `Pago con estado: ${status}. ${status_detail ? `Detalle: ${status_detail}. ` : ""
                       }Verifica tu medio de pago o intenta nuevamente.`
                     );
                     setShowErrorModal(true);

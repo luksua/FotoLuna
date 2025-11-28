@@ -22,7 +22,8 @@
 .sd-plan-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-    border-color: #C792DF; /* Borde morado al hover */
+    border-color: #C792DF;
+    /* Borde morado al hover */
 }
 
 /* ============================= */
@@ -30,12 +31,15 @@
 /* ============================= */
 
 .sd-plan-card--current {
-    border: 2px solid #C792DF; /* Borde morado más marcado */
-    box-shadow: 0 0 0 3px rgba(199, 146, 223, 0.3); /* Glow suave */
+    border: 2px solid #C792DF;
+    /* Borde morado más marcado */
+    box-shadow: 0 0 0 3px rgba(199, 146, 223, 0.3);
+    /* Glow suave */
 }
 
 .sd-plan-card--current:hover {
-    transform: translateY(-4px); /* Elevación más suave */
+    transform: translateY(-4px);
+    /* Elevación más suave */
     border-color: #C792DF;
     box-shadow: 0 0 0 4px rgba(199, 146, 223, 0.35);
 }
@@ -110,12 +114,17 @@
 }
 
 .sd-btn-gray {
-    background: #e5e7eb;
-    color: #374151;
+    background: #ffbfbf;
+    border: 1px solid #d02525;
+    color: #d02525;
+    transition: background 0.25s ease, transform 0.25s ease;
 }
 
 .sd-btn-gray:hover {
-    background: #d1d5db;
+    background: #f7a8a8;
+    color: #d02525;
+    border: 1px solid #d02525;
+    transform: translateY(-2px);
 }
 
 /* ============================= */
