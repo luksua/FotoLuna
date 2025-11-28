@@ -26,4 +26,9 @@ class Payment extends Model
     {
         return $this->belongsTo(Booking::class, 'bookingIdFK', 'bookingId');
     }
+
+    public function storageSubscription()
+    {
+        return $this->hasOne(StorageSubscription::class, 'payment_id', 'paymentId');
+    }
 }

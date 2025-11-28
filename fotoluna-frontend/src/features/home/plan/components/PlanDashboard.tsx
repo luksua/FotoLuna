@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import "../styles/plan.css"
+import "../styles/plan.css";
+import { ConfirmModal } from "../../../../components/ConfirmModal";
+import AppointmentFormStep4PaymentEmbedded from "../../appointment/components/AppointmentFormStep4Payment";
+import { useAuth } from "../../../../context/useAuth";
 
 type StoragePlan = {
     id: number;
@@ -10,7 +13,7 @@ type StoragePlan = {
     max_photos: number;
     max_storage_mb: number;
     duration_months: number;
-    price: number;
+    price: string;
     is_active: boolean;
 };
 
@@ -54,39 +57,93 @@ const currency = (value: number) =>
         maximumFractionDigits: 0,
     }).format(value);
 
-const StorageDashboardBootstrap: React.FC = () => {
+const StorageDashboard: React.FC = () => {
     const [data, setData] = useState<DashboardResponse | null>(null);
     const [loading, setLoading] = useState(true);
-    const [changingPlanId, setChangingPlanId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchDashboard = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
 
-                const res = await axios.get(`${API_BASE}/api/storage/dashboard`, {
-                    headers: {
-                        Accept: "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                });
+    const [isChangePlanModalOpen, setIsChangePlanModalOpen] = useState(false);
 
-                setData(res.data);
-            } catch (err: any) {
-                console.log(err);
-                setError("Error al cargar la información.");
-            } finally {
-                setLoading(false);
-            }
-        };
+    const [planToPay, setPlanToPay] = useState<StoragePlan | null>(null);
+    const [planToChange, setPlanToChange] = useState<StoragePlan | null>(null);
 
-        fetchDashboard();
-    }, []);
+    const { user } = useAuth();
+    const userEmail = user?.email ?? "";
+    const currentSubscription = data?.currentSubscription ?? null;
 
-    const handleCancelSubscription = async () => {
+    // Plan gratis (por nombre o precio 0)
+    const freePlan =
+        data?.plans.find((p) => {
+            const priceNumber = Number(p.price);
+            return (
+                priceNumber === 0 ||
+                p.name.toLowerCase().includes("free") ||
+                p.name.toLowerCase().includes("gratis")
+            );
+        }) || null;
+
+    // 👉 ¿El plan actual (si hay suscripción) es gratuito?
+    const isFreePlan = currentSubscription
+        ? Number(currentSubscription.plan.price) === 0
+        : false;
+
+    // 👉 Tiene un plan de pago vigente (active o cancelled, pero NO free)
+    const hasPaidSubscription =
+        !!currentSubscription &&
+        !isFreePlan &&
+        (currentSubscription.status === "active" ||
+            currentSubscription.status === "cancelled");
+
+    // 👉 Es un plan de pago que YA fue cancelado pero sigue vigente
+    const isCancelledAtPeriodEnd =
+        !!currentSubscription &&
+        !isFreePlan &&
+        currentSubscription.status === "cancelled";
+
+    // 👉 Plan actual que mostramos en UI:
+    // - Si hay currentSubscription → ese plan
+    // - Si no, usamos el freePlan
+    const currentPlan: StoragePlan | null = currentSubscription
+        ? currentSubscription.plan
+        : freePlan;
+
+    const usage = data?.usage || null;
+
+    const handleOpenCancelModal = () => {
+        setError(null);
+        setSuccessMsg(null);
+        setIsCancelModalOpen(true);
+    };
+
+    const fetchDashboard = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const res = await axios.get(`${API_BASE}/api/storage/dashboard`, {
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            setData(res.data);
+        } catch (err: any) {
+            console.log(err);
+            setError("Error al cargar la información.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleConfirmCancelSubscription = async () => {
+        if (!data?.currentSubscription) return;
+
+        setIsCancelling(true);
         setError(null);
         setSuccessMsg(null);
 
@@ -102,45 +159,57 @@ const StorageDashboardBootstrap: React.FC = () => {
 
             if (!res.ok) throw new Error(await res.text());
 
-            const json: DashboardResponse = await res.json();
-            setData(json);
-            setSuccessMsg("Tu suscripción ha sido cancelada. Seguirá activa hasta la fecha de vencimiento.");
+            await fetchDashboard(); // recarga datos del dashboard
+
+            setSuccessMsg(
+                "Tu suscripción ha sido cancelada. Seguirás teniendo acceso hasta la fecha de vencimiento."
+            );
+            setIsCancelModalOpen(false);
         } catch (err: any) {
             setError(err.message ?? "Error al cancelar la suscripción.");
+        } finally {
+            setIsCancelling(false);
         }
     };
 
+    useEffect(() => {
+        fetchDashboard();
+    }, []);
 
-    const handleChangePlan = async (planId: number) => {
+    const handleOpenChangePlanModal = (plan: StoragePlan) => {
         setError(null);
         setSuccessMsg(null);
-        setChangingPlanId(planId);
-
-        try {
-            const res = await fetch(`${API_BASE}/api/storage/change-plan`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({ plan_id: planId }),
-            });
-
-            if (!res.ok) throw new Error(await res.text());
-
-            const json: DashboardResponse = await res.json();
-            setData(json);
-            setSuccessMsg("Tu plan ha sido actualizado correctamente.");
-        } catch (err: any) {
-            setError(err.message ?? "Error al cambiar el plan.");
-        } finally {
-            setChangingPlanId(null);
-        }
+        setPlanToChange(plan);
+        setIsChangePlanModalOpen(true);
     };
 
-    const currentPlan = data?.currentSubscription?.plan || null;
-    const usage = data?.usage || null;
+    // 👉 Si estoy comprando un plan, muestro SOLO la pantalla de pago
+    if (planToPay) {
+        return (
+            <div className="container py-5 sd-dashboard-container bg-custom-2">
+                <h1 className="sd-title-main mb-3">
+                    Comprar plan: {planToPay.name}
+                </h1>
+                <p className="sd-text-muted mb-4">
+                    Total a pagar: {currency(Number(planToPay.price))}
+                </p>
+
+                <AppointmentFormStep4PaymentEmbedded
+                    bookingId={null}
+                    total={Number(planToPay.price)}
+                    userEmail={userEmail}
+                    onBack={() => setPlanToPay(null)}   // vuelve al dashboard
+                    onSuccess={async () => {
+                        setPlanToPay(null);               // cierra la pantalla de pago
+                        await fetchDashboard();           // refresca el plan actual
+                        setSuccessMsg("Tu plan ha sido comprado correctamente.");
+                    }}
+                    paymentMethod="Card"
+                    storagePlanId={planToPay.id}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="container py-5 sd-dashboard-container bg-custom-2">
@@ -172,34 +241,49 @@ const StorageDashboardBootstrap: React.FC = () => {
                             <div className="card border-0 shadow-sm sd-card">
                                 <div className="card-body">
                                     <p className="fw-semibold mb-1">
-                                        Plan Actual:{" "}
-                                        {currentPlan ? currentPlan.name : "No activo"}
+                                        Plan Actual: {currentPlan ? currentPlan.name : "Free"}
                                     </p>
 
-                                    {currentPlan && data.currentSubscription ? (
+                                    {hasPaidSubscription && currentPlan && currentSubscription ? (
                                         <>
-                                            <p className="sd-text-muted mb-1">
-                                                Tu plan se renueva el{" "}
-                                                {new Date(
-                                                    data.currentSubscription.ends_at
-                                                ).toLocaleDateString("es", {
-                                                    year: "numeric",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                })}
-                                                .
-                                            </p>
+                                            {isCancelledAtPeriodEnd ? (
+                                                <p className="sd-text-muted mb-1">
+                                                    Tu suscripción se cancelará el{" "}
+                                                    {new Date(
+                                                        currentSubscription.ends_at
+                                                    ).toLocaleDateString("es", {
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                    })}
+                                                    . Seguirás teniendo acceso hasta esa fecha.
+                                                </p>
+                                            ) : (
+                                                <>
+                                                    <p className="sd-text-muted mb-1">
+                                                        Tu plan se renueva el{" "}
+                                                        {new Date(
+                                                            currentSubscription.ends_at
+                                                        ).toLocaleDateString("es", {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric",
+                                                        })}
+                                                        .
+                                                    </p>
 
-                                            <p className="sd-text-muted mb-0">
-                                                {currency(currentPlan.price)}/
-                                                {currentPlan.duration_months === 1
-                                                    ? "mes"
-                                                    : "periodo"}
-                                            </p>
+                                                    <p className="sd-text-muted mb-0">
+                                                        {currency(Number(currentPlan.price))}/
+                                                        {currentPlan.duration_months === 1
+                                                            ? "mes"
+                                                            : "periodo"}
+                                                    </p>
+                                                </>
+                                            )}
                                         </>
                                     ) : (
                                         <p className="sd-text-muted mb-0">
-                                            No tienes un plan activo actualmente.
+                                            Estás usando el plan gratuito.
                                         </p>
                                     )}
                                 </div>
@@ -240,8 +324,6 @@ const StorageDashboardBootstrap: React.FC = () => {
                         )}
                     </div>
 
-
-
                     {/* ===== ACTUALIZAR PLAN ===== */}
                     <div className="mb-3">
                         <h2 className="h5 fw-semibold pt-4">Actualiza tu plan</h2>
@@ -253,13 +335,14 @@ const StorageDashboardBootstrap: React.FC = () => {
                     <div className="row g-3">
                         {data.plans.map((plan) => {
                             const isCurrent = currentPlan && currentPlan.id === plan.id;
-                            const isChanging = changingPlanId === plan.id;
+                            const isFreeThisPlan = Number(plan.price) === 0;
 
                             return (
                                 <div key={plan.id} className="col-md-4">
                                     <div
-                                        className={`card shadow sd-plan-card ${isCurrent ? "sd-plan-card--current" : ""
-                                            }`}
+                                        className={`card shadow sd-plan-card ${
+                                            isCurrent ? "sd-plan-card--current" : ""
+                                        }`}
                                     >
                                         {isCurrent && (
                                             <span className="sd-plan-active-badge">
@@ -269,12 +352,13 @@ const StorageDashboardBootstrap: React.FC = () => {
 
                                         <h5 className="sd-plan-title">{plan.name}</h5>
                                         <p className="sd-plan-description">
-                                            {plan.description || "Plan para almacenamiento de fotos."}
+                                            {plan.description ||
+                                                "Plan para almacenamiento de fotos."}
                                         </p>
 
                                         <div className="d-flex align-items-baseline mb-2">
                                             <span className="sd-plan-price">
-                                                {currency(plan.price)}
+                                                {currency(Number(plan.price))}
                                             </span>
                                             <span className="sd-plan-price-sub">/mes</span>
                                         </div>
@@ -288,32 +372,75 @@ const StorageDashboardBootstrap: React.FC = () => {
                                         <div className="mt-auto">
                                             {isCurrent ? (
                                                 <>
-                                                    <button
-                                                        className="btn sd-plan-btn sd-btn-gray w-100"
-                                                        disabled
-                                                    >
-                                                        Tu plan
-                                                    </button>
-                                                    {data.currentSubscription && (
+                                                    {hasPaidSubscription ? (
+                                                        isCancelledAtPeriodEnd ? (
+                                                            // Ya está cancelado, solo informamos
+                                                            <button
+                                                                className="btn sd-plan-btn sd-btn-gray w-100"
+                                                                disabled
+                                                            >
+                                                                Cancelado, vigente hasta{" "}
+                                                                {new Date(
+                                                                    currentSubscription!.ends_at
+                                                                ).toLocaleDateString("es")}
+                                                            </button>
+                                                        ) : (
+                                                            // Tiene plan de pago activo -> puede cancelar
+                                                            <button
+                                                                className="btn sd-plan-btn sd-btn-gray w-100"
+                                                                onClick={handleOpenCancelModal}
+                                                            >
+                                                                Cancelar renovación
+                                                            </button>
+                                                        )
+                                                    ) : (
+                                                        // Plan free actual
                                                         <button
-                                                            className="btn btn-outline-danger btn-sm mt-2"
-                                                            onClick={handleCancelSubscription}
+                                                            className="btn sd-plan-btn sd-btn-gray w-100"
+                                                            disabled
                                                         >
-                                                            Cancelar plan
+                                                            Tu plan actual
                                                         </button>
-
-                                                    )} </>
-
+                                                    )}
+                                                </>
                                             ) : (
-                                                <button
-                                                    className="btn sd-plan-btn sd-btn-primary w-100"
-                                                    disabled={isChanging}
-                                                    onClick={() => handleChangePlan(plan.id)}
-                                                >
-                                                    {isChanging
-                                                        ? "Actualizando..."
-                                                        : "Elegir plan"}
-                                                </button>
+                                                <>
+                                                    {hasPaidSubscription ? (
+                                                        isFreeThisPlan ? (
+                                                            // Tiene plan de pago y este es FREE:
+                                                            // no se cobra, solo mensaje informativo.
+                                                            <button
+                                                                className="btn sd-plan-btn sd-btn-gray w-100"
+                                                                disabled
+                                                            >
+                                                                Pasarás a este plan cuando termine tu periodo
+                                                            </button>
+                                                        ) : (
+                                                            // Tiene plan de pago vigente -> usa modal para cambiar (y pagar)
+                                                            <button
+                                                                className="btn sd-plan-btn sd-btn-primary w-100"
+                                                                onClick={() => handleOpenChangePlanModal(plan)}
+                                                            >
+                                                                Cambiar a este plan
+                                                            </button>
+                                                        )
+                                                    ) : (
+                                                        // Está en Free → abrir flujo de pago (solo si el plan NO es gratis)
+                                                        <button
+                                                            className="btn sd-plan-btn sd-btn-primary w-100"
+                                                            onClick={() => {
+                                                                if (!isFreeThisPlan) {
+                                                                    setPlanToPay(plan);
+                                                                }
+                                                            }}
+                                                            disabled={isFreeThisPlan}
+                                                        >
+                                                            {isFreeThisPlan
+                                                                ? "Tu plan actual"
+                                                                : "Comprar este plan"}
+                                                        </button>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                     </div>
@@ -323,8 +450,53 @@ const StorageDashboardBootstrap: React.FC = () => {
                     </div>
                 </>
             )}
+
+            {/* Modal cancelar suscripción */}
+            <ConfirmModal
+                isOpen={isCancelModalOpen}
+                onClose={() => !isCancelling && setIsCancelModalOpen(false)}
+                onConfirm={handleConfirmCancelSubscription}
+                title="Cancelar suscripción"
+                message={
+                    <>
+                        ¿Estás seguro de que deseas cancelar tu suscripción actual?
+                        <br />
+                        Seguirás teniendo acceso hasta la fecha de vencimiento.
+                    </>
+                }
+                confirmText="Sí, cancelar"
+                cancelText="Volver"
+                type="error"
+                isLoading={isCancelling}
+            />
+
+            {/* Modal cambiar plan (solo si tiene plan de pago) */}
+            {hasPaidSubscription && (
+                <ConfirmModal
+                    isOpen={isChangePlanModalOpen}
+                    onClose={() => setIsChangePlanModalOpen(false)}
+                    onConfirm={() => {
+                        if (planToChange) {
+                            setIsChangePlanModalOpen(false);
+                            setPlanToPay(planToChange); // abre flujo de pago
+                        }
+                    }}
+                    title="Cambiar de plan"
+                    message={
+                        <>
+                            ¿Estás seguro de que deseas cambiar tu suscripción a este plan?
+                            <br />
+                            Se generará un nuevo cobro por el plan seleccionado.
+                        </>
+                    }
+                    confirmText="Sí, cambiar y pagar"
+                    cancelText="Volver"
+                    type="info"
+                    isLoading={false}
+                />
+            )}
         </div>
     );
 };
 
-export default StorageDashboardBootstrap;
+export default StorageDashboard;
