@@ -1,0 +1,129 @@
+/* ============================= */
+/*     CARD DE PLAN UNIFORME     */
+/* ============================= */
+
+.sd-plan-card {
+    position: relative;
+    border-radius: 18px;
+    border: 1.5px solid #e6e9ef;
+    background: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 360px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* ============================= */
+/*   HOVER: ELEVACIÓN SUAVE      */
+/* ============================= */
+
+.sd-plan-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    border-color: #C792DF; /* Borde morado al hover */
+}
+
+/* ============================= */
+/*       PLAN ACTUAL (marca)     */
+/* ============================= */
+
+.sd-plan-card--current {
+    border: 2px solid #C792DF; /* Borde morado más marcado */
+    box-shadow: 0 0 0 3px rgba(199, 146, 223, 0.3); /* Glow suave */
+}
+
+.sd-plan-card--current:hover {
+    transform: translateY(-4px); /* Elevación más suave */
+    border-color: #C792DF;
+    box-shadow: 0 0 0 4px rgba(199, 146, 223, 0.35);
+}
+
+/* ==== BADGE DEL PLAN ACTUAL ==== */
+
+.sd-plan-active-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #C792DF;
+    color: #ffffff;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.70rem;
+    font-weight: 600;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* ============================= */
+/*   LISTA DE FEATURES UNIFORME  */
+/* ============================= */
+
+.sd-plan-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.sd-plan-list li {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 6px;
+    padding-left: 18px;
+    position: relative;
+}
+
+.sd-plan-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    background-color: #C792DF;
+    border-radius: 50%;
+}
+
+/* ============================= */
+/*       BOTONES PLAN            */
+/* ============================= */
+
+.sd-plan-btn {
+    border-radius: 999px;
+    font-weight: 600;
+    padding: 10px 0;
+    transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.sd-btn-primary {
+    background: #C792DF;
+    color: white;
+}
+
+.sd-btn-primary:hover {
+    background: #b477c5;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.sd-btn-gray {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.sd-btn-gray:hover {
+    background: #d1d5db;
+}
+
+/* ============================= */
+/*       RESPONSIVE FIXES        */
+/* ============================= */
+
+@media (max-width: 768px) {
+    .sd-plan-card {
+        min-height: 320px;
+    }
+}

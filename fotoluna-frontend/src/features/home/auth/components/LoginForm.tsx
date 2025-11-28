@@ -57,13 +57,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, variant = "page" }) =>
 
             const res = await api.post("/api/login", payload);
 
-            const token = res.data?.access_token;
+            const token = res.data?.access_token ?? res.data?.token ?? null;
             const redirectTo = res.data?.redirect_to || next;
+            const user = res.data?.user || null;
 
+            // 🟣 GUARDAR EMAIL Y USER EN LOCALSTORAGE (AQUÍ)
+            if (user) {
+                try {
+                    // intenta varias claves posibles, por si el backend usa otros nombres
+                    const email =
+                        user.emailCustomer ||
+                        user.email ||
+                        user.email_user ||
+                        payload.email; // fallback al email que envió el usuario al hacer login
+
+                    if (email) {
+                        localStorage.setItem("user_email", email);
+                    }
+
+                    localStorage.setItem("user", JSON.stringify(user));
+                } catch (e) {
+                    console.warn("No se pudo guardar user en localStorage:", e);
+                }
+            }
+
+            // 🟣 SEGUIR CON TU LÓGICA DE AUTENTICACIÓN
             if (token) {
                 await loginWithToken(token);
-            } else if (res.data?.user && res.data?.token) {
-                await loginWithToken(res.data.token);
             }
 
             if (onSuccess) {

@@ -7,150 +7,152 @@ use App\Models\StorageSubscription;
 use App\Models\StoragePlan;
 use Illuminate\Http\Request;
 use App\Models\Booking;
-use Illuminate\Support\Facades\Log;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Payment\PaymentClient;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\BookingConfirmedMail;
 use Illuminate\Support\Facades\Mail;
+use MercadoPago\Exceptions\MPApiException;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
     public function pay(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'booking_id' => 'required|exists:bookings,bookingId',
-                'transaction_amount' => 'required|numeric|min:1',
-                'payment_method_id' => 'required|string',
-                'token' => 'required|string',
-                'installments' => 'nullable|integer|min:1',
-                'payer.email' => 'required|email',
-                'client_payment_method' => 'nullable|string|in:Card,PSE',
-                'storage_plan_id' => 'nullable|exists:storage_plans,id',
-            ]);
+{
+    $data = $request->validate([
+        'booking_id'         => 'required|integer|exists:bookings,bookingId',
+        'transaction_amount' => 'required|numeric|min:0.01',
+        'token'              => 'required|string',
+        'installments'       => 'required|integer|min:1',
+        'payment_method_id'  => 'required|string', // "master", "visa", etc
+        'payer'              => 'required|array',
+        'payer.email'        => 'required|email',
 
-            $booking = Booking::where('bookingId', $validated['booking_id'])
-                ->with(['package', 'documentType', 'appointment.customer'])
-                ->firstOrFail();
+        // 💡 desde el front ya lo mandas: "Card" | "PSE"
+        'client_payment_method' => 'nullable|string|in:Card,PSE',
 
-            // Calcular total real de la reserva en backend
-            $bookingTotal = 0;
-            if ($booking->package) {
-                $bookingTotal = $booking->package->price;
-            } elseif ($booking->documentType) {
-                $bookingTotal = $booking->documentType->price;
+        'installment_id'     => 'nullable|integer|exists:booking_payment_installments,id',
+    ]);
+
+    $booking = Booking::with('installments')->findOrFail($data['booking_id']);
+
+    MercadoPagoConfig::setAccessToken(env('MP_ACCESS_TOKEN'));
+    $client = new PaymentClient();
+
+    try {
+        return DB::transaction(function () use ($client, $data, $booking, $request) {
+
+            // -----------------------------
+            // 1) Calcular monto esperado
+            // -----------------------------
+            $expectedAmount     = 0.0;
+            $targetInstallments = collect();
+
+            if (!empty($data['installment_id'])) {
+                // 👉 pagar una cuota específica
+                $installment = $booking->installments()
+                    ->where('id', $data['installment_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $expectedAmount = (float) $installment->amount;
+                $targetInstallments->push($installment);
+
+            } else {
+                // 👉 pagar TODO el saldo (todas las cuotas pendientes)
+                $targetInstallments = $booking->installments()
+                    ->where('status', 'pending')
+                    ->orderBy('due_date')
+                    ->lockForUpdate()
+                    ->get();
+
+                $expectedAmount = (float) $targetInstallments->sum('amount');
             }
 
-            $storagePlan = null;
-            $storagePlanPrice = 0;
-
-            if (!empty($validated['storage_plan_id'])) {
-                $storagePlan = StoragePlan::findOrFail($validated['storage_plan_id']);
-                $storagePlanPrice = $storagePlan->price;
-            }
-
-            $expectedTotal = $bookingTotal + $storagePlanPrice;
-
-            if ((float) $validated['transaction_amount'] !== (float) $expectedTotal) {
+            if (round((float) $data['transaction_amount'], 2) !== round($expectedAmount, 2)) {
                 return response()->json([
-                    'message' => 'El monto enviado no coincide con el total calculado.',
-                    'expected' => $expectedTotal,
+                    'message'  => 'El monto enviado no coincide con el total calculado.',
+                    'expected' => $expectedAmount,
                 ], 422);
             }
 
-            // Pagar con Mercado Pago (como ya lo tienes con PaymentClient)
-            MercadoPagoConfig::setAccessToken(env('MP_ACCESS_TOKEN'));
-            $client = new PaymentClient();
-
-            $payment = $client->create([
-                'transaction_amount' => (float) $validated['transaction_amount'],
-                'token' => $validated['token'],
-                'installments' => $validated['installments'] ?? 1,
-                'payment_method_id' => $validated['payment_method_id'],
+            // -----------------------------
+            // 2) Crear pago en Mercado Pago
+            // -----------------------------
+            $mpPayment = $client->create([
+                'transaction_amount' => (float) $data['transaction_amount'],
+                'token'              => $data['token'],
+                'description'        => 'Pago de reserva #'.$booking->bookingId,
+                'installments'       => $data['installments'],
+                'payment_method_id'  => $data['payment_method_id'], // master, visa, etc
                 'payer' => [
-                    'email' => $validated['payer']['email'],
+                    'email' => $data['payer']['email'],
                 ],
             ]);
 
-            if ($payment->status === null) {
-                return response()->json([
-                    'message' => 'Error al procesar el pago con Mercado Pago.',
-                ], 422);
-            }
-
+            // -----------------------------
             // 3) Registrar Payment local
+            // -----------------------------
             $localPayment = Payment::create([
-                'bookingIdFK' => $booking->bookingId,
-                'amount' => $validated['transaction_amount'],
-                'paymentDate' => now(),
-                'paymentMethod' => $validated['client_payment_method'] ?? 'Card',
-                'paymentStatus' => $payment->status,
-                'installments' => $validated['installments'] ?? $payment->installments ?? null,
-                'mp_payment_id' => $payment->id ?? null,
+                'bookingIdFK'   => $booking->bookingId,
+                'amount'        => $data['transaction_amount'],
+                'paymentDate'   => now(),
+
+                // 👇 AQUÍ EL CAMBIO IMPORTANTE
+                // guarda Card / PSE (lógico), NO "master"
+                'paymentMethod' => $request->input('client_payment_method') ?? 'Card',
+
+                'installments'  => $data['installments'],
+                'mp_payment_id' => $mpPayment->id,
+                'paymentStatus' => $mpPayment->status,
             ]);
 
-            // 4) Si el pago está aprobado, confirmar booking y crear StorageSubscription
-            if ($payment->status === 'approved') {
-                $booking->update(['bookingStatus' => 'Confirmed']);
+            // -----------------------------
+            // 4) Marcar cuotas como pagadas
+            // -----------------------------
+            if ($mpPayment->status === 'approved') {
 
-                $storageSubscription = null;
+                $remainingToApply = (float) $data['transaction_amount'];
 
-                if ($storagePlan) {
-                    StorageSubscription::create([
-                        'customerIdFK' => $booking->appointment->customerIdFK,
-                        'plan_id' => $storagePlan->id,
-                        'bookingIdFK' => $booking->bookingId,
-                        'starts_at' => now(),
-                        'ends_at' => now()->addMonths($storagePlan->duration_months),
-                        'status' => 'active',
-                        'payment_id' => $localPayment->id,
-                        'mp_payment_id' => $payment->id ?? null,
-                    ]);
-                }
+                foreach ($targetInstallments as $ins) {
+                    if ($remainingToApply <= 0) {
+                        break;
+                    }
 
-                //Cargar relaciones para el correo
-                $booking->load([
-                    'appointment.customer',
-                    'appointment.event',
-                    'package',
-                    'documentType',
-                    'photographer',
-                    'payments' => fn($q) => $q->orderByDesc('paymentDate'),
-                ]);
+                    if ($remainingToApply >= $ins->amount) {
+                        $ins->status      = 'paid';
+                        $ins->paid_at     = now();
+                        $ins->paymentIdFK = $localPayment->paymentId ?? null;
+                        $ins->save();
 
-                $customer = $booking->appointment?->customer;
-
-                if ($customer && $customer->emailCustomer) {
-                    // El último pago (el que acabamos de registrar)
-                    $lastPayment = $booking->payments->first() ?? $localPayment;
-
-                    Mail::to($customer->emailCustomer)->send(
-                        new BookingConfirmedMail(
-                            $booking,
-                            $storageSubscription,
-                            $lastPayment
-                        )
-                    );
+                        $remainingToApply -= $ins->amount;
+                    } else {
+                        // (por ahora no manejas pago parcial de una sola cuota)
+                        break;
+                    }
                 }
             }
 
             return response()->json([
-                'status' => $payment->status,
-                'mp_payment' => [
-                    'id' => $payment->id,
-                    'status' => $payment->status,
-                    'status_detail' => $payment->status_detail ?? null,
-                ],
-                'payment' => $localPayment,
+                'status'        => $mpPayment->status,
+                'status_detail' => $mpPayment->status_detail,
+                'id'            => $mpPayment->id,
             ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => 'Error interno al procesar el pago.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        });
+
+    } catch (MPApiException $e) {
+        return response()->json([
+            'message' => 'Error al procesar el pago con Mercado Pago.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'message' => 'Error interno al registrar el pago.',
+            'error'   => $e->getMessage(),
+        ], 500);
     }
+}
+
 
     public function payOnline(Request $request, Booking $booking)
     {

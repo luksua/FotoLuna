@@ -964,3 +964,55 @@
     transform-origin: top center;
   }
 }
+
+/* ================================
+   PAGINACIÓN SIMPLE CON COLOR
+================================ */
+
+/* Paginación */
+.admin-pagination {
+    margin: 22px 0 8px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-pagination button {
+    background: transparent;
+    border: 1px solid var(--border);
+    min-width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text);
+    transition:
+        background .12s ease,
+        color .12s ease,
+        transform .08s ease;
+}
+
+.admin-pagination button:hover:not([disabled]) {
+    transform: translateY(-2px);
+}
+
+.admin-pagination button[disabled] {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.admin-pagination button.active {
+    background: var(--accent);
+    color: white;
+    border-color: transparent;
+}
+
+/* Botón de puntos suspensivos */
+.admin-pagination button.ellipsis {
+    border: none;
+    background: transparent;
+    opacity: 0.7;
+    transform: none !important;
+    cursor: default;
+}

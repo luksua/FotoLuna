@@ -25,6 +25,7 @@ interface Props {
   onSuccess: () => void;
   paymentMethod: OnlinePaymentMethod;
   storagePlanId?: number | null;
+  installmentId?: number | null;
 }
 
 const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
@@ -35,15 +36,22 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
   onSuccess,
   paymentMethod,
   storagePlanId,
+  installmentId,
 }) => {
   const bricksContainerRef = useRef<HTMLDivElement | null>(null);
   const brickControllerRef = useRef<any | null>(null);
 
-  // const [setLoading] = useState(false);
   const [mountError, setMountError] = useState<string | null>(null);
 
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // 👉 Ref para tener siempre el installmentId actualizado dentro del callback de MP
+  const installmentIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    installmentIdRef.current = installmentId ?? null;
+  }, [installmentId]);
 
   useEffect(() => {
     // Validación del monto
@@ -78,12 +86,12 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
     const paymentMethodsConfig =
       paymentMethod === "Card"
         ? {
-          creditCard: "all",
-          debitCard: "all",
-        }
+            creditCard: "all",
+            debitCard: "all",
+          }
         : {
-          bankTransfer: "all", // PSE
-        };
+            bankTransfer: "all", // PSE
+          };
 
     const renderPaymentBrick = async () => {
       if (!bricksContainerRef.current) return;
@@ -123,7 +131,6 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
             }) => {
               return new Promise<void>(async (resolve, reject) => {
                 try {
-                  // setLoading(true);
                   setMountError(null);
 
                   const paymentMethodId =
@@ -135,6 +142,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                   console.log("formData =>", formData);
                   console.log("selectedPaymentMethod =>", selectedPaymentMethod);
                   console.log("paymentMethodId que se enviará =>", paymentMethodId);
+                  console.log("installmentIdRef.current =>", installmentIdRef.current);
 
                   const token = localStorage.getItem("token");
 
@@ -152,6 +160,8 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       raw_form: formData,
                       client_payment_method: paymentMethod, // "Card" o "PSE"
                       storage_plan_id: storagePlanId,
+                      // 👇 aquí usamos SIEMPRE el valor del ref, que está actualizado
+                      installment_id: installmentIdRef.current ?? null,
                     },
                     {
                       headers: {
@@ -168,7 +178,8 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                     resolve();
                   } else {
                     setErrorMessage(
-                      `Pago con estado: ${status}. ${status_detail ? `Detalle: ${status_detail}. ` : ""
+                      `Pago con estado: ${status}. ${
+                        status_detail ? `Detalle: ${status_detail}. ` : ""
                       }Verifica tu medio de pago o intenta nuevamente.`
                     );
                     setShowErrorModal(true);
@@ -218,6 +229,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
         brickControllerRef.current = null;
       }
     };
+    // 👇 importante: NO incluimos installmentId aquí
   }, [total, bookingId, userEmail, onSuccess, paymentMethod, storagePlanId]);
 
   // Si el monto no es válido o hubo error de montaje
@@ -240,8 +252,6 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
   return (
     <>
       <div className="payment-step-wrapper">
-        {/* Puedes agregar título/subtitulo si quieres aquí */}
-
         <div className="payment-card">
           <div
             id="paymentBrick_container"

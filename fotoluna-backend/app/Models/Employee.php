@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Employee extends Model
 {
@@ -38,6 +39,12 @@ class Employee extends Model
         'isAvailable' => 'boolean',
     ];
 
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'employeeIdFK', 'employeeId');
+    }
+
+
     // Relación con reservas o bookings
     public function bookings()
     {
@@ -45,9 +52,26 @@ class Employee extends Model
     }
 
     // Filtro rápido para fotógrafos disponibles
-    public function scopeAvailablePhotographers($query)
+    public function scopeAvailablePhotographers($query, string $date, string $time, int $durationMinutes)
     {
-        return $query->where('employeeType', 'Employee')->where('isAvailable', true);
+        $start = Carbon::parse("$date $time");
+        $end = $start->copy()->addMinutes($durationMinutes);
+
+        $startStr = $start->format('Y-m-d H:i:s');
+        $endStr = $end->format('Y-m-d H:i:s');
+
+        return $query->whereDoesntHave('bookings', function ($q) use ($startStr, $endStr) {
+            $q->whereIn('bookingStatus', ['Pending', 'Confirmed'])   // ajusta según tu lógica
+                ->whereHas('appointment', function ($qa) use ($startStr, $endStr) {
+                    $qa->whereRaw("
+                  CONCAT(appointmentDate, ' ', appointmentTime) < ?
+                  AND DATE_ADD(
+                      CONCAT(appointmentDate, ' ', appointmentTime),
+                      INTERVAL appointmentDuration MINUTE
+                  ) > ?
+              ", [$endStr, $startStr]);
+                });
+        });
     }
 
     public function user()

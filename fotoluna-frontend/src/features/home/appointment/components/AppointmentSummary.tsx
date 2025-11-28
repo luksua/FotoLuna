@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/appointmentSummary.css";
@@ -17,6 +18,7 @@ interface AppointmentSummaryProps {
     grandTotal: number;
     onBack: () => void;
     onFinish: () => void;
+    refreshKey?: number;
 }
 
 interface BookingSummaryResponse {
@@ -47,6 +49,7 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
     grandTotal,
     // onBack,
     onFinish,
+    refreshKey
 }) => {
     const [data, setData] = useState<BookingSummaryResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -77,7 +80,7 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
         };
 
         fetchSummary();
-    }, [bookingId]);
+    }, [bookingId, refreshKey]);
 
 
     /* ---------------------------------------------------------
@@ -205,6 +208,54 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
         }
     };
 
+    // --- Resumen de cuotas / pagos ---
+    const installments = (data as any)?.installments ?? [];
+    const hasInstallments = Array.isArray(installments) && installments.length > 0;
+
+    const totalFromInstallments = hasInstallments
+        ? installments.reduce(
+            (sum: number, ins: any) => sum + Number(ins.amount || 0),
+            0
+        )
+        : grandTotal;
+
+    const paidAmount = hasInstallments
+        ? installments
+            .filter((ins: any) => ins.status === "paid")
+            .reduce(
+                (sum: number, ins: any) => sum + Number(ins.amount || 0),
+                0
+            )
+        : (paymentStatus === "approved" ? grandTotal : 0);
+
+    const pendingAmount = Math.max(0, totalFromInstallments - paidAmount);
+
+    const paymentStatusLabel = (() => {
+        if (!hasInstallments) {
+            return paymentStatus === "approved" ? "Pagado" : (paymentStatus || "Pendiente");
+        }
+        if (pendingAmount === 0 && totalFromInstallments > 0) {
+            return "Pagado";
+        }
+        if (paidAmount > 0 && pendingAmount > 0) {
+            return "En cuotas";
+        }
+        return "Pendiente";
+    })();
+
+    // Próxima cuota
+    const nextInstallment = hasInstallments
+        ? installments
+            .filter((ins: any) => ins.status !== "paid" && ins.due_date)
+            .sort(
+                (a: any, b: any) =>
+                    new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+            )[0]
+        : null;
+
+    const nextDueLabel = nextInstallment
+        ? new Date(nextInstallment.due_date).toLocaleDateString("es-CO")
+        : null;
 
     /* =========================================================
         RENDER
@@ -277,12 +328,50 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
                 <div className="summary-row">
                     <div className="summary-col w-100">
                         <span className="summary-label">Resumen de pago</span>
-                        <span className="summary-value d-flex justify-content-between">
-                            <span>{paymentStatus === "approved" ? "Pagado" : paymentStatus}</span>
-                            <span className="summary-amount">
-                                ${grandTotal.toLocaleString("es-CO")} COP
+
+                        {hasInstallments ? (
+                            <>
+                                <div className="d-flex justify-content-between">
+                                    <span className="summary-value">Total de la reserva</span>
+                                    <span className="summary-amount">
+                                        ${totalFromInstallments.toLocaleString("es-CO")} COP
+                                    </span>
+                                </div>
+
+                                <div className="d-flex justify-content-between mt-1">
+                                    <span className="summary-value">Pagado</span>
+                                    <span className="summary-amount text-success">
+                                        ${paidAmount.toLocaleString("es-CO")} COP
+                                    </span>
+                                </div>
+
+                                <div className="d-flex justify-content-between mt-1">
+                                    <span className="summary-value">Saldo pendiente</span>
+                                    <span className="summary-amount text-warning">
+                                        ${pendingAmount.toLocaleString("es-CO")} COP
+                                    </span>
+                                </div>
+
+                                <div className="d-flex justify-content-between mt-1">
+                                    <span className="summary-value">Estado</span>
+                                    <span>{paymentStatusLabel}</span>
+                                </div>
+
+                                {nextDueLabel && (
+                                    <div className="d-flex justify-content-between mt-1">
+                                        <span className="summary-value">Próximo vencimiento</span>
+                                        <span>{nextDueLabel}</span>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <span className="summary-value d-flex justify-content-between">
+                                <span>{paymentStatusLabel}</span>
+                                <span className="summary-amount">
+                                    ${grandTotal.toLocaleString("es-CO")} COP
+                                </span>
                             </span>
-                        </span>
+                        )}
                     </div>
                 </div>
 

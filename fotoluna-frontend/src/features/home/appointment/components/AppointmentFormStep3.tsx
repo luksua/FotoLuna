@@ -13,13 +13,23 @@ interface Employee {
 
 interface Step3Props {
     bookingId: number;
+    appointmentDate: string;
+    appointmentTime: string;
+    packageIdFK: number | null;
     onBack: () => void;
     onNext: () => void;
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
-const AppointmentStep3Photographer: React.FC<Step3Props> = ({ bookingId, onBack, onNext }) => {
+const AppointmentStep3Photographer: React.FC<Step3Props> = ({
+    bookingId,
+    appointmentDate,
+    appointmentTime,
+    packageIdFK,
+    onBack,
+    onNext,
+}) => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
@@ -46,26 +56,28 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({ bookingId, onBack,
         const fetchEmployees = async () => {
             try {
                 const token = localStorage.getItem("token");
+
                 const res = await axios.get(`${API_BASE}/api/employees/available`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    params: {
+                        appointmentDate,
+                        appointmentTime,
+                        packageIdFK,
+                    },
                 });
 
-                // Si la API devuelve un objeto con "employees", úsalo
-                const data = Array.isArray(res.data)
-                    ? res.data
-                    : Array.isArray(res.data.employees)
-                        ? res.data.employees
-                        : [];
-
-                setEmployees(data);
+                setEmployees(res.data);
             } catch (err) {
                 console.error("Error al cargar empleados:", err);
                 setError("No se pudieron cargar los fotógrafos disponibles.");
             }
         };
 
-        fetchEmployees();
-    }, []);
+        if (appointmentDate && appointmentTime && packageIdFK) {
+            fetchEmployees();
+        }
+    }, [appointmentDate, appointmentTime, packageIdFK]);
+
 
 
     // Confirmar selección
