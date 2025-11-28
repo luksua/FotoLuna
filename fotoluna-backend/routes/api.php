@@ -15,6 +15,12 @@ use App\Http\Controllers\StoragePlanController;
 use App\Http\Controllers\StorageSubscriptionController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BookingActionsController;
+use App\Http\Controllers\BookingInstallmentController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
+    Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('bookings/{booking}')->group(function () {
@@ -24,20 +30,29 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::middleware('auth:sanctum')->get('/appointments-customer',
+Route::middleware('auth:sanctum')->get(
+    '/appointments-customer',
     [AppointmentController::class, 'index']
 );
 Route::middleware('auth:sanctum')->get(
     '/appointments/{appointment}/installments/{installment}/receipt',
-    [AppointmentController::class, 'downloadReceipt']
+    [BookingActionsController::class, 'installmentReceipt']
 );
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get(
-        '/appointments/{appointment}/installments/{installment}/receipt',
-        [AppointmentController::class, 'downloadReceipt']
+    Route::post(
+        '/bookings/{booking}/installments-plan',
+        [BookingInstallmentController::class, 'createInstallmentsPlan']
     );
 });
+
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get(
+//         '/appointments/{appointment}/installments/{installment}/receipt',
+//         [AppointmentController::class, 'downloadReceipt']
+//     );
+// });
 
 Route::get('/bookings/{booking}/summary', [BookingController::class, 'summary']);
 Route::post('/bookings/{booking}/send-confirmation', [BookingController::class, 'sendConfirmation']);
@@ -45,9 +60,9 @@ Route::post('/bookings/{booking}/send-confirmation', [BookingController::class, 
 Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt']);
 
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/mercadopago/checkout/pay', [MercadoPagoController::class, 'pay']);
-});
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::post('/mercadopago/checkout/pay', [MercadoPagoController::class, 'pay']);
+// });
 
 // use App\Http\Controllers\AdminController;
 // use App\Http\Controllers\CustomerController;
@@ -98,9 +113,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
-    Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
+Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
 
-    Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
+Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
 
 Route::get('/availability', [AppointmentController::class, 'availability']);
 Route::get('/events', [EventController::class, 'index']);

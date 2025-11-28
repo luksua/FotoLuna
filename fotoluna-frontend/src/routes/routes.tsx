@@ -10,7 +10,7 @@ import Notification from "../features/home/notification/pages/NotificationCustom
 import Quinces from "../features/home/events/quinces/pages/Quinces";
 import ProfilePage from "../features/home/home/pages/Account";
 import Photos from "../features/home/home/pages/Photos";
-
+import Plan from "../features/home/plan/pages/PlanDashboard";
 
 export const routes = [
     {
@@ -50,5 +50,8 @@ export const routes = [
     }, {
         path: "/fotos",
         element: <Photos />
+    }, {
+        path: "/plan",
+        element: <Plan />
     },
 ];

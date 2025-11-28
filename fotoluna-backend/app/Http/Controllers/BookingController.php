@@ -217,74 +217,107 @@ class BookingController extends Controller
      * Display the specified resource.
      */
     public function show(Booking $booking)
-{
-    // Cargar relaciones necesarias, incluyendo employee
-    $booking->load([
-        'appointment.customer',
-        'appointment.event',
-        'package',
-        'documentType',
-        'employee',
-        // 'lastPayment' si lo tienes
-    ]);
+    {
+        // Cargar relaciones necesarias, incluyendo employee, pagos y cuotas
+        $booking->load([
+            'appointment.customer',
+            'appointment.event',
+            'package',
+            'documentType',
+            'employee',
+            'payments' => function ($q) {
+                $q->orderByDesc('paymentDate');
+            },
+            'installments', // 👈 relación de cuotas
+        ]);
 
-    $appointment = $booking->appointment;
-    $event       = $appointment?->event;
-    $customer    = $appointment?->customer;
-    $package     = $booking->package;
-    $document    = $booking->documentType;
+        $appointment = $booking->appointment;
+        $event = $appointment?->event;
+        $customer = $appointment?->customer;
+        $package = $booking->package;
+        $document = $booking->documentType;
 
-    // Calcular total
-    $total = 0;
-    if ($package) {
-        $total = $package->price;
-    } elseif ($document) {
-        $total = $document->price;
+        // ---------- TOTAL ----------
+        // 1) Si hay cuotas, usamos la suma de las cuotas
+        $totalFromInstallments = (float) $booking->installments->sum('amount');
+
+        if ($totalFromInstallments > 0) {
+            $total = $totalFromInstallments;
+        } else {
+            // 2) Si no hay cuotas, usamos paquete o documento (como tenías antes)
+            $total = 0;
+            if ($package) {
+                $total = $package->price;
+            } elseif ($document) {
+                $total = $document->price;
+            }
+        }
+
+        // ---------- ÚLTIMO PAGO ----------
+        $lastPayment = $booking->payments->first();
+
+        // ---------- ARMAR RESPUESTA ----------
+        return response()->json([
+            // OJO: tu frontend usa data.id, pero aquí tenías bookingId.
+            // Puedes dejar ambos si quieres:
+            'id' => $booking->bookingId,
+            'bookingId' => $booking->bookingId,
+            'bookingStatus' => $booking->bookingStatus,
+            'total' => $total,
+
+            'event' => $event ? [
+                'id' => $event->eventId,
+                'name' => $event->eventType,
+                'category' => $event->category ?? null,
+            ] : null,
+
+            'package' => $package ? [
+                'id' => $package->packageId,
+                'name' => $package->packageName,
+                'price' => $package->price,
+            ] : null,
+
+            'documentType' => $document ? [
+                'id' => $document->id,
+                'name' => $document->name,
+                'price' => $document->price,
+            ] : null,
+
+            'appointment' => $appointment ? [
+                'date' => $appointment->appointmentDate,
+                'time' => $appointment->appointmentTime,
+                'place' => $appointment->place,
+            ] : null,
+
+            'customer' => $customer ? [
+                'id' => $customer->customerId,
+                'name' => $customer->firstName . ' ' . $customer->lastName,
+                'emailCustomer' => $customer->emailCustomer,
+                'email' => $customer->emailCustomer,
+            ] : null,
+
+            'photographer' => $booking->employee ? [
+                'name' => $booking->employee->firstNameEmployee . ' ' . $booking->employee->lastNameEmployee,
+            ] : null,
+
+            // 🔹 Esto es lo que tu AppointmentSummary espera:
+            'last_payment' => $lastPayment ? [
+                'status' => $lastPayment->paymentStatus,   // approved / pending / etc
+                'mp_payment_id' => $lastPayment->mp_payment_id,
+            ] : null,
+
+            // 🔹 Array de cuotas para el resumen del último paso
+            'installments' => $booking->installments->map(function ($ins) {
+                return [
+                    'id' => $ins->id,
+                    'amount' => (float) $ins->amount,
+                    'status' => $ins->status,     // "paid", "pending", "overdue", etc.
+                    'due_date' => $ins->due_date,
+                ];
+            })->values(),
+        ]);
     }
 
-    return response()->json([
-        'bookingId'      => $booking->bookingId,
-        'bookingStatus'  => $booking->bookingStatus,
-        'total'          => $total,
-
-        'event' => $event ? [
-            'id'       => $event->eventId,
-            'name'     => $event->eventType,
-            'category' => $event->category ?? null,
-        ] : null,
-
-        'package' => $package ? [
-            'id'    => $package->packageId,
-            'name'  => $package->packageName,
-            'price' => $package->price,
-        ] : null,
-
-        'documentType' => $document ? [
-            'id'    => $document->id,
-            'name'  => $document->name,
-            'price' => $document->price,
-        ] : null,
-
-        'appointment' => $appointment ? [
-            'date'  => $appointment->appointmentDate,
-            'time'  => $appointment->appointmentTime,
-            'place' => $appointment->place,
-        ] : null,
-
-        'customer' => $customer ? [
-            'id'            => $customer->customerId,
-            'name'          => $customer->firstName . ' ' . $customer->lastName,
-            'emailCustomer' => $customer->emailCustomer, 
-            'email'         => $customer->emailCustomer,  
-        ] : null,
-
-        'photographer' => $booking->employee ? [
-            'name' => $booking->employee->firstNameEmployee . ' ' . $booking->employee->lastNameEmployee,
-        ] : null,
-
-        // 'last_payment' => ...
-    ]);
-}
 
     // public function show(Booking $booking)
     // {

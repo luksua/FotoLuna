@@ -109,26 +109,76 @@ class BookingActionsController extends Controller
     {
         $booking->load([
             'appointment.customer',
-            'appointment.event',     // 👈 AQUÍ en vez de 'event'
+            'appointment.event',
             'package',
             'documentType',
             'photographer',
             'payments' => fn($q) => $q->orderByDesc('paymentDate'),
+            'installments', // 👈 importante
         ]);
 
         $lastPayment = $booking->payments->first();
 
-        $storageSubscription = StorageSubscription::where('bookingIdFK', $booking->bookingId)
-            ->latest()
-            ->first();
+        // Total del servicio: suma de cuotas, o paquete/documento como fallback
+        $totalFromInstallments = $booking->installments->sum('amount');
+
+        $totalService = $totalFromInstallments > 0
+            ? $totalFromInstallments
+            : (
+                optional($booking->package)->price
+                ?? optional($booking->documentType)->price
+                ?? 0
+            );
+
+        // Total pagado: suma de cuotas con estado "paid"
+        $totalPaid = $booking->installments
+            ->where('status', 'paid')
+            ->sum('amount');
+
+        $customer = $booking->appointment?->customer;
 
         $pdf = Pdf::loadView('pdf.booking_receipt', [
             'booking' => $booking,
+            'customer' => $customer,
             'lastPayment' => $lastPayment,
-            'storageSubscription' => $storageSubscription,
+            'totalService' => $totalService,
+            'totalPaid' => $totalPaid,
         ]);
 
         $fileName = 'recibo-FL-' . $booking->bookingId . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * GET /api/appointments/{appointment}/installments/{installment}/receipt
+     * Recibo PDF de una cuota específica
+     */
+    public function installmentReceipt($appointmentId, $installmentId)
+    {
+        $booking = Booking::whereHas('appointment', function ($q) use ($appointmentId) {
+            $q->where('appointmentId', $appointmentId);
+        })
+            ->with(['appointment.customer'])
+            ->firstOrFail();
+
+        $installment = $booking->installments()
+            ->where('id', $installmentId)
+            ->firstOrFail();
+
+        $customer = $booking->appointment->customer ?? null;
+
+        // Si tienes algún log de pagos asociado a la cuota, podrías sacarlo aquí.
+        $lastPayment = null; // o lo que corresponda
+
+        $pdf = Pdf::loadView('pdf.installment_receipt', [
+            'booking' => $booking,
+            'installment' => $installment,
+            'customer' => $customer,
+            'lastPayment' => $lastPayment,
+        ]);
+
+        $fileName = 'recibo-cuota-' . $installment->id . '-FL-' . $booking->bookingId . '.pdf';
 
         return $pdf->download($fileName);
     }

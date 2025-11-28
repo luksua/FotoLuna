@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Throwable;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class AppointmentController extends Controller
 {
@@ -202,11 +202,19 @@ class AppointmentController extends Controller
         $user = $request->user();
 
         if (!$user || !$user->customer) {
-            return response()->json(['data' => []]);
+            // Para mantener la forma, devolvemos un paginador vacío
+            return response()->json([
+                'data' => [],
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => 8,
+                'total' => 0,
+            ]);
         }
 
         $customerId = $user->customer->customerId;
 
+        // 🔹 AHORA CON PAGINACIÓN (8 por página)
         $appointments = Appointment::with([
             'event',
             'booking.package',
@@ -216,31 +224,38 @@ class AppointmentController extends Controller
             ->where('customerIdFK', $customerId)
             ->orderByDesc('appointmentDate')
             ->orderByDesc('appointmentTime')
-            ->get();
+            ->paginate(8); // 👈 aquí está la magia
 
-        $data = $appointments->map(function ($a) {
-
+        // Mapear SOLO la colección interna
+        $mapped = $appointments->getCollection()->map(function ($a) {
             $booking = $a->booking;
 
-            // Si por algún motivo no hay booking asociado
+            // ---------------------------
+            //  SIN BOOKING ASOCIADO
+            // ---------------------------
             if (!$booking) {
                 return [
                     'id' => $a->appointmentId,
+                    'booking_id' => null,          // no hay booking
+                    'package' => null,
+
                     'event_type' => $a->event?->eventType,
                     'datetime' => Carbon::parse(
                         ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
                     )->toIso8601String(),
                     'place' => $a->place,
-                    'reservation_status' => $a->appointmentStatus,
+
+                    'reservation_status' => $a->appointmentStatus ?? 'Sin estado',
                     'payment_status' => 'Sin información',
                     'document_types' => [],
+                    'appointment_status' => $a->appointmentStatus,
                     'payment' => null,
                 ];
             }
 
-            /** --------------------
-             *  DOCUMENTOS
-             * --------------------*/
+            // ---------------------------
+            //  DOCUMENTOS
+            // ---------------------------
             $documentTypes = [];
             if ($booking->documentType) {
                 $documentTypes[] = [
@@ -250,9 +265,9 @@ class AppointmentController extends Controller
                 ];
             }
 
-            /** --------------------
-             *  CUOTAS / PAGOS
-             * --------------------*/
+            // ---------------------------
+            //  CUOTAS / PAGOS
+            // ---------------------------
             $installments = $booking->installments ?? collect();
 
             $total = (float) $installments->sum('amount');
@@ -263,7 +278,7 @@ class AppointmentController extends Controller
             $pendingCount = $installments->where('status', 'pending')->count();
             $overdueCount = $installments->where('status', 'overdue')->count();
 
-            // ------- Estado de pago (usando SOLO las cuotas) -------
+            // Estado de pago (usando SOLO las cuotas)
             if ($installments->isEmpty()) {
                 $paymentStatus = 'Sin información';
             } elseif ($pendingAmount == 0 && $total > 0) {
@@ -278,16 +293,45 @@ class AppointmentController extends Controller
                 $paymentStatus = 'Pendiente';
             }
 
+            // ---------------------------
+            //  ESTADO DE LA RESERVA (bookingStatus)
+            // ---------------------------
+            $bookingStatus = $booking->bookingStatus ?? null;
+
+            switch ($bookingStatus) {
+                case 'Pending':
+                    $reservationStatus = 'Pendiente de confirmación';
+                    break;
+                case 'Confirmed':
+                    $reservationStatus = 'Confirmada';
+                    break;
+                case 'Completed':
+                    $reservationStatus = 'Completada';
+                    break;
+                case 'Cancelled':
+                    $reservationStatus = 'Cancelada';
+                    break;
+                default:
+                    $reservationStatus = $a->appointmentStatus ?? 'Sin estado';
+                    break;
+            }
+
             return [
                 'id' => $a->appointmentId,
+                'booking_id' => $booking->bookingId,                              // 👈 para pagos/recibos
+                'package' => $booking->package?->packageName ?? null,            // 👈 nombre de paquete
+
                 'event_type' => $a->event?->eventType ?? '—',
                 'datetime' => Carbon::parse(
                     ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
                 )->toIso8601String(),
                 'place' => $a->place,
-                'reservation_status' => $a->appointmentStatus,
+
+                'reservation_status' => $reservationStatus,
                 'payment_status' => $paymentStatus,
+
                 'document_types' => $documentTypes,
+                'appointment_status' => $a->appointmentStatus,
 
                 'payment' => $installments->isEmpty() ? null : [
                     'total' => $total,
@@ -316,7 +360,11 @@ class AppointmentController extends Controller
             ];
         });
 
-        return response()->json(['data' => $data]);
+        // Reemplazamos la colección original por la mapeada
+        $appointments->setCollection($mapped);
+
+        // Devolvemos el paginador completo (data + meta + links)
+        return response()->json($appointments);
     }
 
     // public function downloadReceipt(Appointment $appointment, BookingPaymentInstallment $installment)
@@ -518,84 +566,121 @@ class AppointmentController extends Controller
     //     return response()->json($days);
     // }
 
-    public function availability(Request $request)
-    {
-        $baseSlots = [
-            '08:00:00',
-            '09:00:00',
-            '10:00:00',
-            '11:00:00',
-            '12:00:00',
-            '13:00:00',
-            '14:00:00',
-            '15:00:00',
-            '16:00:00',
-            '17:00:00',
-            '18:00:00',
-            '19:00:00',
-        ];
+   public function availability(Request $request)
+{
+    $baseSlotsWeekday = [
+        '08:00:00',
+        '09:00:00',
+        '10:00:00',
+        '11:00:00',
+        '12:00:00',
+        '13:00:00',
+        '14:00:00',
+        '15:00:00',
+        '16:00:00',
+        '17:00:00',
+        '18:00:00',
+        '19:00:00',
+    ];
 
-        $date = $request->query('date');
-        $month = $request->query('month');
-        $year = $request->query('year', now()->year);
+    $baseSlotsSunday = [
+        '09:00:00',
+        '10:00:00',
+        '11:00:00',
+        '14:00:00',
+        '15:00:00',
+        '16:00:00',
+    ];
 
-        // Si piden disponibilidad de un día específico:
-        if ($date) {
-            $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+    $date  = $request->query('date');
+    $month = $request->query('month');
+    $year  = $request->query('year', now()->year);
 
-            // Bloquear domingos o días pasados
-            if (Carbon::parse($date)->isBefore(Carbon::today())) {
-                return response()->json([
-                    'available' => [],
-                    'blocked' => [],
-                    'allBlocked' => true,
-                ]);
-            }
+    /* ------------ DÍA ESPECÍFICO ------------ */
+    if ($date) {
+        $day = Carbon::parse($date);
 
-            // Limitar horarios los domingos (opcional)
-            if ($dayOfWeek === 0) {
-                $baseSlots = ['09:00:00', '10:00:00', '11:00:00', '14:00:00', '15:00:00', '16:00:00'];
-            }
-
-            $appointments = Appointment::whereDate('appointmentDate', $date)
-                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
-                ->pluck('appointmentTime')
-                ->toArray();
-
-            $available = array_values(array_diff($baseSlots, $appointments));
-            $allBlocked = count($available) === 0;
-
+        // días pasados bloqueados
+        if ($day->isBefore(Carbon::today())) {
             return response()->json([
-                'available' => $available,
-                'blocked' => $appointments,
-                'allBlocked' => $allBlocked,
+                'available'   => [],
+                'blocked'     => [],
+                'allBlocked'  => true,
             ]);
         }
 
-        // Si piden disponibilidad mensual (month + year)
-        if ($month) {
-            $appointments = Appointment::whereMonth('appointmentDate', $month)
-                ->whereYear('appointmentDate', $year)
-                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
-                ->get(['appointmentDate', 'appointmentTime']);
+        $dayOfWeek = $day->dayOfWeek;
+        $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
+            ? $baseSlotsSunday
+            : $baseSlotsWeekday;
 
-            $grouped = $appointments->groupBy(function ($a) {
-                return Carbon::parse($a->appointmentDate)->format('Y-m-d');
-            });
+        $appointments = Appointment::whereDate('appointmentDate', $date)
+            ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+            ->pluck('appointmentTime')
+            ->toArray();
 
-            $days = [];
-            foreach ($grouped as $d => $slots) {
-                $taken = $slots->pluck('appointmentTime')->toArray();
-                $available = array_diff($baseSlots, $taken);
-                $days[$d] = ['allBlocked' => count($available) === 0];
+        $available = array_values(array_diff($baseSlots, $appointments));
+        $allBlocked = count($available) === 0;
+
+        return response()->json([
+            'available'  => $available,
+            'blocked'    => $appointments,
+            'allBlocked' => $allBlocked,
+        ]);
+    }
+
+    /* ------------ DISPONIBILIDAD MENSUAL ------------ */
+    if ($month) {
+        $today = Carbon::today();
+
+        // Traemos todas las citas del mes
+        $appointments = Appointment::whereMonth('appointmentDate', $month)
+            ->whereYear('appointmentDate', $year)
+            ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+            ->get(['appointmentDate', 'appointmentTime']);
+
+        // Agrupamos por fecha
+        $grouped = $appointments->groupBy(function ($a) {
+            return Carbon::parse($a->appointmentDate)->toDateString(); // Y-m-d
+        });
+
+        $days = [];
+
+        $current = Carbon::createFromDate($year, $month, 1)->startOfDay();
+        $end     = (clone $current)->endOfMonth();
+
+        while ($current->lessThanOrEqualTo($end)) {
+            $dateStr   = $current->toDateString();
+            $dayOfWeek = $current->dayOfWeek;
+
+            // Past days → bloqueados
+            if ($current->isBefore($today)) {
+                $days[$dateStr] = ['allBlocked' => true];
+                $current->addDay();
+                continue;
             }
 
-            return response()->json($days);
+            // slots según día (mismo criterio que arriba)
+            $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+                ? $baseSlotsSunday
+                : $baseSlotsWeekday;
+
+            $taken = ($grouped[$dateStr] ?? collect())
+                ->pluck('appointmentTime')
+                ->toArray();
+
+            $available = array_diff($baseSlotsForDay, $taken);
+            $days[$dateStr] = ['allBlocked' => count($available) === 0];
+
+            $current->addDay();
         }
 
-        // Si no se pasó parámetro, error
-        return response()->json(['message' => 'Debe proporcionar date o month'], 400);
+        return response()->json($days);
     }
+
+    return response()->json(['message' => 'Debe proporcionar date o month'], 400);
+}
+
 
 
 

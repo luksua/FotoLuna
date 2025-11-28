@@ -106,6 +106,11 @@ const HomeMobileSidebar: React.FC = () => {
                                     </Link>
                                 </li>
                                 <li>
+                                    <Link to="/plan" className="nav-link">
+                                        <i className="bi bi-cloud me-3"></i>Administrar Plan
+                                    </Link>
+                                </li>
+                                <li>
                                     <Link to="/notificaciones" className="nav-link">
                                         <i className="bi bi-bell me-3"></i>Notificaciones
                                     </Link>
