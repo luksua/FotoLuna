@@ -6,7 +6,7 @@ import AdminUsers from "../features/Admin/AdminUsers/pages/AdminUsers";
 import AdminEmployee from "../features/Admin/AdminEmployee/pages/AdminEmployee";
 import NotificationsEmployee from "../features/Admin/Notification/Pages/NotificationsEmployee";
 import AdminEvents from "../features/Admin/AdminEvents/pages/AdminEvents";
-import AdminAppointments from "../features/Admin/AdminAppointment/pages/AdminAppointments";
+import AdminAppointments from "../features/Admin/AdminApointments/pages/AdminAppointments";
 
 export const adminRoutes = [
     {
