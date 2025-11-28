@@ -12,17 +12,7 @@ type User = {
     avatar: string;
 };
 
-const sampleUsers: User[] = Array.from({ length: 27 }).map((_, i) => {
-    const idx = i + 1;
-    return {
-        id: idx,
-        name: `Usuario ${idx}`,
-        email: `usuario${idx}@ejemplo.com`,
-        phone: `+57 300 000 ${String(1000 + idx).slice(-4)}`,
-        document: `CC ${10000000 + idx}`,
-        avatar: imgperfil,
-    };
-});
+
 
 type TabType = 'info' | 'reservas' | 'historial';
 
@@ -39,19 +29,19 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <div className="modal-tabs">
-                        <button 
+                        <button
                             className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
                             onClick={() => setActiveTab('info')}
                         >
                             Información
                         </button>
-                        <button 
+                        <button
                             className={`tab-button ${activeTab === 'reservas' ? 'active' : ''}`}
                             onClick={() => setActiveTab('reservas')}
                         >
                             Reservas
                         </button>
-                        <button 
+                        <button
                             className={`tab-button ${activeTab === 'historial' ? 'active' : ''}`}
                             onClick={() => setActiveTab('historial')}
                         >
@@ -66,8 +56,8 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
                         <div className="user-detail">
                             <img className="modal-avatar" src={user.avatar} alt={`Foto ${user.name}`} />
                             <h2>{user.name}</h2>
-                            <p>{user.email}</p>
-                            <p>{user.phone}</p>
+                            <p>Correo: {user.email}</p>
+                            <p>Teléfono: {user.phone}</p>
                             <p>Documento: {user.document}</p>
                         </div>
                     )}
@@ -90,20 +80,55 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
 };
 
 const EmployeeAdmin: React.FC = () => {
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        setLoading(true);
+        fetch('/api/admin/employees')
+            .then((res) => res.json())
+            .then((data) => {
+                if (!mounted) return;
+                if (data && data.success) {
+                    const mapped: User[] = data.data.map((e: any) => ({
+                        id: e.id,
+                        name: e.name,
+                        email: e.email,
+                        phone: e.phone || '',
+                        document: e.document || '',
+                        avatar: e.avatar || imgperfil,
+                    }));
+                    setUsers(mapped);
+                } else {
+                    setError('No se pudieron cargar los empleados');
+                }
+            })
+            .catch((err) => {
+                setError(err.message || 'Error al obtener empleados');
+            })
+            .finally(() => setLoading(false));
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    ////////// paginacion y filtro
     const [page, setPage] = useState(1);
     const [query, setQuery] = useState("");
     const perPage = 9;
 
-    // Filtro
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        if (!q) return sampleUsers;
-        return sampleUsers.filter((u) =>
+        if (!q) return users;
+        return users.filter((u) =>
             [u.name, u.email, u.phone, u.document].some((field) =>
-                field.toLowerCase().includes(q)
+                (field || '').toLowerCase().includes(q)
             )
         );
-    }, [query]);
+    }, [query, users]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     useEffect(() => setPage(1), [query]);
@@ -118,7 +143,7 @@ const EmployeeAdmin: React.FC = () => {
     return (
         <HomeLayout>
             <div className="admin-root">
-                <header className="admin-head"> 
+                <header className="admin-head">
                     <div className="search-row">
                         <input
                             type="search"
@@ -132,18 +157,20 @@ const EmployeeAdmin: React.FC = () => {
                 </header>
             </div>
 
-            <div className="admin-content">  
+            <div className="admin-content">
                 <section className="admin-grid">
-                    {pageUsers.length ? (
+                    {loading ? (
+                        <div style={{ gridColumn: "1/-1", textAlign: "center" }}>Cargando empleados...</div>
+                    ) : pageUsers.length ? (
                         pageUsers.map((u) => (
                             <article className="admin-card" key={u.id}>
-                                <img className="admin-avatar" src={u.avatar} alt={`Foto ${u.name}`} />
+                                <img className="admin-avatar" src={u.avatar || imgperfil} alt={`Foto ${u.name}`} />
                                 <div className="admin-info">
                                     <h3>{u.name}</h3>
                                     <p className="muted">{u.email}</p>
                                     <p className="muted">{u.phone}</p>
-                                    <p className="muted small">Documento: {u.document}</p>
-                                    <button 
+                                    <p className="muted small">{u.document}</p>
+                                    <button
                                         className="ver-mas-btn"
                                         onClick={() => setSelectedUser(u)}
                                     >
@@ -181,18 +208,18 @@ const EmployeeAdmin: React.FC = () => {
                         &rarr;
                     </button>
                 </nav>
-
-                <footer className="admin-footer">
-                    <p>FotoLuna ©</p>
-                </footer>
             </div>
 
             {selectedUser && (
-                <UserModal 
-                    user={selectedUser} 
+                <UserModal
+                    user={selectedUser}
                     onClose={() => setSelectedUser(null)}
                 />
             )}
+
+            <footer className="admin-footer">
+                <p>FotoLuna ©</p>
+            </footer>
         </HomeLayout>
     );
 };

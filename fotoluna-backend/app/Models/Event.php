@@ -11,7 +11,8 @@ class Event extends Model
 
     protected $fillable = [
         'eventType',
-        'category'
+        'category',
+        'state'
     ];
 
         public function getNameAttribute()

@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Package extends Model
 {
     protected $primaryKey = 'packageId';
+    public $timestamps = false;
+
+    protected $fillable = [
+        'packageName',
+        'packageDescription',
+        'price',
+        'eventIdFK',
+        'isGeneral',
+        'state'
+    ];
 
     public function event()
     {

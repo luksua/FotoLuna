@@ -18,6 +18,14 @@
     color: var(--text);
 }
 
+/* Centrar contenido principal y controlar espacios laterales */
+.admin-content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 12px; /* espacio lateral para que no quede pegado al borde */
+    box-sizing: border-box;
+}
+
 /* Header */
 .admin-head {
     display: flex;
@@ -40,23 +48,24 @@
 
 .admin-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
     align-items: stretch;
-    grid-auto-rows: 160px;
+    grid-auto-rows: 150px;
+    justify-content: center;
 }
 
 /* Tarjeta con tamaños fijos */
 .admin-card {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
     background: linear-gradient(180deg, var(--card), var(--card));
     border-radius: var(--radius);
-    padding: 12px 14px;
+    padding: 10px 12px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
     border: 1px solid var(--border);
-    height: 160px;
+    height: 150px;
     width: 100%;
     box-sizing: border-box;
     transition: transform .12s ease, box-shadow .12s ease;
@@ -69,12 +78,12 @@
 
 /* Avatar con tamaño fijo */
 .admin-avatar {
-    width: 92px;
-    height: 92px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
     border-radius: 8px;
     border: 2px solid rgba(0, 0, 0, 0.06);
-    flex: 0 0 92px;
+    flex: 0 0 80px;
 }
 
 .admin-info {
@@ -201,8 +210,6 @@
     text-decoration: underline;
     margin-top: 4px;
 }
-
-/* Modal */
 .modal-overlay {
     position: fixed;
     top: 0;
