@@ -5,13 +5,11 @@
 }
 
 .app-header {
-  color: white;
+  color: rgb(0, 0, 0);
   margin-bottom: 2rem;
 }
 
-.app-header h1 {
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
+
 
 .app-header .lead {
   opacity: 0.9;
@@ -31,7 +29,7 @@
 .filters-section .btn-group {
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .filter-btn {
@@ -50,6 +48,7 @@
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
+  margin-bottom: 50px;
 }
 
 .payment-table {
@@ -102,7 +101,7 @@
 
 .action-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .pagination-section .pagination {
@@ -113,18 +112,30 @@
   border: none;
   border-radius: 8px;
   margin: 0 2px;
-  color: #6c757d;
+  color: #ffffff;
   font-weight: 500;
 }
 
+.text-price {
+  color: #C792DF;
+}
+
 .pagination .page-item.active .page-link {
- 
+
   border: none;
 }
 
+.page-item.active .page-link {
+  background-color: #C792DF;
+}
+
+.page-link {
+  background-color: #dfcaf9;
+}
+
 .pagination .page-link:hover {
-  background-color: #e9ecef;
-  color: #495057;
+  background-color: #C792DF;
+  color: #ffffff;
 }
 
 /* Responsive */
@@ -132,20 +143,20 @@
   .app-container {
     padding: 10px;
   }
-  
+
   .stats-card .card-body {
     padding: 1rem;
   }
-  
+
   .filter-btn {
     padding: 10px 15px;
     font-size: 0.9rem;
   }
-  
+
   .payment-table {
     font-size: 0.9rem;
   }
-  
+
   .action-btn {
     font-size: 0.8rem;
     padding: 5px 10px;
@@ -158,6 +169,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

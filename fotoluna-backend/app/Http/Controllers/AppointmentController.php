@@ -218,7 +218,6 @@ class AppointmentController extends Controller
 
         $customerId = $user->customer->customerId;
 
-        // 🔹 AHORA CON PAGINACIÓN (8 por página)
         $appointments = Appointment::with([
             'event',
             'booking.package',
@@ -228,7 +227,7 @@ class AppointmentController extends Controller
             ->where('customerIdFK', $customerId)
             ->orderByDesc('appointmentDate')
             ->orderByDesc('appointmentTime')
-            ->paginate(8); // 👈 aquí está la magia
+            ->paginate(8);
 
         // Mapear SOLO la colección interna
         $mapped = $appointments->getCollection()->map(function ($a) {
