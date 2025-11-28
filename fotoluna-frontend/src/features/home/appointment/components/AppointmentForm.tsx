@@ -28,6 +28,16 @@ type StoragePlan = {
     price: number | string;
 };
 
+type StorageSubscriptionForWizard = {
+    status: "active" | "cancelled" | "expired";
+    ends_at: string;
+    plan: StoragePlan;
+};
+
+type StorageDashboardForWizard = {
+    currentSubscription: StorageSubscriptionForWizard | null;
+};
+
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 const NEQUI_PAYMENT_LINK =
@@ -90,6 +100,10 @@ const AppointmentForm: React.FC = () => {
     const preselectedEventId = location.state?.eventId ?? null;
     const preselectedPackageId = location.state?.packageId ?? null;
     const preselectedDocumentTypeId = location.state?.documentTypeId ?? null;
+
+    const [storageDashboard, setStorageDashboard] =
+        useState<StorageDashboardForWizard | null>(null);
+    const [hasPaidStoragePlan, setHasPaidStoragePlan] = useState(false);
 
     // 🔹 Paso 1 -> siguiente (con lógica de salto de paso 2)
     const handleNext = async (data: {
@@ -228,11 +242,52 @@ const AppointmentForm: React.FC = () => {
         fetchBooking();
     }, [bookingId]);
 
-    // Recalcular total completo (sesión + plan nube)
+    // Cargar info del plan de almacenamiento del usuario
     useEffect(() => {
-        const extra = selectedStoragePlan ? Number(selectedStoragePlan.price) : 0;
+        const fetchStorageDashboard = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) return;
+
+                const res = await axios.get(`${API_BASE}/api/storage/dashboard`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
+                    },
+                });
+
+                const data: StorageDashboardForWizard = {
+                    currentSubscription: res.data.currentSubscription ?? null,
+                };
+
+                setStorageDashboard(data);
+
+                const sub = data.currentSubscription;
+                const price = sub?.plan ? Number(sub.plan.price) : 0;
+
+                const isPaid =
+                    sub &&
+                    price > 0 &&
+                    (sub.status === "active" || sub.status === "cancelled");
+
+                setHasPaidStoragePlan(!!isPaid);
+            } catch (err) {
+                console.error("Error cargando dashboard de storage:", err);
+            }
+        };
+
+        fetchStorageDashboard();
+    }, []);
+
+    // Recalcular total completo (sesión + plan nube SI NO tiene plan ya)
+    useEffect(() => {
+        const extra =
+            !hasPaidStoragePlan && selectedStoragePlan
+                ? Number(selectedStoragePlan.price)
+                : 0;
+
         setGrandTotal(total + extra);
-    }, [total, selectedStoragePlan]);
+    }, [total, selectedStoragePlan, hasPaidStoragePlan]);
 
     // Paso 2 -> 3
     const handlePackageConfirm = (data: { bookingId: number }) => {
@@ -379,49 +434,95 @@ const AppointmentForm: React.FC = () => {
                 {step === 4 && (
                     <div className="container plans mt-4">
                         <h3 className="mb-3">Plan de almacenamiento</h3>
-                        <div className="plan-description">
-                            <p className="text-muted mb-4">
-                                Elige un plan para guardar tus fotos editadas en la nube de FotoLuna.
-                                Este costo se suma al valor de tu sesión.
-                            </p>
-                        </div>
 
-                        <StoragePlansSelector
-                            selectedPlan={selectedStoragePlan}
-                            onSelect={setSelectedStoragePlan}
-                            showTitle={false}
-                        />
-
-                        <div className="d-flex justify-content-between mt-4 align-items-center">
-                            {/* IZQUIERDA → Botón Atrás */}
-                            <div>
-                                <Button value="Atrás" onClick={handleBack} />
-                            </div>
-
-                            {/* DERECHA → Totales + Botón Continuar */}
-                            <div className="text-end">
-                                <div className="mb-2">
-                                    <strong>Total sesión: </strong>
-                                    ${total.toLocaleString("es-CO")} COP
+                        {hasPaidStoragePlan && storageDashboard?.currentSubscription ? (
+                            <>
+                                <div className="alert alert-success" style={{ borderRadius: "12px" }}>
+                                    <p className="mb-1">
+                                        <strong>¡Buenas noticias!</strong>
+                                    </p>
+                                    <p className="mb-1">
+                                        Ya tienes un <strong>plan de almacenamiento activo</strong> en FotoLuna.
+                                    </p>
+                                    <p className="mb-1">
+                                        Plan actual:{" "}
+                                        <strong>{storageDashboard.currentSubscription.plan.name}</strong>
+                                    </p>
+                                    <p className="mb-0">
+                                        Vigente hasta el{" "}
+                                        <strong>
+                                            {new Date(
+                                                storageDashboard.currentSubscription.ends_at
+                                            ).toLocaleDateString("es-CO", {
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })}
+                                        </strong>
+                                        . Tus fotos de esta sesión también se guardarán ahí,{" "}
+                                        <strong>sin costo extra</strong>.
+                                    </p>
                                 </div>
 
-                                {selectedStoragePlan && (
-                                    <div className="mb-2">
-                                        <strong>Plan nube: </strong>
-                                        + $
-                                        {Number(selectedStoragePlan.price).toLocaleString("es-CO")}{" "}
-                                        COP
+                                <p className="text-muted mb-4">
+                                    Puedes continuar con el pago de tu sesión. Cuando termine el proceso de
+                                    edición, subiremos tus fotos a tu plan actual de FotoLuna.
+                                </p>
+
+                                <div className="d-flex justify-content-between mt-4 align-items-center">
+                                    <div>
+                                        <Button value="Atrás" onClick={handleBack} />
                                     </div>
-                                )}
-
-                                <div className="mb-3">
-                                    <strong>Total actual: </strong>
-                                    ${grandTotal.toLocaleString("es-CO")} COP
+                                    <div>
+                                        <Button value="Continuar a pago" onClick={() => setStep(5)} />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* aquí se queda tu versión actual cuando NO tiene plan */}
+                                <div className="plan-description">
+                                    <p className="text-muted mb-4">
+                                        Elige un plan para guardar tus fotos editadas en la nube de FotoLuna.
+                                        Este costo se suma al valor de tu sesión.
+                                    </p>
                                 </div>
 
-                                <Button value="Continuar a pago" onClick={() => setStep(5)} />
-                            </div>
-                        </div>
+                                <StoragePlansSelector
+                                    selectedPlan={selectedStoragePlan}
+                                    onSelect={setSelectedStoragePlan}
+                                    showTitle={false}
+                                />
+
+                                <div className="d-flex justify-content-between mt-4 align-items-center">
+                                    <div>
+                                        <Button value="Atrás" onClick={handleBack} />
+                                    </div>
+
+                                    <div className="text-end">
+                                        <div className="mb-2">
+                                            <strong>Total sesión: </strong>
+                                            ${total.toLocaleString("es-CO")} COP
+                                        </div>
+
+                                        {selectedStoragePlan && (
+                                            <div className="mb-2">
+                                                <strong>Plan nube: </strong>
+                                                + $
+                                                {Number(selectedStoragePlan.price).toLocaleString("es-CO")} COP
+                                            </div>
+                                        )}
+
+                                        <div className="mb-3">
+                                            <strong>Total actual: </strong>
+                                            ${grandTotal.toLocaleString("es-CO")} COP
+                                        </div>
+
+                                        <Button value="Continuar a pago" onClick={() => setStep(5)} />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
@@ -463,22 +564,19 @@ const AppointmentForm: React.FC = () => {
                                 </span>
                             </div>
 
-                            {selectedStoragePlan && (
+                            {!hasPaidStoragePlan && selectedStoragePlan && (
                                 <div className="payment-summary-row">
                                     <span className="label">
                                         Plan nube: {selectedStoragePlan.name}
                                     </span>
                                     <span className="value">
                                         + $
-                                        {Number(selectedStoragePlan.price).toLocaleString(
-                                            "es-CO"
-                                        )}{" "}
-                                        COP
+                                        {Number(selectedStoragePlan.price).toLocaleString("es-CO")} COP
                                     </span>
                                 </div>
                             )}
 
-                            {/* 🔽 AQUÍ CAMBIA EL RESUMEN SEGÚN SEA TOTAL O ABONO */}
+                            {/* AQUÍ CAMBIA EL RESUMEN SEGÚN SEA TOTAL O ABONO */}
                             <div className="payment-summary-row total">
                                 <span className="label">
                                     {paymentPlanMode === "partial"
@@ -688,7 +786,9 @@ const AppointmentForm: React.FC = () => {
                                                     paymentMethod={paymentMethod === "Card" ? "Card" : "PSE"}
                                                     onBack={handleBack}
                                                     onSuccess={handleOnlinePaymentSuccess}
-                                                    storagePlanId={selectedStoragePlan?.id ?? null}
+                                                    storagePlanId={
+                                                        hasPaidStoragePlan ? null : selectedStoragePlan?.id ?? null
+                                                    }
                                                     installmentId={paymentInstallmentId}
                                                 />
                                             </>

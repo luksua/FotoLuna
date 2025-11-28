@@ -22,9 +22,14 @@ use App\Http\Controllers\Admin\AdminEventsController;
 use App\Http\Controllers\Admin\AdminPackagesController;
 use App\Http\Controllers\Admin\AdminDocumentTypesController;
 
+Route::post('/mercadopago/storage/pay', [PaymentController::class, 'payStoragePlan'])
+    ->middleware('auth:sanctum');
+
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
+    Route::post('storage/cancel-subscription', [StoragePlanController::class, 'cancelSubscription']);
 });
 use App\Http\Controllers\AdminAppointmentController;
 use App\Http\Controllers\CustomerController;
