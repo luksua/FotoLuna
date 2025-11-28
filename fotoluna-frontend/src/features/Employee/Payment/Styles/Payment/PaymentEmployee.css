@@ -1,0 +1,170 @@
+/* styles/App.css */
+.app-container {
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+.app-header {
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.app-header .lead {
+  opacity: 0.9;
+}
+
+.stats-card {
+  border: none;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.stats-card .card-body {
+  padding: 2rem;
+}
+
+.filters-section .btn-group {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.filter-btn {
+  border: none;
+  padding: 12px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+}
+
+.payment-table-card {
+  border: none;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.payment-table {
+  margin-bottom: 0;
+}
+
+.payment-table th {
+  border-top: none;
+  font-weight: 600;
+  color: #6c757d;
+  padding: 1rem 0.75rem;
+  background-color: transparent;
+}
+
+.payment-table td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+  border-color: #f8f9fa;
+}
+
+.payment-row:hover {
+  background-color: rgba(44, 49, 56, 0.05);
+  transform: translateX(4px);
+  transition: all 0.2s ease;
+}
+
+.description-cell {
+  max-width: 200px;
+}
+
+.installment-progress {
+  min-width: 120px;
+}
+
+.installment-progress .progress {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.action-buttons {
+  min-width: 100px;
+}
+
+.action-btn {
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.pagination-section .pagination {
+  margin-bottom: 0;
+}
+
+.pagination .page-link {
+  border: none;
+  border-radius: 8px;
+  margin: 0 2px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.pagination .page-item.active .page-link {
+ 
+  border: none;
+}
+
+.pagination .page-link:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  .stats-card .card-body {
+    padding: 1rem;
+  }
+  
+  .filter-btn {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .payment-table {
+    font-size: 0.9rem;
+  }
+  
+  .action-btn {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stats-card,
+.payment-table-card {
+  animation: fadeIn 0.6s ease-out;
+}

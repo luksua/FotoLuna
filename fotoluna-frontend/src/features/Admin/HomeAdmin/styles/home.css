@@ -13,14 +13,7 @@
     --transition: all 0.3s ease;
 }
 
-/* Main Content Styles */
-.main-content {
-    margin-left: 250px;
-    margin-top: 70px;
-    padding: 30px;
-    width: calc(100% - 250px);
-    transition: var(--transition);
-}
+
 
 .welcome-section {
     background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-blue));
@@ -35,7 +28,7 @@
 }
 
 .welcome-text h2 {
-    font-size: 1.8rem;
+    font-size: 1rem;
     margin-bottom: 5px;
 }
 
@@ -236,19 +229,40 @@ footer {
 
 /* Animaciones */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .card-employee {
     animation: fadeIn 0.5s ease forwards;
 }
 
-.citos { animation-delay: 0.1s; }
-.nube { animation-delay: 0.2s; }
-.subir { animation-delay: 0.3s; }
-.administrar { animation-delay: 0.4s; }
-.clientes { animation-delay: 0.5s; }
+.citos {
+    animation-delay: 0.1s;
+}
+
+.nube {
+    animation-delay: 0.2s;
+}
+
+.subir {
+    animation-delay: 0.3s;
+}
+
+.administrar {
+    animation-delay: 0.4s;
+}
+
+.clientes {
+    animation-delay: 0.5s;
+}
 
 /* Responsive */
 @media (max-width: 992px) {
@@ -262,13 +276,13 @@ footer {
     .dashboard {
         grid-template-columns: 1fr;
     }
-    
+
     .welcome-section {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
-    
+
     .welcome-text h2 {
         font-size: 1.5rem;
     }

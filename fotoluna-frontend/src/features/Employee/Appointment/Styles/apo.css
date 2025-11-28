@@ -1,196 +1,200 @@
-.upload-container {
-    width: 1310px;
-    margin: -10px 0 1px -20px;
-    padding: 0 2px;
+/* =========================================================
+   PÁGINA DE CITAS - PASTEL GLOW + TARJETAS EXPANDIBLES
+   ========================================================= */
 
+/* Fondo suave de toda la página */
+.appointments-page {
+    background: linear-gradient(180deg, #fff 0%, #fff 60%, #fdf5ff 100%);
 }
 
-/* h3 {
-    margin-top: -20px;
-    color: #5a5a5a;
-    font-size: 1.5rem;
-} */
-
-hr {
-    border-top: 1px solid #b790b7;
-    margin-bottom: 20px;
+/* Título */
+.appointments-page h3.fw-bold.text-dark {
+    font-size: 1rem;
+    letter-spacing: 0.2px;
 }
 
-.upload-box {
-    background: white;
+.appointments-page hr {
+    border-top: 1px solid rgba(220, 171, 223, 0.75);
+}
+
+.appointments-page .appointments-new-btn {
+    background: linear-gradient(135deg, #f3c4e3, #f687b9);
+    box-shadow: 0 5px 12px rgba(246, 135, 185, 0.35);
+}
+
+.appointments-page .appointments-new-btn:hover {
+    box-shadow: 0 8px 18px rgba(246, 135, 185, 0.45);
+}
+
+/* =========================================================
+   TARJETAS (CALENDARIO Y PANEL)
+   ========================================================= */
+/* === Cards más suaves, menos glow rosa === */
+.appointments-page .card {
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(160, 107, 181, 0.15);
-    padding: 40px;
-    border: 1px solid rgba(160, 107, 181, 0.1);
+    background: #ffffff;
+    backdrop-filter: blur(8px);
+    border: 1px solid #f3e7fb;
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.05),
+        0 10px 28px rgba(210, 172, 223, 0.18);
 }
 
-.appointments-container {
-    display: flex;
-    gap: 24px;
-    margin: 24px auto 40px;
-    justify-content: center;
-    width: 1250px;
-    align-items: flex-start;
+.appointments-page .appointment-card-icon {
+    background: radial-gradient(circle at 30% 30%, #fef2fb, #f49ac3);
+    box-shadow: 0 3px 8px rgba(244, 154, 195, 0.4);
 }
 
-.calendar-section {
-    flex: 2;
-    min-width: 0;
+.appointments-page .card:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.08),
+        0 16px 34px rgba(210, 172, 223, 0.22);
 }
 
-.appointment-details {
-    flex: 1;
-    min-width: 350px;
-    background: #ede6f3;
-    border-radius: 16px;
-    padding: 24px;
-    font-family: 'quicksand';
-    box-shadow: 0 4px 12px rgba(160, 107, 181, 0.15);
-    height: fit-content;
-    position: sticky;
-    top: 24px;
+.appointments-page .appointment-card {
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(210, 172, 223, 0.25);
 }
 
-/* Header del calendario */
+.appointments-page .appointment-card.selected {
+    background: #fff9fd;
+    border: 1px solid #f4c5de;
+}
+
+/* =========================================================
+   CALENDARIO
+   ========================================================= */
+
+.custom-calendar {
+    background: #ffffff;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    padding-bottom: 8px;
+    overflow: hidden;
+}
+
 .calendar-header {
-    background: #dcabdf;
-    border-radius: 16px 16px 0 0;
-    padding: 20px;
-    margin-bottom: 0;
+
+    background: #ffffff;
+
+    color: #5a5a5a;
+    border-radius: 22px 22px 0 0;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     text-transform: capitalize;
-
-
 }
 
 .calendar-header h4 {
-    margin: 0;
-    font-size: 1.5rem;
+    font-size: 0.95rem !important;
     font-weight: 600;
-    color: white;
-    text-align: center;
-    font-family: "quicksand";
+    margin: 0;
+
 }
 
 .calendar-header .btn {
-    background: rgba(255, 255, 255, 0.83);
-    border: none;
-    color: #dcabdf;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s;
+    background: #f7f7fa;
+    color: #777;
+    border: none;
+    box-shadow: 0 3px 8px rgba(157, 50, 130, 0.3);
+    transition: transform 0.18s, box-shadow 0.18s;
 }
 
 .calendar-header .btn:hover {
-    background: rgba(255, 255, 255, 0.688);
+    background: #f0f0f5;
+    transform: translateY(-1px);
 }
 
-/* Días de la semana */
+/* DÍAS DE LA SEMANA */
 .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background: #e0a4d748;
-    border-radius: 0;
-    padding: 12px 0;
-    margin: 0;
-    font-size: 1.2rem;
-    padding-bottom: 12px;
-
-
+    background: #ffffff;
+    border-bottom: 1px solid #f5f5f8;
+    padding: 6px 0;
+    text-transform: uppercase;
+    font-size: 0.7rem;
 }
 
 .calendar-weekday {
-    font-size: 0.9rem;
-    color: #252727;
-    font-weight: 700;
     text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    color: #6d5b75;
+    font-weight: 600;
 }
 
-/* Grid del calendario */
+/* GRID DÍAS DEL MES */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+     background: #ffffff;
+    border-radius: 0 0 18px 18px;
+    border-top: 1px solid #f5f5f8;
     gap: 1px;
-    background: #e9ecef;
-    border-radius: 0 0 16px 16px;
-    overflow: hidden;
-    border: 1px solid #e9ecef;
 }
 
 .day-column {
-    background: white;
-    padding: 12px 8px;
+    background: #ffffff;
+    min-height: 74px;
+    padding: 6px 0;
     text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    border: none;
+    transition: background 0.18s, transform 0.15s, box-shadow 0.15s;
 }
 
 .day-column:hover {
-    background: #f8f9fa;
-    transform: none;
-    box-shadow: none;
+     background: #fafafa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(217, 130, 189, 0.28);
 }
 
 .day-column.selected {
-    background: #e7f1ff;
-    border: 2px solid #ee439b;
-}
-
-.day-column.other-month {
-    background: #f8f9fa;
-    color: #adb5bd;
+     background: #fdf3ff !important;
 }
 
 .day-number {
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
-    border-radius: 50%;
-    font-size: 1rem;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 999px;
+    margin: 0 auto 4px;
     font-weight: 600;
-    margin-bottom: 8px;
-    transition: all 0.2s ease;
+    font-size: 0.85rem;
 }
 
-.day-column:hover .day-number {
-    background: #ede6f3;
+/* Día actual */
+.day-column.today .day-number {
+    border: 2px solid #ee439b;
+    color: #ee439b;
 }
 
-.day-column.selected .day-number {
-    background: #ee439b;
-    color: white;
+/* Días fuera del mes */
+.day-column.other-month {
+    opacity: 0.35;
 }
 
-.day-column.other-month .day-number {
-    color: #baadbd;
-    font-weight: 400;
-}
-
-/* Bolitas de citas */
+/* BOLITAS (CITAS) */
 .appointment-dots {
     display: flex;
     justify-content: center;
     gap: 3px;
     flex-wrap: wrap;
-    width: 100%;
 }
 
 .appointment-dot {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    flex-shrink: 0;
+    border: 2px solid white;
+    transition: transform 0.12s;
+}
+
+.appointment-dot:hover {
+    transform: scale(1.3);
 }
 
 .appointment-dot.pendiente {
@@ -209,345 +213,353 @@ hr {
     background: #64b5f6;
 }
 
-/* Panel de detalles de cita */
-.appointment-details h3 {
-    font-family: "quicksand";
-    font-weight: 600;
-    font-size: 1.5rem;
-    color: #db84ae;
-    margin: 0 0 20px 0;
-    padding: 0;
+/* =========================================================
+   PANEL DERECHO – HEADER
+   ========================================================= */
+
+.appointments-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.appointment-details .btn-outline-primary {
-    border: 2px solid #4361ee;
-    color: #4361ee;
+.appointments-panel-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.appointments-panel-subtitle {
+    font-size: 0.78rem;
+    margin: 0;
+    color: #818181;
+}
+
+/* Botón “Nueva cita” estilo pill */
+.appointments-new-btn {
+    background: linear-gradient(135deg, #dcabdf, #ee439b);
+    border-radius: 999px;
+    color: white;
+    border: none;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 6px 14px rgba(238, 67, 155, 0.38);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.appointments-new-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(238, 67, 155, 0.5);
+}
+
+/* =========================================================
+   TARJETAS DE CITAS - LISTA EXPANDIBLE
+   ========================================================= */
+
+.appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 8px;
+}
+
+/* Tarjeta compacta */
+.appointment-card {
+    background: #ffffff;
+    border-radius: 999px;
+    padding: 0.55rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(210, 172, 223, 0.38);
+    transition: all 0.18s ease;
+}
+
+.appointment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(210, 172, 223, 0.48);
+}
+
+/* Icono redondo */
+.appointment-card-icon {
     width: 36px;
     height: 36px;
     border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffe5f5, #ee439b);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(238, 67, 155, 0.45);
+    font-size: 0.9rem;
 }
 
-.appointment-details .btn-outline-primary:hover {
-    background: #4361ee;
-    color: white;
+/* Texto */
+.appointment-card-main {
+    flex: 1;
 }
 
-.cita-info {
-    margin-bottom: 20px;
-}
-
-.detail-item {
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #d4c0d4;
-}
-
-.detail-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.detail-item label {
-    font-size: 0.85rem;
+.appointment-card-title {
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #6c757d;
-    margin-bottom: 4px;
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: #262626;
 }
 
-.detail-item p {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-    font-weight: 500;
+.appointment-card-subtitle {
+    font-size: 0.78rem;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.detail-item .badge {
+/* Hora */
+.appointment-card-time {
     font-size: 0.8rem;
-    padding: 6px 12px;
-    border-radius: 20px;
     font-weight: 600;
+    color: #444;
+    margin-right: 6px;
 }
 
-/* Botón de nueva cita */
-.open-modal-btn {
-    background: #dcabdf;
-    color: white;
+/* Botón editar */
+.appointment-card-edit {
     border: none;
-    border-radius: 12px;
-    padding: 14px 24px;
-    font-weight: 600;
-    cursor: pointer;
+    background: transparent;
+    color: #c2a4d4;
+    font-size: 0.85rem;
+    padding: 2px;
+    border-radius: 50%;
+    transition: background 0.15s, color 0.15s;
+}
+
+.appointment-card-edit:hover {
+    background: rgba(221, 196, 241, 0.65);
+    color: #7b4fa8;
+}
+
+/* Parte expandible */
+.appointment-card-body {
+    display: none;
     width: 100%;
-    font-family: "quicksand";
-    transition: all 0.3s ease;
-    font-size: 1rem;
-    margin-top: auto;
+    padding-top: 0.45rem;
+    margin-top: 0.4rem;
+    border-top: 1px dashed #ecdaf7;
 }
 
-.open-modal-btn:hover {
-    background: #c995cc;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 171, 223, 0.3);
+.appointment-card-body-text {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #555;
 }
 
-/* Estados vacío */
-.text-center.text-muted {
-    padding: 40px 20px;
+.appointment-card-body-meta {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: #777;
 }
 
-.text-center.text-muted i {
-    color: #b39ddb;
-    margin-bottom: 16px;
+/* Expandida */
+.appointment-card.expanded {
+    border-radius: 18px;
+    padding-bottom: 0.8rem;
 }
 
-.text-center.text-muted p {
-    color: #6c757d;
-    font-size: 1rem;
+.appointment-card.expanded .appointment-card-body {
+    display: block;
 }
 
-/* Modal */
+/* Cuando está seleccionada visualmente */
+.appointment-card.selected {
+    background: #fff4fb;
+    border: 1px solid #f0b2d4;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
 .modal-cita-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(160, 107, 181, 0.3);
+    inset: 0;
+    background: rgba(160, 107, 181, 0.25);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: 20px;
+    z-index: 99999;
 }
 
 .modal-cita {
     background: #fff;
+    padding: 22px 20px;
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(160, 107, 181, 0.3);
-    padding: 32px;
-    width: 100%;
     max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(160, 107, 181, 0.32);
 }
 
-.modal-cita h2 {
-    font-family: "quicksand";
-    font-weight: 600;
-    color: #3a0ca3;
-    margin: 0 0 24px 0;
-    padding: 0;
-    font-size: 1.75rem;
-    display: flex;
-    align-items: center;
-}
-
-.modal-cita h2 i {
-    margin-right: 12px;
-}
-
-/* Formularios */
-.appointment-form {
-    margin: 0;
-}
-
-.col-mb-4 {
-    margin-bottom: 20px;
-}
-
-.form-label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 8px;
-    display: block;
-    font-size: 0.9rem;
-}
-
+/* Inputs */
 .form-control-s,
 .form-select-s {
-    border: 2px solid #e9ecef;
+    border: 2px solid #e9e3f5;
     border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 1rem;
-    width: 100%;
-    box-shadow: none;
-    outline: none;
-    font-family: "quicksand";
-    transition: all 0.3s ease;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    transition: border 0.18s, box-shadow 0.18s;
 }
 
 .form-control-s:focus,
 .form-select-s:focus {
-    border-color: #a06bb5;
-    box-shadow: 0 0 0 3px rgba(160, 107, 181, 0.1);
+    border-color: #c995cc;
+    box-shadow: 0 0 0 3px rgba(220, 171, 223, 0.28);
 }
 
-/* Botones del formulario */
-.appointment-form-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-top: 24px;
-    padding: 0;
-}
-
-.accept-btn,
-.reject-btn {
-    flex: 1;
-    padding: 14px 20px;
-    border: none;
+/* Botones modal */
+.accept-btn {
+    background: linear-gradient(135deg, #dcabdf, #ee439b);
+    color: white;
     border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: "quicksand";
-    font-size: 1rem;
+    padding: 10px;
+}
+
+.reject-btn {
+    border-radius: 12px;
+    border: 2px solid #ccc;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+    .custom-calendar {
+        margin: 0 auto;
+        max-width: 360px;
+    }
+
+    .appointment-card {
+        padding: 0.6rem;
+    }
+
+    .appointments-new-btn {
+        font-size: 0.8rem;
+    }
+}
+
+/* === Icono de editar en esquina superior derecha de la tarjeta === */
+.appointments-page .appointment-card {
+    position: relative;
+    /* importante para posicionar el icono */
+    padding-right: 2.2rem;
+    /* deja espacio para el icono */
+}
+
+.appointments-page .appointment-card-edit {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    border: none;
+    background: transparent;
+    color: #b095c8;
+    font-size: 0.9rem;
+    padding: 2px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.appointments-page .appointment-card-edit:hover {
+    background: rgba(224, 207, 245, 0.8);
+    color: #6b4d9b;
+    transform: translateY(-1px);
+}
+/* ===== ICONO DE PERSONA GRIS EN CÍRCULO BLANCO ===== */
+.appointments-page .appointment-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #dddddd;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    color: #777777;
+    box-shadow: none;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+/* ===== FILTROS POR ESTADO ===== */
+.appointments-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.55rem;
+    margin-bottom: 0.35rem;
 }
 
-.accept-btn {
-    background: #dcabdf;
-    color: white;
+.appointments-filter-chip {
+    border-radius: 999px;
+    border: 1px solid #e3e3ea;
+    background: #ffffff;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.75rem;
+    color: #777;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+        transform 0.12s ease;
 }
 
-.accept-btn:hover {
-    background: #c995cc;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 171, 223, 0.3);
+.appointments-filter-chip:hover {
+    background: #f6f6fb;
+    transform: translateY(-1px);
 }
 
-.reject-btn {
-    background: #f8f9fa;
-    color: #6c757d;
-    border: 2px solid #e9ecef;
+.appointments-filter-chip.active {
+    background: #fce7f5;
+    border-color: #f3b3d4;
+    color: #c23c82;
+    
+}
+.appointment-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ff4fb3; /* color normal */
+}
+.appointment-dot.cancelada {
+  background-color: #ff4d4f; /* rojo para canceladas */
+}
+.appointment-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 2px 0;
 }
 
-.reject-btn:hover {
-    background: #e9ecef;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.1);
+/* Colores por estado */
+.appointment-dot.pendiente {
+    background-color: orange;
 }
 
-/* Alertas */
-.alert-success {
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 20px;
-    text-align: center;
-    font-weight: 500;
+.appointment-dot.confirmada {
+    background-color: green;
 }
 
-.alert-success i {
-    margin-right: 8px;
+.appointment-dot.cancelada {
+    background-color: red;
 }
 
-/* Mensajes de error */
-.text-danger.small {
-    font-size: 0.8rem;
-    margin-top: 6px;
-    color: #dc3545;
-    font-weight: 500;
+.appointment-dot.completada {
+    background-color: #0d6efd;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .appointments-container {
-        flex-direction: column;
-        gap: 20px;
-        max-width: 800px;
-    }
-
-    .appointment-details {
-        min-width: auto;
-        position: static;
-    }
-
-    .calendar-section {
-        width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .appointments-container {
-        margin: 16px 12px 32px;
-        gap: 16px;
-    }
-
-    .modal-cita {
-        padding: 24px;
-        margin: 20px;
-    }
-
-    .calendar-grid {
-        gap: 0;
-    }
-
-    .day-column {
-        min-height: 80px;
-        padding: 8px 4px;
-    }
-
-    .day-number {
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
-        font-size: 0.9rem;
-    }
-
-    .appointment-dot {
-        width: 8px;
-        height: 8px;
-    }
-
-    .appointment-form-buttons {
-        flex-direction: column;
-        gap: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .calendar-header {
-        padding: 16px;
-    }
-
-    .calendar-header h4 {
-        font-size: 1.25rem;
-    }
-
-    .appointment-details {
-        padding: 20px;
-    }
-
-    .modal-cita {
-        padding: 20px;
-    }
-
-    .day-column {
-        min-height: 70px;
-    }
-
-    .day-number {
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
-    }
-}

@@ -8,12 +8,14 @@ type Props = {
 
 const HomeEmployeeLayout: React.FC<Props> = ({ children }) => {
     return (
-        <div className="employee-layout">
-            <EmployeeNav />
-            <main className="main-content">
+        <div className="layout-root">
+            <EmployeeNav/>
+            <div className="main-content">
                 <EmployeeSidebar />
-                {children}
-            </main>
+                <main className="scrollspy-example-2">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 };

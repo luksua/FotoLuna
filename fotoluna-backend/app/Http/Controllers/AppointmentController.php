@@ -11,6 +11,10 @@ use Illuminate\Http\JsonResponse;
 use Throwable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
+use App\Models\Booking;
+use App\Models\Employee;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
@@ -447,15 +451,19 @@ class AppointmentController extends Controller
 
             $customerId = $user->customer->customerId;
 
+            $employeeId = $request->employeeIdFK ?? null;
+
+
+
             // ✅ Crear la cita
             $appointment = Appointment::create([
                 'customerIdFK' => $customerId,
                 'eventIdFK' => $request->eventIdFK,
                 'appointmentDate' => $request->appointmentDate,
                 'appointmentTime' => $request->appointmentTime,
+                'appointmentTimeEnd' => $request->appointmentTimeEnd ?? null,
                 'place' => $request->place ?? null,
                 'comment' => $request->comment,
-                'appointmentStatus' => 'Pending confirmation',
             ]);
 
             // ✅ Respuesta JSON limpia
@@ -720,6 +728,152 @@ class AppointmentController extends Controller
             'appointment' => $appointment,
         ]);
     }
+    //    empleado
+
+    /**
+     * =======================================================
+     *   EMPLEADO → LISTADO DE SUS CITAS
+     * =======================================================
+     */
+    public function employeeAppointments(Request $request)
+    {
+        $employee = $request->user()->employee;
+
+        if (!$employee) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $rows = Booking::query()
+            ->where('employeeIdFK', $employee->employeeId)
+            ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
+            ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
+            ->selectRaw('
+                appointments.appointmentId,
+                bookings.bookingId,
+                appointments.appointmentDate AS date,
+                appointments.appointmentTime AS startTime,
+                appointments.place,
+                appointments.comment,
+                appointments.appointmentStatus AS status,
+                customers.firstNameCustomer AS firstName,
+                customers.lastNameCustomer  AS lastName,
+                customers.documentNumber    AS document,
+                customers.emailCustomer     AS email
+            ')
+            ->orderBy('appointments.appointmentDate')
+            ->orderBy('appointments.appointmentTime')
+            ->get();
+
+        $data = $rows->map(function ($r) {
+            return [
+                'appointmentId' => $r->appointmentId,
+                'bookingId' => $r->bookingId,
+                'date' => $r->date,
+                'startTime' => $r->startTime,
+                'place' => $r->place,
+                'comment' => $r->comment,
+                'status' => $r->status,
+                'clientName' => trim("{$r->firstName} {$r->lastName}"),
+                'clientDocument' => $r->document,
+                'clientEmail' => $r->email,
+            ];
+        });
+
+        return response()->json($data);
+    }
+
+
+
+    /**
+     * =======================================================
+     *   EMPLEADO → ACTUALIZA UNA CITA
+     * =======================================================
+     */
+    public function updateByEmployee(Request $request, $appointmentId)
+    {
+        $user = $request->user();
+
+        // Verificar que el usuario tenga empleado asociado
+        $employee = $user->employee;
+        if (!$employee) {
+            return response()->json([
+                'message' => 'El usuario autenticado no tiene un empleado asociado'
+            ], 403);
+        }
+
+        // Buscar la cita
+        $appointment = Appointment::findOrFail($appointmentId);
+
+        // Asegurarnos de que esta cita está asignada a este empleado mediante un booking
+        $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)
+            ->where('employeeIdFK', $employee->employeeId)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'message' => 'Esta cita no está asignada a este empleado'
+            ], 403);
+        }
+
+        // ✅ VALIDACIÓN: lo que acepta la API
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'startTime' => ['required', 'date_format:H:i'],
+            'place' => ['nullable', 'string', 'max:255'],
+            'comment' => ['nullable', 'string', 'max:500'],
+            'status' => [
+                'required',
+                'string',
+                Rule::in([
+                    'Pending confirmation', // pendiente
+                    'Scheduled',            // confirmada
+                    'Cancelled',
+                    'Completed',
+                ]),
+            ],
+        ]);
+
+        // ✅ Actualizar la cita con el texto que maneja tu app
+        $appointment->update([
+            'appointmentDate' => $data['date'],
+            'appointmentTime' => $data['startTime'],
+            'place' => $data['place'] ?? $appointment->place,
+            'comment' => $data['comment'] ?? $appointment->comment,
+            'appointmentStatus' => $data['status'],
+        ]);
+
+        // ✅ MAPEO: texto de la API → ENUM de la tabla bookings
+        switch ($data['status']) {
+            case 'Pending confirmation':
+                $bookingStatus = 'Pending';
+                break;
+            case 'Scheduled':
+                $bookingStatus = 'Confirmed';
+                break;
+            case 'Cancelled':
+                $bookingStatus = 'Cancelled';
+                break;
+            case 'Completed':
+                $bookingStatus = 'Completed';
+                break;
+            default:
+                $bookingStatus = 'Pending';
+        }
+
+        // ✅ Actualizar booking usando SOLO valores válidos del ENUM
+        $booking->update([
+            'bookingStatus' => $bookingStatus,
+        ]);
+
+        return response()->json([
+            'message' => 'Cita actualizada correctamente',
+            'appointment' => $appointment->fresh(),
+            'booking' => $booking->fresh(),
+        ], 200);
+    }
+
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -728,4 +882,5 @@ class AppointmentController extends Controller
     {
         //
     }
+
 }

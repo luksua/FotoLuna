@@ -28,30 +28,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             value: settings.notifications
         },
         {
-            id: 'autoSave',
-            label: 'Guardado automático',
-            description: 'Guardar automáticamente los cambios en las fotos',
-            icon: 'bi-cloud-arrow-down',
-            type: 'toggle',
-            value: settings.autoSave
-        },
-        {
-            id: 'highQuality',
-            label: 'Alta calidad',
-            description: 'Subir fotos en máxima calidad (usa más espacio)',
-            icon: 'bi-star',
-            type: 'toggle',
-            value: settings.highQuality
-        },
-        {
-            id: 'watermark',
-            label: 'Marca de agua',
-            description: 'Agregar marca de agua a las fotos subidas',
-            icon: 'bi-camera',
-            type: 'toggle',
-            value: settings.watermark
-        },
-        {
             id: 'theme',
             label: 'Tema',
             description: 'Seleccionar el tema de la aplicación',
@@ -134,19 +110,39 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                                 </div>
                                             )}
 
-                                            {option.type === 'select' && (
-                                                <select className="settings-select">
-                                                    {option.options?.map((opt) => (
-                                                        <option key={opt} value={opt.toLowerCase()}>
-                                                            {opt}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        </div>
+                                        {option.type === 'select' && (
+                                            <select className="settings-select">
+                                                {option.options?.map((opt) => (
+                                                    <option key={opt} value={opt.toLowerCase()}>
+                                                        {opt}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
                                     </div>
-                                ))}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Espacio de Almacenamiento */}
+                        <div className="settings-category">
+                            <h3 className="settings-category-title">
+                                <i className="bi bi-hdd"></i>
+                                Almacenamiento
+                            </h3>
+
+                            <div className="storage-info">
+                                <div className="storage-progress">
+                                
+                                    <div className="storage-bar">
+                                        <div
+                                            className="storage-progress-fill"
+                                            style={{ width: '7.44%' }}
+                                        ></div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
 
                             {/* Sesión */}
                             <div className="settings-category">
@@ -155,11 +151,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                     Sesión
                                 </h3>
 
-                                <div className="session-actions">
-                                    <button className="btn btn-outline-secondary session-btn">
-                                        <i className="bi bi-arrow-clockwise me-2"></i>
-                                        Sincronizar datos
-                                    </button>
+                            <div className="session-actions">
 
                                     <button
                                         className="btn btn-danger logout-btn"

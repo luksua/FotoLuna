@@ -1,20 +1,44 @@
+// components/Upload/Upload.tsx
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import "../Styles/uplo.css";
 import type { Photo, EventInfo } from "../../PhotoAdmin/Components/types/Photo";
 
-const Upload = () => {
-    const [file, setFile] = useState<File | null>(null);
+/* Helpers para formatear fecha y hora para <input type="date/time"> */
+const formatDateInput = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+};
+
+const formatTimeInput = (date: Date): string => {
+    const h = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+    return `${h}:${min}`;
+};
+
+const Upload: React.FC = () => {
+    const now = new Date();
+
+    const [files, setFiles] = useState<File[]>([]);
     const [event, setEvent] = useState("");
-    const [time, setTime] = useState("");
-    const [date, setDate] = useState("");
+    const [time, setTime] = useState(formatTimeInput(now));   // hora actual
+    const [date, setDate] = useState(formatDateInput(now));   // fecha actual
     const [location, setLocation] = useState("");
     const [linkedUsers, setLinkedUsers] = useState<string[]>([]);
     const [searchUser, setSearchUser] = useState("");
     const [dragActive, setDragActive] = useState(false);
+
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [statusType, setStatusType] = useState<"success" | "error" | "">("");
+    const [statusMessage, setStatusMessage] = useState("");
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+
+    /* -------- Drag & Drop -------- */
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
@@ -31,108 +55,169 @@ const Upload = () => {
         e.stopPropagation();
         setDragActive(false);
 
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const droppedFile = e.dataTransfer.files[0];
-            setFile(droppedFile);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            setFiles(droppedFiles);
+            setErrors((prev) => ({ ...prev, files: "" }));
+            setStatusType("");
+            setStatusMessage("");
         }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+        if (e.target.files && e.target.files.length > 0) {
+            const selectedFiles = Array.from(e.target.files);
+            setFiles(selectedFiles);
+            setErrors((prev) => ({ ...prev, files: "" }));
+            setStatusType("");
+            setStatusMessage("");
         }
     };
 
+    /* -------- Vincular usuarios -------- */
+
     const handleAddUser = () => {
-        if (searchUser.trim() && !linkedUsers.includes(searchUser.trim())) {
-            setLinkedUsers([...linkedUsers, searchUser.trim()]);
-            setSearchUser('');
+        const value = searchUser.trim();
+        if (value && !linkedUsers.includes(value)) {
+            setLinkedUsers((prev) => [...prev, value]);
+            setSearchUser("");
         }
     };
 
     const handleRemoveUser = (userToRemove: string) => {
-        setLinkedUsers(linkedUsers.filter(user => user !== userToRemove));
+        setLinkedUsers((prev) => prev.filter((user) => user !== userToRemove));
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
             e.preventDefault();
             handleAddUser();
         }
     };
 
+    /* -------- Validaciones -------- */
+
+    const validate = (): { [key: string]: string } => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (files.length === 0) {
+            newErrors.files = "Selecciona al menos una foto.";
+        }
+        if (!event.trim()) {
+            newErrors.event = "El nombre del evento es obligatorio.";
+        }
+        if (!date) {
+            newErrors.date = "La fecha es obligatoria.";
+        }
+        if (!time) {
+            newErrors.time = "La hora es obligatoria.";
+        }
+        if (!location.trim()) {
+            newErrors.location = "La ubicación es obligatoria.";
+        }
+
+        return newErrors;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setErrors({});
+        setStatusType("");
+        setStatusMessage("");
 
-        if (!file) {
-            alert("Por favor, selecciona un archivo primero");
+        const baseErrors = validate();
+        if (Object.keys(baseErrors).length > 0) {
+            setErrors(baseErrors);
+            setStatusType("error");
+            setStatusMessage("Revisa los campos marcados en rojo.");
             return;
         }
 
-        // Crear información del evento
-        const eventInfo: EventInfo = {
-            name: event,
-            date: date,
-            time: time,
-            location: location,
-            linkedUsers: linkedUsers
-        };
+        try {
+            const existingPhotos: Photo[] = JSON.parse(
+                localStorage.getItem("uploadedPhotos") || "[]"
+            );
 
-        // Crear nuevo objeto Photo
-        const newPhoto: Photo = {
-            id: Date.now(),
-            name: file.name,
-            path: URL.createObjectURL(file),
-            size: file.size,
-            uploaded_at: new Date().toISOString(),
-            event: eventInfo
-        };
+            if (existingPhotos.length + files.length > 100) {
+                const msg = `No puedes tener más de 100 fotos. Actualmente tienes ${existingPhotos.length} y estás intentando subir ${files.length}.`;
+                setErrors((prev) => ({
+                    ...prev,
+                    files: msg,
+                }));
+                setStatusType("error");
+                setStatusMessage("No se pudieron subir las fotos por el límite de 100.");
+                return;
+            }
 
-        // Obtener fotos existentes de localStorage
-        const existingPhotos = JSON.parse(localStorage.getItem('uploadedPhotos') || '[]');
+            const eventInfo: EventInfo = {
+                name: event.trim(),
+                date,
+                time,
+                location: location.trim(),
+                linkedUsers,
+            };
 
-        // Verificar límite de 100 fotos
-        if (existingPhotos.length >= 100) {
-            alert("No puedes tener más de 100 fotos. Elimina algunas antes de subir nuevas.");
-            return;
+            const nowIso = new Date().toISOString();
+
+            const newPhotos: Photo[] = files.map((file, index) => ({
+                id: Date.now() + index,
+                name: file.name,
+                path: URL.createObjectURL(file),
+                size: file.size,
+                uploaded_at: nowIso,
+                event: eventInfo,
+            }));
+
+            const updatedPhotos = [...newPhotos, ...existingPhotos];
+            localStorage.setItem("uploadedPhotos", JSON.stringify(updatedPhotos));
+
+            window.dispatchEvent(new Event("storage"));
+
+            // Mensaje de éxito -> luego redirigimos a admin
+            setStatusType("success");
+            setStatusMessage(
+                files.length === 1
+                    ? "La foto se subió correctamente."
+                    : `Las ${files.length} fotos se subieron correctamente.`
+            );
+
+            // Opcional: limpiar formulario
+            setFiles([]);
+            // dejamos fecha/hora actuales
+            // setEvent(""); setLocation(""); setLinkedUsers([]);
+
+            // Redirigir después de un pequeño tiempo para que se alcance a ver el mensaje
+            setTimeout(() => {
+                navigate("/employee/admin");
+            }, 1200);
+        } catch (err) {
+            console.error(err);
+            setStatusType("error");
+            setStatusMessage(
+                "Ocurrió un error al guardar las fotos. Intenta nuevamente."
+            );
         }
-
-        // Agregar nueva foto al inicio
-        const updatedPhotos = [newPhoto, ...existingPhotos];
-
-        // Guardar en localStorage
-        localStorage.setItem('uploadedPhotos', JSON.stringify(updatedPhotos));
-
-        // Disparar evento personalizado para notificar el cambio
-        window.dispatchEvent(new Event('storage'));
-
-        alert("Archivo subido exitosamente!");
-
-        // Redirigir al administrador de fotos
-        navigate('/employee/admin'); // Ajusta la ruta según tu configuración
     };
 
     const handleCancel = () => {
-        // Redirigir al administrador de fotos sin guardar
-        navigate('/employee/admin');
+        navigate("/employee/admin");
     };
 
-    const handleGoToAdmin = () => {
-        navigate('/employee/admin');
-    };
+    /* -------- Render -------- */
 
     return (
         <EmployeeLayout>
             <div className="upload-container">
                 <div className="upload-box">
-                    <div className="upload-header"> 
+                    <div className="upload-header">
                         <h3 className="upload-title">Subir Archivo</h3>
                     </div>
                     <hr />
 
-                    {/* Área de subida de archivos */}
+                    {/* Área de subida */}
                     <div
-                        className={`upload-dropzone ${dragActive ? 'drag-active' : ''} ${file ? 'has-file' : ''}`}
+                        className={`upload-dropzone ${dragActive ? "drag-active" : ""
+                            } ${files.length > 0 ? "has-file" : ""}`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
@@ -143,23 +228,36 @@ const Upload = () => {
                             id="file-upload"
                             ref={fileInputRef}
                             type="file"
+                            multiple
+                            accept="image/*"
                             onChange={handleFileChange}
                             style={{ display: "none" }}
                         />
 
-                        {file ? (
-                            <div className="file-preview">
-                                <i className="bi bi-file-earmark-text file-icon"></i>
+                        {files.length > 0 ? (
+                            <div className="file-preview-multiple">
+                                <i className="bi bi-images file-icon"></i>
                                 <div className="file-info">
-                                    <h4>{file.name}</h4>
-                                    <p>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    <h4>
+                                        {files.length} archivo
+                                        {files.length > 1 && "s"} seleccionado
+                                        {files.length > 1 && "s"}
+                                    </h4>
+                                    <ul>
+                                        {files.slice(0, 3).map((f, idx) => (
+                                            <li key={idx}>{f.name}</li>
+                                        ))}
+                                        {files.length > 3 && (
+                                            <li>+ {files.length - 3} más…</li>
+                                        )}
+                                    </ul>
                                 </div>
                                 <button
                                     type="button"
                                     className="change-file-btn"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setFile(null);
+                                        setFiles([]);
                                     }}
                                 >
                                     <i className="bi bi-arrow-repeat"></i>
@@ -168,48 +266,111 @@ const Upload = () => {
                         ) : (
                             <div className="upload-content">
                                 <i className="bi bi-cloud-arrow-up upload-icon"></i>
-                                <span>Arrastra y suelta tu archivo aquí</span>
-                                <span className="upload-subtext">o haz clic para seleccionar</span>
+                                <span>Arrastra y suelta tus archivos aquí</span>
+                                <span className="upload-subtext">
+                                    o haz clic para seleccionar
+                                </span>
+                                <span className="upload-subtext-extra">
+                                    Puedes seleccionar varias fotos a la vez
+                                </span>
                             </div>
                         )}
                     </div>
+                    {errors.files && (
+                        <p className="upload-error-text">{errors.files}</p>
+                    )}
 
                     {/* Formulario de información */}
-                    <div className="upload-form">
+                    <form className="upload-form" onSubmit={handleSubmit}>
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Evento</label>
                                 <input
                                     type="text"
                                     value={event}
-                                    onChange={(e) => setEvent(e.target.value)}
+                                    onChange={(e) => {
+                                        setEvent(e.target.value);
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            event: "",
+                                        }));
+                                        setStatusType("");
+                                        setStatusMessage("");
+                                    }}
                                     placeholder="Nombre del evento"
                                 />
+                                {errors.event && (
+                                    <p className="upload-error-text">
+                                        {errors.event}
+                                    </p>
+                                )}
                             </div>
+
                             <div className="form-group">
                                 <label>Hora</label>
                                 <input
                                     type="time"
                                     value={time}
-                                    onChange={(e) => setTime(e.target.value)}
+                                    onChange={(e) => {
+                                        setTime(e.target.value);
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            time: "",
+                                        }));
+                                        setStatusType("");
+                                        setStatusMessage("");
+                                    }}
                                 />
+                                {errors.time && (
+                                    <p className="upload-error-text">
+                                        {errors.time}
+                                    </p>
+                                )}
                             </div>
+
                             <div className="form-group">
                                 <label>Fecha</label>
                                 <input
                                     type="date"
                                     value={date}
-                                    onChange={(e) => setDate(e.target.value)}
+                                    onChange={(e) => {
+                                        setDate(e.target.value);
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            date: "",
+                                        }));
+                                        setStatusType("");
+                                        setStatusMessage("");
+                                    }}
                                 />
+                                {errors.date && (
+                                    <p className="upload-error-text">
+                                        {errors.date}
+                                    </p>
+                                )}
                             </div>
+
                             <div className="form-group">
                                 <label>Lugar</label>
                                 <input
                                     type="text"
                                     value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
+                                    onChange={(e) => {
+                                        setLocation(e.target.value);
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            location: "",
+                                        }));
+                                        setStatusType("");
+                                        setStatusMessage("");
+                                    }}
                                     placeholder="Ubicación del evento"
                                 />
+                                {errors.location && (
+                                    <p className="upload-error-text">
+                                        {errors.location}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -221,8 +382,10 @@ const Upload = () => {
                                     type="text"
                                     placeholder="Buscar usuarios"
                                     value={searchUser}
-                                    onChange={(e) => setSearchUser(e.target.value)}
-                                    onKeyPress={handleKeyPress}
+                                    onChange={(e) =>
+                                        setSearchUser(e.target.value)
+                                    }
+                                    onKeyDown={handleKeyPress}
                                 />
                                 <button
                                     className="upload-search-btn"
@@ -236,11 +399,16 @@ const Upload = () => {
                             {linkedUsers.length > 0 && (
                                 <div className="linked-users">
                                     {linkedUsers.map((user, index) => (
-                                        <div key={index} className="user-tag">
+                                        <div
+                                            key={index}
+                                            className="user-tag"
+                                        >
                                             <span>{user}</span>
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveUser(user)}
+                                                onClick={() =>
+                                                    handleRemoveUser(user)
+                                                }
                                             >
                                                 <i className="bi bi-x"></i>
                                             </button>
@@ -250,25 +418,41 @@ const Upload = () => {
                             )}
                         </div>
 
-                        {/* Botones de acción */}
-                        <div className="upload-actions">
-                            <button
-                                className="accept-btn"
-                                onClick={handleSubmit}
+                        {/* Mensaje de estado global */}
+                        {statusType && statusMessage && (
+                            <div
+                                className={`upload-alert ${statusType === "success"
+                                        ? "upload-alert-success"
+                                        : "upload-alert-error"
+                                    }`}
                             >
+                                <i
+                                    className={
+                                        statusType === "success"
+                                            ? "bi bi-check-circle"
+                                            : "bi bi-exclamation-triangle"
+                                    }
+                                />
+                                <span>{statusMessage}</span>
+                            </div>
+                        )}
+
+                        {/* Botones */}
+                        <div className="upload-actions">
+                            <button className="accept-btn" type="submit">
                                 <i className="bi bi-cloud-arrow-up me-2"></i>
-                                SUBIR ARCHIVO
+                                Subir archivos
                             </button>
                             <button
                                 className="reject-btn"
-                                onClick={handleCancel}
                                 type="button"
+                                onClick={handleCancel}
                             >
                                 <i className="bi bi-x-circle me-2"></i>
-                                CANCELAR
+                                Cancelar
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </EmployeeLayout>

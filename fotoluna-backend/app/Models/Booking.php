@@ -54,4 +54,15 @@ class Booking extends Model
     {
         return $this->hasMany(BookingPaymentInstallment::class, 'bookingIdFK', 'bookingId');
     }
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customerIdFK', 'customerId');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'eventIdFK', 'eventId');
+    }
+
+
 }

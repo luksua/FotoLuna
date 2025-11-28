@@ -1,557 +1,368 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// AppointmentsEmployee.tsx
-import React, { useState, useEffect } from "react";
-import "react-calendar/dist/Calendar.css";
+
+import React, { useEffect, useMemo, useState } from "react";
 import "../Styles/apo.css";
+import "react-calendar/dist/Calendar.css";
+
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
+import Calendar from "../Components/Calendar";
+import AppointmentDetails from "../Components/ApointmentsDetails";
+import AppointmentModal from "../Components/ApointmentsModal";
 
-type Cita = {
-    id: string;
-    date: Date;
-    startTime: string;
-    endTime: string;
-    client: string;
-    status: "Pendiente" | "Confirmada" | "Cancelada" | "Completada";
-    location: string;
-    notes?: string;
+import api from "../../../../lib/api";
+import type { Cita, CitaFormData, CitaStatus } from "../Components/Types/types";
+
+// =========================================================
+// 🔹 Función para comparar fechas
+// =========================================================
+const isSameDay = (a: Date, b: Date): boolean =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+// =========================================================
+// 🔹 Convertir "HH:MM" → minutos
+// =========================================================
+const timeToMinutes = (hhmm: string): number => {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
 };
 
-type CitaFormData = {
-    date: string;
-    startTime: string;
-    endTime: string;
-    client: string;
-    status: "Pendiente" | "Confirmada" | "Cancelada" | "Completada";
-    location: string;
-    notes?: string;
+// =========================================================
+// 🔹 Crear ID simple
+// =========================================================
+const createId = () => `${Date.now()}-${Math.random()}`;
+
+// =========================================================
+// 🔹 Convertir fecha backend → Date()
+// =========================================================
+const parseBackendDate = (raw: any): Date => {
+    if (!raw) return new Date();
+    const base = raw.split(" ")[0]; // YYYY-MM-DD
+    const [y, m, d] = base.split("-").map(Number);
+    return new Date(y, m - 1, d);
 };
 
-const initialForm: CitaFormData = {
-    date: "",
-    startTime: "",
-    endTime: "",
-    client: "",
-    status: "Pendiente",
-    location: "",
-    notes: ""
+// =========================================================
+// 🔹 Estados FRONT → BACK
+// =========================================================
+export const STATUS_FRONT_TO_BACK: Record<CitaStatus, string> = {
+    Pendiente: "Pending confirmation",
+    Confirmada: "Scheduled",
+    Cancelada: "Cancelled",
+    Completada: "Completed",
 };
 
-const EmployeeAppointmentss = () => {
-    const [form, setForm] = useState<CitaFormData>(initialForm);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [success, setSuccess] = useState<string>("");
+// 🔹 Estados BACK → FRONT
+export const STATUS_BACK_TO_FRONT: Record<string, CitaStatus> = {
+    "Pending confirmation": "Pendiente",
+    Scheduled: "Confirmada",
+    Cancelled: "Cancelada",
+    Completed: "Completada",
+};
+
+// =========================================================
+// 🔹 Convertir estado backend → front seguro
+// =========================================================
+const mapStatus = (status: any): CitaStatus =>
+    STATUS_BACK_TO_FRONT[String(status)] ?? "Pendiente";
+
+// =========================================================
+// 🔹 MAPEO Backend → Front (Cita[])
+// =========================================================
+const mapBackendAppointments = (data: any[]): Cita[] =>
+    data.map((row: any) => {
+        const parsedDate = parseBackendDate(row.date);
+
+        // --- normalizar hora a HH:MM ---
+        const rawTime = row.startTime ?? "09:00";
+        const startTime =
+            typeof rawTime === "string" ? rawTime.slice(0, 5) : "09:00";
+
+        const cita: Cita = {
+            id: String(row.appointmentId ?? row.bookingId ?? createId()),
+            appointmentId: Number(row.appointmentId),
+
+            date: parsedDate,
+            startTime,          // 👈 usamos la hora normalizada (10:00)
+            endTime: "",
+
+            client: row.clientName ?? "",
+            status: mapStatus(row.status),
+            location: row.place ?? "",
+            notes: row.comment ?? "",
+
+            document: row.clientDocument ?? "",
+            email: row.clientEmail ?? "",
+            phone: row.clientPhone ?? "",
+            eventName: row.eventName ?? "",
+            packageName: row.packageName ?? "",
+        };
+
+        return cita;
+    });
+
+// =========================================================
+// COMPONENTE PRINCIPAL
+// =========================================================
+const EmployeeAppointments: React.FC = () => {
+    const EMPLOYEE_ID = 1; // Temporal
+
+    const today = new Date();
     const [citas, setCitas] = useState<Cita[]>([]);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+
+    const [currentMonth, setCurrentMonth] = useState(today);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-    // Obtener citas del día seleccionado
-    const getCitasDelDia = (date: Date) => {
-        return citas.filter(cita =>
-            cita.date.getDate() === date.getDate() &&
-            cita.date.getMonth() === date.getMonth() &&
-            cita.date.getFullYear() === date.getFullYear()
-        );
+    const initialForm: CitaFormData = {
+        date: today.toISOString().split("T")[0],
+        startTime: "",
+        endTime: "",
+        client: "",
+        status: "Pendiente",
+        location: "",
+        notes: "",
     };
 
-    // Validación del formulario
-    const validate = () => {
-        const newErrors: { [key: string]: string } = {};
-        if (!form.date) newErrors.date = "La fecha es requerida";
-        if (!form.startTime) newErrors.startTime = "La hora de inicio es requerida";
-        if (!form.endTime) newErrors.endTime = "La hora de fin es requerida";
-        if (!form.client) newErrors.client = "El cliente es requerido";
-        if (!form.location) newErrors.location = "La locación es requerida";
+    const [form, setForm] = useState<CitaFormData>(initialForm);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [success, setSuccess] = useState("");
 
-        if (form.startTime && form.endTime && form.startTime >= form.endTime) {
-            newErrors.endTime = "La hora de fin debe ser mayor que la de inicio";
-        }
+    // =========================================================
+    // 🔹 Cargar citas desde backend
+    // =========================================================
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await api.get(`/api/employee/${EMPLOYEE_ID}/appointments`);
+                const raw = Array.isArray(res.data) ? res.data : res.data.data ?? [];
 
-        // Validación de traslape de citas (solo para nuevas citas)
-        if (!isEditing) {
-            const nuevaFecha = new Date(form.date);
-            const traslape = citas.some(cita =>
-                cita.date.getFullYear() === nuevaFecha.getFullYear() &&
-                cita.date.getMonth() === nuevaFecha.getMonth() &&
-                cita.date.getDate() === nuevaFecha.getDate() &&
-                ((form.startTime < cita.endTime && form.endTime > cita.startTime))
-            );
-            if (traslape) {
-                newErrors.startTime = "Ya existe una cita en ese rango de horas";
-                newErrors.endTime = "Ya existe una cita en ese rango de horas";
+                const citasMap = mapBackendAppointments(raw);
+                setCitas(citasMap);
+
+                // Seleccionar cita de hoy
+                const hoyCita = citasMap.find((c) => isSameDay(c.date, today)) || null;
+                setSelectedCita(hoyCita);
+                setSelectedDate(today);
+            } catch (e) {
+                console.error("Error cargando citas", e);
+                setCitas([]);
             }
-        }
-        return newErrors;
-    };
+        };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-        setErrors({ ...errors, [e.target.name]: "" });
-        setSuccess("");
-    };
+        fetchData();
+    }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            setSuccess("");
-            return;
-        }
+    // =========================================================
+    // 🔹 Citas de un día
+    // =========================================================
+    const citasDelDia = useMemo(() => {
+        if (!selectedDate) return [];
+        return citas
+            .filter((c) => isSameDay(c.date, selectedDate))
+            .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+    }, [citas, selectedDate]);
 
-        if (isEditing && selectedCita) {
-            // Editar cita existente
-            const citaActualizada: Cita = {
-                ...selectedCita,
-                date: new Date(form.date),
-                startTime: form.startTime,
-                endTime: form.endTime,
-                client: form.client,
-                status: form.status,
-                location: form.location,
-                notes: form.notes
-            };
-
-            setCitas(citas.map(c => c.id === selectedCita.id ? citaActualizada : c));
-            setSelectedCita(citaActualizada);
-            setSuccess("Cita actualizada con éxito");
-        } else {
-            // Crear nueva cita
-            const nuevaCita: Cita = {
-                id: Date.now().toString(),
-                date: new Date(form.date),
-                startTime: form.startTime,
-                endTime: form.endTime,
-                client: form.client,
-                status: "Pendiente",
-                location: form.location,
-                notes: form.notes
-            };
-
-            setCitas([...citas, nuevaCita]);
-            setSelectedDate(nuevaCita.date);
-            setSelectedCita(nuevaCita);
-            setSuccess("Cita creada con éxito");
-        }
-
-        setTimeout(() => {
-            setShowModal(false);
-            setSuccess("");
-            setIsEditing(false);
-            setForm(initialForm);
-        }, 1500);
-    };
-
-    // Cuando seleccionas un día en el calendario
-    const handleDayClick = (date: Date) => {
-        setSelectedDate(date);
-        const citasDelDia = getCitasDelDia(date);
-        setSelectedCita(citasDelDia.length > 0 ? citasDelDia[0] : null);
-    };
-
-    // Abrir modal para editar
-    const handleEditClick = () => {
-        if (selectedCita) {
-            setIsEditing(true);
-            setForm({
-                date: selectedCita.date.toISOString().split('T')[0],
-                startTime: selectedCita.startTime,
-                endTime: selectedCita.endTime,
-                client: selectedCita.client,
-                status: selectedCita.status,
-                location: selectedCita.location,
-                notes: selectedCita.notes || ""
-            });
-            setShowModal(true);
-        }
-    };
-
-    // Cerrar modal
-    const handleCloseModal = () => {
-        setShowModal(false);
-        setIsEditing(false);
-        setForm(initialForm);
-        setErrors({});
-    };
-
-    // Navegación del mes
-    const navigateMonth = (direction: 'prev' | 'next') => {
-        setCurrentMonth(prev => {
-            const newDate = new Date(prev);
-            newDate.setMonth(prev.getMonth() + (direction === 'next' ? 1 : -1));
-            return newDate;
+    // =========================================================
+    // 🔹 Cambiar mes del calendario
+    // =========================================================
+    const handleChangeMonth = (dir: "prev" | "next") => {
+        setCurrentMonth((prev) => {
+            const d = new Date(prev);
+            d.setMonth(d.getMonth() + (dir === "prev" ? -1 : 1));
+            return d;
         });
     };
 
-    // Obtener días del mes actual
-    const getDaysInMonth = (date: Date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-
-        const days = [];
-        for (let i = 1; i <= lastDay.getDate(); i++) {
-            days.push(new Date(year, month, i));
-        }
-
-        // Agregar días del mes anterior para completar la primera semana
-        const firstDayOfWeek = firstDay.getDay();
-        for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-            const prevDate = new Date(firstDay);
-            prevDate.setDate(firstDay.getDate() - (firstDayOfWeek - i));
-            days.unshift(prevDate);
-        }
-
-        return days;
+    // =========================================================
+    // 🔹 Click en un día
+    // =========================================================
+    const handleDayClick = (date: Date) => {
+        setSelectedDate(date);
+        const c = citas.find((x) => isSameDay(x.date, date)) || null;
+        setSelectedCita(c);
     };
 
-    // Obtener semanas para el grid
-    const getWeeks = () => {
-        const days = getDaysInMonth(currentMonth);
-        const weeks = [];
-
-        for (let i = 0; i < days.length; i += 7) {
-            weeks.push(days.slice(i, i + 7));
-        }
-
-        return weeks;
+    const handleDotClick = (cita: Cita) => {
+        setSelectedDate(cita.date);
+        setSelectedCita(cita);
     };
 
-    const weeks = getWeeks();
+    // =========================================================
+    // 🔹 Abrir modal para registrar nueva cita
+    // =========================================================
+    const handleNewClick = () => {
+        setIsEditing(false);
+        setForm(initialForm);
+        setShowModal(true);
+    };
 
-    // nuevo estado de carga
-    const [loading, setLoading] = useState<boolean>(false);
-    
-    if (loading && citas.length === 0) {
-        return (
-            <div className="container-fluid bg-light min-vh-100">
-                <div className="container py-4">
-                    <div className="d-flex justify-content-center align-items-center min-vh-100">
-                        <div className="text-center">
-                            <div className="spinner-border text-primary mb-3" style={{ width: '3rem', height: '3rem' }} role="status">
-                                <span className="visually-hidden">Cargando...</span>
-                            </div>
-                            <h4 className="text-primary">Cargando citas...</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // =========================================================
+    // 🔹 Abrir modal para editar
+    // =========================================================
+    const handleEditClick = (cita: Cita) => {
+        setIsEditing(true);
+        setSelectedCita(cita);
+
+        setForm({
+            date: cita.date.toISOString().split("T")[0],
+            startTime: cita.startTime,
+            endTime: "",
+            client: cita.client,
+            status: cita.status,
+            location: cita.location,
+            notes: cita.notes ?? "",
+        });
+
+        setShowModal(true);
+    };
+
+    // =========================================================
+    // 🔹 Change form
+    // =========================================================
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+        setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+        setErrors((er) => ({ ...er, [e.target.name]: "" }));
+    };
+
+    // =========================================================
+    // 🔹 Validar
+    // =========================================================
+    const validate = () => {
+        const er: Record<string, string> = {};
+
+        if (!form.date) er.date = "La fecha es obligatoria";
+        if (!form.startTime) er.startTime = "La hora es obligatoria";
+        if (!form.location.trim()) er.location = "La ubicación es obligatoria";
+
+        return er;
+    };
+
+    // =========================================================
+    // 🔹 GUARDAR (CREATE / UPDATE)
+    // =========================================================
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const v = validate();
+        if (Object.keys(v).length) return setErrors(v);
+
+        // ============================
+        // EDITAR CITA EXISTENTE
+        // ============================
+        if (isEditing && selectedCita) {
+            try {
+                const payload = {
+                    date: form.date, // YYYY-MM-DD
+                    startTime: form.startTime, // HH:MM
+                    place: form.location || null,
+                    comment: form.notes || null,
+                    status: STATUS_FRONT_TO_BACK[form.status],
+                };
+
+                // Enviar PUT al backend
+                const res = await api.put(
+                    `/api/employee/appointments/${selectedCita.appointmentId}`,
+                    payload
+                );
+
+                // Datos devueltos por el backend
+                const updated = res.data?.appointment ?? payload;
+
+                // Normalizar hora a HH:MM
+                const updatedStartTimeRaw =
+                    updated.startTime ??
+                    updated.appointmentTime ??
+                    form.startTime;
+
+                const updatedStartTime =
+                    typeof updatedStartTimeRaw === "string"
+                        ? updatedStartTimeRaw.slice(0, 5)
+                        : form.startTime;
+
+                // Construir cita actualizada
+                const citaNueva: Cita = {
+                    ...selectedCita,
+                    date: parseBackendDate(updated.appointmentDate ?? form.date),
+                    startTime: updatedStartTime,
+                    location: updated.place ?? form.location,
+                    notes: updated.comment ?? form.notes,
+                    status: mapStatus(updated.appointmentStatus ?? payload.status),
+                };
+
+                // Actualizar lista
+                setCitas((prev) =>
+                    prev.map((c) =>
+                        c.appointmentId === selectedCita.appointmentId ? citaNueva : c
+                    )
+                );
+
+                setSelectedCita(citaNueva);
+                setShowModal(false);
+
+            } catch (err) {
+                console.error("Error al actualizar", err);
+            }
+
+            return;
+        }
+    };
 
 
     return (
         <EmployeeLayout>
-            <div className="upload-container">
-                <div className="upload-box">
-                    <h3 className="bg-custom-3">Citas</h3>
+            <div className="container-fluid bg-light min-vh-100 appointments-page">
+                <div className="container py-4">
+                    <h3 className="fw-bold text-dark">Citas</h3>
                     <hr />
 
-                    <div className="appointments-container">
-                        <div className="calendar-section">
-                            <div className="custom-calendar">
-                                {/* Header del calendario */}
-                                <div className="calendar-header">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <button
-                                            className="btn btn-light btn-sm"
-                                            onClick={() => navigateMonth('prev')}
-                                        >
-                                            ‹
-                                        </button>
-                                        <h4>
-                                            {currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-                                        </h4>
-                                        <button
-                                            className="btn btn-light btn-sm"
-                                            onClick={() => navigateMonth('next')}
-                                        >
-                                            ›
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Días de la semana */}
-                                <div className="calendar-weekdays">
-                                    {["LUN", "MAR", "MIE", "JUE", "VIE", "SÁB", "DOM"].map(day => (
-                                        <div key={day} className="calendar-weekday">
-                                            {day}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Grid del calendario */}
-                                <div className="calendar-grid">
-                                    {weeks.map((week, weekIndex) => (
-                                        <React.Fragment key={weekIndex}>
-                                            {week.map((date, dayIndex) => {
-                                                const citasDelDia = getCitasDelDia(date);
-                                                const isSelected = selectedDate &&
-                                                    date.getDate() === selectedDate.getDate() &&
-                                                    date.getMonth() === selectedDate.getMonth() &&
-                                                    date.getFullYear() === selectedDate.getFullYear();
-                                                const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
-                                                const isToday = new Date().toDateString() === date.toDateString();
-
-                                                return (
-                                                    <div
-                                                        key={date.toISOString()}
-                                                        className={`day-column ${isSelected ? 'selected' : ''} ${!isCurrentMonth ? 'other-month' : ''
-                                                            } ${isToday ? 'today' : ''}`}
-                                                        onClick={() => handleDayClick(date)}
-                                                    >
-                                                        <div className="day-number">
-                                                            {date.getDate()}
-                                                        </div>
-                                                        <div className="appointment-dots">
-                                                            {citasDelDia.map((cita, index) => (
-                                                                <div
-                                                                    key={cita.id}
-                                                                    className={`appointment-dot ${cita.status.toLowerCase()}`}
-                                                                    title={`${cita.client} - ${cita.startTime}`}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </React.Fragment>
-                                    ))}
-                                </div>
+                    <div className="row g-4">
+                        <div className="col-lg-8">
+                            <div className="card shadow-sm p-3">
+                                <Calendar
+                                    currentMonth={currentMonth}
+                                    selectedDate={selectedDate}
+                                    citas={citas}
+                                    onChangeMonth={handleChangeMonth}
+                                    onDayClick={handleDayClick}
+                                    onDotClick={handleDotClick}
+                                />
                             </div>
                         </div>
 
-
-                        {/* Panel de detalles de cita */}
-                        <div className="appointment-details">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h3>DATOS DE CITA</h3>
-                                {selectedCita && (
-                                    <button
-                                        className="btn btn-outline-primary btn-sm"
-                                        onClick={handleEditClick}
-                                        title="Editar cita"
-                                    >
-                                        <i className="bi bi-pencil-square"></i>
-                                    </button>
-                                )}
+                        <div className="col-lg-4">
+                            <div className="card shadow-sm p-3 h-100">
+                                <AppointmentDetails
+                                    citasDelDia={citasDelDia}
+                                    selectedCita={selectedCita}
+                                    selectedDate={selectedDate}
+                                    onSelectCita={setSelectedCita}
+                                    onEditClick={handleEditClick}
+                                    onNewClick={handleNewClick}
+                                />
                             </div>
-
-                            {selectedCita ? (
-                                <div className="cita-info">
-                                    <div className="detail-item mb-3">
-                                        <label className="fw-bold text-secondary">Cliente:</label>
-                                        <p className="mb-0">{selectedCita.client}</p>
-                                    </div>
-
-                                    <div className="detail-item mb-3">
-                                        <label className="fw-bold text-secondary">Fecha:</label>
-                                        <p className="mb-0">
-                                            {selectedCita.date.toLocaleDateString('es-ES', {
-                                                weekday: 'long',
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}
-                                        </p>
-                                    </div>
-
-                                    <div className="detail-item mb-3">
-                                        <label className="fw-bold text-secondary">Horario:</label>
-                                        <p className="mb-0">{selectedCita.startTime} - {selectedCita.endTime}</p>
-                                    </div>
-
-                                    <div className="detail-item mb-3">
-                                        <label className="fw-bold text-secondary">Ubicación:</label>
-                                        <p className="mb-0">{selectedCita.location}</p>
-                                    </div>
-
-                                    <div className="detail-item mb-3">
-                                        <label className="fw-bold text-secondary">Estado:</label>
-                                        <span className={`badge ${selectedCita.status === 'Pendiente' ? 'bg-warning' :
-                                            selectedCita.status === 'Confirmada' ? 'bg-success' :
-                                                selectedCita.status === 'Cancelada' ? 'bg-danger' : 'bg-info'
-                                            }`}>
-                                            {selectedCita.status}
-                                        </span>
-                                    </div>
-
-                                    {selectedCita.notes && (
-                                        <div className="detail-item mb-3">
-                                            <label className="fw-bold text-secondary">Notas:</label>
-                                            <p className="mb-0 text-muted">{selectedCita.notes}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-center text-muted py-4">
-                                    <i className="fas fa-calendar-day fa-3x mb-3"></i>
-                                    <p>Selecciona un día con cita para ver los detalles.</p>
-                                </div>
-                            )}
-
-                            <button
-                                className="open-modal-btn"
-                                onClick={() => {
-                                    setIsEditing(false);
-                                    setForm({
-                                        ...initialForm,
-                                        date: selectedDate ? selectedDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)
-                                    });
-                                    setShowModal(true);
-                                }}
-                            >
-                                <i className="fas fa-plus me-2"></i>
-                                Registrar nueva cita
-                            </button>
                         </div>
                     </div>
 
-                    {/* Modal para agregar/editar citas */}
-                    {showModal && (
-                        <div className="modal-cita-backdrop" onClick={handleCloseModal}>
-                            <div
-                                className="modal-cita"
-                                onClick={e => e.stopPropagation()}
-                            >
-                                <h2>
-                                    <i className={`fas ${isEditing ? 'fa-edit' : 'fa-calendar-plus'} me-2`}></i>
-                                    {isEditing ? 'Editar Cita' : 'Registrar Nueva Cita'}
-                                </h2>
-
-                                <form className="row g-3 needs-validation appointment-form" onSubmit={handleSubmit}>
-                                    <div className="col-mb-4">
-                                        <label htmlFor="client" className="form-label col-lg-3">Cliente: </label>
-                                        <input
-                                            type="text"
-                                            className="col-lg-9 form-control-s"
-                                            placeholder="Nombre del cliente"
-                                            name="client"
-                                            value={form.client}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        {errors.client && <div className="text-danger small">{errors.client}</div>}
-                                    </div>
-
-                                    <div className="col-mb-4">
-                                        <label htmlFor="date" className="form-label col-lg-3">Fecha: </label>
-                                        <input
-                                            className="col-lg-9 form-control-s"
-                                            type="date"
-                                            name="date"
-                                            value={form.date}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        {errors.date && <div className="text-danger small">{errors.date}</div>}
-                                    </div>
-
-                                    <div className="col-mb-4">
-                                        <label htmlFor="startTime" className="form-label col-lg-3">Hora de Inicio: </label>
-                                        <input
-                                            className="col-lg-9 form-control-s"
-                                            type="time"
-                                            name="startTime"
-                                            value={form.startTime}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        {errors.startTime && <div className="text-danger small">{errors.startTime}</div>}
-                                    </div>
-
-                                    <div className="col-mb-4">
-                                        <label htmlFor="endTime" className="form-label col-lg-3">Hora de Fin: </label>
-                                        <input
-                                            className="col-lg-9 form-control-s"
-                                            type="time"
-                                            name="endTime"
-                                            value={form.endTime}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        {errors.endTime && <div className="text-danger small">{errors.endTime}</div>}
-                                    </div>
-
-                                    {isEditing && (
-                                        <div className="col-mb-4">
-                                            <label htmlFor="status" className="form-label col-lg-3">Estado</label>
-                                            <select
-                                                className="col-lg-9 form-select-s"
-                                                name="status"
-                                                value={form.status}
-                                                onChange={handleChange}
-                                            >
-                                                <option value="Pendiente">Pendiente</option>
-                                                <option value="Confirmada">Confirmada</option>
-                                                <option value="Cancelada">Cancelada</option>
-                                                <option value="Completada">Completada</option>
-                                            </select>
-                                        </div>
-                                    )}
-
-                                    <div className="col-mb-4">
-                                        <label htmlFor="location" className="form-label col-lg-3">Localización</label>
-                                        <input
-                                            placeholder="Localización"
-                                            className="col-lg-9 form-control-s"
-                                            name="location"
-                                            value={form.location}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        {errors.location && <div className="text-danger small">{errors.location}</div>}
-                                    </div>
-
-                                    <div className="col-mb-4">
-                                        <label htmlFor="notes" className="form-label col-lg-3">Notas</label>
-                                        <textarea
-                                            placeholder="Notas adicionales..."
-                                            className="col-lg-9 form-control-s"
-                                            name="notes"
-                                            rows={3}
-                                            value={form.notes}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    <div className="appointment-form-buttons">
-                                        <button type="submit" className="accept-btn">
-                                            <i className="fas fa-save me-1"></i>
-                                            {isEditing ? 'Actualizar' : 'Guardar'}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="reject-btn"
-                                            onClick={handleCloseModal}
-                                        >
-                                            <i className="fas fa-times me-1"></i>
-                                            Cancelar
-                                        </button>
-                                    </div>
-
-                                    {success && (
-                                        <div className="alert alert-success mt-3 text-center">
-                                            <i className="fas fa-check-circle me-2"></i>
-                                            {success}
-                                        </div>
-                                    )}
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
+                    <AppointmentModal
+                        show={showModal}
+                        isEditing={isEditing}
+                        form={form}
+                        errors={errors}
+                        success={success}
+                        onChange={handleChange}
+                        onSubmit={handleSubmit}
+                        onClose={() => setShowModal(false)}
+                    />
                 </div>
             </div>
-
-
-
         </EmployeeLayout>
     );
 };
 
-export default EmployeeAppointmentss;
-export { EmployeeAppointmentss as AppointmentModal };
+export default EmployeeAppointments;

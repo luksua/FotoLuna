@@ -1,0 +1,32 @@
+:root {
+  --pastel-lilac: #d8bfd8;
+}
+/* Theme toggle - sin fondo gris */
+.theme-toggle-btn {
+    background: none !important;
+    border: none !important;
+    padding: 6px; /* igual a los otros */   
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 1.1rem; /* más pequeño */
+    transition: transform 0.18s ease, background 0.18s ease;
+    border-radius: 50%;
+}
+
+.theme-toggle-btn:hover {
+    transform: scale(1.08);
+    color: var(--pastel-lilac) !important; /* fuerza color en hover */
+}
+
+.theme-toggle-btn:hover i {
+    color: var(--pastel-lilac) !important;
+}
+
+
+
+.theme-toggle-btn:focus,
+.theme-toggle-btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+    background: none !important;
+}

@@ -164,11 +164,12 @@ class BookingController extends Controller
 
     public function store(Request $request, $appointmentId)
     {
+        // 1) Validar lo que pueda venir de ambos flujos
         $validated = $request->validate([
-            'packageIdFK' => 'nullable|exists:packages,packageId',   // flujo paquetes
-            'documentTypeId' => 'nullable|exists:document_types,id',    // flujo documentos
+            'packageIdFK' => 'nullable|exists:packages,packageId',
+            'documentTypeId' => 'nullable|exists:document_types,id',
             'place' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:5120',
+            'photo' => 'nullable|image|max:5120'
         ]);
 
         if (empty($validated['packageIdFK']) && empty($validated['documentTypeId'])) {
@@ -177,22 +178,42 @@ class BookingController extends Controller
             ], 422);
         }
 
+        // 2) Buscar cita
         $appointment = Appointment::findOrFail($appointmentId);
 
+        // 3) Guardar lugar en appointment si viene
         if (!empty($validated['place'])) {
-            $appointment->update([
-                'place' => $validated['place'],
-            ]);
+            $appointment->update(['place' => $validated['place']]);
         }
 
+        // 4) Si el cliente eligió empleado
+        $employee = null;
+        $hasEmployee = !empty($validated['employeeIdFK']);
+
+        if ($hasEmployee) {
+            $employee = Employee::find($validated['employeeIdFK']);
+
+            if (!$employee) {
+                return response()->json(['message' => 'El fotógrafo no existe.'], 404);
+            }
+            if (!$employee->isAvailable) {
+                return response()->json(['message' => 'Este fotógrafo no está disponible.'], 409);
+            }
+        }
+
+        // 5) Status del booking
+        $bookingStatus = $hasEmployee ? 'Confirmed' : 'Pending';
+
+        // 6) Crear booking
         $booking = Booking::create([
             'appointmentIdFK' => $appointment->appointmentId,
             'packageIdFK' => $validated['packageIdFK'] ?? null,
             'documentTypeIdFK' => $validated['documentTypeId'] ?? null,
-            'employeeIdFK' => null,
-            'bookingStatus' => 'Pending',
+            'employeeIdFK' => $hasEmployee ? $employee->employeeId : null,
+            'bookingStatus' => $bookingStatus,
         ]);
 
+        // 7) Foto opcional
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('documents', 'public');
 
@@ -204,12 +225,31 @@ class BookingController extends Controller
             ]);
         }
 
-        $appointment->update(['appointmentStatus' => 'Pending confirmation']);
+        // 8) Actualizar estado de cita + disponibilidad empleado
+        if ($hasEmployee) {
+            $appointment->update(['appointmentStatus' => 'Scheduled']);
+            $employee->update(['isAvailable' => false]);
+
+            // 9) Notificación por correo (mínima)
+            if (!empty($employee->emailEmployee)) {
+                Mail::raw(
+                    "Tienes una nueva sesión el {$appointment->appointmentDate} a las {$appointment->appointmentTime}.",
+                    function ($message) use ($employee) {
+                        $message->to($employee->emailEmployee)
+                            ->subject('Nueva cita asignada');
+                    }
+                );
+            }
+        } else {
+            $appointment->update(['appointmentStatus' => 'Pending confirmation']);
+        }
 
         return response()->json([
             'message' => 'Reserva creada correctamente',
             'bookingId' => $booking->bookingId,
+            'status' => $booking->bookingStatus,
         ], 201);
+
     }
 
 
@@ -487,6 +527,76 @@ class BookingController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+
+    // empleado
+    // public function employeeAppointments($employeeId)
+    // {
+    //     $user = Auth::user();
+
+    //     if (!$user) {
+    //         return response()->json(['message' => 'No autenticado'], 401);
+    //     }
+
+    //     // Si es empleado, solo puede ver SUS citas
+    //     if ($user->role === 'empleado') {
+    //         $authEmployee = $user->employee;
+    //         if (
+    //             !$authEmployee ||
+    //             (int) $authEmployee->employeeId !== (int) $employeeId
+    //         ) {
+    //             return response()->json(['message' => 'No autorizado'], 403);
+    //         }
+    //     }
+
+    //     // Admin puede ver cualquier empleado; cliente no debería entrar aquí
+
+    //     $bookings = Booking::with([
+    //         'appointment.customer',
+    //         'appointment.event',
+    //         'package',
+    //     ])
+    //         ->where('employeeIdFK', $employeeId)
+    //         // 👀 OJO: NO filtramos por estado para que vengan también las canceladas
+    //         ->orderBy('bookingId', 'asc')
+    //         ->get();
+
+    //     $mapped = $bookings->map(function (Booking $b) {
+    //         $appointment = $b->appointment;
+    //         $customer = $appointment?->customer;
+    //         $event = $appointment?->event;
+    //         $package = $b->package;
+
+    //         $statusBackend = $appointment?->appointmentStatus ?? $b->bookingStatus;
+    //         $statusFront = match (strtolower((string) $statusBackend)) {
+    //             'cancelled' => 'Cancelada',
+    //             'completed' => 'Completada',
+    //             'scheduled', 'confirmado', 'confirmed' => 'Confirmada',
+    //             'pending confirmation', 'pendiente' => 'Pendiente',
+    //             default => 'Pendiente',
+    //         };
+
+    //         return [
+    //             'bookingId' => $b->bookingId,
+    //             'appointmentId' => $appointment?->appointmentId,
+    //             'date' => $appointment?->appointmentDate,     // "YYYY-MM-DD"
+    //             'startTime' => $appointment?->appointmentTime,     // "HH:MM:SS"
+    //             'endTime' => null,
+    //             'place' => $appointment?->place,
+    //             'comment' => $appointment?->comment,
+    //             'status' => $statusFront,
+
+    //             'clientName' => trim(($customer->firstNameCustomer ?? '') . ' ' . ($customer->lastNameCustomer ?? '')),
+    //             'clientDocument' => $customer->documentNumber ?? null,
+    //             'clientEmail' => $customer->emailCustomer ?? null,
+    //             'clientPhone' => $customer->phoneCustomer ?? null,
+
+    //             'eventName' => $event?->eventName ?? null,
+    //             'packageName' => $package?->packageName ?? null,
+    //         ];
+    //     });
+
+    //     return response()->json($mapped);
+    // }
     public function destroy(Booking $booking)
     {
         //

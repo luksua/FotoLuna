@@ -26,6 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
 });
+use App\Http\Controllers\AdminAppointmentController;
+use App\Http\Controllers\CustomerController;
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('bookings/{booking}')->group(function () {
@@ -176,3 +179,70 @@ Route::post('/admin/document-types', [AdminDocumentTypesController::class, 'stor
 Route::patch('/admin/document-types/{id}', [AdminDocumentTypesController::class, 'update']);
 
 Route::patch('/admin/document-types/{id}/status', [AdminDocumentTypesController::class, 'updateStatus']);
+
+// Empleado
+Route::middleware('auth:sanctum')->group(function () {
+    // LISTAR citas de un empleado (calendario del fotógrafo)
+    Route::get('/employee/{employee}/appointments', [
+        AppointmentController::class,
+        'employeeAppointments',
+    ]);
+
+    // ACTUALIZAR una cita desde el panel del empleado
+    Route::put('/employee/appointments/{appointment}', [
+        AppointmentController::class,
+        'updateByEmployee',
+    ]);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/employee/payments', [PaymentController::class, 'employeePayments']);
+});
+
+
+
+
+// === CLIENTES (panel empleado / admin) ===
+Route::middleware('auth:sanctum')->group(function () {
+    // Lista de clientes (con filtro ?year=2024 opcional)
+    Route::get('/customers', [CustomerController::class, 'index']);
+
+    // Detalle de un cliente para el modal "Ver más"
+    Route::get('/customers/{customer}', [CustomerController::class, 'show']);
+});
+
+
+
+
+
+// Admin Citas
+
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+
+    // Citas sin asignar (esto ya lo tienes)
+    Route::get('/appointments/unassigned', [AdminAppointmentController::class, 'unassigned']);
+
+    // Disponibilidad general de empleados (ya funciona)
+    Route::get('/employees/availability', [AdminAppointmentController::class, 'employeesAvailability']);
+
+    // 👉 NUEVA: todas las citas para el admin (tabla principal)
+    Route::get('/appointments', [AdminAppointmentController::class, 'index']);
+
+    // 👉 NUEVA: candidatos para una cita concreta (para el modal)
+    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
+
+    // 👉 NUEVA: asignar fotógrafo a una cita
+    Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+});
+
+
+// Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+
+// });
+
+
+
+// Route::middleware(['auth:sanctum', 'role:empleado'])->group(function () {
+// Route::put('/employee/appointments/{appointmentId}', [AppointmentController::class, 'updateByEmployee']);
+// });
+// 

@@ -4,6 +4,7 @@ import EmployeeUpload from "../features/Employee/Upload/Pages/Upload";
 import AdminEmployee from "../features/Employee/PhotoAdmin/Pages/PhotoAdmin";
 import CustomersEmployee from "../features/Employee/Customers/Pages/CustomersEmployee";
 import EmployeeNotifications from "../features/Employee/Notification/Pages/NotiFicationEmploye";
+import Payments from "../features/Employee/Payment/Pages/PaymentEmployee";
 
 export const employeeRoutes = [
 {
@@ -15,5 +16,5 @@ export const employeeRoutes = [
     { path: "/employee/admin", element: <AdminEmployee /> },
     { path: "/employee/customers", element: <CustomersEmployee /> },
     { path: "/employee/notifications", element: <EmployeeNotifications /> },
-
+    { path: "/employee/payments", element: <Payments /> },
 ];

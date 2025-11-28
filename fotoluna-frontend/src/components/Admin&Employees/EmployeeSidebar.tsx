@@ -12,7 +12,7 @@ const AdminSidebar: React.FC = () => {
         { id: "subir", icon: "bi bi-cloud-upload-fill", text: "Subir", path: "/employee/upload" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/employee/admin" },
         { id: "clientes", icon: "bi bi-people-fill", text: "Clientes", path: "/employee/customers" },
-        { id: "pagos", icon: "bi bi-wallet", text: "Pagos", path: "/employee/pagos" }
+        { id: "pagos", icon: "bi bi-wallet", text: "Pagos", path: "/employee/payments" }
 
     ];
 

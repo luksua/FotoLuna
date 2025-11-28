@@ -1,7 +1,6 @@
 import React from "react";
 import "../Styles/home.css";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
-import "../styles/home.css";
 
 
 const EmployeeHome: React.FC = () => {
@@ -21,7 +20,7 @@ const EmployeeHome: React.FC = () => {
                     </div>
                 </div>
             </section>
-            
+
             <div className="dashboard">
                 <div className="card-employee citos">
                     <div className="card-header-employee">
@@ -131,7 +130,7 @@ const EmployeeHome: React.FC = () => {
 
                 <div className="card-employee">
                     <div className="card-header-employee">
-                        <div className="card-icon" style={{background: "var(--pastel-lilac)"}}>
+                        <div className="card-icon" style={{ background: "var(--pastel-lilac)" }}>
                             <i className="bi bi-graph-up"></i>
                         </div>
                         <h3>Estadísticas</h3>
