@@ -20,13 +20,15 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
     searchTerm,
     onSearchTermChange,
     order,
-    onOrderChange
+    onOrderChange,
 }) => {
     const filters: { key: FilterType; label: string; variant: string }[] = [
-        { key: 'all', label: 'Todos', variant: 'outline-primary' },
-        { key: 'paid', label: 'Pagado', variant: 'outline-success' },
-        { key: 'pending', label: 'Pendiente', variant: 'outline-warning' },
-        { key: 'overdue', label: 'Vencido', variant: 'outline-danger' }
+        { key: 'all',     label: 'Todos',        variant: 'outline-primary' },
+        { key: 'paid',    label: 'Pagado',       variant: 'outline-success' },
+        { key: 'pending', label: 'Pendiente',    variant: 'outline-warning' },
+        { key: 'partial', label: 'En cuotas',    variant: 'outline-info' },
+        { key: 'overdue', label: 'Vencido',      variant: 'outline-danger' },
+        { key: 'no_info', label: 'Sin info',     variant: 'outline-secondary' },
     ];
 
     return (
@@ -44,7 +46,9 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
                 <Col md={4}>
                     <Form.Select
                         value={order}
-                        onChange={(e) => onOrderChange(e.target.value as 'asc' | 'desc')}
+                        onChange={(e) =>
+                            onOrderChange(e.target.value as 'asc' | 'desc')
+                        }
                     >
                         <option value="desc">Más recientes primero</option>
                         <option value="asc">Más antiguos primero</option>
@@ -53,7 +57,7 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
             </Row>
 
             {/* Botones de estado */}
-            <ButtonGroup className="w-100">
+            <ButtonGroup className="w-100 flex-wrap">
                 {filters.map((filter) => (
                     <Button
                         key={filter.key}
