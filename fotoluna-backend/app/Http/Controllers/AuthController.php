@@ -62,6 +62,8 @@ class AuthController extends Controller
                     'phoneCustomer' => $data['phoneCustomer'] ?? '',
                     'documentType' => $data['documentType'] ?? 'CC',
                     'documentNumber' => $data['documentNumber'] ?? '',
+                    'created_by_user_id' => $request->input('created_by_user_id'),
+
                 ]);
             }
 

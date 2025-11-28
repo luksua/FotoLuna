@@ -13,7 +13,8 @@ use MercadoPago\Client\Payment\PaymentClient;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\BookingConfirmedMail;
 use Illuminate\Support\Facades\Mail;
-
+use App\Models\Employee;
+use Illuminate\Support\Carbon;
 class PaymentController extends Controller
 {
     public function pay(Request $request)
@@ -318,4 +319,143 @@ class PaymentController extends Controller
             'payment' => $payment,
         ], 201);
     }
+    // empleado
+    public function employeePayments(Request $request)
+    {
+        // Usuario logueado (Sanctum / token)
+        $user = $request->user();
+
+        // Buscar empleado asociado al usuario
+        $employee = Employee::where('user_id', $user->id)->firstOrFail();
+
+        // Query base: pagos de bookings que pertenecen a ese empleado
+        $query = Payment::with([
+            'booking',
+            'booking.appointment.customer',
+            'booking.appointment.event',
+            'booking.package',          // <-- usamos el paquete desde booking
+            'booking.installments',
+        ])
+            ->whereHas('booking', function ($q) use ($employee) {
+                $q->where('employeeIdFK', $employee->employeeId);
+            });
+
+        // --------- Filtros ---------
+
+        // Estado: all | paid | pending | overdue
+        $status = $request->query('status');
+        if ($status && $status !== 'all') {
+            if ($status === 'paid') {
+                $query->whereIn('paymentStatus', ['approved', 'paid']);
+            } else {
+                $query->where('paymentStatus', $status);
+            }
+        }
+
+        // Búsqueda por cliente / cédula / correo / teléfono
+        $clientSearch = $request->query('client');
+        if (!empty($clientSearch)) {
+            $query->whereHas('booking.appointment.customer', function ($q) use ($clientSearch) {
+                $q->where('firstNameCustomer', 'like', "%{$clientSearch}%")
+                    ->orWhere('lastNameCustomer', 'like', "%{$clientSearch}%")
+                    ->orWhere('documentNumber', 'like', "%{$clientSearch}%")
+                    ->orWhere('emailCustomer', 'like', "%{$clientSearch}%")
+                    ->orWhere('phoneCustomer', 'like', "%{$clientSearch}%");
+            });
+        }
+
+        // Rango de fechas (opcional)
+        if ($from = $request->query('from_date')) {
+            $query->whereDate('paymentDate', '>=', $from);
+        }
+        if ($to = $request->query('to_date')) {
+            $query->whereDate('paymentDate', '<=', $to);
+        }
+
+        // Orden por fecha (más nuevo / más viejo)
+        $order = strtolower($request->query('order', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $query->orderByRaw('COALESCE(paymentDate, created_at) ' . $order);
+
+        // Paginación
+        $perPage = (int) $request->query('per_page', 5);
+        $payments = $query->paginate($perPage);
+
+        // Transformar datos para el frontend
+        $collection = $payments->getCollection()->map(function (Payment $payment) {
+
+            $booking = $payment->booking;
+            $appointment = $booking?->appointment;
+            $customer = $appointment?->customer;
+            $event = $appointment?->event;
+            $package = $booking?->package;              // <-- aquí solo booking->package
+            $installments = $booking?->installments ?? collect();
+
+            // Normalizar estado
+            $status = $payment->paymentStatus;
+            if ($status === 'approved') {
+                $status = 'paid';
+            }
+
+            // Fecha
+            $date = $payment->paymentDate ?? $payment->created_at;
+
+            // Calcular cuotas
+            if ($installments->count() > 1) {
+                $sorted = $installments->sortBy('number');
+                $current = $sorted->firstWhere('status', 'pending') ?? $sorted->last();
+
+                $installment = [
+                    'current' => (int) $current->number,
+                    'total' => (int) $installments->count(),
+                ];
+
+                $installmentAmount = (float) $current->amount;
+                $dueDate = optional($current->created_at)->format('Y-m-d');
+            } else {
+                $installment = [
+                    'current' => 1,
+                    'total' => 1,
+                ];
+
+                $installmentAmount = (float) $payment->amount;
+                $dueDate = null;
+            }
+
+            // Datos de cliente
+            $clientName = trim(
+                ($customer->firstNameCustomer ?? '') . ' ' .
+                ($customer->lastNameCustomer ?? '')
+            );
+
+            return [
+                'id' => (int) $payment->paymentId,
+                'date' => optional($date)->format('Y-m-d'),
+                'clientName' => $clientName,
+                'clientCedula' => $customer->documentNumber ?? '',
+                'clientEmail' => $customer->emailCustomer ?? '',
+                'clientPhone' => $customer->phoneCustomer ?? '',
+                'description' => ($package->packageName ?? 'Sin paquete') . ' - ' . ($event->eventType ?? 'Sin evento'),
+                'installment' => $installment,
+                'installmentAmount' => $installmentAmount,
+                'totalAmount' => (float) ($package->price ?? $payment->amount),
+                'status' => $status,
+                'dueDate' => $dueDate,
+            ];
+        });
+
+        $payments->setCollection($collection);
+
+        return response()->json([
+            'data' => $payments->items(),
+            'meta' => [
+                'current_page' => $payments->currentPage(),
+                'per_page' => $payments->perPage(),
+                'total' => $payments->total(),
+                'last_page' => $payments->lastPage(),
+            ],
+        ]);
+    }
+
+
+
 }

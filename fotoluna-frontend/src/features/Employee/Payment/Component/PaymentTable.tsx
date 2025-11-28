@@ -3,24 +3,23 @@ import React from 'react';
 import { Table, Card, Button, Badge, ProgressBar, Pagination } from 'react-bootstrap';
 import type { Payment } from './Types/payment';
 
+
 interface PaymentTableProps {
     payments: Payment[];
-    onDownloadInvoice: (paymentId: string) => void;
-    onPayNow: (paymentId: string) => void;
     currentPage: number;
     totalPages: number;
     totalItems: number;
     onPageChange: (page: number) => void;
+    onViewDetails: (paymentId: string) => void;
 }
 
 const PaymentTable: React.FC<PaymentTableProps> = ({
     payments,
-    onDownloadInvoice,
-    onPayNow,
     currentPage,
     totalPages,
     totalItems,
-    onPageChange
+    onPageChange,
+    onViewDetails,
 }) => {
     const getStatusVariant = (status: string) => {
         switch (status) {
@@ -43,7 +42,7 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('es-AR', {
             style: 'currency',
-            currency: 'USD'
+            currency: 'USD',
         }).format(amount);
     };
 
@@ -81,6 +80,10 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                         <thead className="table-light">
                             <tr>
                                 <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Cédula</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
                                 <th>Descripción</th>
                                 <th>Cuota</th>
                                 <th>Monto Cuota</th>
@@ -92,7 +95,7 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                         <tbody>
                             {payments.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="text-center py-4 text-muted">
+                                    <td colSpan={11} className="text-center py-4 text-muted">
                                         No se encontraron pagos con los filtros seleccionados
                                     </td>
                                 </tr>
@@ -100,10 +103,14 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                 payments.map((payment) => (
                                     <tr key={payment.id} className="payment-row">
                                         <td className="fw-semibold">{payment.date}</td>
+                                        <td>{payment.clientName}</td>
+                                        <td>{payment.clientCedula}</td>
+                                        <td>{payment.clientEmail}</td>
+                                        <td>{payment.clientPhone}</td>
                                         <td>
                                             <div className="description-cell">
                                                 <strong>{payment.description}</strong>
-                                                {payment.installment.total > 1 && (
+                                                {payment.installment.total > 1 && payment.dueDate && (
                                                     <small className="text-muted d-block">
                                                         Vence: {payment.dueDate}
                                                     </small>
@@ -142,11 +149,10 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                                 <Button
                                                     variant="outline-primary"
                                                     size="sm"
-                                                    onClick={() => onDownloadInvoice(payment.id)}
+                                                    onClick={() => onViewDetails(payment.id)}
                                                     className="action-btn"
                                                 >
-                                                    <i className="bi bi-download me-1"></i>
-                                                    Factura
+                                                    Ver detalle
                                                 </Button>
                                             </div>
                                         </td>
@@ -157,12 +163,12 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                     </Table>
                 </div>
 
-                {/* Paginación */}
                 {payments.length > 0 && (
                     <div className="pagination-section mt-4">
                         <div className="d-flex justify-content-between align-items-center">
                             <div className="text-muted">
-                                Mostrando {(currentPage - 1) * 5 + 1}-{Math.min(currentPage * 5, totalItems)} de {totalItems} resultados
+                                Mostrando {(currentPage - 1) * 5 + 1}-
+                                {Math.min(currentPage * 5, totalItems)} de {totalItems} resultados
                             </div>
                             <Pagination className="mb-0">
                                 <Pagination.Prev

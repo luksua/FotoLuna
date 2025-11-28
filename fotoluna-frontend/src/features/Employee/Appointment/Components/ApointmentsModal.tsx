@@ -1,11 +1,11 @@
 import React from "react";
-import type { CitaFormData } from "../Components/Types/types";
+import type { CitaFormData, CitaStatus } from "../Components/Types/types";
 
 interface AppointmentModalProps {
     show: boolean;
     isEditing: boolean;
     form: CitaFormData;
-    errors: { [key: string]: string };
+    errors: Record<string, string>;
     success: string;
     onChange: (
         e: React.ChangeEvent<
@@ -17,6 +17,7 @@ interface AppointmentModalProps {
 }
 
 const AppointmentModal: React.FC<AppointmentModalProps> = ({
+    
     show,
     isEditing,
     form,
@@ -30,11 +31,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
     return (
         <div className="modal-cita-backdrop" onClick={onClose}>
-            <div
-                className="modal-cita"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <h2>
+            <div className="modal-cita" onClick={(e) => e.stopPropagation()}>
+                <h2 className="mb-3">
                     <i
                         className={`fas ${isEditing ? "fa-edit" : "fa-calendar-plus"
                             } me-2`}
@@ -46,19 +44,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     className="row g-3 needs-validation appointment-form"
                     onSubmit={onSubmit}
                 >
-                    {/* Cliente (solo lectura al editar) */}
+                    {/* CLIENTE */}
                     <div className="col-mb-4">
-                        <label htmlFor="client" className="form-label col-lg-3">
-                            Cliente:
-                        </label>
+                        <label className="form-label col-lg-3">Cliente:</label>
                         <input
-                            className="col-lg-9 form-control-s"
                             type="text"
+                            className="col-lg-9 form-control-s"
                             name="client"
                             value={form.client}
                             onChange={onChange}
-                            required
                             disabled={isEditing}
+                            required
                         />
                         {errors.client && (
                             <div className="text-danger small">
@@ -67,37 +63,30 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         )}
                     </div>
 
-                    {/* Fecha */}
+                    {/* FECHA */}
                     <div className="col-mb-4">
-                        <label htmlFor="date" className="form-label col-lg-3">
-                            Fecha:
-                        </label>
+                        <label className="form-label col-lg-3">Fecha:</label>
                         <input
-                            className="col-lg-9 form-control-s"
                             type="date"
+                            className="col-lg-9 form-control-s"
                             name="date"
                             value={form.date}
                             onChange={onChange}
                             required
                         />
                         {errors.date && (
-                            <div className="text-danger small">
-                                {errors.date}
-                            </div>
+                            <div className="text-danger small">{errors.date}</div>
                         )}
                     </div>
 
-                    {/* Hora inicio */}
+                    {/* HORA DE INICIO */}
                     <div className="col-mb-4">
-                        <label
-                            htmlFor="startTime"
-                            className="form-label col-lg-3"
-                        >
+                        <label className="form-label col-lg-3">
                             Hora de Inicio:
                         </label>
                         <input
-                            className="col-lg-9 form-control-s"
                             type="time"
+                            className="col-lg-9 form-control-s"
                             name="startTime"
                             value={form.startTime}
                             onChange={onChange}
@@ -110,18 +99,13 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         )}
                     </div>
 
-                    {/* Estado solo al editar */}
+                    {/* ESTADO (SOLO AL EDITAR) */}
                     {isEditing && (
                         <div className="col-mb-4">
-                            <label
-                                htmlFor="status"
-                                className="form-label col-lg-3"
-                            >
-                                Estado
-                            </label>
+                            <label className="form-label col-lg-3">Estado:</label>
                             <select
-                                className="col-lg-9 form-select-s"
                                 name="status"
+                                className="col-lg-9 form-select-s"
                                 value={form.status}
                                 onChange={onChange}
                             >
@@ -133,20 +117,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         </div>
                     )}
 
-                    {/* Localización */}
+                    {/* LOCALIZACIÓN */}
                     <div className="col-mb-4">
-                        <label
-                            htmlFor="location"
-                            className="form-label col-lg-3"
-                        >
-                            Localización
+                        <label className="form-label col-lg-3">
+                            Localización:
                         </label>
                         <input
-                            placeholder="Localización"
                             className="col-lg-9 form-control-s"
                             name="location"
                             value={form.location}
                             onChange={onChange}
+                            placeholder="Localización"
                             required
                         />
                         {errors.location && (
@@ -156,27 +137,26 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         )}
                     </div>
 
-                    {/* Notas */}
+                    {/* NOTAS */}
                     <div className="col-mb-4">
-                        <label htmlFor="notes" className="form-label col-lg-3">
-                            Notas
-                        </label>
+                        <label className="form-label col-lg-3">Notas:</label>
                         <textarea
-                            placeholder="Notas adicionales..."
                             className="col-lg-9 form-control-s"
                             name="notes"
                             rows={3}
+                            placeholder="Notas adicionales..."
                             value={form.notes}
                             onChange={onChange}
                         />
                     </div>
 
-                    {/* Botones */}
+                    {/* BOTONES */}
                     <div className="appointment-form-buttons">
                         <button type="submit" className="accept-btn">
                             <i className="fas fa-save me-1" />
                             {isEditing ? "Actualizar" : "Guardar"}
                         </button>
+
                         <button
                             type="button"
                             className="reject-btn"
@@ -200,3 +180,4 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 };
 
 export default AppointmentModal;
+

@@ -12,6 +12,9 @@ use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Booking;
+use App\Models\Employee;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
@@ -212,7 +215,7 @@ class AppointmentController extends Controller
             'event',
             'booking.package',
             'booking.documentType',
-            'booking.installments'
+            'booking.installments',   // cuotas
         ])
             ->where('customerIdFK', $customerId)
             ->orderByDesc('appointmentDate')
@@ -223,11 +226,14 @@ class AppointmentController extends Controller
 
             $booking = $a->booking;
 
+            // Si por algún motivo no hay booking asociado
             if (!$booking) {
                 return [
                     'id' => $a->appointmentId,
                     'event_type' => $a->event?->eventType,
-                    'datetime' => $a->appointmentDate . ' ' . $a->appointmentTime,
+                    'datetime' => Carbon::parse(
+                        ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
+                    )->toIso8601String(),
                     'place' => $a->place,
                     'reservation_status' => $a->appointmentStatus,
                     'payment_status' => 'Sin información',
@@ -244,24 +250,34 @@ class AppointmentController extends Controller
                 $documentTypes[] = [
                     'id' => $booking->documentType->id,
                     'name' => $booking->documentType->name,
-                    'url' => $booking->documentType->url ?? null
+                    'url' => $booking->documentType->url ?? null,
                 ];
             }
 
             /** --------------------
              *  CUOTAS / PAGOS
              * --------------------*/
-            $installments = $booking->installments;
+            $installments = $booking->installments ?? collect();
 
-            $total = $installments->sum('amount');
-            $paid = $installments->where('status', 'paid')->sum('amount');
-            $pending = max(0, $total - $paid);
+            $total = (float) $installments->sum('amount');
+            $paid = (float) $installments->where('status', 'paid')->sum('amount');
+            $pendingAmount = max(0, $total - $paid);
 
-            /** estado del pago */
-            if ($pending == 0 && $total > 0) {
+            $paidCount = $installments->where('status', 'paid')->count();
+            $pendingCount = $installments->where('status', 'pending')->count();
+            $overdueCount = $installments->where('status', 'overdue')->count();
+
+            // ------- Estado de pago (usando SOLO las cuotas) -------
+            if ($installments->isEmpty()) {
+                $paymentStatus = 'Sin información';
+            } elseif ($pendingAmount == 0 && $total > 0) {
                 $paymentStatus = 'Pagado';
-            } elseif ($paid > 0) {
+            } elseif ($overdueCount > 0) {
+                $paymentStatus = 'Vencido';
+            } elseif ($paidCount > 0 && $pendingCount > 0) {
                 $paymentStatus = 'En cuotas';
+            } elseif ($total > 0 && $paid == 0) {
+                $paymentStatus = 'Pendiente';
             } else {
                 $paymentStatus = 'Pendiente';
             }
@@ -269,7 +285,9 @@ class AppointmentController extends Controller
             return [
                 'id' => $a->appointmentId,
                 'event_type' => $a->event?->eventType ?? '—',
-                'datetime' => Carbon::parse($a->appointmentDate . ' ' . $a->appointmentTime)->toIso8601String(),
+                'datetime' => Carbon::parse(
+                    ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
+                )->toIso8601String(),
                 'place' => $a->place,
                 'reservation_status' => $a->appointmentStatus,
                 'payment_status' => $paymentStatus,
@@ -282,32 +300,67 @@ class AppointmentController extends Controller
                         return [
                             'id' => $ins->id,
                             'amount' => (float) $ins->amount,
-                            'due_date' => $ins->due_date ? Carbon::parse($ins->due_date)->toIso8601String() : null,
+                            'due_date' => $ins->due_date
+                                ? ($ins->due_date instanceof Carbon
+                                    ? $ins->due_date->toIso8601String()
+                                    : Carbon::parse($ins->due_date)->toIso8601String())
+                                : null,
                             'paid' => $ins->status === 'paid',
-                            'paid_at' => $ins->paid_at ? Carbon::parse($ins->paid_at)->toIso8601String() : null,
+                            'paid_at' => $ins->paid_at
+                                ? ($ins->paid_at instanceof Carbon
+                                    ? $ins->paid_at->toIso8601String()
+                                    : Carbon::parse($ins->paid_at)->toIso8601String())
+                                : null,
+                            'status' => $ins->status,
                             'receipt_path' => $ins->receipt_path,
-                            'is_overdue' => !$ins->paid && $ins->due_date && Carbon::parse($ins->due_date)->isPast(),
+                            'is_overdue' => $ins->status === 'overdue',
                         ];
-                    })
-                ]
+                    })->values(),
+                ],
             ];
         });
 
         return response()->json(['data' => $data]);
     }
 
-    public function downloadReceipt(Appointment $appointment, BookingPaymentInstallment $installment)
+    // public function downloadReceipt(Appointment $appointment, BookingPaymentInstallment $installment)
+    // {
+    //     // Seguridad: asegurar que la cuota pertenece a esa cita y al cliente logueado
+    //     if ($installment->booking->appointmentIdFK !== $appointment->appointmentId) {
+    //         abort(403);
+    //     }
+
+    //     if (!$installment->receipt_path || !Storage::exists($installment->receipt_path)) {
+    //         abort(404, 'Recibo no disponible');
+    //     }
+
+    //     return Storage::download($installment->receipt_path);
+    // }
+    public function downloadReceipt(Request $request, Appointment $appointment, BookingPaymentInstallment $installment)
     {
-        // Seguridad: asegurar que la cuota pertenece a esa cita y al cliente logueado
+        $user = $request->user();
+
+        // Asegurar que el appointment pertenece al cliente logueado
+        if (!$user || !$user->customer || $appointment->customerIdFK !== $user->customer->customerId) {
+            abort(403, 'No autorizado');
+        }
+
+        // Asegurar que la cuota pertenece a esa cita
         if ($installment->booking->appointmentIdFK !== $appointment->appointmentId) {
-            abort(403);
+            abort(403, 'No autorizado');
         }
 
-        if (!$installment->receipt_path || !Storage::exists($installment->receipt_path)) {
-            abort(404, 'Recibo no disponible');
+        if (!$installment->receipt_path) {
+            abort(404, 'No hay recibo para esta cuota');
         }
 
-        return Storage::download($installment->receipt_path);
+        $fullPath = storage_path("app/public/" . $installment->receipt_path);
+
+        if (!file_exists($fullPath)) {
+            abort(404, 'Archivo no encontrado');
+        }
+
+        return response()->download($fullPath);
     }
 
     /**
@@ -592,134 +645,147 @@ class AppointmentController extends Controller
     }
     //    empleado
 
-    public function employeeAppointments($employeeId)
+    /**
+     * =======================================================
+     *   EMPLEADO → LISTADO DE SUS CITAS
+     * =======================================================
+     */
+    public function employeeAppointments(Request $request)
     {
-        // Traemos el booking + appointment + customer + event + package
-        $bookings = Booking::with([
-            'appointment.customer',
-            'appointment.event',
-            'package',
-        ])
-            ->where('employeeIdFK', $employeeId)
-            ->where('bookingStatus', 'Confirmed')
+        $employee = $request->user()->employee;
+
+        if (!$employee) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $rows = Booking::query()
+            ->where('employeeIdFK', $employee->employeeId)
+            ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
+            ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
+            ->selectRaw('
+                appointments.appointmentId,
+                bookings.bookingId,
+                appointments.appointmentDate AS date,
+                appointments.appointmentTime AS startTime,
+                appointments.place,
+                appointments.comment,
+                appointments.appointmentStatus AS status,
+                customers.firstNameCustomer AS firstName,
+                customers.lastNameCustomer  AS lastName,
+                customers.documentNumber    AS document,
+                customers.emailCustomer     AS email
+            ')
+            ->orderBy('appointments.appointmentDate')
+            ->orderBy('appointments.appointmentTime')
             ->get();
 
-        $result = $bookings->map(function ($b) {
-            $a = $b->appointment;
-            $customer = $a?->customer;
-            $event = $a?->event;
-            $package = $b->package;
-
+        $data = $rows->map(function ($r) {
             return [
-                'bookingId' => $b->bookingId,
-                'appointmentId' => $b->appointmentIdFK,
-                'date' => optional($a->appointmentDate)->format('Y-m-d'),
-                'startTime' => $a->appointmentTime,
-                'endTime' => null,
-                'place' => $a->place,
-                'comment' => $a->comment,
-                'status' => $b->bookingStatus,
-
-                // 👇 datos del cliente
-                'clientName' => $customer
-                    ? trim($customer->firstNameCustomer . ' ' . $customer->lastNameCustomer)
-                    : null,
-                'clientDocument' => $customer
-                    ? trim(($customer->documentType ?? '') . ' ' . ($customer->documentNumber ?? ''))
-                    : null,
-                'clientEmail' => $customer->emailCustomer ?? null,
-                'clientPhone' => $customer->phoneCustomer ?? null,
-
-                // 👇 evento y paquete
-                'eventName' => $event->eventName ?? null,
-                'packageName' => $package->packageName ?? null,
+                'appointmentId' => $r->appointmentId,
+                'bookingId' => $r->bookingId,
+                'date' => $r->date,
+                'startTime' => $r->startTime,
+                'place' => $r->place,
+                'comment' => $r->comment,
+                'status' => $r->status,
+                'clientName' => trim("{$r->firstName} {$r->lastName}"),
+                'clientDocument' => $r->document,
+                'clientEmail' => $r->email,
             ];
         });
 
-        return response()->json($result->values());
+        return response()->json($data);
     }
-    // Actualización de cita por EMPLEADO/FOTÓGRAFO
+
+
+
+    /**
+     * =======================================================
+     *   EMPLEADO → ACTUALIZA UNA CITA
+     * =======================================================
+     */
     public function updateByEmployee(Request $request, $appointmentId)
     {
         $user = $request->user();
 
-        // 1) Asegurarnos de que sea empleado
-        if (!$user || $user->role !== 'empleado') {
-            return response()->json([
-                'message' => 'Solo los empleados pueden editar sus citas',
-            ], 403);
-        }
-
+        // Verificar que el usuario tenga empleado asociado
         $employee = $user->employee;
-
         if (!$employee) {
             return response()->json([
-                'message' => 'El usuario autenticado no tiene un empleado asociado',
+                'message' => 'El usuario autenticado no tiene un empleado asociado'
             ], 403);
         }
 
-        // 2) Buscar el booking que une a este empleado con esta cita
-        $booking = Booking::with('appointment')
+        // Buscar la cita
+        $appointment = Appointment::findOrFail($appointmentId);
+
+        // Asegurarnos de que esta cita está asignada a este empleado mediante un booking
+        $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)
             ->where('employeeIdFK', $employee->employeeId)
-            ->where('appointmentIdFK', $appointmentId)
             ->first();
 
         if (!$booking) {
-            // O 404 si prefieres "no encontrada"
             return response()->json([
-                'message' => 'No tienes permisos para editar esta cita',
+                'message' => 'Esta cita no está asignada a este empleado'
             ], 403);
         }
 
-        $appointment = $booking->appointment;
-
-        if (!$appointment) {
-            return response()->json([
-                'message' => 'La cita asociada al booking no existe',
-            ], 404);
-        }
-
-        // 3) Validar SOLO los campos que puede cambiar el empleado
-        $validated = $request->validate([
-            'appointmentDate' => 'sometimes|date|after_or_equal:today',
-            'appointmentTime' => 'sometimes|string', // puedes afinar formato HH:MM
-            'place' => 'sometimes|nullable|string|max:100',
-            'comment' => 'sometimes|nullable|string|max:255',
-            'appointmentStatus' => 'sometimes|in:Pending confirmation,Scheduled,Completed,Cancelled',
+        // ✅ VALIDACIÓN: lo que acepta la API
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'startTime' => ['required', 'date_format:H:i'],
+            'place' => ['nullable', 'string', 'max:255'],
+            'comment' => ['nullable', 'string', 'max:500'],
+            'status' => [
+                'required',
+                'string',
+                Rule::in([
+                    'Pending confirmation', // pendiente
+                    'Scheduled',            // confirmada
+                    'Cancelled',
+                    'Completed',
+                ]),
+            ],
         ]);
 
-        // 4) Aplicar cambios a la cita
-        $appointment->fill($validated);
-        $appointment->save();
+        // ✅ Actualizar la cita con el texto que maneja tu app
+        $appointment->update([
+            'appointmentDate' => $data['date'],
+            'appointmentTime' => $data['startTime'],
+            'place' => $data['place'] ?? $appointment->place,
+            'comment' => $data['comment'] ?? $appointment->comment,
+            'appointmentStatus' => $data['status'],
+        ]);
 
-        // 5) Sincronizar estado del booking si se envió appointmentStatus
-        if (array_key_exists('appointmentStatus', $validated)) {
-            switch ($validated['appointmentStatus']) {
-                case 'Cancelled':
-                    $booking->bookingStatus = 'Cancelled';
-                    break;
-
-                case 'Scheduled':
-                case 'Completed':
-                    $booking->bookingStatus = 'Confirmed';
-                    break;
-
-                case 'Pending confirmation':
-                default:
-                    $booking->bookingStatus = 'Pending';
-                    break;
-            }
-
-            $booking->save();
+        // ✅ MAPEO: texto de la API → ENUM de la tabla bookings
+        switch ($data['status']) {
+            case 'Pending confirmation':
+                $bookingStatus = 'Pending';
+                break;
+            case 'Scheduled':
+                $bookingStatus = 'Confirmed';
+                break;
+            case 'Cancelled':
+                $bookingStatus = 'Cancelled';
+                break;
+            case 'Completed':
+                $bookingStatus = 'Completed';
+                break;
+            default:
+                $bookingStatus = 'Pending';
         }
+
+        // ✅ Actualizar booking usando SOLO valores válidos del ENUM
+        $booking->update([
+            'bookingStatus' => $bookingStatus,
+        ]);
 
         return response()->json([
             'message' => 'Cita actualizada correctamente',
-            'appointment' => $appointment,
-            'booking' => $booking,
-        ]);
+            'appointment' => $appointment->fresh(),
+            'booking' => $booking->fresh(),
+        ], 200);
     }
-
 
 
 

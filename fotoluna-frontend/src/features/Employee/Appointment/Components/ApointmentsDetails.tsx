@@ -10,14 +10,15 @@ interface AppointmentDetailsProps {
     onNewClick: () => void;
 }
 
-type StatusFilter = "Todas" | "Pendiente" | "Confirmada" | "Cancelada" | "Completada";
+type StatusFilter =
+    | "Todas"
+    | "Pendiente"
+    | "Confirmada"
+    | "Cancelada"
+    | "Completada";
 
-const getCitaKey = (cita: Cita, index: number): string | number => {
-    const anyCita = cita as any;
-    if (anyCita.id !== undefined && anyCita.id !== null) return anyCita.id;
-    const datePart =
-        cita.date instanceof Date ? cita.date.toISOString() : String(cita.date);
-    return `${datePart}_${cita.startTime}_${cita.endTime}_${index}`;
+const getCitaKey = (cita: Cita, index: number): string => {
+    return `${cita.appointmentId}_${cita.date.toISOString()}_${cita.startTime}_${index}`;
 };
 
 const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
@@ -28,14 +29,13 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
     onEditClick,
     onNewClick,
 }) => {
-    const [expandedKey, setExpandedKey] = useState<string | number | null>(null);
+    const [expandedKey, setExpandedKey] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("Todas");
 
+    // Fecha del título
     const titleDate = useMemo(() => {
         if (selectedDate) return selectedDate;
-        if (citasDelDia.length > 0 && citasDelDia[0].date instanceof Date) {
-            return citasDelDia[0].date as Date;
-        }
+        if (citasDelDia.length > 0) return citasDelDia[0].date;
         return null;
     }, [selectedDate, citasDelDia]);
 
@@ -47,12 +47,13 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
         })
         : "Selecciona una fecha";
 
+    // Filtro por estado
     const filteredCitas = useMemo(() => {
         if (statusFilter === "Todas") return citasDelDia;
         return citasDelDia.filter((c) => c.status === statusFilter);
     }, [citasDelDia, statusFilter]);
 
-    const handleCardClick = (cita: Cita, key: string | number) => {
+    const handleCardClick = (cita: Cita, key: string) => {
         onSelectCita(cita);
         setExpandedKey((prev) => (prev === key ? null : key));
     };
@@ -67,7 +68,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 
     return (
         <div className="appointment-details">
-            {/* Header + botón nueva cita */}
+            {/* Header */}
             <div className="appointments-panel-header">
                 <div>
                     <h3 className="appointments-panel-title">
@@ -82,7 +83,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                 </button>
             </div>
 
-            {/* Filtros por estado */}
+            {/* Filtros */}
             <div className="appointments-filters">
                 {(
                     [
@@ -102,25 +103,19 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                         }
                         onClick={() => setStatusFilter(value)}
                     >
-                        {value === "Todas" ? "Todas" : value}
+                        {value}
                     </button>
                 ))}
             </div>
 
-            {/* Lista de citas */}
+            {/* Lista */}
             <div className="appointments-list">
                 {filteredCitas.map((cita, index) => {
                     const key = getCitaKey(cita, index);
                     const isExpanded = expandedKey === key;
 
                     const isSelected =
-                        selectedCita &&
-                        ((("id" in (selectedCita as any) &&
-                            (selectedCita as any).id === (cita as any).id) ||
-                            (selectedCita.date?.toString() ===
-                                cita.date?.toString() &&
-                                selectedCita.startTime === cita.startTime &&
-                                selectedCita.endTime === cita.endTime)));
+                        selectedCita?.appointmentId === cita.appointmentId;
 
                     return (
                         <div
@@ -132,26 +127,24 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                             }
                             onClick={() => handleCardClick(cita, key)}
                         >
-                            {/* icono persona */}
+                            {/* Icono */}
                             <div className="appointment-card-icon">
                                 <i className="bi bi-person" />
                             </div>
 
-                            {/* contenido principal */}
+                            {/* Datos principales */}
                             <div className="appointment-card-main">
                                 <div className="appointment-card-title">
                                     {cita.client}
                                 </div>
                             </div>
 
-                            {/* hora */}
+                            {/* Hora */}
                             <div className="appointment-card-time">
-                                {cita.endTime
-                                    ? `${cita.startTime} - ${cita.endTime}`
-                                    : cita.startTime}
+                                {cita.startTime}
                             </div>
 
-                            {/* editar */}
+                            {/* Botón editar */}
                             <button
                                 className="appointment-card-edit"
                                 title="Editar cita"
@@ -163,14 +156,8 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                                 <i className="bi bi-pencil-square" />
                             </button>
 
-                            {/* detalles expandido */}
+                            {/* Expanded */}
                             <div className="appointment-card-body">
-                                {cita.client && (
-                                    <p className="appointment-card-body-meta">
-                                        <strong>Cliente:</strong> {cita.client}
-                                    </p>
-                                )}
-
                                 {cita.document && (
                                     <p className="appointment-card-body-meta">
                                         <strong>Documento:</strong>{" "}
@@ -213,8 +200,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
 
                                 <p className="appointment-card-body-meta">
                                     <strong>Horario:</strong>{" "}
-                                    {cita.startTime}{" "}
-                                    {cita.endTime ? `- ${cita.endTime}` : ""}
+                                    {cita.startTime}
                                 </p>
 
                                 {cita.notes && (

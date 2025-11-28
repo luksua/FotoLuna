@@ -539,3 +539,27 @@
 .appointment-dot.cancelada {
   background-color: #ff4d4f; /* rojo para canceladas */
 }
+.appointment-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 2px 0;
+}
+
+/* Colores por estado */
+.appointment-dot.pendiente {
+    background-color: orange;
+}
+
+.appointment-dot.confirmada {
+    background-color: green;
+}
+
+.appointment-dot.cancelada {
+    background-color: red;
+}
+
+.appointment-dot.completada {
+    background-color: #0d6efd;
+}
+

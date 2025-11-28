@@ -13,6 +13,7 @@ const AdminSidebar: React.FC = () => {
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/AdminUsers" },
         { id: "clientes", icon: "bi bi-people-fill", text: "Empleados", path: "/AdminEmployee" },
         { id: "Events", icon: "bi bi-calendar-event", text: "Eventos", path: "/AdminEvents" },
+        { id: "Citas", icon: "bi bi-calendar-event", text: "Citas", path: "/AdminAppointments" },
     ];
 
     return (

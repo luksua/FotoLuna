@@ -36,47 +36,57 @@ const Register = () => {
         setForm({ ...form, [name]: target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        // Aquí construirías el payload para enviar al backend
-        const payload = {
-            firstNameEmployee: form.firstNameEmployee,
-            lastNameEmployee: form.lastNameEmployee,
-            phoneEmployee: form.phoneEmployee,
-            EPS: form.EPS,
-            documentType: form.documentType,
-            documentNumber: form.documentNumber,
-            emailEmployee: form.emailEmployee,
-            address: form.address,
-            // photoEmployee: form.photoEmployee (archivo, enviar con FormData)
-            password: form.password,
-            employeeType: form.employeeType,
-            role: form.role,
-            specialty: form.specialty,
-            isAvailable: form.isAvailable,
-            gender: form.gender
-        };
+    const handleSubmit = async () => {
+        if (!selectedCita) return;
 
-        console.log("Payload register user:", payload);
-        setMessage("Usuario registrado correctamente (simulado)");
-        setForm({
-            firstNameEmployee: "",
-            lastNameEmployee: "",
-            phoneEmployee: "",
-            EPS: "",
-            documentType: "",
-            documentNumber: "",
-            emailEmployee: "",
-            address: "",
-            photoEmployee: null,
-            password: "",
-            employeeType: "Employee",
-            role: "Photographer",
-            specialty: "",
-            isAvailable: true,
-            gender: "Female"
-        });
+        try {
+            setIsSubmitting(true);
+
+            // 1) Armar el payload tal y como lo espera el backend
+            const payload = {
+                date: form.date,           // "2025-11-30" (formato YYYY-MM-DD)
+                startTime: form.startTime, // "09:00"
+                place: form.location || null,
+                comment: form.notes || null,
+                status:
+                    STATUS_FRONT_TO_BACK[form.status] ?? selectedCita.status,
+            };
+
+            // 2) Hacer el PUT al endpoint del empleado
+            const res = await api.put(
+                `/api/employee/appointments/${selectedCita.appointmentId}`,
+                payload
+            );
+
+            const updated = res.data?.appointment ?? {};
+
+            // 3) Actualizar la cita en el estado del frontend
+            const citaActualizada: CitaEmpleado = {
+                ...selectedCita,
+                date: parseYMDToLocalDate(updated.appointmentDate ?? payload.date),
+                startTime: updated.appointmentTime ?? payload.startTime,
+                endTime: updated.endTime ?? null,
+                location: updated.place ?? payload.place ?? "",
+                notes: updated.comment ?? payload.comment ?? "",
+                status: updated.appointmentStatus ?? payload.status,
+            };
+
+            setCitas((prev) =>
+                prev.map((c) =>
+                    c.appointmentId === selectedCita.appointmentId ? citaActualizada : c
+                )
+            );
+
+            setSelectedCita(citaActualizada);
+            setShowEditModal(false);
+        } catch (error) {
+            console.error("Error actualizando cita del empleado", error);
+            alert("No se pudo actualizar la cita (revisa la consola / Network).");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
 
 
     return (

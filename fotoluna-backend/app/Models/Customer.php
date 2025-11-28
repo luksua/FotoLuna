@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Appointment;
+use App\Models\User;
+use App\Models\DocumentType;
 class Customer extends Model
 {
     use HasFactory;
@@ -25,6 +27,7 @@ class Customer extends Model
         'phoneCustomer',
         'documentType',
         'documentNumber',
+        'created_by_user_id',
     ];
 
     protected $hidden = [
@@ -35,15 +38,29 @@ class Customer extends Model
 
     public function user()
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function getPhotoUrlAttribute()
     {
-        if (! $this->photoCustomer) {
+        if (!$this->photoCustomer) {
             return null;
         }
 
         return asset('storage/' . ltrim($this->photoCustomer, '/'));
+    }
+    public function appointments()
+    {
+        // customers.customerId  ⇄  appointments.customerIdFK
+        return $this->hasMany(Appointment::class, 'customerIdFK', 'customerId');
+    }
+
+    public function documentType()
+    {
+        return $this->belongsTo(DocumentType::class, 'documentTypeFK', 'documentTypeId');
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id', 'id');
     }
 }
