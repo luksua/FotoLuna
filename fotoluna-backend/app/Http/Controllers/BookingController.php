@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\Package;
 use App\Models\StorageSubscription;
 use Illuminate\Http\Request;
 use App\Models\Appointment;
@@ -12,6 +14,9 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmedMail;
 use Carbon\Carbon;
 use App\Models\BookingPaymentInstallment;
+use App\Notifications\BookingCreatedForCustomer;
+use App\Notifications\BookingAssignedToEmployee;
+use App\Notifications\BookingNeedsEmployeeAssignment;
 
 class BookingController extends Controller
 {
@@ -185,71 +190,87 @@ class BookingController extends Controller
         if (!empty($validated['place'])) {
             $appointment->update(['place' => $validated['place']]);
         }
+        $duration = 60;
 
-        // 4) Si el cliente eligió empleado
-        $employee = null;
-        $hasEmployee = !empty($validated['employeeIdFK']);
+        if (!empty($validated['packageIdFK'])) {
+            $package = Package::findOrFail($validated['packageIdFK']);
+            $duration = $package->durationMinutes ?? $duration;
 
-        if ($hasEmployee) {
-            $employee = Employee::find($validated['employeeIdFK']);
+            // 4) Si el cliente eligió empleado
+            $employee = null;
+            $hasEmployee = !empty($validated['employeeIdFK']);
 
-            if (!$employee) {
-                return response()->json(['message' => 'El fotógrafo no existe.'], 404);
+            // Calcular hora de fin usando appointmentTime + duración
+            if ($appointment->appointmentTime) {
+                $start = Carbon::createFromFormat('H:i:s', $appointment->appointmentTime);
+                $end = $start->copy()->addMinutes($duration);
+
+                $appointment->appointmentDuration = $duration;
             }
-            if (!$employee->isAvailable) {
-                return response()->json(['message' => 'Este fotógrafo no está disponible.'], 409);
+
+            $appointment->save();
+
+            if ($hasEmployee) {
+                $employee = Employee::find($validated['employeeIdFK']);
+
+                if (!$employee) {
+                    return response()->json(['message' => 'El fotógrafo no existe.'], 404);
+                }
+                if (!$employee->isAvailable) {
+                    return response()->json(['message' => 'Este fotógrafo no está disponible.'], 409);
+                }
             }
-        }
 
-        // 5) Status del booking
-        $bookingStatus = $hasEmployee ? 'Confirmed' : 'Pending';
+            // 5) Status del booking
+            $bookingStatus = $hasEmployee ? 'Confirmed' : 'Pending';
 
-        // 6) Crear booking
-        $booking = Booking::create([
-            'appointmentIdFK' => $appointment->appointmentId,
-            'packageIdFK' => $validated['packageIdFK'] ?? null,
-            'documentTypeIdFK' => $validated['documentTypeId'] ?? null,
-            'employeeIdFK' => $hasEmployee ? $employee->employeeId : null,
-            'bookingStatus' => $bookingStatus,
-        ]);
-
-        // 7) Foto opcional
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('documents', 'public');
-
-            BookingPhoto::create([
-                'bookingIdFK' => $booking->bookingId,
-                'photoPath' => $path,
-                'photoDescription' => null,
-                'employeeIdFK' => null,
+            // 6) Crear booking
+            $booking = Booking::create([
+                'appointmentIdFK' => $appointment->appointmentId,
+                'packageIdFK' => $validated['packageIdFK'] ?? null,
+                'documentTypeIdFK' => $validated['documentTypeId'] ?? null,
+                'employeeIdFK' => $hasEmployee ? $employee->employeeId : null,
+                'bookingStatus' => $bookingStatus,
             ]);
-        }
 
-        // 8) Actualizar estado de cita + disponibilidad empleado
-        if ($hasEmployee) {
-            $appointment->update(['appointmentStatus' => 'Scheduled']);
-            $employee->update(['isAvailable' => false]);
+            // 7) Foto opcional
+            if ($request->hasFile('photo')) {
+                $path = $request->file('photo')->store('documents', 'public');
 
-            // 9) Notificación por correo (mínima)
-            if (!empty($employee->emailEmployee)) {
-                Mail::raw(
-                    "Tienes una nueva sesión el {$appointment->appointmentDate} a las {$appointment->appointmentTime}.",
-                    function ($message) use ($employee) {
-                        $message->to($employee->emailEmployee)
-                            ->subject('Nueva cita asignada');
-                    }
-                );
+                BookingPhoto::create([
+                    'bookingIdFK' => $booking->bookingId,
+                    'photoPath' => $path,
+                    'photoDescription' => null,
+                    'employeeIdFK' => null,
+                ]);
             }
-        } else {
-            $appointment->update(['appointmentStatus' => 'Pending confirmation']);
+
+            // 8) Actualizar estado de cita + disponibilidad empleado
+            if ($hasEmployee) {
+                $appointment->update(['appointmentStatus' => 'Scheduled']);
+                $employee->update(['isAvailable' => false]);
+
+                // 9) Notificación por correo (mínima)
+                if (!empty($employee->emailEmployee)) {
+                    Mail::raw(
+                        "Tienes una nueva sesión el {$appointment->appointmentDate} a las {$appointment->appointmentTime}.",
+                        function ($message) use ($employee) {
+                            $message->to($employee->emailEmployee)
+                                ->subject('Nueva cita asignada');
+                        }
+                    );
+                }
+            } else {
+                $appointment->update(['appointmentStatus' => 'Pending confirmation']);
+            }
+
+            return response()->json([
+                'message' => 'Reserva creada correctamente',
+                'bookingId' => $booking->bookingId,
+                'status' => $booking->bookingStatus,
+            ], 201);
+
         }
-
-        return response()->json([
-            'message' => 'Reserva creada correctamente',
-            'bookingId' => $booking->bookingId,
-            'status' => $booking->bookingStatus,
-        ], 201);
-
     }
 
 
@@ -440,22 +461,25 @@ class BookingController extends Controller
             'bookingStatus' => 'nullable|string|in:Pending,Confirmed,Completed,Cancelled',
         ]);
 
-        // Cargamos booking con cita y paquete
+        // 1) Cargamos booking con sus relaciones
         $booking = Booking::with(['appointment', 'package'])->findOrFail($bookingId);
 
-        // Asignar fotógrafo (si viene)
+        // Guardar valores anteriores para saber si cambian
+        $oldEmployeeId = $booking->employeeIdFK;
+        $oldStatus = $booking->bookingStatus;
+
+        // 2) Asignar fotógrafo (si viene en el request)
         if (array_key_exists('employeeIdFK', $validated)) {
             $employeeId = $validated['employeeIdFK'];
 
-            // Si el usuario elige "sin preferencia" y mandas null,
-            // puedes simplemente no asignar nada y saltarte la validación:
+            // Si mandas null = quitar/ninguno
             if (!is_null($employeeId)) {
 
                 // Datos de la cita y duración desde el booking
                 $appointment = $booking->appointment;
                 $package = $booking->package;
 
-                $date = $appointment->appointmentDate;   // ajusta a tus columnas reales
+                $date = $appointment->appointmentDate;
                 $time = $appointment->appointmentTime;
                 $duration = $package->durationMinutes ?? 60;
 
@@ -470,17 +494,54 @@ class BookingController extends Controller
                     ], 409);
                 }
 
-                // Si sí está disponible, lo asignamos al booking
+                // Asignamos el fotógrafo al booking
                 $booking->employeeIdFK = $employeeId;
+            } else {
+                // Si quieres permitir quitar el fotógrafo:
+                $booking->employeeIdFK = null;
             }
         }
 
-        // Actualizar estado de la reserva si viene
+        // 3) Actualizar estado de la reserva si viene
         if (array_key_exists('bookingStatus', $validated)) {
             $booking->bookingStatus = $validated['bookingStatus'];
         }
 
         $booking->save();
+
+        // -------- 4) NOTIFICACIONES DESPUÉS DE GUARDAR --------
+
+        $appointment = $booking->appointment;
+
+        // 4.1. Notificar al empleado si se asignó uno nuevo
+        if (!empty($booking->employeeIdFK) && $booking->employeeIdFK !== $oldEmployeeId) {
+
+            $employee = Employee::with('user')->find($booking->employeeIdFK);
+
+            if ($employee && $employee->user) {
+                $employee->user->notify(
+                    new BookingAssignedToEmployee($booking, $appointment)
+                );
+            }
+        }
+
+        // 4.2. Notificar al cliente si el status pasó a Confirmed
+        if (
+            isset($validated['bookingStatus']) &&
+            $validated['bookingStatus'] === 'Confirmed' &&
+            $oldStatus !== 'Confirmed'
+        ) {
+            // Cliente desde el appointment
+            $customer = Customer::with('user')->find($appointment->customerIdFK);
+
+            if ($customer && $customer->user) {
+                $customer->user->notify(
+                    new BookingCreatedForCustomer($booking, $appointment)
+                );
+            }
+        }
+
+        // -------- FIN NOTIFICACIONES --------
 
         return response()->json([
             'message' => 'Fotógrafo asignado y cita actualizada con éxito.',

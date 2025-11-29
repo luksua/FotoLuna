@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::table('appointments', function (Blueprint $table) {
             $table->unsignedInteger('appointmentDuration')->default(60);
-            $table->unsignedBigInteger('packageIdFK')->nullable();
         });
     }
 

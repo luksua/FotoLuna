@@ -43,6 +43,21 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', function (Request $request) {
+        return $request->user()
+            ->notifications()
+            ->orderBy('created_at', 'desc')
+            ->get();
+    });
+
+    Route::post('/notifications/{id}/read', function (Request $request, $id) {
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+        return response()->noContent();
+    });
+});
+
 Route::middleware('auth:sanctum')->get(
     '/appointments-customer',
     [AppointmentController::class, 'index']

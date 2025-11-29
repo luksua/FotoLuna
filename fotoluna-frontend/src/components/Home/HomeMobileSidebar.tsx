@@ -100,11 +100,13 @@ const HomeMobileSidebar: React.FC = () => {
                                         <i className="bi bi-calendar-event me-3"></i>Citas
                                     </Link>
                                 </li>
-                                <li>
-                                    <Link to="/fotos" className="nav-link">
-                                        <i className="bi bi-images me-3"></i>Mis Fotos
-                                    </Link>
-                                </li>
+                                {user.role === "cliente" && user.has_storage_subscription && (
+                                    <li>
+                                        <Link to="/fotos" className="nav-link">
+                                            <i className="bi bi-images me-3"></i>Mis Fotos
+                                        </Link>
+                                    </li>
+                                )}
                                 <li>
                                     <Link to="/plan" className="nav-link">
                                         <i className="bi bi-cloud me-3"></i>Administrar Plan

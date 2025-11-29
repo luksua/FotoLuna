@@ -8,6 +8,8 @@ use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Customer;
+use App\Models\StorageSubscription;
+use Carbon\Carbon;
 use App\Models\Employee;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -227,7 +229,7 @@ class AuthController extends Controller
     {
         $user = $request->user()->load(['customer', 'employee']);
 
-        // intenta obtener foto y nombres de customer o employee
+        // --- 1) Foto y nombres como ya lo tienes ---
         $photo = optional($user->customer)->photoCustomer
             ?? optional($user->employee)->photoEmployee
             ?? $user->avatar ?? null;
@@ -240,15 +242,26 @@ class AuthController extends Controller
             ?? optional($user->employee)->lastNameEmployee
             ?? null;
 
-        // construir URL pública si usas storage
         if ($photo && !Str::startsWith($photo, ['http://', 'https://', 'data:'])) {
             $photo = url("storage/{$photo}");
         }
 
+        // --- 2) Calcular si tiene suscripción de almacenamiento activa ---
+        $hasStorageSubscription = false;
+
+        if ($user->customer) {
+            $hasStorageSubscription = StorageSubscription::where('customerIdFK', $user->customer->customerId)
+                ->where('status', '!=', 'expired')                  // cualquier estado que no sea expirado
+                ->whereDate('ends_at', '>=', Carbon::today())
+                ->exists();
+        }
+
+        // --- 3) Devolver todo en el JSON ---
         return response()->json(array_merge($user->toArray(), [
             'photo' => $photo,
             'firstName' => $firstName,
             'lastName' => $lastName,
+            'has_storage_subscription' => $hasStorageSubscription,
         ]));
     }
 
