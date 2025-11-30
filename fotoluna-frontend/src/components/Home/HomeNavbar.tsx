@@ -7,6 +7,7 @@ import HomeButton from "./HomeButton";
 import { useAuth } from "../../context/useAuth";
 import Button from "./Button";
 import * as bootstrap from "bootstrap";
+import NotificationBell from '../NotificationBell';
 
 const HomeNav: React.FC = () => {
     const { user, loading } = useAuth();
@@ -57,7 +58,6 @@ const HomeNav: React.FC = () => {
                 </div>
 
                 {/* Botón hamburguesa - Solo visible en móviles/tablets */}
-                {/* Botón menú (solo móvil) */}
                 <div className="menu d-lg-none">
                     <button
                         type="button"
@@ -188,6 +188,8 @@ const HomeNav: React.FC = () => {
                                 Sobre Mí
                             </a>
                         </li>
+
+                        {user && <NotificationBell />}
 
                         {/* Perfil / avatar: abre el offcanvas de perfil */}
                         <li className="nav-item ms-3 d-none d-lg-block">

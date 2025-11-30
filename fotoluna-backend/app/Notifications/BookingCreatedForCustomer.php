@@ -24,7 +24,7 @@ class BookingCreatedForCustomer extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'mail']; // o solo ['database']
+        return ['database']; // o solo ['database']
     }
 
     public function toMail($notifiable)

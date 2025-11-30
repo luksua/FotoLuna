@@ -92,9 +92,6 @@ const HomeSidebar: React.FC = () => {
                             <a href="/plan" className="btn btn-perfil2 w-100 mb-3">
                                 Administrar Plan
                             </a>
-                            <a href="/notificaciones" className="btn btn-perfil2 w-100 mb-3">
-                                Notificaciones
-                            </a>
                         </div>
                     )}
                 </div>

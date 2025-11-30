@@ -5,6 +5,7 @@ import { useAuth } from "../../context/useAuth";
 import { Link, useLocation } from "react-router-dom";
 import HomeButton from "./HomeButton";
 import { Offcanvas } from "bootstrap";
+import NotificationBell from "../NotificationBell";
 
 const HomeMobileSidebar: React.FC = () => {
     const { user, logout } = useAuth();
@@ -113,9 +114,7 @@ const HomeMobileSidebar: React.FC = () => {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to="/notificaciones" className="nav-link">
-                                        <i className="bi bi-bell me-3"></i>Notificaciones
-                                    </Link>
+                                    {user && <NotificationBell />}
                                 </li>
                             </ul>
 
