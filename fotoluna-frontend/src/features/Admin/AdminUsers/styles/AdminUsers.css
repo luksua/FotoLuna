@@ -12,18 +12,20 @@
 
 .admin-root {
     padding: 28px 20px;
-    max-width: var(--max-width);
+    max-width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
     color: var(--text);
+    width: 100%;
 }
 
 /* Centrar contenido principal y controlar espacios laterales */
 .admin-content {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 12px; /* espacio lateral para que no quede pegado al borde */
+    padding: 0 12px;
     box-sizing: border-box;
+    width: 100%;
 }
 
 /* Header */
@@ -48,11 +50,51 @@
 
 .admin-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    /* Por defecto: 4 columnas para pantallas grandes */
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     align-items: stretch;
-    grid-auto-rows: 150px;
+    grid-auto-rows: 1fr;
     justify-content: center;
+    width: 100%;
+}
+
+/* Responsive para diferentes tamaños de pantalla */
+@media (max-width: 767px) {
+    .admin-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 0 4px;
+        width: 100%;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .admin-grid {
+        /* 3 columnas */
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        padding: 0 6px;
+        width: 100%;
+    }
+}
+
+/* portátil: 9 tarjetas visibles por página */
+@media (min-width: 1024px) and (max-width: 1399px) {
+    .admin-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        width: 100%;
+    }
+}
+
+/* Escritorio: 12 tarjetas visibles por página */
+@media (min-width: 1400px) {
+    .admin-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        width: 100%;
+    }
 }
 
 /* Tarjeta con tamaños fijos */
@@ -65,7 +107,7 @@
     padding: 10px 12px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
     border: 1px solid var(--border);
-    height: 150px;
+    min-height: 140px;
     width: 100%;
     box-sizing: border-box;
     transition: transform .12s ease, box-shadow .12s ease;
@@ -166,12 +208,15 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 6px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .search-input {
-    width: 420px;
-    flex: 0 0 420px;
-    min-width: 420px;
+    /* Hacer el input flexible para no forzar overflow y que la grid pueda ocupar el espacio disponible */
+    max-width: 420px;
+    flex: 1 1 420px;
+    min-width: 180px;
     height: 42px;
     padding: 8px 12px;
     border-radius: 8px;
@@ -180,6 +225,25 @@
     box-shadow: 0 1px 2px rgba(15,23,42,0.02);
     font-size: 0.95rem;
     color: var(--text);
+}
+
+@media (max-width: 767px) {
+    .search-input {
+        width: 100%;
+        flex: 1;
+        min-width: 150px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .search-input {
+        width: 350px;
+        flex: 0 0 350px;
+        min-width: 350px;
+        height: 40px;
+    }
 }
 
 .search-input:focus {

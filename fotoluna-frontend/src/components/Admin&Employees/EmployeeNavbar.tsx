@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 import EmployeeNotifications from "../../features/Employee/Notification/Pages/NotiFicationEmploye";
@@ -6,6 +6,7 @@ import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
 import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
 import ThemeToggle from "./LightDarkTheme";
+import { useAuth } from "../../context/useAuth";
 
 interface EmployeeNavbarProps {
     userName?: string;
@@ -13,21 +14,27 @@ interface EmployeeNavbarProps {
 }
 
 const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
-    // userName = "Amalia",
     notificationCount = 3
 }) => {
+    const auth = useAuth();
+    const { user } = auth;
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserProfile, setShowUserProfile] = useState(false);
-    const [showSettings, setShowSettings] = useState(false); // Nuevo estado para settings
+    const [showSettings, setShowSettings] = useState(false);
 
-    // Estado para el perfil del usuario
-    const [userProfile, setUserProfile] = useState<UserProfileData>({
-        id: 1,
-        name: "Amalia",
-        email: "amalia@example.com",
-        bio: "Fotógrafa apasionada por los paisajes y la naturaleza.",
-        avatar: null
+    const mapUserToProfile = (u: any): UserProfileData => ({
+        id: u?.id ?? 0,
+        name: u?.displayName ?? u?.firstName ?? u?.name ?? "Usuario",
+        email: u?.email ?? "",
+        bio: "",
+        avatar: u?.avatar ?? null,
     });
+
+    const [userProfile, setUserProfile] = useState<UserProfileData>(mapUserToProfile(user));
+
+    useEffect(() => {
+        setUserProfile(mapUserToProfile(user));
+    }, [user]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -138,7 +145,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                                     className="avatar-image-small"
                                 />
                             ) : (
-                                userProfile.name.charAt(0).toUpperCase()
+                                (userProfile.name && userProfile.name.charAt(0).toUpperCase()) || "U"
                             )}
                         </div>
                         <span className="user-name">{userProfile.name}</span>

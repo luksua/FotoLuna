@@ -16,7 +16,6 @@ const Register = () => {
         password: "",
         passwordConfirm: "",
         employeeType: "Employee",
-        role: "Photographer",
         specialty: "",
         isAvailable: true,
         gender: "Female"
@@ -68,7 +67,6 @@ const Register = () => {
             formData.append('password', form.password);
             formData.append('password_confirmation', form.passwordConfirm);
             formData.append('employeeType', form.employeeType);
-            formData.append('role', form.role);
             formData.append('specialty', form.specialty);
             formData.append('isAvailable', form.isAvailable ? '1' : '0');
             formData.append('gender', form.gender);
@@ -114,7 +112,6 @@ const Register = () => {
                     password: '',
                     passwordConfirm: '',
                     employeeType: 'Employee',
-                    role: 'Photographer',
                     specialty: '',
                     isAvailable: true,
                     gender: 'Female'
@@ -239,18 +236,10 @@ const Register = () => {
                         <label>Dirección:</label>
                         <input type="text" name="address" value={form.address} onChange={handleChange} required className="register-input" />
 
-                        <label>Tipo de empleado:</label>
+                        <label>Rol:</label>
                         <select name="employeeType" value={form.employeeType} onChange={handleChange} className="register-select">
                             <option value="Employee">Empleado</option>
                             <option value="Admin">Administrador</option>
-                        </select>
-
-                        <label>Rol:</label>
-                        <select name="role" value={form.role} onChange={handleChange} className="register-select">
-                            <option value="Photographer">Fotógrafo</option>
-                            <option value="Assistant">Asistente</option>
-                            <option value="Admin">Administrador</option>
-                            <option value="Other">Otro</option>
                         </select>
 
                         <label>Especialidad:</label>

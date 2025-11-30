@@ -47,10 +47,18 @@ const EmployeeCustomers = () => {
     
     const itemsPerPage = 10;
 
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        };
+    };
+
     useEffect(() => {
         let mounted = true;
         setLoading(true);
-        fetch('/api/admin/employees')
+        fetch('/api/admin/employees', { headers: getAuthHeaders() })
             .then((res) => res.json())
             .then((data) => {
                 if (!mounted) return;
@@ -101,10 +109,7 @@ const EmployeeCustomers = () => {
         try {
             const res = await fetch(`/api/admin/employees/${empId}/availability`, {
                 method: 'PATCH',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({})
             });
 
@@ -157,10 +162,7 @@ const EmployeeCustomers = () => {
         try {
             const res = await fetch(`/api/admin/employees/${selectedEmployee.id}`, {
                 method: 'PATCH',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(editForm)
             });
 
