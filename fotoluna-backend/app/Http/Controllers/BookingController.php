@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Models\StorageSubscription;
@@ -21,7 +22,7 @@ use App\Notifications\PhotosReadyClient;
 use App\Notifications\ReviewRequestClient;
 use App\Notifications\BookingUpdatedClient;
 use App\Notifications\BookingCancelledClient;
-use App\Notifications\ScheduleConflictEmployee;
+use App\Notifications\PhotographerAssignedClient;
 
 
 class BookingController extends Controller
@@ -244,6 +245,17 @@ class BookingController extends Controller
             'bookingStatus' => $bookingStatus,
         ]);
 
+        // Notificar a administradores si NO hay fotógrafo asignado
+        if (!$hasEmployee) {
+            $admins = User::where('role', 'admin')->get();
+
+            foreach ($admins as $admin) {
+                $admin->notify(
+                    new BookingNeedsEmployeeAssignment($booking)
+                );
+            }
+        }
+
         // 8) Foto opcional (documentos)
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('documents', 'public');
@@ -465,164 +477,172 @@ class BookingController extends Controller
     /**
      * Update the specified resource in storage.
      */
-public function update(Request $request, $bookingId)
-{
-    $validated = $request->validate([
-        'employeeIdFK'  => 'nullable|exists:employees,employeeId',
-        'bookingStatus' => 'nullable|string|in:Pending,Confirmed,Completed,Cancelled',
-    ]);
+    public function update(Request $request, $bookingId)
+    {
+        $validated = $request->validate([
+            'employeeIdFK' => 'nullable|exists:employees,employeeId',
+            'bookingStatus' => 'nullable|string|in:Pending,Confirmed,Completed,Cancelled',
+        ]);
 
-    // 1) Cargamos booking con sus relaciones
-    $booking = Booking::with(['appointment', 'package'])->findOrFail($bookingId);
+        // 1) Cargamos booking con sus relaciones
+        $booking = Booking::with(['appointment', 'package'])->findOrFail($bookingId);
 
-    // Guardar valores anteriores para saber si cambian
-    $oldEmployeeId = $booking->employeeIdFK;
-    $oldStatus     = $booking->bookingStatus;
+        // Guardar valores anteriores para saber si cambian
+        $oldEmployeeId = $booking->employeeIdFK;
+        $oldStatus = $booking->bookingStatus;
 
-    $appointment   = $booking->appointment;
-    $oldDate       = optional($appointment)->appointmentDate;
-    $oldTime       = optional($appointment)->appointmentTime;
-    $oldPlace      = optional($appointment)->place;
+        $appointment = $booking->appointment;
+        $oldDate = optional($appointment)->appointmentDate;
+        $oldTime = optional($appointment)->appointmentTime;
+        $oldPlace = optional($appointment)->place;
 
-    // 2) Asignar fotógrafo (si viene en el request)
-    if (array_key_exists('employeeIdFK', $validated)) {
-        $employeeId = $validated['employeeIdFK'];
+        // 2) Asignar fotógrafo (si viene en el request)
+        if (array_key_exists('employeeIdFK', $validated)) {
+            $employeeId = $validated['employeeIdFK'];
 
-        // Si mandas null = quitar/ninguno
-        if (!is_null($employeeId)) {
+            // Si mandas null = quitar/ninguno
+            if (!is_null($employeeId)) {
 
-            $appointment = $booking->appointment;
-            $package     = $booking->package;
+                $appointment = $booking->appointment;
+                $package = $booking->package;
 
-            // Si no hay appointment, no podemos evaluar disponibilidad
-            if (!$appointment) {
-                return response()->json([
-                    'message' => 'No se encontró una cita asociada a esta reserva.',
-                ], 422);
+                // Si no hay appointment, no podemos evaluar disponibilidad
+                if (!$appointment) {
+                    return response()->json([
+                        'message' => 'No se encontró una cita asociada a esta reserva.',
+                    ], 422);
+                }
+
+                $date = $appointment->appointmentDate;
+                $time = $appointment->appointmentTime;
+
+                // Manejo seguro de duración (paquete opcional)
+                $duration = $package ? $package->durationMinutes : 60;
+
+                // ¿Ese fotógrafo está disponible para ese rango?
+                $isAvailable = Employee::availablePhotographers($date, $time, $duration)
+                    ->where('employeeId', $employeeId)
+                    ->exists();
+
+                if (!$isAvailable) {
+                    return response()->json([
+                        'message' => 'Este fotógrafo no está disponible.',
+                    ], 409);
+                }
+
+                // Asignamos el fotógrafo al booking
+                $booking->employeeIdFK = $employeeId;
+            } else {
+                // Permitir quitar el fotógrafo
+                $booking->employeeIdFK = null;
             }
+        }
 
-            $date = $appointment->appointmentDate;
-            $time = $appointment->appointmentTime;
+        // 3) Actualizar estado de la reserva si viene
+        if (array_key_exists('bookingStatus', $validated)) {
+            $booking->bookingStatus = $validated['bookingStatus'];
+        }
 
-            // 👇 Manejo seguro de duración (paquete opcional)
-            $duration = $package ? $package->durationMinutes : 60;
+        $booking->save();
 
-            // ¿Ese fotógrafo está disponible para ese rango?
-            $isAvailable = Employee::availablePhotographers($date, $time, $duration)
-                ->where('employeeId', $employeeId)
-                ->exists();
+        // -------- 4) NOTIFICACIONES DESPUÉS DE GUARDAR --------
 
-            if (!$isAvailable) {
-                return response()->json([
-                    'message' => 'Este fotógrafo no está disponible.',
-                ], 409);
+        $appointment = $booking->appointment; // recargar referencia
+        $customer = null;
+
+        if ($appointment) {
+            // Cliente desde el appointment (para reusar en Confirmed y Completed)
+            $customer = Customer::with('user')->find($appointment->customerIdFK);
+        }
+
+        // 4.1. Notificar al empleado si se asignó uno nuevo
+        if (!empty($booking->employeeIdFK) && $booking->employeeIdFK !== $oldEmployeeId) {
+
+            $employee = Employee::with('user')->find($booking->employeeIdFK);
+
+            if ($employee && $employee->user) {
+                $employee->user->notify(
+                    new BookingAssignedToEmployee($booking)
+                );
             }
+            // 4.1.b — Notificar al cliente que YA tiene fotógrafo
+            $customer = Customer::with('user')->find($appointment->customerIdFK);
 
-            // Asignamos el fotógrafo al booking
-            $booking->employeeIdFK = $employeeId;
-        } else {
-            // Permitir quitar el fotógrafo
-            $booking->employeeIdFK = null;
+            if ($customer && $customer->user) {
+                $customer->user->notify(
+                    new PhotographerAssignedClient($booking)
+                );
+            }
         }
-    }
 
-    // 3) Actualizar estado de la reserva si viene
-    if (array_key_exists('bookingStatus', $validated)) {
-        $booking->bookingStatus = $validated['bookingStatus'];
-    }
-
-    $booking->save();
-
-    // -------- 4) NOTIFICACIONES DESPUÉS DE GUARDAR --------
-
-    $appointment = $booking->appointment; // recargar referencia
-    $customer    = null;
-
-    if ($appointment) {
-        // Cliente desde el appointment (para reusar en Confirmed y Completed)
-        $customer = Customer::with('user')->find($appointment->customerIdFK);
-    }
-
-    // 4.1. Notificar al empleado si se asignó uno nuevo
-    if (!empty($booking->employeeIdFK) && $booking->employeeIdFK !== $oldEmployeeId) {
-
-        $employee = Employee::with('user')->find($booking->employeeIdFK);
-
-        if ($employee && $employee->user) {
-            $employee->user->notify(
-                new BookingAssignedToEmployee($booking)
-            );
-        }
-    }
-
-    // 4.2. Notificar al cliente si el status pasó a Confirmed
-    if (
-        isset($validated['bookingStatus']) &&
-        $validated['bookingStatus'] === 'Confirmed' &&
-        $oldStatus !== 'Confirmed' &&
-        $customer && $customer->user
-    ) {
-        $customer->user->notify(
-            new BookingCreatedForCustomer($booking, $appointment)
-        );
-    }
-
-    // 4.3. Notificar al cliente si el status pasó a Completed (fotos listas)
-    if (
-        isset($validated['bookingStatus']) &&
-        $validated['bookingStatus'] === 'Completed' &&
-        $oldStatus !== 'Completed' &&
-        $customer && $customer->user
-    ) {
-        $customer->user->notify(
-            new PhotosReadyClient($booking)
-        );
-        // Reseña
-        $customer->user->notify(
-            new ReviewRequestClient($booking)
-        );
-    }
-
-    // Si pasó de algo → Cancelled, avisar al cliente
-    if (
-        $oldStatus !== 'Cancelled' &&
-        $booking->bookingStatus === 'Cancelled' &&
-        $appointment
-    ) {
-        $customer = Customer::with('user')
-            ->find($appointment->customerIdFK);
-
-        if ($customer && $customer->user) {
+        // 4.2. Notificar al cliente si el status pasó a Confirmed
+        if (
+            isset($validated['bookingStatus']) &&
+            $validated['bookingStatus'] === 'Confirmed' &&
+            $oldStatus !== 'Confirmed' &&
+            $customer && $customer->user
+        ) {
             $customer->user->notify(
-                new BookingCancelledClient($booking, $appointment)
+                new BookingCreatedForCustomer($booking, $appointment)
             );
         }
-    }
 
-    // ---- NOTI AL CLIENTE POR CAMBIO (horario/fotógrafo/lugar) ----
-    if ($appointment) {
-        $appointment->refresh(); // por si cambiaste algo de cita
-        $customer = Customer::with('user')->find($appointment->customerIdFK);
-
-        $cambioFecha = $appointment->appointmentDate !== $oldDate;
-        $cambioHora  = $appointment->appointmentTime !== $oldTime;
-        $cambioLugar = $appointment->place !== $oldPlace;
-
-        if ($customer && $customer->user && ($cambioFecha || $cambioHora || $cambioLugar)) {
+        // 4.3. Notificar al cliente si el status pasó a Completed (fotos listas)
+        if (
+            isset($validated['bookingStatus']) &&
+            $validated['bookingStatus'] === 'Completed' &&
+            $oldStatus !== 'Completed' &&
+            $customer && $customer->user
+        ) {
             $customer->user->notify(
-                new BookingUpdatedClient($booking, $appointment)
+                new PhotosReadyClient($booking)
+            );
+            // Reseña
+            $customer->user->notify(
+                new ReviewRequestClient($booking)
             );
         }
+
+        // Si pasó de algo → Cancelled, avisar al cliente
+        if (
+            $oldStatus !== 'Cancelled' &&
+            $booking->bookingStatus === 'Cancelled' &&
+            $appointment
+        ) {
+            $customer = Customer::with('user')
+                ->find($appointment->customerIdFK);
+
+            if ($customer && $customer->user) {
+                $customer->user->notify(
+                    new BookingCancelledClient($booking, $appointment)
+                );
+            }
+        }
+
+        // ---- NOTI AL CLIENTE POR CAMBIO (horario/fotógrafo/lugar) ----
+        if ($appointment) {
+            $appointment->refresh(); // por si cambiaste algo de cita
+            $customer = Customer::with('user')->find($appointment->customerIdFK);
+
+            $cambioFecha = $appointment->appointmentDate !== $oldDate;
+            $cambioHora = $appointment->appointmentTime !== $oldTime;
+            $cambioLugar = $appointment->place !== $oldPlace;
+
+            if ($customer && $customer->user && ($cambioFecha || $cambioHora || $cambioLugar)) {
+                $customer->user->notify(
+                    new BookingUpdatedClient($booking, $appointment)
+                );
+            }
+        }
+
+        // -------- FIN NOTIFICACIONES --------
+
+        return response()->json([
+            'message' => 'Fotógrafo asignado y cita actualizada con éxito.',
+            'bookingId' => $booking->bookingId,
+            'booking' => $booking->load(['appointment', 'employee', 'package']),
+        ], 200);
     }
-
-    // -------- FIN NOTIFICACIONES --------
-
-    return response()->json([
-        'message'   => 'Fotógrafo asignado y cita actualizada con éxito.',
-        'bookingId' => $booking->bookingId,
-        'booking'   => $booking->load(['appointment', 'employee', 'package']),
-    ], 200);
-}
 
 
     // public function update(Request $request, $bookingId)

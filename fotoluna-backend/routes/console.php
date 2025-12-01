@@ -23,3 +23,9 @@ Schedule::command('photos:check-pending')
 Schedule::command('appointments:employee-checkin')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('installments:notify-overdue-admin')
+    ->dailyAt('08:00');
+
+    Schedule::command('photos:check-sla')
+    ->dailyAt('09:00');

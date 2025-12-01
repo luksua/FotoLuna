@@ -72,4 +72,9 @@ class Booking extends Model
     {
         return $this->hasMany(CloudPhoto::class, 'bookingIdFK', 'bookingId');
     }
+    public function storageSubscriptions()
+    {
+        return $this->hasMany(StorageSubscription::class, 'bookingIdFK', 'bookingId');
+    }
+
 }
