@@ -16,6 +16,7 @@ use App\Http\Controllers\StorageSubscriptionController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BookingActionsController;
 use App\Http\Controllers\BookingInstallmentController;
+use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\Admin\RegisterEmployeeController;
 use App\Http\Controllers\Admin\AdminUsersController;
 use App\Http\Controllers\Admin\AdminEventsController;
@@ -138,6 +139,8 @@ Route::get('/events', [EventController::class, 'index']);
 Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
 
 Route::get('/employees/available', [EmployeeController::class, 'available']);
+// Ruta pública para obtener todos los empleados (selector de fotógrafo)
+Route::get('/employees/all', [EmployeeController::class, 'all']);
 
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
@@ -247,6 +250,17 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // 👉 NUEVA: asignar fotógrafo a una cita
     Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
 });
+
+
+// ===== COMENTARIOS (públicos + autenticados) =====
+// Obtener todos los comentarios (público, sin autenticación)
+Route::get('/comments', [CommentsController::class, 'index']);
+
+// Crear comentario (requiere autenticación)
+Route::middleware('auth:sanctum')->post('/comments', [CommentsController::class, 'store']);
+
+// Eliminar comentario (requiere autenticación: propietario o admin)
+Route::middleware('auth:sanctum')->delete('/comments/{comment}', [CommentsController::class, 'destroy']);
 
 
 // Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {

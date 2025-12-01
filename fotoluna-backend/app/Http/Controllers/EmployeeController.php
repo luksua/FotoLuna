@@ -9,6 +9,28 @@ use Illuminate\Http\Request;
 class EmployeeController extends Controller
 {
     /**
+     * Devuelve todos los empleados para el selector de fotógrafo (público)
+     */
+    public function all()
+    {
+        $employees = \App\Models\Employee::select('employeeId as id', 'firstNameEmployee', 'lastNameEmployee', 'photoEmployee', 'emailEmployee', 'user_id')
+            ->where('isAvailable', true)
+            ->get();
+
+        return response()->json(
+            $employees->map(function ($emp) {
+                return [
+                    'id' => $emp->id,
+                    'name' => trim($emp->firstNameEmployee . ' ' . $emp->lastNameEmployee),
+                    'photo' => $emp->photoEmployee ? url('storage/' . $emp->photoEmployee) : null,
+                    'email' => $emp->emailEmployee,
+                    'user_id' => $emp->user_id,
+                ];
+            })
+        );
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()

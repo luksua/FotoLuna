@@ -54,8 +54,10 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     align-items: stretch;
-    grid-auto-rows: 1fr;
-    justify-content: center;
+    /* filas con altura mínima para evitar cortes y permitir que las tarjetas llenen la celda */
+    grid-auto-rows: minmax(140px, auto);
+    /* asegurar que cada celda se estire y que los items usen todo el ancho */
+    justify-items: stretch;
     width: 100%;
 }
 
@@ -99,17 +101,18 @@
 
 /* Tarjeta con tamaños fijos */
 .admin-card {
-    display: flex;
+    display: grid;
+    grid-template-columns: 80px 1fr;
     gap: 12px;
-    align-items: center;
     background: linear-gradient(180deg, var(--card), var(--card));
     border-radius: var(--radius);
     padding: 10px 12px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
     border: 1px solid var(--border);
-    min-height: 140px;
+    height: 100%;
     width: 100%;
     box-sizing: border-box;
+    align-items: start;
     transition: transform .12s ease, box-shadow .12s ease;
 }
 
@@ -125,14 +128,14 @@
     object-fit: cover;
     border-radius: 8px;
     border: 2px solid rgba(0, 0, 0, 0.06);
-    flex: 0 0 80px;
 }
 
 .admin-info {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    width: calc(100% - 106px);
+    width: 100%;
+    min-width: 0;
     overflow: hidden;
 }
 
@@ -272,7 +275,7 @@
     padding: 4px 0;
     font-size: 0.9rem;
     text-decoration: underline;
-    margin-top: 4px;
+    margin-top: auto;
 }
 .modal-overlay {
     position: fixed;

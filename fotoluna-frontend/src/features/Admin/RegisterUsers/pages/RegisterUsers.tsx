@@ -75,12 +75,27 @@ const Register = () => {
                 formData.append('photoEmployee', form.photoEmployee as File);
             }
 
+            const token = localStorage.getItem('token');
+            const headers: Record<string, string> = {
+                'Accept': 'application/json'
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             const res = await fetch('/api/admin/employees', {
                 method: 'POST',
+                headers,
                 body: formData,
             });
 
-            const data = await res.json();
+            let data: any = null;
+            try {
+                data = await res.json();
+            } catch (err) {
+                const text = await res.text();
+                setMessage(`Respuesta inesperada del servidor: ${res.status} - ${text}`);
+                setMessageType('error');
+                return;
+            }
 
             if (!res.ok) {
                 // Manejar errores de validación
