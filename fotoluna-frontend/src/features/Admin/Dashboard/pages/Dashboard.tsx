@@ -10,16 +10,8 @@ import { BarChart } from "@mui/x-charts/BarChart";
 import { Gauge } from '@mui/x-charts/Gauge';
 import { PieChart } from '@mui/x-charts/PieChart';
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
-
-const estrellasData = [
-    { estrellas: 1, cantidad: 3 },
-    { estrellas: 2, cantidad: 13 },
-    { estrellas: 3, cantidad: 38 },
-    { estrellas: 4, cantidad: 120 },
-    { estrellas: 5, cantidad: 150 },
-];
-
-const totalVotos = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
+import { useEffect, useState } from "react";
+import api from "../../../../lib/api";
 
 // Tarjetas de resumen
 const resumen = [
@@ -51,6 +43,36 @@ const data = [
 ];
 
 const Dashboard = () => {
+    const [estrellasData, setEstrellasData] = useState<Array<{ estrellas: number; cantidad: number }>>([
+        { estrellas: 1, cantidad: 0 },
+        { estrellas: 2, cantidad: 0 },
+        { estrellas: 3, cantidad: 0 },
+        { estrellas: 4, cantidad: 0 },
+        { estrellas: 5, cantidad: 0 },
+    ]);
+    const [averageRating, setAverageRating] = useState(0);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRatings = async () => {
+            try {
+                const response = await api.get('/api/comments/ratings/stats');
+                if (response.data.success) {
+                    setEstrellasData(response.data.data);
+                    setAverageRating(response.data.average);
+                    setTotalVotos(response.data.total);
+                }
+            } catch (error) {
+                console.warn('Error al obtener estadísticas de puntuaciones:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRatings();
+    }, []);
+
+    const totalVotosCalculated = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
 
     return (
         <HomeLayout>
@@ -93,8 +115,8 @@ const Dashboard = () => {
                 <Box sx={{ flex: 1, minWidth: 350, maxWidth: 500, height: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f1f1ff', borderRadius: 2, boxShadow: 2, p: 3 }}>
                     <Typography variant="h6" sx={{ mb: 1 }}>Media de satisfacción</Typography>
                     <Gauge
-                        className="color-Dash"
-                        value={100}
+                        className="color-gauge"
+                        value={Math.round(averageRating * 20)}
                         startAngle={-110}
                         endAngle={110}
                         sx={{
@@ -102,8 +124,11 @@ const Dashboard = () => {
                                 fontSize: 30,
                                 transform: 'translate(0px, 0px)',
                             },
+                            [`& .MuiGauge-valueArc`]: {
+                                fill: '#ab64fcff',
+                            },
                         }}
-                        text={({ value, valueMax }) => `${value} / ${valueMax}`}
+                        text={({ value, valueMax }) => `${(averageRating).toFixed(1)} / 5`}
                         width={200}
                         height={200}
                     />
@@ -113,9 +138,9 @@ const Dashboard = () => {
                     <PieChart
                         series={[{
                             data: [
-                                { id: 0, value: 40, label: 'Quince Años' },
-                                { id: 1, value: 39, label: 'Bodas' },
-                                { id: 2, value: 15, label: 'Bautizos' },
+                                { id: 0, value: 40, label: 'Quince Años', color: '#d297e0ff' },
+                                { id: 1, value: 39, label: 'Bodas', color: '#fdd1deff' },
+                                { id: 2, value: 15, label: 'Bautizos', color: '#9c97e0ff' },
                             ],
                         }]}
                         width={150}
@@ -127,37 +152,41 @@ const Dashboard = () => {
             {/* Gráfica de puntuación */}
             <Box sx={{ mb: 2, width: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>Puntuación de usuarios</Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
-                    {estrellasData.map((item, idx) => {
-                        const percent = totalVotos ? (item.cantidad / totalVotos) * 100 : 0;
-                        // Paleta morada coherente con la estética
-                        const purpleColors = ['#EFE6FF', '#E9D5FF', '#C4B5FD', '#9F7AEA', '#9569dbff'];
-                        return (
-                            <Box key={idx} sx={{ width: '100%' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-                                    <span style={{ marginRight: 6, fontSize: 18, color: '#fbc02d' }}>📸</span>
-                                    <span style={{ fontWeight: 500 }}>{item.estrellas} estrella{item.estrellas > 1 ? 's' : ''}</span>
-                                    <span style={{ marginLeft: 8, color: '#888' }}>({item.cantidad})</span>
-                                </div>
-                                <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%', backgroundColor: '#f5f3ff' }}>
-                                    <div
-                                        role="progressbar"
-                                        style={{
-                                            width: `${percent}%`,
-                                            backgroundColor: purpleColors[idx % purpleColors.length],
-                                            height: '100%',
-                                            borderRadius: 9,
-                                            transition: 'width 400ms ease'
-                                        }}
-                                        aria-valuenow={item.cantidad}
-                                        aria-valuemin={0}
-                                        aria-valuemax={totalVotos}
-                                    />
-                                </div>
-                            </Box>
-                        );
-                    })}
-                </Box>
+                {loading ? (
+                    <Typography>Cargando estadísticas...</Typography>
+                ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+                        {estrellasData.map((item, idx) => {
+                            const percent = totalVotosCalculated ? (item.cantidad / totalVotosCalculated) * 100 : 0;
+                            // Paleta morada coherente con la estética
+                            const purpleColors = ['#EFE6FF', '#E9D5FF', '#C4B5FD', '#9F7AEA', '#9569dbff'];
+                            return (
+                                <Box key={idx} sx={{ width: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                                        <span style={{ marginRight: 6, fontSize: 18, color: '#fbc02d' }}>📸</span>
+                                        <span style={{ fontWeight: 500 }}>{item.estrellas} estrella{item.estrellas > 1 ? 's' : ''}</span>
+                                        <span style={{ marginLeft: 8, color: '#888' }}>({item.cantidad})</span>
+                                    </div>
+                                    <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%', backgroundColor: '#f5f3ff' }}>
+                                        <div
+                                            role="progressbar"
+                                            style={{
+                                                width: `${percent}%`,
+                                                backgroundColor: purpleColors[idx % purpleColors.length],
+                                                height: '100%',
+                                                borderRadius: 9,
+                                                transition: 'width 400ms ease'
+                                            }}
+                                            aria-valuenow={item.cantidad}
+                                            aria-valuemin={0}
+                                            aria-valuemax={totalVotosCalculated}
+                                        />
+                                    </div>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                )}
             </Box>
 
             <footer>

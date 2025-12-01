@@ -319,6 +319,9 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 // Obtener todos los comentarios (público, sin autenticación)
 Route::get('/comments', [CommentsController::class, 'index']);
 
+// Obtener estadísticas de puntuaciones (público, para dashboard)
+Route::get('/comments/ratings/stats', [CommentsController::class, 'ratings']);
+
 // Crear comentario (requiere autenticación)
 Route::middleware('auth:sanctum')->post('/comments', [CommentsController::class, 'store']);
 
