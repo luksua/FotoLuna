@@ -204,7 +204,7 @@
 }
 
 .user-profile:hover {
-     transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 .user-avatar {
@@ -218,6 +218,17 @@
     color: var(--text-dark);
     font-weight: bold;
     font-size: 0.9rem;
+    overflow: hidden; /* recorta la imagen dentro del círculo */
+}
+
+/* Imagen dentro del avatar: ocupar todo el contenedor y recortarse en círculo */
+.user-avatar img,
+.avatar-image-small {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
 }
 
 .user-name {

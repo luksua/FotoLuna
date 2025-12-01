@@ -6,6 +6,15 @@ import DocumentModal from '../components/DocumentModal';
 import SuccessAlert from '../components/SuccessAlert';
 import '../styles/AdminEvents.css';
 
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+};
+
 interface Event {
     id: number;
     nombre: string;
@@ -68,9 +77,10 @@ const AdminEvents: React.FC = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
+                const headers = getAuthHeaders();
                 
                 // Fetch eventos
-                const eventsRes = await fetch('/api/admin/events');
+                const eventsRes = await fetch('/api/admin/events', { headers });
                 if (!eventsRes.ok) throw new Error(`Events: ${eventsRes.status}`);
                 const eventsData = await eventsRes.json();
                 console.log('Events data:', eventsData);
@@ -79,7 +89,7 @@ const AdminEvents: React.FC = () => {
                 }
 
                 // Fetch paquetes
-                const packagesRes = await fetch('/api/admin/packages');
+                const packagesRes = await fetch('/api/admin/packages', { headers });
                 if (!packagesRes.ok) throw new Error(`Packages: ${packagesRes.status}`);
                 const packagesData = await packagesRes.json();
                 console.log('Packages data:', packagesData);
@@ -88,7 +98,7 @@ const AdminEvents: React.FC = () => {
                 }
 
                 // Fetch tipos de documentos
-                const docsRes = await fetch('/api/admin/document-types');
+                const docsRes = await fetch('/api/admin/document-types', { headers });
                 if (!docsRes.ok) throw new Error(`Docs: ${docsRes.status}`);
                 const docsData = await docsRes.json();
                 console.log('Docs data:', docsData);
@@ -152,9 +162,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch(`/api/admin/events/${eventId}/status`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ estado: newStatus }),
             });
 
@@ -173,9 +181,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch(`/api/admin/packages/${packageId}/status`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ estado: newStatus }),
             });
 
@@ -194,9 +200,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch(`/api/admin/document-types/${documentId}/status`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ estado: newStatus }),
             });
 
@@ -250,7 +254,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch('/api/admin/packages', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ nombre: data.nombre, descripcion: data.descripcion, precio: data.precio, eventId: data.eventId }),
             });
 
@@ -276,7 +280,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch(`/api/admin/packages/${packageId}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ nombre: data.nombre, descripcion: data.descripcion, precio: data.precio, eventId: data.eventId }),
             });
 
@@ -300,7 +304,7 @@ const AdminEvents: React.FC = () => {
 
     const fetchPackages = async () => {
         try {
-            const response = await fetch('/api/admin/packages');
+            const response = await fetch('/api/admin/packages', { headers: getAuthHeaders() });
             if (!response.ok) throw new Error(`Packages: ${response.status}`);
             const data = await response.json();
             console.log('Packages data:', data);
@@ -338,7 +342,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch('/api/admin/document-types', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ nombre: data.nombre, descripcion: data.descripcion, cantidad: data.cantidad, precio: data.precio, requiereSubida: data.requiereSubida, requierePresencial: data.requierePresencial }),
             });
 
@@ -364,7 +368,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch(`/api/admin/document-types/${documentId}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ nombre: data.nombre, descripcion: data.descripcion, cantidad: data.cantidad, precio: data.precio, requiereSubida: data.requiereSubida, requierePresencial: data.requierePresencial }),
             });
 
@@ -388,7 +392,7 @@ const AdminEvents: React.FC = () => {
 
     const fetchDocuments = async () => {
         try {
-            const response = await fetch('/api/admin/document-types');
+            const response = await fetch('/api/admin/document-types', { headers: getAuthHeaders() });
             if (!response.ok) throw new Error(`Documents: ${response.status}`);
             const data = await response.json();
             console.log('Documents data:', data);
@@ -414,9 +418,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch('/api/admin/events', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(data),
             });
 
@@ -441,9 +443,7 @@ const AdminEvents: React.FC = () => {
         try {
             const response = await fetch(`/api/admin/events/${eventId}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(data),
             });
 
@@ -466,7 +466,7 @@ const AdminEvents: React.FC = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch('/api/admin/events');
+            const response = await fetch('/api/admin/events', { headers: getAuthHeaders() });
             if (!response.ok) throw new Error(`Events: ${response.status}`);
             const data = await response.json();
             console.log('Events data:', data);

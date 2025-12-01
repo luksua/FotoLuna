@@ -1,4 +1,5 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 import NotificationBell from '../NotificationBell';
@@ -19,13 +20,19 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
     const [showUserProfile, setShowUserProfile] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
 
-    const [userProfile, setUserProfile] = useState<UserProfileData>({
-        id: 1,
-        name: "Amalia",
-        email: "amalia@example.com",
-        bio: "Fotógrafa apasionada por los paisajes y la naturaleza.",
-        avatar: null,
+    const mapUserToProfile = (u: any): UserProfileData => ({
+        id: u?.id ?? 0,
+        name: u?.displayName ?? u?.firstName ?? u?.name ?? "Usuario",
+        email: u?.email ?? "",
+        bio: "",
+        avatar: u?.avatar ?? null,
     });
+
+    const [userProfile, setUserProfile] = useState<UserProfileData>(mapUserToProfile(user));
+
+    useEffect(() => {
+        setUserProfile(mapUserToProfile(user));
+    }, [user]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -106,7 +113,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                                     className="avatar-image-small"
                                 />
                             ) : (
-                                userProfile.name.charAt(0).toUpperCase()
+                                (userProfile.name && userProfile.name.charAt(0).toUpperCase()) || "U"
                             )}
                         </div>
                         <span className="user-name">{userProfile.name}</span>

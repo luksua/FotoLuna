@@ -16,7 +16,6 @@ class RegisterEmployeeController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            // Validar datos con mensajes personalizados
             $data = $request->validate(
                 [
                     'firstNameEmployee' => 'required|string|max:255',
@@ -31,7 +30,6 @@ class RegisterEmployeeController extends Controller
                     'employeeType' => 'required|in:Employee,Admin',
                     'gender' => 'required|in:Female,Male,Other',
                     'photoEmployee' => 'nullable|image|max:2048',
-                    'role' => 'nullable|string|max:50',
                     'specialty' => 'nullable|string|max:255',
                     'isAvailable' => 'nullable|boolean',
                 ],
@@ -49,7 +47,7 @@ class RegisterEmployeeController extends Controller
 
             DB::beginTransaction();
 
-            // Mapear employeeType a valores válidos del enum
+            /////////// Mapear tipo de empleado a valores válidos del enum
             $userRole = $data['employeeType'] === 'Admin' ? 'admin' : 'empleado';
 
             /////////// Crear usuario en tabla 'users'
@@ -69,7 +67,6 @@ class RegisterEmployeeController extends Controller
             }
 
             /////////// Establecer valores por defecto
-            $data['role'] = $request->input('role', $data['role'] ?? 'Other');
             $data['specialty'] = $request->input('specialty', $data['specialty'] ?? null);
 
             if ($request->has('isAvailable')) {
@@ -97,7 +94,6 @@ class RegisterEmployeeController extends Controller
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Capturar errores de validación y retornar en JSON
             return response()->json([
                 'success' => false,
                 'message' => 'Error de validación',

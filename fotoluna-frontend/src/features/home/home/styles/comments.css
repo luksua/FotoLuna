@@ -17,6 +17,45 @@
     width: 300px;
     flex-shrink: 0;
     background-color: #f8f8f8;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.comentario-card img[alt="Avatar"],
+.comentario-card .rounded-circle {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+.comentario-card p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    margin: 0;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.comentario-card small {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.comentario-text-collapsed {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.btn-link {
+    text-decoration: none !important;
+    display: inline-block;
 }
 
 .comentarios-scroll {

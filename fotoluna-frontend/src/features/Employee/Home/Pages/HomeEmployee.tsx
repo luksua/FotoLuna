@@ -1,14 +1,18 @@
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import React from "react";
 import "../Styles/home.css";
+import { useAuth } from "../../../../context/useAuth";
 
 const EmployeeHome: React.FC = () => {
+    const { user } = useAuth();
+    const displayName = user?.displayName ?? user?.name ?? "Amalia";
+
     return (
         <EmployeeLayout >
             <div className="employee-home">
                 <section className="welcome-section">
                     <div className="welcome-text">
-                        <h2>¡Bienvenida, Amalia!</h2>
+                        <h2>¡Bienvenid@, {displayName}!</h2>
                         <p>Es un día perfecto para crear fotos increíbles</p>
                     </div>
                     <div className="weather-info">

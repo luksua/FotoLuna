@@ -15,6 +15,7 @@ use App\Http\Controllers\StorageSubscriptionController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BookingActionsController;
 use App\Http\Controllers\BookingInstallmentController;
+use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\Admin\RegisterEmployeeController;
 use App\Http\Controllers\Admin\AdminUsersController;
 use App\Http\Controllers\Admin\AdminEventsController;
@@ -189,14 +190,27 @@ Route::get('/user', function (Request $request) {
 //     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
 //     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
 
-// });
 
 
+Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
 
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::post('/mercadopago/checkout/pay', [PaymentController::class, 'pay']);
-//     Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
-// });
+Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
+
+Route::get('/availability', [AppointmentController::class, 'availability']);
+Route::get('/events', [EventController::class, 'index']);
+
+Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
+
+Route::get('/employees/available', [EmployeeController::class, 'available']);
+// Ruta pública para obtener todos los empleados (selector de fotógrafo)
+Route::get('/employees/all', [EmployeeController::class, 'all']);
+
+Route::post('/email/resend', [AuthController::class, 'resendVerification']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/mercadopago/checkout/pay', [PaymentController::class, 'pay']);
+    Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
+});
 
 // Route::get('/storage-plans', [StoragePlanController::class, 'index']);
 
@@ -205,56 +219,44 @@ Route::get('/user', function (Request $request) {
 // });
 
 /////////////////////////////  (admin)
-Route::post('/admin/employees', [RegisterEmployeeController::class, 'store']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/admin/employees', [RegisterEmployeeController::class, 'store']);
+    
 
-Route::get('/admin/employees', [AdminUsersController::class, 'index']);
+    Route::get('/admin/employees', [AdminUsersController::class, 'index']);
 
-Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
+    Route::get('/admin/customers', [AdminUsersController::class, 'getCustomers']);
 
-Route::patch('/admin/employees/{id}', [AdminUsersController::class, 'update']);
+    Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
 
-Route::get('/admin/events', [AdminEventsController::class, 'index']);
+    Route::patch('/admin/employees/{id}', [AdminUsersController::class, 'update']);
 
-Route::post('/admin/events', [AdminEventsController::class, 'store']);
 
-Route::patch('/admin/events/{id}', [AdminEventsController::class, 'update']);
+    Route::get('/admin/events', [AdminEventsController::class, 'index']);
 
-Route::patch('/admin/events/{id}/status', [AdminEventsController::class, 'updateStatus']);
+    Route::post('/admin/events', [AdminEventsController::class, 'store']);
 
-Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
+    Route::patch('/admin/events/{id}', [AdminEventsController::class, 'update']);
 
-Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
+    Route::patch('/admin/events/{id}/status', [AdminEventsController::class, 'updateStatus']);
 
-Route::patch('/admin/packages/{id}', [AdminPackagesController::class, 'update']);
 
-Route::patch('/admin/packages/{id}/status', [AdminPackagesController::class, 'updateStatus']);
+    Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
 
-Route::get('/admin/document-types', [AdminDocumentTypesController::class, 'index']);
+    Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
 
-Route::post('/admin/document-types', [AdminDocumentTypesController::class, 'store']);
+    Route::patch('/admin/packages/{id}', [AdminPackagesController::class, 'update']);
 
-Route::patch('/admin/document-types/{id}', [AdminDocumentTypesController::class, 'update']);
+    Route::patch('/admin/packages/{id}/status', [AdminPackagesController::class, 'updateStatus']);
 
-Route::patch('/admin/document-types/{id}/status', [AdminDocumentTypesController::class, 'updateStatus']);
 
-// Admin Citas
+    Route::get('/admin/document-types', [AdminDocumentTypesController::class, 'index']);
 
-Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::post('/admin/document-types', [AdminDocumentTypesController::class, 'store']);
 
-    // Citas sin asignar (esto ya lo tienes)
-    Route::get('/appointments/unassigned', [AdminAppointmentController::class, 'unassigned']);
+    Route::patch('/admin/document-types/{id}', [AdminDocumentTypesController::class, 'update']);
 
-    // Disponibilidad general de empleados (ya funciona)
-    Route::get('/employees/availability', [AdminAppointmentController::class, 'employeesAvailability']);
-
-    // 👉 NUEVA: todas las citas para el admin (tabla principal)
-    Route::get('/appointments', [AdminAppointmentController::class, 'index']);
-
-    // 👉 NUEVA: candidatos para una cita concreta (para el modal)
-    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
-
-    // 👉 NUEVA: asignar fotógrafo a una cita
-    Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+    Route::patch('/admin/document-types/{id}/status', [AdminDocumentTypesController::class, 'updateStatus']);
 });
 
 // Empleado
@@ -294,6 +296,34 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Admin Citas
 
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+
+    // Citas sin asignar (esto ya lo tienes)
+    Route::get('/appointments/unassigned', [AdminAppointmentController::class, 'unassigned']);
+
+    // Disponibilidad general de empleados (ya funciona)
+    Route::get('/employees/availability', [AdminAppointmentController::class, 'employeesAvailability']);
+
+    // 👉 NUEVA: todas las citas para el admin (tabla principal)
+    Route::get('/appointments', [AdminAppointmentController::class, 'index']);
+
+    // 👉 NUEVA: candidatos para una cita concreta (para el modal)
+    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
+
+    // 👉 NUEVA: asignar fotógrafo a una cita
+    Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+});
+
+
+// ===== COMENTARIOS (públicos + autenticados) =====
+// Obtener todos los comentarios (público, sin autenticación)
+Route::get('/comments', [CommentsController::class, 'index']);
+
+// Crear comentario (requiere autenticación)
+Route::middleware('auth:sanctum')->post('/comments', [CommentsController::class, 'store']);
+
+// Eliminar comentario (requiere autenticación: propietario o admin)
+Route::middleware('auth:sanctum')->delete('/comments/{comment}', [CommentsController::class, 'destroy']);
 
 
 // Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {

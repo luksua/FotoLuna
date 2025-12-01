@@ -83,42 +83,102 @@ const EmployeeAdmin: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [query, setQuery] = useState("");
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    
+    // Calcular items por página basado en ancho de pantalla
+    const getItemsPerPage = () => {
+        if (windowWidth < 768) return 6;   // Móvil: 2 columnas × 3 filas
+        if (windowWidth < 1024) return 9;  // Tablet: 3 columnas × 3 filas
+        if (windowWidth < 1400) return 9; // Portátil/medio: 3 columnas × 3 filas
+        return 12; // Escritorio grande: 4 columnas × 3 filas
+    };
+
+    const perPage = getItemsPerPage();
+
+    // Escuchar cambios de tamaño de pantalla
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+            setPage(1); // Resetear a página 1 cuando cambia el tamaño
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        };
+    };
 
     useEffect(() => {
         let mounted = true;
         setLoading(true);
-        fetch('/api/admin/employees')
-            .then((res) => res.json())
-            .then((data) => {
+        
+        const fetchAllUsers = async () => {
+            try {
+                const headers = getAuthHeaders();
+                
+                const [employeesRes, customersRes] = await Promise.all([
+                    fetch('/api/admin/employees', { headers }),
+                    fetch('/api/admin/customers', { headers })
+                ]);
+                
+                const employeesData = await employeesRes.json();
+                const customersData = await customersRes.json();
+                
                 if (!mounted) return;
-                if (data && data.success) {
-                    const mapped: User[] = data.data.map((e: any) => ({
+                
+                const allUsers: User[] = [];
+                
+                if (employeesData && employeesData.success && Array.isArray(employeesData.data)) {
+                    allUsers.push(...employeesData.data.map((e: any) => ({
                         id: e.id,
                         name: e.name,
                         email: e.email,
                         phone: e.phone || '',
                         document: e.document || '',
                         avatar: e.avatar || imgperfil,
-                    }));
-                    setUsers(mapped);
-                } else {
-                    setError('No se pudieron cargar los empleados');
+                    })));
                 }
-            })
-            .catch((err) => {
-                setError(err.message || 'Error al obtener empleados');
-            })
-            .finally(() => setLoading(false));
+                
+                if (customersData && customersData.success && Array.isArray(customersData.data)) {
+                    allUsers.push(...customersData.data.map((c: any) => ({
+                        id: c.id,
+                        name: c.name,
+                        email: c.email,
+                        phone: c.phone || '',
+                        document: c.document || '',
+                        avatar: c.avatar || imgperfil,
+                    })));
+                }
+                
+                setUsers(allUsers);
+                setPage(1);
+                setQuery("");
+            } catch (err: any) {
+                if (mounted) {
+                    setError(err.message || 'Error al obtener usuarios');
+                }
+            } finally {
+                if (mounted) {
+                    setLoading(false);
+                }
+            }
+        };
+        
+        fetchAllUsers();
 
         return () => {
             mounted = false;
         };
     }, []);
-
-    ////////// paginacion y filtro
-    const [page, setPage] = useState(1);
-    const [query, setQuery] = useState("");
-    const perPage = 9;
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -130,15 +190,19 @@ const EmployeeAdmin: React.FC = () => {
         );
     }, [query, users]);
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-    useEffect(() => setPage(1), [query]);
+    useEffect(() => {
+        setPage(1);
+    }, [query]);
 
+    const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
     const start = (page - 1) * perPage;
     const pageUsers = filtered.slice(start, start + perPage);
 
     const goto = (n: number) => setPage(Math.max(1, Math.min(totalPages, n)));
 
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const handleSearchChange = (value: string) => {
+        setQuery(value);
+    };
 
     return (
         <HomeLayout>
@@ -150,7 +214,7 @@ const EmployeeAdmin: React.FC = () => {
                             className="search-input"
                             placeholder="Buscar por nombre, email, teléfono o documento..."
                             value={query}
-                            onChange={(e) => setQuery(e.target.value)}
+                            onChange={(e) => handleSearchChange(e.target.value)}
                         />
                         <div className="search-count">{filtered.length} resultados</div>
                     </div>
@@ -163,7 +227,7 @@ const EmployeeAdmin: React.FC = () => {
                         <div style={{ gridColumn: "1/-1", textAlign: "center" }}>Cargando empleados...</div>
                     ) : pageUsers.length ? (
                         pageUsers.map((u) => (
-                            <article className="admin-card" key={u.id}>
+                            <article className="admin-card" key={`user-${u.id}`}>
                                 <img className="admin-avatar" src={u.avatar || imgperfil} alt={`Foto ${u.name}`} />
                                 <div className="admin-info">
                                     <h3>{u.name}</h3>
