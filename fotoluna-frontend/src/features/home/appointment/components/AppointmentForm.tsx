@@ -77,6 +77,7 @@ const AppointmentForm: React.FC = () => {
     const [appointmentDate, setAppointmentDate] = useState<string>("");
     const [appointmentTime, setAppointmentTime] = useState<string>("");
     const [packageIdFK, setPackageIdFK] = useState<number | null>(null);
+    const [selectedDocumentTypeId, setSelectedDocumentTypeId] = useState<number | null>(null);
 
     // cuotas
     const [paymentPlanMode, setPaymentPlanMode] =
@@ -207,7 +208,7 @@ const AppointmentForm: React.FC = () => {
                 // total de la sesión
                 setTotal(Number(res.data.total) || 0);
 
-                // email: tratamos distintas formas de respuesta
+                // email...
                 const email =
                     res.data.user?.email ??
                     res.data.customer?.emailCustomer ??
@@ -227,11 +228,18 @@ const AppointmentForm: React.FC = () => {
                 setAppointmentDate(res.data.appointment?.date ?? "");
                 setAppointmentTime(res.data.appointment?.time ?? "");
 
-                // Dependiendo de cómo se llame en tu backend:
+                // 👇 paquete
                 setPackageIdFK(
                     res.data.packageIdFK ??
                     res.data.package?.id ??
                     res.data.package?.packageId ??
+                    null
+                );
+
+                // 👇 document type (para flujo de documentos)
+                setSelectedDocumentTypeId(
+                    res.data.documentTypeIdFK ??
+                    res.data.documentType?.id ??
                     null
                 );
             } catch (err) {
@@ -241,6 +249,7 @@ const AppointmentForm: React.FC = () => {
 
         fetchBooking();
     }, [bookingId]);
+
 
     // Cargar info del plan de almacenamiento del usuario
     useEffect(() => {
@@ -427,6 +436,7 @@ const AppointmentForm: React.FC = () => {
                         appointmentDate={appointmentDate}
                         appointmentTime={appointmentTime}
                         packageIdFK={packageIdFK}
+                        documentTypeId={selectedDocumentTypeId}
                     />
                 )}
 

@@ -37,6 +37,11 @@ Route::get('/availability', [AppointmentController::class, 'availability']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // notificaciones
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 });
 
 // RUTAS CLIENTE
@@ -69,9 +74,6 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
     Route::post('storage/cancel-subscription', [StoragePlanController::class, 'cancelSubscription']);
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
     Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
     Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
     Route::get('/employees/available', [EmployeeController::class, 'available']);

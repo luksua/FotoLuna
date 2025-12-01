@@ -15,3 +15,11 @@ Schedule::command('installments:due-reminders')->everyMinute();
 Schedule::command('appointments:send-reminders')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('photos:check-pending')
+    ->everyFifteenMinutes()              // o everyFifteenMinutes(), dailyAt('09:00'), etc.
+    ->withoutOverlapping();
+
+Schedule::command('appointments:employee-checkin')
+    ->everyMinute()
+    ->withoutOverlapping();

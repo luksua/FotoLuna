@@ -74,6 +74,12 @@ class Employee extends Model
         });
     }
 
+    public function scopeAdmins($query)
+    {
+        return $query->where('employeeType', 'Admin');
+    }
+
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

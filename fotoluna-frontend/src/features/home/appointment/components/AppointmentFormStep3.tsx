@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Button from "../../../../components/Home/Button";
@@ -16,6 +17,7 @@ interface Step3Props {
     appointmentDate: string;
     appointmentTime: string;
     packageIdFK: number | null;
+    documentTypeId: number | null;
     onBack: () => void;
     onNext: () => void;
 }
@@ -27,6 +29,7 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
     appointmentDate,
     appointmentTime,
     packageIdFK,
+    documentTypeId,
     onBack,
     onNext,
 }) => {
@@ -36,6 +39,43 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
     const [error, setError] = useState<string | null>(null);
 
     // Cargar fotógrafos disponibles
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                const token = localStorage.getItem("token");
+
+                const params: any = {
+                    appointmentDate,
+                    appointmentTime,
+                };
+
+                if (packageIdFK) {
+                    params.packageIdFK = packageIdFK;
+                } else if (documentTypeId) {
+                    params.documentTypeId = documentTypeId;
+                }
+
+                const res = await axios.get(`${API_BASE}/api/employees/available`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params,
+                });
+
+                setEmployees(res.data);
+            } catch (err) {
+                console.error("Error al cargar empleados:", err);
+                setError("No se pudieron cargar los fotógrafos disponibles.");
+            }
+        };
+
+        if (
+            appointmentDate &&
+            appointmentTime &&
+            (packageIdFK || documentTypeId) // 👈 ahora sirve para ambos flujos
+        ) {
+            fetchEmployees();
+        }
+    }, [appointmentDate, appointmentTime, packageIdFK, documentTypeId]);
+
     // useEffect(() => {
     //     const fetchEmployees = async () => {
     //         try {
@@ -52,33 +92,31 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
 
     //     fetchEmployees();
     // }, []);
-    useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const token = localStorage.getItem("token");
+    // useEffect(() => {
+    //     const fetchEmployees = async () => {
+    //         try {
+    //             const token = localStorage.getItem("token");
 
-                const res = await axios.get(`${API_BASE}/api/employees/available`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: {
-                        appointmentDate,
-                        appointmentTime,
-                        packageIdFK,
-                    },
-                });
+    //             const res = await axios.get(`${API_BASE}/api/employees/available`, {
+    //                 headers: { Authorization: `Bearer ${token}` },
+    //                 params: {
+    //                     appointmentDate,
+    //                     appointmentTime,
+    //                     packageIdFK,
+    //                 },
+    //             });
 
-                setEmployees(res.data);
-            } catch (err) {
-                console.error("Error al cargar empleados:", err);
-                setError("No se pudieron cargar los fotógrafos disponibles.");
-            }
-        };
+    //             setEmployees(res.data);
+    //         } catch (err) {
+    //             console.error("Error al cargar empleados:", err);
+    //             setError("No se pudieron cargar los fotógrafos disponibles.");
+    //         }
+    //     };
 
-        if (appointmentDate && appointmentTime && packageIdFK) {
-            fetchEmployees();
-        }
-    }, [appointmentDate, appointmentTime, packageIdFK]);
-
-
+    //     if (appointmentDate && appointmentTime && packageIdFK) {
+    //         fetchEmployees();
+    //     }
+    // }, [appointmentDate, appointmentTime, packageIdFK]);
 
     // Confirmar selección
     const handleContinue = async () => {

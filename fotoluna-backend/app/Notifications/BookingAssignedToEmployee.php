@@ -3,10 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
-use App\Models\Appointment;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
@@ -15,37 +12,49 @@ class BookingAssignedToEmployee extends Notification
     use Queueable;
 
     public function __construct(
-        public Booking $booking,
-        public Appointment $appointment
+        public Booking $booking
     ) {
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
-        return ['database', 'mail', 'broadcast'];
+        return ['database', 'broadcast'];
     }
 
-    public function toMail($notifiable)
+    public function toDatabase($notifiable): array
     {
-        return (new MailMessage)
-            ->subject('Nueva cita asignada')
-            ->line('Tienes una nueva sesión.')
-            ->line('Fecha: ' . $this->appointment->appointmentDate)
-            ->line('Hora: ' . $this->appointment->appointmentTime);
-    }
+        $booking = $this->booking;
+        $appointment = $booking->appointment;
+        $customer = $booking->customer;
+        $event = $booking->event;
 
-    public function toDatabase($notifiable)
-    {
+        $date = \Carbon\Carbon::parse($appointment->appointmentDate)
+            ->format('d/m/Y');
+
         return [
-            'booking_id' => $this->booking->bookingId,
-            'appointment_id' => $this->appointment->appointmentId,
-            'title' => 'Nueva cita asignada',
-            'message' => 'Tienes una nueva cita programada.',
+            'type' => 'employee.booking_assigned',
+            'title' => 'Nueva sesión asignada',
+            'message' => sprintf(
+                'Se te ha asignado la reserva #%s. Revisa tu agenda.',
+                $booking->bookingId
+            ),
+            'booking_id' => $booking->bookingId,
+            'status' => $booking->bookingStatus ?? null,
+            'priority' => 'high',
+            'icon' => 'bi bi-calendar-plus',
         ];
     }
 
-    public function toBroadcast($notifiable)
+    public function toBroadcast($notifiable): BroadcastMessage
     {
-        return new BroadcastMessage($this->toDatabase($notifiable));
+        return new BroadcastMessage([
+            'id' => $this->id,
+            'data' => $this->toDatabase($notifiable),
+        ]);
+    }
+
+    public function toArray($notifiable): array
+    {
+        return $this->toDatabase($notifiable);
     }
 }

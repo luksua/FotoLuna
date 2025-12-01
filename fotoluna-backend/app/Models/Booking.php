@@ -63,6 +63,13 @@ class Booking extends Model
     {
         return $this->belongsTo(Event::class, 'eventIdFK', 'eventId');
     }
-
-
+    public function photos()
+    {
+        // booking_photos.bookingIdFK → bookings.bookingId
+        return $this->hasMany(BookingPhoto::class, 'bookingIdFK', 'bookingId');
+    }
+    public function cloudPhotos()
+    {
+        return $this->hasMany(CloudPhoto::class, 'bookingIdFK', 'bookingId');
+    }
 }

@@ -37,4 +37,8 @@ class BookingPhoto extends Model
     {
         return $this->belongsTo(Employee::class, 'employeeIdFK', 'employeeId');
     }
+        public function booking()
+    {
+        return $this->belongsTo(Booking::class, 'bookingIdFK', 'bookingId');
+    }
 }
