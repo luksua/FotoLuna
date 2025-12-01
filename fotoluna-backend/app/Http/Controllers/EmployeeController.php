@@ -13,8 +13,8 @@ class EmployeeController extends Controller
      */
     public function all()
     {
-        $employees = \App\Models\Employee::select('employeeId as id', 'firstNameEmployee', 'lastNameEmployee', 'photoEmployee', 'emailEmployee', 'user_id')
-            ->where('isAvailable', true)
+        $employees = Employee::select('employeeId as id', 'firstNameEmployee', 'lastNameEmployee', 'photoEmployee', 'emailEmployee', 'user_id')
+            // ->where('isAvailable', true)
             ->get();
 
         return response()->json(
