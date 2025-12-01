@@ -8,7 +8,8 @@ use App\Models\Appointment;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use App\Notifications\BookingAssignedToEmployee;
+use App\Notifications\PhotographerAssignedClient;
 
 use App\Models\BookingPaymentInstallment;
 
@@ -312,6 +313,29 @@ class AdminAppointmentController extends Controller
         if ($booking) {
             $booking->employeeIdFK = $employeeId;
             $booking->save();
+
+            // 🔔 NOTIFICACIONES AQUÍ 🔔
+
+            // 1) Notificar al empleado
+            $employee = Employee::with('user')->find($employeeId);
+
+            if ($employee && $employee->user) {
+                $employee->user->notify(
+                    new BookingAssignedToEmployee($booking)
+                );
+            }
+
+            // 2) Notificar al cliente que ya tiene fotógrafo asignado
+            $customer = null;
+            if ($appointment->customerIdFK) {
+                $customer = Customer::with('user')->find($appointment->customerIdFK);
+            }
+
+            if ($customer && $customer->user) {
+                $customer->user->notify(
+                    new PhotographerAssignedClient($booking)
+                );
+            }
         }
 
         // Opcional: actualizar estado de la cita
@@ -325,9 +349,53 @@ class AdminAppointmentController extends Controller
         ]);
     }
 
+    // public function assign(Request $request, Appointment $appointment)
+    // {
+    //     $data = $request->validate([
+    //         'employee_id' => ['required', 'exists:employees,employeeId'],
+    //     ]);
 
+    //     $employeeId = $data['employee_id'];
 
+    //     $date = $appointment->appointmentDate;
+    //     $time = substr($appointment->appointmentTime, 0, 5);
 
+    //     // Verificar de nuevo que ese empleado no tenga cita a esa hora
+    //     $citas = Booking::where('employeeIdFK', $employeeId)
+    //         ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
+    //         ->whereDate('appointments.appointmentDate', $date)
+    //         ->select('appointments.appointmentTime', 'appointments.appointmentStatus')
+    //         ->get();
+
+    //     $ocupadoEnHora = $citas->contains(function ($c) use ($time) {
+    //         return substr($c->appointmentTime, 0, 5) === $time
+    //             && in_array($c->appointmentStatus, ['Scheduled', 'Pending confirmation']);
+    //     });
+
+    //     if ($ocupadoEnHora) {
+    //         return response()->json([
+    //             'message' => 'El empleado no está disponible en ese horario.',
+    //         ], 422);
+    //     }
+
+    //     // Buscar la reserva (booking) de esta cita
+    //     $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)->first();
+
+    //     if ($booking) {
+    //         $booking->employeeIdFK = $employeeId;
+    //         $booking->save();
+    //     }
+
+    //     // Opcional: actualizar estado de la cita
+    //     $appointment->appointmentStatus = 'Scheduled';
+    //     $appointment->save();
+
+    //     return response()->json([
+    //         'message' => 'Empleado asignado correctamente.',
+    //         'appointmentId' => $appointment->appointmentId,
+    //         'employeeId' => $employeeId,
+    //     ]);
+    // }
 
     /**
      * Store a newly created resource in storage.

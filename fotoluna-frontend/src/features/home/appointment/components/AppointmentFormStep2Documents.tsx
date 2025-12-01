@@ -132,31 +132,25 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
         const doc = documents.find((d) => d.id === selectedDoc);
         if (!doc) return;
 
-        // decidir el lugar según el tipo de documento
         let resolvedPlace: string | null = place ?? null;
 
         if (requiresPresence && !requiresUpload) {
-            // Se toma en estudio, no necesitamos lugar del cliente
             resolvedPlace = "Estudio";
         } else if (needsPhotographerVisit) {
-            // El fotógrafo va donde el cliente → necesitamos lugar
             if (!localPlace.trim()) {
                 alert("Ingresa el lugar donde debe ir el fotógrafo.");
                 return;
             }
             resolvedPlace = localPlace.trim();
         } else if (requiresUpload && !requiresPresence) {
-            // Todo online, podrías marcarlo como Online o dejar null
             resolvedPlace = null; // o "Online"
         }
 
-        // si requiere upload, obligamos archivo
         if (requiresUpload && !file) {
             alert("Por favor adjunta la foto para este documento.");
             return;
         }
 
-        // ---- construir FormData ----
         const formData = new FormData();
         formData.append("documentTypeId", String(selectedDoc));
 
@@ -165,7 +159,6 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
         }
 
         if (file) {
-            // usa el nombre de campo que espere tu backend, por ejemplo "photo"
             formData.append("photo", file);
         }
 
@@ -180,9 +173,16 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                     },
                 }
             );
-            // onConfirm({ bookingId: data.id });
 
-            const bookingId = data.bookingId ?? data.id; // por si acaso
+            console.log("Respuesta completa del backend:", data);
+
+            // 👇 Intentar todas las variantes razonables
+            const bookingId =
+                data.bookingId ??
+                data.booking?.bookingId ??
+                data.booking?.id ??
+                data.id;
+
             if (!bookingId) {
                 console.error("No llegó bookingId en la respuesta:", data);
                 alert("No se pudo obtener el identificador de la reserva.");
@@ -197,6 +197,79 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
             setLoading(false);
         }
     };
+
+    // const handleConfirm = async () => {
+    //     if (!selectedDoc) return alert("Selecciona un tipo de documento");
+
+    //     const doc = documents.find((d) => d.id === selectedDoc);
+    //     if (!doc) return;
+
+    //     // decidir el lugar según el tipo de documento
+    //     let resolvedPlace: string | null = place ?? null;
+
+    //     if (requiresPresence && !requiresUpload) {
+    //         // Se toma en estudio, no necesitamos lugar del cliente
+    //         resolvedPlace = "Estudio";
+    //     } else if (needsPhotographerVisit) {
+    //         // El fotógrafo va donde el cliente → necesitamos lugar
+    //         if (!localPlace.trim()) {
+    //             alert("Ingresa el lugar donde debe ir el fotógrafo.");
+    //             return;
+    //         }
+    //         resolvedPlace = localPlace.trim();
+    //     } else if (requiresUpload && !requiresPresence) {
+    //         // Todo online, podrías marcarlo como Online o dejar null
+    //         resolvedPlace = null; // o "Online"
+    //     }
+
+    //     // si requiere upload, obligamos archivo
+    //     if (requiresUpload && !file) {
+    //         alert("Por favor adjunta la foto para este documento.");
+    //         return;
+    //     }
+
+    //     // ---- construir FormData ----
+    //     const formData = new FormData();
+    //     formData.append("documentTypeId", String(selectedDoc));
+
+    //     if (resolvedPlace !== null) {
+    //         formData.append("place", resolvedPlace);
+    //     }
+
+    //     if (file) {
+    //         // usa el nombre de campo que espere tu backend, por ejemplo "photo"
+    //         formData.append("photo", file);
+    //     }
+
+    //     setLoading(true);
+    //     try {
+    //         const { data } = await api.post(
+    //             `/api/appointments/${appointmentId}/booking`,
+    //             formData,
+    //             {
+    //                 headers: {
+    //                     "Content-Type": "multipart/form-data",
+    //                 },
+    //             }
+    //         );
+    //         // onConfirm({ bookingId: data.id });
+    //         console.log("Respuesta completa del backend:", data);
+
+    //         const bookingId = data.bookingId ?? data.id; // por si acaso
+    //         if (!bookingId) {
+    //             console.error("No llegó bookingId en la respuesta:", data);
+    //             alert("No se pudo obtener el identificador de la reserva.");
+    //             return;
+    //         }
+
+    //         onConfirm({ bookingId });
+    //     } catch (err) {
+    //         console.error("Error al confirmar cita:", err);
+    //         alert("No se pudo confirmar la cita");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const formatPrice = (value: string | number) => {
         const n = Number(String(value).replace(/[^0-9.-]+/g, ""));

@@ -1,32 +1,30 @@
 import { useState } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
-import EmployeeNotifications from "../../features/Employee/Notification/Pages/NotiFicationEmploye";
+import NotificationBell from '../NotificationBell';
 import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
 import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
 import ThemeToggle from "./LightDarkTheme";
-
+import { useAuth } from "../../context/useAuth";
 interface EmployeeNavbarProps {
     userName?: string;
-    notificationCount?: number;
+    // notificationCount?: number;  // 👈 ya no lo necesitamos
 }
 
-const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
-    // userName = "Amalia",
-    notificationCount = 3
-}) => {
-    const [showNotifications, setShowNotifications] = useState(false);
-    const [showUserProfile, setShowUserProfile] = useState(false);
-    const [showSettings, setShowSettings] = useState(false); // Nuevo estado para settings
+const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
+    const { user } = useAuth();
 
-    // Estado para el perfil del usuario
+    // const [showNotifications, setShowNotifications] = useState(false); // 👈 ya no hace falta
+    const [showUserProfile, setShowUserProfile] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+
     const [userProfile, setUserProfile] = useState<UserProfileData>({
         id: 1,
         name: "Amalia",
         email: "amalia@example.com",
         bio: "Fotógrafa apasionada por los paisajes y la naturaleza.",
-        avatar: null
+        avatar: null,
     });
 
     const handleSearchSubmit = (e: React.FormEvent) => {
@@ -40,17 +38,9 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
         console.log("Perfil actualizado:", updatedProfile);
     };
 
-    // Función para cerrar sesión
     const handleLogout = () => {
-        // Aquí va tu lógica de logout
-        console.log('Cerrando sesión...');
-        // Ejemplo:
-        // localStorage.removeItem('token');
-        // localStorage.removeItem('user');
-        // window.location.href = '/login';
-
-        // Mostrar mensaje de confirmación
-        alert('Sesión cerrada correctamente');
+        console.log("Cerrando sesión...");
+        alert("Sesión cerrada correctamente");
     };
 
     return (
@@ -59,7 +49,11 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 {/* Logo y marca */}
                 <div className="navbar-brand bg-custom-6">
                     <div className="logo-icon">
-                        <img src={logoFotoluna} alt="Logo" className="EmployeeNavbar-logo mb-1" />
+                        <img
+                            src={logoFotoluna}
+                            alt="Logo"
+                            className="EmployeeNavbar-logo mb-1"
+                        />
                     </div>
                     <h1 className="logo-text">FotoLuna</h1>
                 </div>
@@ -74,46 +68,20 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                             aria-label="Buscar"
                         />
 
-                        
                         <button type="submit" className="search-button">
                             <i className="bi bi-search"></i>
                         </button>
                     </form>
                 </div>
 
-
                 {/* Navegación y acciones */}
-
-
                 <div className="navbar-actions">
                     <nav className="navbar">
-
                         <ThemeToggle />
                     </nav>
 
-
-                    <button
-                        className="notification-btn"
-                        onClick={() => setShowNotifications(true)}
-                        aria-label="Notificaciones"
-                    >
-                        <i className="bi bi-bell-fill"></i>
-                        {notificationCount > 0 && (
-                            <span className="notification-badge">{notificationCount}</span>
-                        )}
-                    </button>
-
-                    {/* Botón de Tema */}
-                    {/* <button
-                        className="theme-toggle-btn"
-                        onClick={toggleTheme}
-                        aria-label={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
-                        title={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-                    >
-                        <i className={`bi ${isDarkMode ? 'bi-sun-fill' : 'bi-moon-stars-fill'}`}></i>
-                    </button> */}
-
-
+                    {/* 🔔 Campanita de notificaciones nueva */}
+                    {user && <NotificationBell />}
 
                     {/* Botón de Configuración (Settings) */}
                     <button
@@ -128,7 +96,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                     <div
                         className="user-profile"
                         onClick={() => setShowUserProfile(true)}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: "pointer" }}
                     >
                         <div className="user-avatar">
                             {userProfile.avatar ? (
@@ -146,12 +114,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 </div>
             </div>
 
-            {/* Modal de Notificaciones */}
-            {showNotifications && (
-                <EmployeeNotifications onClose={() => setShowNotifications(false)} />
-            )}
-
-            {/* Modal de Perfil de Usuario */}
+            {/* Perfil de usuario */}
             <UserProfile
                 isOpen={showUserProfile}
                 onClose={() => setShowUserProfile(false)}
@@ -159,7 +122,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 onProfileUpdate={handleProfileUpdate}
             />
 
-            {/* Modal de Configuración (Settings) */}
+            {/* Modal de Configuración */}
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}

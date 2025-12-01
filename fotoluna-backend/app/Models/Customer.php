@@ -63,4 +63,22 @@ class Customer extends Model
     {
         return $this->belongsTo(User::class, 'created_by_user_id', 'id');
     }
+    public function storageSubscriptions()
+    {
+        return $this->hasMany(StorageSubscription::class, 'customerIdFK', 'customerId');
+    }
+
+    public function activeStorageSubscription()
+    {
+        return $this->storageSubscriptions()
+            ->where('status', 'active')
+            ->where('ends_at', '>=', now())
+            ->orderByDesc('ends_at')
+            ->first();
+    }
+
+    public function hasActiveStorageSubscription(): bool
+    {
+        return $this->activeStorageSubscription() !== null;
+    }
 }

@@ -22,6 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // Solo las vistas web usan la ruta 'login'
             return route('login');
         });
+
+        // Alias de middlewares de ruta
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            // aquí podrías agregar más, si quieres
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
