@@ -36,13 +36,16 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
                 setLoading(true);
                 setError(null);
 
+                const token = localStorage.getItem("token");
+
                 const res = await axios.get(`${API_BASE}/api/storage-plans`, {
                     headers: {
                         Accept: "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
                 });
 
-                setPlans(res.data);
+                setPlans(res.data.plans || []);
             } catch (err) {
                 console.error("Error cargando planes de almacenamiento:", err);
                 setError("No se pudieron cargar los planes de almacenamiento.");

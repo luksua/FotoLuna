@@ -11,8 +11,11 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->boolean('state')->default('1');
+            if (!Schema::hasColumn('events', 'state')) {
+                $table->boolean('state')->default(1);
+            }
         });
+
     }
 
     /**

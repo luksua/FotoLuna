@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('document_types', function (Blueprint $table) {
-            $table->boolean('state')->default(1)->after('requiresPresence');
+            if (!Schema::hasColumn('document_types', 'state')) {
+                $table->boolean('state')->default(1)->after('requiresPresence');
+            }
         });
     }
 
