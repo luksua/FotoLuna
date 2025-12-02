@@ -875,6 +875,86 @@ class AppointmentController extends Controller
 
 
     /**
+     * Obtener citas pendientes de un cliente por su user_id
+     */
+    public function pendingByUserId($userId)
+    {
+        \Log::info("PendingByUserId called with userId: {$userId}");
+        
+        try {
+            // Obtener el customer asociado al user_id
+            $customer = Customer::where('user_id', $userId)->first();
+            
+            \Log::info("Customer found: " . ($customer ? "Yes (id: {$customer->customerId})" : "No"));
+            
+            if (!$customer) {
+                return response()->json([
+                    'success' => true,
+                    'data' => []
+                ], 200);
+            }
+
+            // Obtener citas pendientes del customer
+            // Active statuses: 'Scheduled' or 'Pending confirmation'
+            $appointments = Appointment::where('customerIdFK', $customer->customerId)
+                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+                ->with(['event', 'bookings.package'])
+                ->orderBy('appointmentDate', 'asc')
+                ->orderBy('appointmentTime', 'asc')
+                ->get();
+
+            \Log::info("Found {$appointments->count()} pending appointments for customer {$customer->customerId}");
+
+            // Transformar datos
+            $data = $appointments->map(function ($apt) {
+                return [
+                    'appointmentId' => (int)$apt->appointmentId,
+                    'date' => (string)($apt->appointmentDate ?? ''),
+                    'time' => (string)($apt->appointmentTime ?? ''),
+                    'place' => (string)($apt->place ?? ''),
+                    'eventType' => (string)(optional($apt->event)->eventType ?? 'Sin evento'),
+                    'packageName' => (string)(optional(optional($apt->bookings->first())->package)->packageName ?? 'Sin paquete'),
+                    'comment' => (string)($apt->comment ?? ''),
+                    'status' => (string)($apt->appointmentStatus ?? ''),
+                ];
+            })->toArray();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error("pendingByUserId error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+    public function getPendingCount(): JsonResponse
+    {
+        try {
+            $count = Appointment::whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])->count();
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total' => $count
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error("getPendingCount error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Appointment $appointment)

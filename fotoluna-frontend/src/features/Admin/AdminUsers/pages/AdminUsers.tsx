@@ -4,12 +4,24 @@ import "../../../Admin/AdminUsers/styles/AdminUsers.css";
 import imgperfil from "../../../../assets/Img/imgperfil.jpg";
 
 type User = {
-    id: number;
+    id: number | string;
     name: string;
     email: string;
     phone: string;
     document: string;
     avatar: string;
+    userId?: number;
+};
+
+type Appointment = {
+    appointmentId: number;
+    date: string;
+    time: string;
+    place: string;
+    eventType: string;
+    packageName: string;
+    comment: string;
+    status: string;
 };
 
 
@@ -23,6 +35,55 @@ interface ModalProps {
 
 const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
     const [activeTab, setActiveTab] = useState<TabType>('info');
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [loadingAppointments, setLoadingAppointments] = useState(false);
+    const [appointmentsError, setAppointmentsError] = useState<string | null>(null);
+
+    // Cargar citas cuando se abre la pestaña de reservas
+    const handleTabChange = (tab: TabType) => {
+        setActiveTab(tab);
+        if (tab === 'reservas' && appointments.length === 0 && !loadingAppointments) {
+            fetchAppointments();
+        }
+    };
+
+    const fetchAppointments = async () => {
+        setLoadingAppointments(true);
+        setAppointmentsError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            // Usar userId si es disponible (para customers), sino usar id (para employees)
+            const userIdToUse = user.userId || user.id;
+            console.log('Debug - User:', user);
+            console.log('Debug - userIdToUse:', userIdToUse);
+            
+            const response = await fetch(`/api/admin/appointments/pending/${userIdToUse}`, {
+                headers
+            });
+            console.log('Debug - Response status:', response.status);
+            
+            const data = await response.json();
+            console.log('Debug - Response data:', data);
+            
+            if (data.success) {
+                setAppointments(data.data || []);
+            } else {
+                setAppointmentsError('No se pudieron cargar las citas');
+            }
+        } catch (err: any) {
+            console.error('Debug - Error:', err);
+            setAppointmentsError(err.message || 'Error al obtener las citas');
+        } finally {
+            setLoadingAppointments(false);
+        }
+    };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -31,19 +92,19 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
                     <div className="modal-tabs">
                         <button
                             className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('info')}
+                            onClick={() => handleTabChange('info')}
                         >
                             Información
                         </button>
                         <button
                             className={`tab-button ${activeTab === 'reservas' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('reservas')}
+                            onClick={() => handleTabChange('reservas')}
                         >
                             Reservas
                         </button>
                         <button
                             className={`tab-button ${activeTab === 'historial' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('historial')}
+                            onClick={() => handleTabChange('historial')}
                         >
                             Historial
                         </button>
@@ -64,7 +125,55 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
                     {activeTab === 'reservas' && (
                         <div className="reservas-content">
                             <h3>Reservas Activas</h3>
-                            <p>No hay reservas activas</p>
+                            {loadingAppointments ? (
+                                <p>Cargando reservas...</p>
+                            ) : appointmentsError ? (
+                                <p style={{ color: 'red' }}>Error: {appointmentsError}</p>
+                            ) : appointments.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {appointments.map((apt) => (
+                                        <div key={apt.appointmentId} style={{
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: '8px',
+                                            padding: '12px',
+                                            backgroundColor: '#f9f9f9'
+                                        }}>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>📅 Fecha:</strong> {apt.date} a las {apt.time}
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>📍 Lugar:</strong> {apt.place}
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>🎉 Evento:</strong> {apt.eventType}
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>📦 Paquete:</strong> {apt.packageName}
+                                            </div>
+                                            {apt.comment && (
+                                                <div style={{ marginBottom: '8px' }}>
+                                                    <strong>💬 Comentario:</strong> {apt.comment}
+                                                </div>
+                                            )}
+                                            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #ddd' }}>
+                                                <span style={{
+                                                    display: 'inline-block',
+                                                    backgroundColor: '#d1a3e2',
+                                                    color: '#fff',
+                                                    padding: '4px 12px',
+                                                    borderRadius: '16px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    {apt.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p>No hay reservas activas</p>
+                            )}
                         </div>
                     )}
                     {activeTab === 'historial' && (
@@ -149,14 +258,17 @@ const EmployeeAdmin: React.FC = () => {
                 }
                 
                 if (customersData && customersData.success && Array.isArray(customersData.data)) {
-                    allUsers.push(...customersData.data.map((c: any) => ({
+                    const mappedCustomers = customersData.data.map((c: any) => ({
                         id: c.id,
+                        userId: c.userId,
                         name: c.name,
                         email: c.email,
                         phone: c.phone || '',
                         document: c.document || '',
                         avatar: c.avatar || imgperfil,
-                    })));
+                    }));
+                    console.log('Debug - Mapped customers:', mappedCustomers);
+                    allUsers.push(...mappedCustomers);
                 }
                 
                 setUsers(allUsers);

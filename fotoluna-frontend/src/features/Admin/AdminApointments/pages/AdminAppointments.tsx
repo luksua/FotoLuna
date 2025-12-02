@@ -119,7 +119,7 @@ const AdminAppointments: React.FC = () => {
     return (
         <HomeLayout>
             <div className="container mt-4">
-                <h2 className="mb-3">Citas (Administrador)</h2>
+                <h2 className="mb-3">Citas</h2>
                 <div className="row g-3 mb-3">
                     <div className="col-12 col-md-3">
                         <label className="form-label mb-1">Buscar</label>

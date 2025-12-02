@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 import NotificationBell from '../NotificationBell';
@@ -8,17 +8,22 @@ import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal"
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
 import ThemeToggle from "./LightDarkTheme";
 import { useAuth } from "../../context/useAuth";
+import { useNavigate } from "react-router-dom";
+import { ConfirmModal } from "../../components/ConfirmModal";
+
 interface EmployeeNavbarProps {
     userName?: string;
-    // notificationCount?: number;  // 👈 ya no lo necesitamos
 }
 
 const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
-    // const [showNotifications, setShowNotifications] = useState(false); // 👈 ya no hace falta
     const [showUserProfile, setShowUserProfile] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const mapUserToProfile = (u: any): UserProfileData => ({
         id: u?.id ?? 0,
@@ -34,6 +39,29 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
         setUserProfile(mapUserToProfile(user));
     }, [user]);
 
+    // Cerrar dropdown cuando se abre un modal
+    useEffect(() => {
+        if (showUserProfile || showSettings) {
+            setShowDropdown(false);
+        }
+    }, [showUserProfile, showSettings]);
+
+    // Cerrar dropdown cuando se hace click fuera
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowDropdown(false);
+            }
+        };
+
+        if (showDropdown) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showDropdown]);
+
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Búsqueda realizada");
@@ -45,9 +73,21 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
         console.log("Perfil actualizado:", updatedProfile);
     };
 
-    const handleLogout = () => {
-        console.log("Cerrando sesión...");
-        alert("Sesión cerrada correctamente");
+    const handleLogout = async () => {
+        await logout();
+        navigate("/", { replace: true });
+    };
+
+    const handleProfileClick = () => {
+        setShowUserProfile(true);
+    };
+
+    const handleSettingsClick = () => {
+        setShowSettings(true);
+    };
+
+    const handleLogoutClick = () => {
+        setShowLogoutConfirm(true);
     };
 
     return (
@@ -87,41 +127,62 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                         <ThemeToggle />
                     </nav>
 
-                    {/* 🔔 Campanita de notificaciones nueva */}
+                    {/* 🔔 Campanita de notificaciones */}
                     {user && <NotificationBell />}
 
-                    {/* Botón de Configuración (Settings) */}
-                    <button
-                        className="settings-btn"
-                        aria-label="Configuración"
-                        onClick={() => setShowSettings(true)}
-                    >
-                        <i className="bi bi-gear-fill"></i>
-                    </button>
-
-                    {/* Área de Perfil de Usuario */}
-                    <div
-                        className="user-profile"
-                        onClick={() => setShowUserProfile(true)}
-                        style={{ cursor: "pointer" }}
-                    >
-                        <div className="user-avatar">
-                            {userProfile.avatar ? (
-                                <img
-                                    src={userProfile.avatar}
-                                    alt="Avatar"
-                                    className="avatar-image-small"
-                                />
-                            ) : (
-                                (userProfile.name && userProfile.name.charAt(0).toUpperCase()) || "U"
-                            )}
+                    {/* Área de Perfil de Usuario con Dropdown */}
+                    <div className="user-profile-container" ref={dropdownRef}>
+                        <div
+                            className="user-profile"
+                            onClick={() => setShowDropdown(!showDropdown)}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <div className="user-avatar">
+                                {userProfile.avatar ? (
+                                    <img
+                                        src={userProfile.avatar}
+                                        alt="Avatar"
+                                        className="avatar-image-small"
+                                    />
+                                ) : (
+                                    (userProfile.name && userProfile.name.charAt(0).toUpperCase()) || "U"
+                                )}
+                            </div>
+                            <span className="user-name">{userProfile.name}</span>
                         </div>
-                        <span className="user-name">{userProfile.name}</span>
+
+                        {/* Dropdown Menu */}
+                        {showDropdown && (
+                            <div className="user-dropdown-menu">
+                                <button
+                                    className="dropdown-item"
+                                    onClick={handleProfileClick}
+                                >
+                                    <i className="bi bi-person-circle me-2"></i>
+                                    Perfil
+                                </button>
+                                <button
+                                    className="dropdown-item"
+                                    onClick={handleSettingsClick}
+                                >
+                                    <i className="bi bi-gear-fill me-2"></i>
+                                    Ajustes
+                                </button>
+                                <hr className="dropdown-divider" />
+                                <button
+                                    className="dropdown-item dropdown-item-danger"
+                                    onClick={handleLogoutClick}
+                                >
+                                    <i className="bi bi-box-arrow-right me-2"></i>
+                                    Cerrar Sesión
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Perfil de usuario */}
+            {/* Perfil de usuario modal */}
             <UserProfile
                 isOpen={showUserProfile}
                 onClose={() => setShowUserProfile(false)}
@@ -133,7 +194,15 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
-                onLogout={handleLogout}
+            />
+
+            {/* Modal de confirmación de logout */}
+            <ConfirmModal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={handleLogout}
+                title="¿Está seguro de cerrar sesión?"
+                type="error"
             />
         </nav>
     );

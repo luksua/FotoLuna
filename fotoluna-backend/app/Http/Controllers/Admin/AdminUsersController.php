@@ -85,6 +85,7 @@ class AdminUsersController extends Controller
         $data = $customers->map(function ($c) {
             return [
                 'id' => 'cust_' . $c->customerId,
+                'userId' => $c->user_id,
                 'uniqueId' => $c->customerId,
                 'type' => 'customer',
                 'firstName' => $c->firstNameCustomer,
@@ -97,6 +98,22 @@ class AdminUsersController extends Controller
             ];
         });
 
+        \Log::info('GetCustomers - Returned ' . count($data) . ' customers', [
+            'first_customer' => $data->first()
+        ]);
+
         return response()->json(['success' => true, 'data' => $data], 200);
+    }
+
+    public function getCustomersCount(): JsonResponse
+    {
+        $count = Customer::count();
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total' => $count
+            ]
+        ], 200);
     }
 }
