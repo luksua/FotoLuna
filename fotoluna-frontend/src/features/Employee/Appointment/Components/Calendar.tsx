@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import type { Cita } from "../Components/Types/types";
 
 type Direction = "prev" | "next";
@@ -48,7 +48,7 @@ const getCalendarDays = (month: Date): Date[] => {
     return days;
 };
 
-const Calendar: React.FC<CalendarProps> = ({
+const Calendar: React.FC<CalendarProps> = React.memo(({
     currentMonth,
     selectedDate,
     citas,
@@ -56,15 +56,16 @@ const Calendar: React.FC<CalendarProps> = ({
     onDayClick,
     onDotClick,
 }) => {
-    const calendarDays = getCalendarDays(currentMonth);
+    const calendarDays = useMemo(() => getCalendarDays(currentMonth), [currentMonth]);
 
-    const getCitasDelDia = (date: Date): Cita[] =>
-        citas.filter(
+    const getCitasDelDia = useCallback((date: Date): Cita[] => {
+        const targetDateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).getTime();
+
+        return citas.filter(
             (c) =>
-                c.date.getFullYear() === date.getFullYear() &&
-                c.date.getMonth() === date.getMonth() &&
-                c.date.getDate() === date.getDate()
+                c.date.getTime() === targetDateUTC
         );
+    }, [citas]);
 
     return (
         <div className="custom-calendar">
@@ -146,6 +147,6 @@ const Calendar: React.FC<CalendarProps> = ({
             </div>
         </div>
     );
-};
+});
 
 export default Calendar;

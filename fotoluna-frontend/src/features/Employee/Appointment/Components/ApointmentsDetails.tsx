@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import type { Cita } from "../Components/Types/types";
 
 interface AppointmentDetailsProps {
@@ -21,7 +21,7 @@ const getCitaKey = (cita: Cita, index: number): string => {
     return `${cita.appointmentId}_${cita.date.toISOString()}_${cita.startTime}_${index}`;
 };
 
-const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
+const AppointmentDetails: React.FC<AppointmentDetailsProps> = React.memo(({
     citasDelDia,
     selectedCita,
     selectedDate,
@@ -53,10 +53,10 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
         return citasDelDia.filter((c) => c.status === statusFilter);
     }, [citasDelDia, statusFilter]);
 
-    const handleCardClick = (cita: Cita, key: string) => {
-        onSelectCita(cita);
-        setExpandedKey((prev) => (prev === key ? null : key));
-    };
+    const handleCardClick = useCallback((cita: Cita, key: string) => {
+        onSelectCita(cita); // Actualiza selectedCita en el padre
+        setExpandedKey(key);
+    }, [onSelectCita]);
 
     const isEmptyForDay = citasDelDia.length === 0;
 
@@ -157,65 +157,69 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
                             </button>
 
                             {/* Expanded */}
-                            <div className="appointment-card-body">
-                                {cita.document && (
+                            {isExpanded && (
+                                <div className="appointment-card-body">
+                                    {/* Todo el contenido detallado va aquí dentro */}
+
+                                    {cita.document && (
+                                        <p className="appointment-card-body-meta">
+                                            <strong>Documento:</strong>{" "}
+                                            {cita.document}
+                                        </p>
+                                    )}
+
+                                    {cita.email && (
+                                        <p className="appointment-card-body-meta">
+                                            <strong>Correo:</strong> {cita.email}
+                                        </p>
+                                    )}
+
+                                    {cita.phone && (
+                                        <p className="appointment-card-body-meta">
+                                            <strong>Teléfono:</strong> {cita.phone}
+                                        </p>
+                                    )}
+
+                                    {cita.eventName && (
+                                        <p className="appointment-card-body-meta">
+                                            <strong>Evento:</strong>{" "}
+                                            {cita.eventName}
+                                        </p>
+                                    )}
+
+                                    {cita.packageName && (
+                                        <p className="appointment-card-body-meta">
+                                            <strong>Paquete:</strong>{" "}
+                                            {cita.packageName}
+                                        </p>
+                                    )}
+
+                                    {cita.location && (
+                                        <p className="appointment-card-body-meta">
+                                            <strong>Dirección:</strong>{" "}
+                                            {cita.location}
+                                        </p>
+                                    )}
+
                                     <p className="appointment-card-body-meta">
-                                        <strong>Documento:</strong>{" "}
-                                        {cita.document}
+                                        <strong>Horario:</strong>{" "}
+                                        {cita.startTime}
                                     </p>
-                                )}
 
-                                {cita.email && (
+                                    {cita.notes && (
+                                        <p className="appointment-card-body-text">
+                                            <strong>Notas:</strong> {cita.notes}
+                                        </p>
+                                    )}
+
                                     <p className="appointment-card-body-meta">
-                                        <strong>Correo:</strong> {cita.email}
+                                        <strong>Estado:</strong>{" "}
+                                        <span className="badge bg-light text-dark">
+                                            {cita.status}
+                                        </span>
                                     </p>
-                                )}
-
-                                {cita.phone && (
-                                    <p className="appointment-card-body-meta">
-                                        <strong>Teléfono:</strong> {cita.phone}
-                                    </p>
-                                )}
-
-                                {cita.eventName && (
-                                    <p className="appointment-card-body-meta">
-                                        <strong>Evento:</strong>{" "}
-                                        {cita.eventName}
-                                    </p>
-                                )}
-
-                                {cita.packageName && (
-                                    <p className="appointment-card-body-meta">
-                                        <strong>Paquete:</strong>{" "}
-                                        {cita.packageName}
-                                    </p>
-                                )}
-
-                                {cita.location && (
-                                    <p className="appointment-card-body-meta">
-                                        <strong>Dirección:</strong>{" "}
-                                        {cita.location}
-                                    </p>
-                                )}
-
-                                <p className="appointment-card-body-meta">
-                                    <strong>Horario:</strong>{" "}
-                                    {cita.startTime}
-                                </p>
-
-                                {cita.notes && (
-                                    <p className="appointment-card-body-text">
-                                        <strong>Notas:</strong> {cita.notes}
-                                    </p>
-                                )}
-
-                                <p className="appointment-card-body-meta">
-                                    <strong>Estado:</strong>{" "}
-                                    <span className="badge bg-light text-dark">
-                                        {cita.status}
-                                    </span>
-                                </p>
-                            </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -242,6 +246,6 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = ({
             </div>
         </div>
     );
-};
+});
 
 export default AppointmentDetails;

@@ -379,11 +379,16 @@ class AppointmentController extends Controller
         try {
             \Log::info('Datos recibidos en store appointment:', $request->all());
 
-            // ✅ Validar entrada
+            // 1. ✅ VALIDACIÓN
             $validator = Validator::make($request->all(), [
+                'customerIdFK' => 'required|integer|exists:customers,customerId',
                 'eventIdFK' => 'required|exists:events,eventId',
                 'appointmentDate' => 'required|date|after_or_equal:today',
-                'appointmentTime' => 'required|string',
+                'appointmentTime' => 'required|date_format:H:i:s',
+
+                'appointmentDuration' => 'nullable|integer|min:1',
+                'appointmentTimeEnd' => 'nullable|date_format:H:i:s|after:appointmentTime',
+
                 'place' => 'nullable|string|max:100',
                 'comment' => 'nullable|string|max:255',
             ]);
@@ -392,41 +397,44 @@ class AppointmentController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            // ✅ Obtener el cliente del usuario autenticado
-            $user = auth()->user();
+            // 2. 🔐 OBTENER LA ID DEL EMPLEADO CREADOR
+            $user = $request->user();
+            $employeeCreatorId = null;
 
-            if (!$user || !$user->customer) {
-                return response()->json([
-                    'message' => 'El usuario autenticado no tiene un cliente asociado'
-                ], 403);
+            // Asignamos la ID del empleado si el usuario autenticado tiene el perfil 'employee'
+            if ($user && $user->employee) {
+                // Asumiendo que employeeIdFK en appointments apunta a employees.employeeId
+                $employeeCreatorId = $user->employee->employeeId;
             }
 
-            $customerId = $user->customer->customerId;
+            $customerId = $request->customerIdFK; // ID del cliente seleccionado.
 
-            $employeeId = $request->employeeIdFK ?? null;
-
-
-
-            // ✅ Crear la cita
+            // 3. ✅ CREAR LA CITA
             $appointment = Appointment::create([
                 'customerIdFK' => $customerId,
                 'eventIdFK' => $request->eventIdFK,
+
+                // 🚨 CORRECCIÓN CLAVE: Guardar el ID del empleado que creó la cita
+                'employeeIdFK' => $employeeCreatorId,
+
                 'appointmentDate' => $request->appointmentDate,
                 'appointmentTime' => $request->appointmentTime,
+                'appointmentDuration' => $request->appointmentDuration ?? 60,
                 'appointmentTimeEnd' => $request->appointmentTimeEnd ?? null,
                 'place' => $request->place ?? null,
-                'comment' => $request->comment,
+                'comment' => $request->comment ?? null,
+                'appointmentStatus' => 'Pending confirmation',
             ]);
 
-            // ✅ Respuesta JSON limpia
+            // 4. ✅ RESPUESTA
             return response()->json([
                 'message' => 'Cita creada correctamente',
                 'appointmentId' => $appointment->appointmentId,
                 'status' => $appointment->appointmentStatus,
             ], 201);
+
         } catch (Throwable $e) {
             \Log::error('Error al crear cita: ' . $e->getMessage());
-
             return response()->json([
                 'message' => 'Error interno del servidor',
                 'error' => $e->getMessage(),
@@ -652,47 +660,72 @@ class AppointmentController extends Controller
      */
     public function employeeAppointments(Request $request)
     {
-        $employee = $request->user()->employee;
+        $user = $request->user();
 
-        if (!$employee) {
+        // 1. CONTROL DE ACCESO
+        if (!$user || !$user->employee) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
-        $rows = Booking::query()
-            ->where('employeeIdFK', $employee->employeeId)
-            ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
-            ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
-            ->selectRaw('
-                appointments.appointmentId,
-                bookings.bookingId,
-                appointments.appointmentDate AS date,
-                appointments.appointmentTime AS startTime,
-                appointments.place,
-                appointments.comment,
-                appointments.appointmentStatus AS status,
-                customers.firstNameCustomer AS firstName,
-                customers.lastNameCustomer  AS lastName,
-                customers.documentNumber    AS document,
-                customers.emailCustomer     AS email
-            ')
-            ->orderBy('appointments.appointmentDate')
-            ->orderBy('appointments.appointmentTime')
+        $employeeId = $user->employee->employeeId;
+
+        // 2. CONSULTA Y FILTRO
+        $appointments = Appointment::query()
+            ->with([
+                'customer',
+                // Cargar SÓLO los bookings asignados a este empleado (para el mapeo)
+                'bookings' => function ($query) use ($employeeId) {
+                    $query->where('employeeIdFK', $employeeId);
+                }
+            ])
+
+            // 🚨 FILTRO PRINCIPAL (Condición OR)
+            ->where(function ($query) use ($employeeId) {
+
+                // CONDISIÓN A: La cita fue creada por este empleado
+                $query->where('employeeIdFK', $employeeId);
+
+                // CONDISIÓN B (OR): La cita tiene un booking asociado a ESTE empleado
+                $query->orWhereHas('bookings', function ($subQuery) use ($employeeId) {
+                    $subQuery->where('employeeIdFK', $employeeId);
+                });
+
+            })
+            ->orderBy('appointmentDate')
+            ->orderBy('appointmentTime')
             ->get();
 
-        $data = $rows->map(function ($r) {
+        // 3. MAPEO DE DATOS
+        $data = $appointments->map(function ($a) use ($employeeId) {
+            $customer = $a->customer;
+
+            // Buscar el booking específico (que ya fue cargado con el filtro 'with')
+            $booking = $a->bookings
+                ? $a->bookings->where('employeeIdFK', $employeeId)->first()
+                : null;
+
+            // Si no hay customer, descartar (seguridad)
+            if (!$customer)
+                return null;
+
             return [
-                'appointmentId' => $r->appointmentId,
-                'bookingId' => $r->bookingId,
-                'date' => $r->date,
-                'startTime' => $r->startTime,
-                'place' => $r->place,
-                'comment' => $r->comment,
-                'status' => $r->status,
-                'clientName' => trim("{$r->firstName} {$r->lastName}"),
-                'clientDocument' => $r->document,
-                'clientEmail' => $r->email,
+                'appointmentId' => $a->appointmentId,
+                // bookingId será null si la cita fue solo creada por él (sin booking asignado aún)
+                'bookingId' => $booking->bookingId ?? null,
+                'date' => $a->appointmentDate,
+                'startTime' => $a->appointmentTime,
+                'place' => $a->place,
+                'comment' => $a->comment,
+                'status' => $a->appointmentStatus,
+
+                'clientName' => trim("{$customer->firstNameCustomer} {$customer->lastNameCustomer}"),
+                'clientDocument' => $customer->documentNumber,
+                'clientEmail' => $customer->emailCustomer,
+
+                // Indicador para el frontend: útil para saber si necesita asignar un paquete/booking
+                'needsAssignment' => $booking === null,
             ];
-        });
+        })->filter()->values();
 
         return response()->json($data);
     }
@@ -706,31 +739,40 @@ class AppointmentController extends Controller
      */
     public function updateByEmployee(Request $request, $appointmentId)
     {
+        // 🚨 CORRECCIÓN CLAVE: Inicializar $user al inicio del método
         $user = $request->user();
 
-        // Verificar que el usuario tenga empleado asociado
-        $employee = $user->employee;
-        if (!$employee) {
+        // 1. VERIFICACIÓN DE AUTENTICACIÓN Y ROL
+        if (!$user || !$user->employee) {
             return response()->json([
                 'message' => 'El usuario autenticado no tiene un empleado asociado'
-            ], 403);
+            ], 403); // 403 Forbidden
         }
 
-        // Buscar la cita
+        $employee = $user->employee;
+        $employeeId = $employee->employeeId;
         $appointment = Appointment::findOrFail($appointmentId);
 
-        // Asegurarnos de que esta cita está asignada a este empleado mediante un booking
+        // 2. VERIFICACIÓN DE SEGURIDAD (Creador O Asignado)
+
+        // Buscar el booking que lo asigna (necesario si vamos a actualizar el status del booking)
         $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)
-            ->where('employeeIdFK', $employee->employeeId)
+            ->where('employeeIdFK', $employeeId)
             ->first();
 
-        if (!$booking) {
+        $bookingExists = !is_null($booking);
+
+        // Verificar si el empleado es el creador de la cita (usando la columna en appointments)
+        $isCreator = $appointment->employeeIdFK === $employeeId;
+
+        if (!$bookingExists && !$isCreator) {
+            // Si no es el creador Y no tiene un booking asignado, rechazar el acceso
             return response()->json([
-                'message' => 'Esta cita no está asignada a este empleado'
+                'message' => 'Esta cita no está asignada a este empleado ni fue creada por él.'
             ], 403);
         }
 
-        // ✅ VALIDACIÓN: lo que acepta la API
+        // 3. VALIDACIÓN DE LOS DATOS DE ENTRADA
         $data = $request->validate([
             'date' => ['required', 'date_format:Y-m-d'],
             'startTime' => ['required', 'date_format:H:i'],
@@ -740,15 +782,15 @@ class AppointmentController extends Controller
                 'required',
                 'string',
                 Rule::in([
-                    'Pending confirmation', // pendiente
-                    'Scheduled',            // confirmada
+                    'Pending confirmation',
+                    'Scheduled',
                     'Cancelled',
                     'Completed',
                 ]),
             ],
         ]);
 
-        // ✅ Actualizar la cita con el texto que maneja tu app
+        // 4. ACTUALIZAR APPOINTMENT
         $appointment->update([
             'appointmentDate' => $data['date'],
             'appointmentTime' => $data['startTime'],
@@ -757,33 +799,36 @@ class AppointmentController extends Controller
             'appointmentStatus' => $data['status'],
         ]);
 
-        // ✅ MAPEO: texto de la API → ENUM de la tabla bookings
-        switch ($data['status']) {
-            case 'Pending confirmation':
-                $bookingStatus = 'Pending';
-                break;
-            case 'Scheduled':
-                $bookingStatus = 'Confirmed';
-                break;
-            case 'Cancelled':
-                $bookingStatus = 'Cancelled';
-                break;
-            case 'Completed':
-                $bookingStatus = 'Completed';
-                break;
-            default:
-                $bookingStatus = 'Pending';
+        // 5. ACTUALIZAR BOOKING (SOLO SI EXISTE)
+        if ($booking) {
+            // Mapeo: texto de la API → ENUM de la tabla bookings
+            switch ($data['status']) {
+                case 'Pending confirmation':
+                    $bookingStatus = 'Pending';
+                    break;
+                case 'Scheduled':
+                    $bookingStatus = 'Confirmed';
+                    break;
+                case 'Cancelled':
+                    $bookingStatus = 'Cancelled';
+                    break;
+                case 'Completed':
+                    $bookingStatus = 'Completed';
+                    break;
+                default:
+                    $bookingStatus = 'Pending';
+            }
+
+            $booking->update([
+                'bookingStatus' => $bookingStatus,
+            ]);
         }
 
-        // ✅ Actualizar booking usando SOLO valores válidos del ENUM
-        $booking->update([
-            'bookingStatus' => $bookingStatus,
-        ]);
-
+        // 6. RESPUESTA FINAL
         return response()->json([
             'message' => 'Cita actualizada correctamente',
             'appointment' => $appointment->fresh(),
-            'booking' => $booking->fresh(),
+            'booking' => $booking ? $booking->fresh() : null,
         ], 200);
     }
 

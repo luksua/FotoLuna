@@ -1,14 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PhotoGallery from '../Components/PhotoGallery';
-import type { Photo, Stats as StatsType, EventInfo } from "../Components/types/Photo";
+// 🚨 Nota: Asegúrate de que Photo y StatsType están definidos en este archivo o en '../Components/types/Photo'
+import type { Photo, Stats as StatsType } from "../Components/types/Photo"; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../Styles/photo/PhotoAdmin.css';
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 
-// Datos mock para simular las fotos
-const mockPhotos: Photo[] = [
+
+// =========================================================
+// 🚨 DEFINICIÓN 1: FUNCIÓN DE AYUDA (Debe ir fuera y antes del componente)
+// =========================================================
+const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    // Ampliado para evitar errores con archivos mayores a 1MB
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; 
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const unitIndex = Math.min(i, sizes.length - 1);
+    
+    return parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(2)) + ' ' + sizes[unitIndex];
+};
+
+
+// =========================================================
+// 🚨 DEFINICIÓN 2: DATOS MOCK (Debe ir fuera del componente)
+// =========================================================
+const mockPhotos: any[] = [ // Usamos 'any[]' temporalmente si Photo no está en el scope
     {
         id: 1,
         name: 'vacaciones_playa.jpg',
@@ -32,8 +51,10 @@ const mockPhotos: Photo[] = [
     }
 ];
 
+
 const EmployeeAdmin: React.FC = () => {
-    const [photos, setPhotos] = useState<Photo[]>([]);
+    // 🚨 Usamos Photo[] y StatsType si fueron importados, o any si no
+    const [photos, setPhotos] = useState<Photo[]>([]); 
     const [stats, setStats] = useState<StatsType>({
         total_photos: 0,
         expiring_soon: 0,
@@ -65,7 +86,9 @@ const EmployeeAdmin: React.FC = () => {
     // Cargar fotos desde localStorage al iniciar
     useEffect(() => {
         const savedPhotos = localStorage.getItem('uploadedPhotos');
-        const initialPhotos = savedPhotos ? JSON.parse(savedPhotos) : mockPhotos;
+        
+        // 🚨 CORRECCIÓN: Usar mockPhotos si savedPhotos es nulo
+        const initialPhotos: Photo[] = savedPhotos ? JSON.parse(savedPhotos) : mockPhotos; 
 
         const timer = setTimeout(() => {
             setPhotos(initialPhotos);
@@ -79,20 +102,19 @@ const EmployeeAdmin: React.FC = () => {
     // Manejar eliminación de foto
     const handlePhotoDelete = async (photoId: number): Promise<void> => {
         setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 500)); 
 
         const updatedPhotos = photos.filter((photo: Photo) => photo.id !== photoId);
         setPhotos(updatedPhotos);
         calculateStats(updatedPhotos);
 
-        // Guardar en localStorage
         localStorage.setItem('uploadedPhotos', JSON.stringify(updatedPhotos));
         setLoading(false);
     };
 
     // Navegar a la página de upload
     const handleNavigateToUpload = () => {
-        navigate('/employee/upload'); // Ajusta la ruta según tu configuración
+        navigate('/employee/upload'); 
     };
 
     // Escuchar cambios en localStorage para fotos nuevas
@@ -100,7 +122,7 @@ const EmployeeAdmin: React.FC = () => {
         const handleStorageChange = () => {
             const savedPhotos = localStorage.getItem('uploadedPhotos');
             if (savedPhotos) {
-                const parsedPhotos = JSON.parse(savedPhotos);
+                const parsedPhotos: Photo[] = JSON.parse(savedPhotos);
                 setPhotos(parsedPhotos);
                 calculateStats(parsedPhotos);
             }
@@ -124,7 +146,7 @@ const EmployeeAdmin: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* Botón para subir fotos
+                    {/* Botón para subir fotos */}
                     <div className="row justify-content-center mb-5">
                         <div className="col-12 col-lg-8">
                             <div className="card border-0 shadow-sm">
@@ -145,13 +167,13 @@ const EmployeeAdmin: React.FC = () => {
                     </div>
 
                     {/* Estadísticas */}
-                    {/* <div className="row mb-4">
+                    <div className="row mb-4">
                         <div className="col-md-4 mb-3">
                             <div className="stat-card card border-0 shadow-sm h-100">
                                 <div className="card-body text-center p-4">
                                     <i className="bi bi-images stat-icon text-primary"></i>
                                     <h3 className="stat-number fw-bold text-dark mt-3">
-                                        {stats.total_photos}/100
+                                        {stats.total_photos}/100 
                                     </h3>
                                     <p className="stat-label text-muted mb-0">Fotos Actuales</p>
                                 </div>
@@ -181,7 +203,7 @@ const EmployeeAdmin: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    </div> */}
+                    </div>
 
                     {/* Galería de Fotos */}
                     <PhotoGallery
@@ -194,15 +216,6 @@ const EmployeeAdmin: React.FC = () => {
             </div>
         </EmployeeLayout>
     );
-};
-
-// Función auxiliar para formatear tamaño de archivo
-const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
 export default EmployeeAdmin;

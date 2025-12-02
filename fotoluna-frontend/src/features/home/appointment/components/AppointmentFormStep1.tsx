@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; // 👈 SINTAXIS CORREGIDA: Se eliminó el '=> "react"'
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { format, addDays } from "date-fns";
 import { es } from "date-fns/locale";
@@ -19,16 +19,24 @@ import Register from "../../auth/components/SignUpForm";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
+type Event = {
+    id: number;
+    eventType: string;
+    category: string;
+    // ... otros campos del evento
+};
+
 type FormValues = {
     eventIdFK: string;
     appointmentDate: string;
     appointmentTime: string;
     place: string;
     comment?: string;
+    customerIdFK?: number | string; // Añadido para mejor tipado, aunque lo inyectamos después
 };
 
 interface AppointmentStep1Props {
-    onNext?: (data: { appointmentId: number; event: any; place: string }) => void;
+    onNext?: (data: { appointmentId: number; event: Event; place: string }) => void; // Tipado Event
     initialEventId?: number | null;
 }
 
@@ -61,12 +69,16 @@ async function findFirstAvailableDate(start: Date, maxDays = 60): Promise<Date |
     return null;
 }
 
-const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, initialEventId }) => {
+// Tipado corregido para las props
+const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
+    onNext,
+    initialEventId
+}) => { // 👈 TIPADO CORREGIDO: Las props ya están tipadas en AppointmentStep1Props
     const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
     const [loading, setLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedTime, setSelectedTime] = useState<string>("");
-    const [events, setEvents] = useState<any[]>([]);
+    const [events, setEvents] = useState<Event[]>([]); // Tipado Event[]
     const [eventOptions, setEventOptions] = useState<{ value: string; label: string }[]>([]);
     const [loadingEvents, setLoadingEvents] = useState(true);
 
@@ -79,6 +91,35 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
     // Modals
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [authMode, setAuthMode] = useState<"choose" | "login" | "register">("choose");
+
+
+    type LocalStorageUser = {
+        id: number;
+        // Puedes añadir otros campos que necesites, pero 'id' es el crucial
+        name: string;
+    };
+    // Obtener Customer ID del localStorage o contexto
+    const getCustomerId = (): number | null => {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+            try {
+                // Asume que la clave 'user' contiene el objeto JSON del usuario
+                const user = JSON.parse(userStr) as LocalStorageUser;
+
+                // Verificamos si el ID existe y es un número
+                if (user.id && typeof user.id === 'number') {
+                    return user.id;
+                }
+            } catch (e) {
+                console.error("Error al parsear el objeto 'user' de localStorage:", e);
+                // Si el JSON es inválido, devuelve null
+                return null;
+            }
+        }
+        // Si la clave 'user' no existe o es null
+        return null;
+    };
+
 
     const {
         control,
@@ -101,7 +142,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
 
                 setEvents(res.data);
 
-                const formatted = res.data.map((e: any) => ({
+                const formatted = res.data.map((e: Event) => ({ // 👈 TIPADO CORREGIDO: e es de tipo Event
                     value: String(e.id),
                     label: e.eventType,
                 }));
@@ -112,7 +153,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                     const value = String(initialEventId);
                     setValue("eventIdFK", value);
 
-                    const selectedEvent = res.data.find((ev: any) => String(ev.id) === value);
+                    const selectedEvent = res.data.find((ev: Event) => String(ev.id) === value); // Tipado Event
                     if (selectedEvent) {
                         const isDoc =
                             selectedEvent?.eventType?.toLowerCase() === "documento" ||
@@ -188,8 +229,9 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
         setServerErrors({});
 
         const token = localStorage.getItem("token");
+        const customerId = getCustomerId(); // 👈 ¡La función se llama aquí!
 
-        if (!token) {
+        if (!token || !customerId) { // 👈 Se verifica si falta el token O el ID del cliente
             setAuthMode("choose");
             setShowAuthModal(true);
             return;
@@ -198,13 +240,17 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
         setLoading(true);
         try {
             const formattedTime = convertTo24Hour(data.appointmentTime);
+
+            const payload = {
+                ...data,
+                appointmentTime: formattedTime,
+                appointmentStatus: "Pending confirmation",
+                customerIdFK: customerId, // 👈 Se inyecta el ID del cliente en el payload
+            };
+
             const res = await axios.post(
                 `${API_BASE}/api/appointments`,
-                {
-                    ...data,
-                    appointmentTime: formattedTime,
-                    appointmentStatus: "Pending confirmation",
-                },
+                payload, // Enviamos el payload completo
                 { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
             );
 
@@ -220,8 +266,14 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
         } catch (err: any) {
             console.error("❌ Error completo:", err);
             if (err.response) {
-                if (err.response.status === 422)
-                    setServerErrors(err.response.data.errors || {});
+                if (err.response.status === 422) {
+                    // Manejo del error customerIdFK
+                    if (err.response.data.errors?.customerIdFK) {
+                        setServerErrors({ general: ["Error: Faltó el ID de cliente en la solicitud. Asegúrate de iniciar sesión."].concat(err.response.data.errors.customerIdFK) });
+                    } else {
+                        setServerErrors(err.response.data.errors || {});
+                    }
+                }
                 else
                     setServerErrors({ general: [err.response.data.message || "Error del servidor"] });
             } else {
@@ -315,7 +367,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                                         No hay horarios disponibles para este día.
                                     </p>
                                 ) : (
-                                    availableTimes.map((slot) => (
+                                    availableTimes.map((slot: string) => ( // 👈 TIPADO CORREGIDO: slot es de tipo string
                                         <button
                                             key={slot}
                                             type="button"
@@ -361,7 +413,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                                             field.onChange(value);
 
                                             //buscar el evento completo
-                                            const selectedEvent = events.find((ev) => String(ev.id) === value);
+                                            const selectedEvent = events.find((ev: Event) => String(ev.id) === value); // 👈 TIPADO CORREGIDO: ev es de tipo Event
 
                                             // ajusta la condición según cómo venga el nombre desde el backend
                                             const isDoc =
@@ -507,7 +559,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
                                         </button>
                                     </p>
 
-                                    
+
                                 </div>
                             )}
 
@@ -545,4 +597,4 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({ onNext, in
     );
 };
 
-export default AppointmentStep1Validated;
+export default AppointmentStep1Validated;  

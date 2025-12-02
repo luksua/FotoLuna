@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Modal, Button, Table, Tabs, Tab } from "react-bootstrap";
 import axios from "axios";
 
@@ -56,7 +56,7 @@ interface ClientModalProps {
     image?: string;
 }
 
-const ClientModal: React.FC<ClientModalProps> = ({
+const ClientModal: React.FC<ClientModalProps> = React.memo(({
     show,
     onClose,
     clientId,
@@ -72,57 +72,59 @@ const ClientModal: React.FC<ClientModalProps> = ({
 
     const [showAppointmentsModal, setShowAppointmentsModal] = useState(false);
 
+    const fetchDetails = useCallback(async () => {
+        if (!clientId) return;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get(`${API_URL}/customers/${clientId}`, {
+                headers: token
+                    ? { Authorization: `Bearer ${token}` }
+                    : undefined,
+            });
+
+            const data: ClientDetailsResponse = response.data;
+
+            setDetails(data);
+            setBookings(data.bookings || []);
+            setPayments(data.payments || []);
+
+            const appRows: AppointmentRow[] = (data.appointments || []).map(
+                (a: any) => {
+                    const firstBooking = (a.bookings && a.bookings[0]) || null;
+
+                    return {
+                        id: a.id,
+                        date: a.date,
+                        time: a.time,
+                        place: a.place,
+                        status: a.status,
+                        comment: a.comment,
+                        eventType: a.eventType,
+                        packageName: firstBooking?.package?.name ?? null,
+                        packagePrice: firstBooking?.package?.price ?? null,
+                        employeeName: firstBooking?.employee?.name ?? null,
+                    };
+                }
+            );
+
+            setAppointments(appRows);
+        } catch (err) {
+            console.error("Error cargando detalles del cliente", err);
+            setError("No se pudo cargar la información del cliente.");
+        } finally {
+            setLoading(false);
+        }
+    }, [clientId]);
+
     useEffect(() => {
-        if (!show || !clientId) return;
-
-        const fetchDetails = async () => {
-            setLoading(true);
-            setError(null);
-
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(`${API_URL}/customers/${clientId}`, {
-                    headers: token
-                        ? { Authorization: `Bearer ${token}` }
-                        : undefined,
-                });
-
-                const data: ClientDetailsResponse = response.data;
-
-                setDetails(data);
-                setBookings(data.bookings || []);
-                setPayments(data.payments || []);
-
-                const appRows: AppointmentRow[] = (data.appointments || []).map(
-                    (a: any) => {
-                        const firstBooking = (a.bookings && a.bookings[0]) || null;
-
-                        return {
-                            id: a.id,
-                            date: a.date,
-                            time: a.time,
-                            place: a.place,
-                            status: a.status,
-                            comment: a.comment,
-                            eventType: a.eventType,
-                            packageName: firstBooking?.package?.name ?? null,
-                            packagePrice: firstBooking?.package?.price ?? null,
-                            employeeName: firstBooking?.employee?.name ?? null,
-                        };
-                    }
-                );
-
-                setAppointments(appRows);
-            } catch (err) {
-                console.error("Error cargando detalles del cliente", err);
-                setError("No se pudo cargar la información del cliente.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDetails();
-    }, [show, clientId]);
+        if (show) {
+            fetchDetails();
+        }
+    }, [show, fetchDetails]);
 
     // ⭐ Determinar si tiene citas
     const hasAppointments = appointments.length > 0;
@@ -311,6 +313,6 @@ const ClientModal: React.FC<ClientModalProps> = ({
             )}
         </>
     );
-};
+});
 
 export default ClientModal;

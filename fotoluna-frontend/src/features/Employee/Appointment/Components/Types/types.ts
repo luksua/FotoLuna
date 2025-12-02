@@ -1,4 +1,23 @@
-// Estado visible en el FRONT
+// src/features/Employee/Appointment/Components/Types/types.ts
+
+// =========================================================
+// INTERFACES AUXILIARES (DEBEN SER EXPORTADAS)
+// =========================================================
+export interface CustomerOption { 
+    id: number; 
+    name: string; 
+    // Añade otras propiedades que necesites mostrar en el dropdown
+    documentNumber?: string;
+}
+
+export interface EventOption {
+    id: number;
+    name: string;
+}
+
+// =========================================================
+// 1. ESTADO DE CITA (BASE)
+// =========================================================
 export type CitaStatus =
   | "Pendiente"
   | "Confirmada"
@@ -7,41 +26,59 @@ export type CitaStatus =
 
 // Cita ya armada para todo el frontend
 export type Cita = {
-  id: string;                // ID interno para React
-  appointmentId: number;     // ID REAL de citas en BD
+    id: string; 
+    appointmentId: number; 
 
-  date: Date;
-  startTime: string;
+    // Claves FK
+    customerIdFK: number | null;
+    eventIdFK: number | null;
+    appointmentDuration: number;
+    employeeIdFK?: number | null; 
 
-  // endTime YA NO EXISTE EN TU SISTEMA
-  endTime?: string;          // opcional por compatibilidad visual
+    date: Date;
+    startTime: string;
 
-  client: string;
-  status: CitaStatus;
-  location: string;
+    endTime?: string;
+    client: string; 
+    status: CitaStatus;
+    location: string;
+    notes?: string;
 
-  notes?: string;
+    // Datos del cliente (para detalles)
+    document?: string;
+    email?: string;
+    phone?: string;
 
-  // Datos del cliente
-  document?: string;
-  email?: string;
-  phone?: string;
-
-  // Datos extra del booking
-  eventName?: string;
-  packageName?: string;
+    // Datos extra del booking/evento
+    eventName?: string;
+    packageName?: string;
 };
 
-
-// Datos que el FORM envía al backend
+// =========================================================
+// 2. DATOS QUE EL FORMULARIO BASE ENVÍA AL BACKEND
+// =========================================================
 export type CitaFormData = {
-  date: string;          // "2025-11-28"
-  startTime: string;     // "09:00"
-  // endTime YA NO SE USA
-  endTime?: string;
+    date: string; 
+    startTime: string; 
+    endTime?: string;
 
-  client: string;
-  status: CitaStatus;
-  location: string;
-  notes?: string;
+    client: string; 
+    status: CitaStatus;
+    location: string;
+    notes?: string;
 };
+
+// =========================================================
+// 3. TIPO EXTENDIDO FINAL (Payload para POST /api/appointments)
+// =========================================================
+export type ExtendedCitaFormData = CitaFormData & {
+    customerIdFK: number | null;
+    eventIdFK: number | null;
+    appointmentDuration: number;
+    employeeIdFK: number | null; 
+};
+
+// =========================================================
+// 4. VISTA DE CALENDARIO
+// =========================================================
+export type CalendarView = "day" | "week" | "month";

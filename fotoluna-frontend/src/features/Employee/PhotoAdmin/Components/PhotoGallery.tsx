@@ -58,7 +58,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             )}
 
             <div className="row g-4">
-                {photos.map((photo, index) => (
+                {photos.map((photo) => (
                     <div
                         key={photo.id}
                         className="col-12 col-sm-6 col-md-4 col-lg-3"

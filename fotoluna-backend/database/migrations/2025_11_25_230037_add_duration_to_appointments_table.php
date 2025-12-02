@@ -11,18 +11,26 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('appointments', function (Blueprint $table) {
-            $table->unsignedInteger('appointmentDuration')->default(60);
-            $table->unsignedBigInteger('packageIdFK')->nullable();
+            // Añade la columna para la duración de la cita (en minutos)
+            // Se coloca nullable por si existen citas antiguas sin duración, aunque el default debería evitarlo.
+            $table->unsignedInteger('appointmentDuration')
+                ->default(60)
+                ->after('comment'); 
+            
+            // Si la columna packageIdFK NO DEBE estar aquí, omite agregarla. 
+            // Si ya la tienes en bookings, NO la agregues en appointments.
+
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverse the migrations (revierte los cambios).
      */
     public function down(): void
     {
         Schema::table('appointments', function (Blueprint $table) {
-            //
+            // Elimina la columna cuando se hace rollback
+            $table->dropColumn('appointmentDuration');
         });
     }
 };

@@ -20,6 +20,7 @@ class Appointment extends Model
         'place',
         'comment',
         'appointmentStatus',
+        'employeeIdFK',
     ];
 
     public function customer()

@@ -1,9 +1,39 @@
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useState } from "react";
+import axios from "axios"; // 👈 NECESARIO PARA ENVIAR DATOS
 import "../styles/RegisterUsers.css";
 
+// Definición de la URL base (asumiendo que está en tu .env o similar)
+const API_BASE = "http://127.0.0.1:8000"; // Ajustar si usas VITE_API_URL
+
+// 🚨 Definición de un tipo para el estado del formulario (mejor práctica)
+interface RegisterForm {
+    firstNameEmployee: string;
+    lastNameEmployee: string;
+    phoneEmployee: string;
+    EPS: string;
+    documentType: string;
+    documentNumber: string;
+    emailEmployee: string;
+    address: string;
+    photoEmployee: File | null; // El tipo debe ser File
+    password: string;
+    employeeType: string;
+    role: string;
+    specialty: string;
+    isAvailable: boolean;
+    gender: string;
+    // Campo que Laravel espera para confirmar el password
+    password_confirmation: string;
+}
+
+
 const Register = () => {
-    const [form, setForm] = useState({
+    // 🚨 CORRECCIÓN TS6133: 'setIsSubmitting' no estaba definido.
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // 🚨 Añadimos confirmación de contraseña al estado
+    const [form, setForm] = useState<RegisterForm>({
         firstNameEmployee: "",
         lastNameEmployee: "",
         phoneEmployee: "",
@@ -18,13 +48,18 @@ const Register = () => {
         role: "Photographer",
         specialty: "",
         isAvailable: true,
-        gender: "Female"
+        gender: "Female",
+        password_confirmation: "" // Inicializar el campo de confirmación
     });
     const [message, setMessage] = useState("");
+    const [serverErrors, setServerErrors] = useState<string>(""); // Para mostrar errores del servidor
+
+    // 🚨 CORRECCIÓN TS6133: 'setActiveItem' no es necesario aquí, está en el Layout.
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target as HTMLInputElement;
         const { name } = target;
+
         if (target.type === "file") {
             setForm({ ...form, [name]: target.files && target.files[0] });
             return;
@@ -36,63 +71,101 @@ const Register = () => {
         setForm({ ...form, [name]: target.value });
     };
 
-    const handleSubmit = async () => {
-        if (!selectedCita) return;
+    // 🚨 LÓGICA CORREGIDA PARA REGISTRO DE EMPLEADO
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setServerErrors("");
+        setMessage("");
+
+        // 🚨 Validación mínima del frontend
+        if (form.password !== form.password_confirmation) {
+            setServerErrors("Las contraseñas no coinciden.");
+            return;
+        }
+
+        setIsSubmitting(true);
 
         try {
-            setIsSubmitting(true);
+            // 1) Armar el FormData
+            const formData = new FormData();
 
-            // 1) Armar el payload tal y como lo espera el backend
-            const payload = {
-                date: form.date,           // "2025-11-30" (formato YYYY-MM-DD)
-                startTime: form.startTime, // "09:00"
-                place: form.location || null,
-                comment: form.notes || null,
-                status:
-                    STATUS_FRONT_TO_BACK[form.status] ?? selectedCita.status,
-            };
+            // Añadir campos del formulario al FormData
+            // NOTA: Laravel espera 'email' y 'password' en la tabla users
+            formData.append("role", form.role.toLowerCase() === "administrador" ? "admin" : "empleado"); // Mapear a los roles de Laravel
 
-            // 2) Hacer el PUT al endpoint del empleado
-            const res = await api.put(
-                `/api/employee/appointments/${selectedCita.appointmentId}`,
-                payload
-            );
+            // Campos de User
+            formData.append("name", `${form.firstNameEmployee} ${form.lastNameEmployee}`);
+            formData.append("email", form.emailEmployee);
+            formData.append("password", form.password);
+            formData.append("password_confirmation", form.password_confirmation);
 
-            const updated = res.data?.appointment ?? {};
+            // Campos de Employee
+            formData.append("firstNameEmployee", form.firstNameEmployee);
+            formData.append("lastNameEmployee", form.lastNameEmployee);
+            formData.append("phoneEmployee", form.phoneEmployee);
+            formData.append("EPS", form.EPS);
+            formData.append("documentType", form.documentType);
+            formData.append("documentNumber", form.documentNumber);
+            formData.append("address", form.address);
+            formData.append("employeeType", form.employeeType);
+            formData.append("gender", form.gender);
 
-            // 3) Actualizar la cita en el estado del frontend
-            const citaActualizada: CitaEmpleado = {
-                ...selectedCita,
-                date: parseYMDToLocalDate(updated.appointmentDate ?? payload.date),
-                startTime: updated.appointmentTime ?? payload.startTime,
-                endTime: updated.endTime ?? null,
-                location: updated.place ?? payload.place ?? "",
-                notes: updated.comment ?? payload.comment ?? "",
-                status: updated.appointmentStatus ?? payload.status,
-            };
+            // Campos adicionales de Empleado
+            formData.append("specialty", form.specialty);
+            formData.append("isAvailable", String(form.isAvailable));
 
-            setCitas((prev) =>
-                prev.map((c) =>
-                    c.appointmentId === selectedCita.appointmentId ? citaActualizada : c
-                )
-            );
+            // Foto
+            if (form.photoEmployee) {
+                formData.append("photoEmployee", form.photoEmployee);
+            }
 
-            setSelectedCita(citaActualizada);
-            setShowEditModal(false);
-        } catch (error) {
-            console.error("Error actualizando cita del empleado", error);
-            alert("No se pudo actualizar la cita (revisa la consola / Network).");
+            // 2) Hacer el POST al endpoint de registro
+            await axios.post(`${API_BASE}/api/register`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'application/json',
+                }
+            });
+
+            // 3) Éxito
+            setMessage("¡Empleado/Administrador registrado exitosamente!");
+            setServerErrors(""); // Limpiar errores
+            // Puedes resetear el form aquí si lo deseas
+
+        } catch (error: any) {
+            console.error("Error al registrar empleado:", error);
+
+            if (error.response && error.response.status === 422) {
+                // Manejar error 422: Validar errores específicos de Laravel
+                const errors = error.response.data.errors;
+                let errorMsg = "Error de validación: ";
+
+                // Mapear errores de Laravel (ej. 'email' ya existe)
+                if (errors) {
+                    // Muestra el primer error de cada campo
+                    Object.keys(errors).forEach(key => {
+                        errorMsg += `${key}: ${errors[key][0]} `;
+                    });
+                }
+                setServerErrors(errorMsg.trim());
+            } else {
+                setServerErrors("Error de conexión o servidor interno.");
+            }
         } finally {
             setIsSubmitting(false);
         }
     };
 
 
-
     return (
         <HomeLayout>
             <div className="admin-home-container" style={{ maxWidth: 700, margin: "0 auto", padding: 24, background: "#f5f5f8ff", borderRadius: 12 }}>
+
+                {/* 🚨 Cambiar handleSubmit para que acepte el evento */}
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: 32 }}>
+
+                    {/* ... (Controles del formulario) ... */}
+
                     <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
 
                         <label>Nombre:</label>
@@ -118,6 +191,7 @@ const Register = () => {
                         </select>
 
                         <label>Correo:</label>
+                        {/* 🚨 CORRECCIÓN: Laravel espera 'email' para la tabla users, pero usaremos emailEmployee en el form */}
                         <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Foto:</label>
@@ -127,6 +201,10 @@ const Register = () => {
                             <label htmlFor="photoEmployee" className="register-filelabel">Elegir archivo</label>
                             {form.photoEmployee && <span style={{ marginLeft: 8 }}>{(form.photoEmployee as File).name}</span>}
                         </div>
+                        {/* Campo de confirmación de contraseña AÑADIDO */}
+                        <label>Confirmar Contraseña:</label>
+                        <input type="password" name="password_confirmation" value={form.password_confirmation} onChange={handleChange} required className="register-input" />
+
 
                     </div>
                     <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -172,25 +250,28 @@ const Register = () => {
 
                     </div>
 
+                    {serverErrors && (
+                        <p style={{ color: 'red', width: '100%', textAlign: 'center', marginTop: 12 }}>
+                            {serverErrors}
+                        </p>
+                    )}
+
                     <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 24 }}>
-                        <button type="submit" style={{ padding: "12px 40px", fontSize: 18, background: "#d1a3e2", color: "#fff", border: "none", borderRadius: 24, fontWeight: "bold" }}>
-                            Aceptar
+                        <button type="submit" disabled={isSubmitting} style={{ padding: "12px 40px", fontSize: 18, background: "#d1a3e2", color: "#fff", border: "none", borderRadius: 24, fontWeight: "bold" }}>
+                            {isSubmitting ? 'Registrando...' : 'Aceptar'}
                         </button>
                     </div>
                 </form>
+
                 {message && <p style={{ color: "#a36fc2", marginTop: 16, textAlign: "center" }}>{message}</p>}
             </div>
 
             <footer>
-                <p>FotoLuna &copy;  </p>
+                <p>FotoLuna &copy;  </p>
             </footer>
 
         </HomeLayout>
     );
 };
-
-// estilos movidos a src/features/Admin/RegisterUsers/styles/RegisterUsers.css
-
-
 
 export default Register;

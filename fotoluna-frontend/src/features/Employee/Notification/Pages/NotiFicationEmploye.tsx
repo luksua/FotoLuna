@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import "../Styles/noti.css";
 
+
+
 type Notification = {
     id: number;
     title: string;
@@ -120,7 +122,7 @@ const mockNotifications: Notification[] = [
 
 ];
 
-const EmployeeNotifications = () => {
+const EmployeeNotifications: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
     const [deletedNotifications, setDeletedNotifications] = useState<Notification[]>([]); // <-- nuevo estado para historial de eliminadas
     const [selected, setSelected] = useState<Notification | null>(null);
@@ -134,6 +136,7 @@ const EmployeeNotifications = () => {
                 n.id === notif.id ? { ...n, read: true } : n
             ));
         }
+        onClose();
     };
 
     const handleClosePanel = () => {
@@ -190,6 +193,8 @@ const EmployeeNotifications = () => {
         : notifications.filter(notif => notif.category === activeTab);
 
     const unreadCount = notifications.filter(notif => !notif.read).length;
+
+    
 
     return (
         <EmployeeLayout>

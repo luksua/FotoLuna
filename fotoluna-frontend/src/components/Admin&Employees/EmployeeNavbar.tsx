@@ -7,6 +7,12 @@ import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal"
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
 import ThemeToggle from "./LightDarkTheme";
 
+// 🚨 DEFINICIÓN FALTANTE DEL COMPONENTE DE NOTIFICACIONES (para que TS lo acepte aquí)
+interface EmployeeNotificationsProps {
+    onClose: () => void;
+}
+// 🚨 NOTA: Si EmployeeNotifications no exporta un FC, TypeScript puede necesitar ser forzado.
+
 interface EmployeeNavbarProps {
     userName?: string;
     notificationCount?: number;
@@ -103,18 +109,6 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                         )}
                     </button>
 
-                    {/* Botón de Tema */}
-                    {/* <button
-                        className="theme-toggle-btn"
-                        onClick={toggleTheme}
-                        aria-label={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
-                        title={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-                    >
-                        <i className={`bi ${isDarkMode ? 'bi-sun-fill' : 'bi-moon-stars-fill'}`}></i>
-                    </button> */}
-
-
-
                     {/* Botón de Configuración (Settings) */}
                     <button
                         className="settings-btn"
@@ -146,9 +140,12 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 </div>
             </div>
 
-            {/* Modal de Notificaciones */}
+            {/* Modal de Notificaciones (Aplicando el fix de tipado) */}
             {showNotifications && (
-                <EmployeeNotifications onClose={() => setShowNotifications(false)} />
+                <EmployeeNotifications 
+                    // 🚨 Aplicar aserción si el componente no fue corregido internamente
+                    {...({ onClose: () => setShowNotifications(false) } as EmployeeNotificationsProps)} 
+                />
             )}
 
             {/* Modal de Perfil de Usuario */}

@@ -1,54 +1,116 @@
-import Home from "../features/home/home/pages/Home";
-import SignUp from "../features/home/auth/pages/SignUp";
-import Login from "../features/home/auth/pages/Login";
-import ForgotPassword from "../features/home/auth/pages/ForgotPassword";
-import AboutMe from "../features/home/home/pages/AboutMe";
-import Contact from "../features/home/home/pages/Contact";
-import Appointment from "../features/home/appointment/pages/Appointment";
-import AppointmentForm from "../features/home/appointment/pages/AppointmentForm";
-import Notification from "../features/home/notification/pages/NotificationCustomer";
-import Quinces from "../features/home/events/quinces/pages/Quinces";
-import ProfilePage from "../features/home/home/pages/Account";
-import Photos from "../features/home/home/pages/Photos";
+import { lazy, Suspense } from "react";
+import Spinner from "../features/Employee/Appointment/Components/Spinner";
 
+const Home = lazy(() => import("../features/home/home/pages/Home"));
+const SignUp = lazy(() => import("../features/home/auth/pages/SignUp"));
+const Login = lazy(() => import("../features/home/auth/pages/Login"));
+const ForgotPassword = lazy(() => import("../features/home/auth/pages/ForgotPassword"));
+const AboutMe = lazy(() => import("../features/home/home/pages/AboutMe"));
+const Contact = lazy(() => import("../features/home/home/pages/Contact"));
+const Appointment = lazy(() => import("../features/home/appointment/pages/Appointment"));
+const AppointmentForm = lazy(() => import("../features/home/appointment/pages/AppointmentForm"));
+const Notification = lazy(() => import("../features/home/notification/pages/NotificationCustomer"));
+const Quinces = lazy(() => import("../features/home/events/quinces/pages/Quinces"));
+const ProfilePage = lazy(() => import("../features/home/home/pages/Account"));
+const Photos = lazy(() => import("../features/home/home/pages/Photos"));
 
-export const routes = [
+const routes = [
     {
         path: "/",
-        element: <Home />
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Home />
+            </Suspense>
+        ),
     },
     {
         path: "/registrarse",
-        element: <SignUp />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <SignUp />
+            </Suspense>
+        ),
+    },
+    {
         path: "/iniciarSesion",
-        element: <Login />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Login />
+            </Suspense>
+        ),
+    },
+    {
         path: "/recuperarContrasena",
-        element: <ForgotPassword />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <ForgotPassword />
+            </Suspense>
+        ),
+    },
+    {
         path: "/sobreMi",
-        element: <AboutMe />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AboutMe />
+            </Suspense>
+        ),
+    },
+    {
         path: "/contacto",
-        element: <Contact />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Contact />
+            </Suspense>
+        ),
+    },
+    {
         path: "/citas",
-        element: <Appointment />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Appointment />
+            </Suspense>
+        ),
+    },
+    {
         path: "/nuevaCita",
-        element: <AppointmentForm />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AppointmentForm />
+            </Suspense>
+        ),
+    },
+    {
         path: "/notificaciones",
-        element: <Notification />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Notification />
+            </Suspense>
+        ),
+    },
+    {
         path: "/quince",
-        element: <Quinces />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Quinces />
+            </Suspense>
+        ),
+    },
+    {
         path: "/miCuenta",
-        element: <ProfilePage />
-    }, {
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <ProfilePage />
+            </Suspense>
+        ),
+    },
+    {
         path: "/fotos",
-        element: <Photos />
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Photos />
+            </Suspense>
+        ),
     },
 ];
+
+export { routes };
