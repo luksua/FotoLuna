@@ -13,8 +13,8 @@ import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useEffect, useState } from "react";
 import api from "../../../../lib/api";
 
-// Paleta púrpura coherente con la estética del sitio
-const purpleColors = ['#efe6ff', '#e9d5ff', '#c4b5fd', '#9f7aea', '#ab64fcff'];
+// Paleta púrpura más viva, degradado claro -> oscuro
+const purpleColors = ['#fde8ff', '#f5b7ff', '#d86bff', '#a64dff', '#7a2cff'];
 
 // Tarjetas de resumen
 const resumen = [
@@ -24,7 +24,7 @@ const resumen = [
 ];
 
 const resumen2 = [
-    { label: "Clientes Registrados", value: 25, icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
+    { label: "Clientes Registrados", value: null, isAsync: true, key: 'customersCount', icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
     { label: "Paquetes Vendidos en total", value: 25, icon: <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} /> },
     { label: "Ventas en el mes", value: 14, icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
 ];
@@ -62,6 +62,8 @@ const Dashboard = () => {
     const [averageRating, setAverageRating] = useState(0);
     const [loading, setLoading] = useState(true);
     const [topEmployees, setTopEmployees] = useState<EmployeeRating[]>([]);
+    const [packagesStats, setPackagesStats] = useState<Array<{ name: string; value: number }>>([]);
+    const [customersCount, setCustomersCount] = useState(0);
 
     useEffect(() => {
         const fetchRatings = async () => {
@@ -92,8 +94,65 @@ const Dashboard = () => {
             }
         };
 
+        const fetchCustomersCount = async () => {
+            try {
+                const res = await api.get('/api/admin/customers/count');
+                console.log('Customers count response:', res.data);
+                if (res.data && res.data.success && res.data.data?.total) {
+                    setCustomersCount(res.data.data.total);
+                } else if (typeof res.data === 'number') {
+                    setCustomersCount(res.data);
+                }
+            } catch (err) {
+                console.warn('Error fetching customers count:', err);
+            }
+        };
+
         fetchRatings();
         fetchEmployeeRatings();
+        fetchCustomersCount();
+        const fetchPackagesStats = async () => {
+            try {
+                const res = await api.get('/api/admin/packages/stats');
+                console.log('Packages stats response:', res.data);
+                let dataArr: any = [];
+                if (res.data) {
+                    if (res.data.success && Array.isArray(res.data.data)) {
+                        dataArr = res.data.data;
+                    } else if (Array.isArray(res.data)) {
+                        dataArr = res.data;
+                    } else if (Array.isArray(res.data.data)) {
+                        dataArr = res.data.data;
+                    }
+                }
+                // Agrupar por nombre (evitar duplicados) y sumar valores
+                // Normalizamos el nombre con trim + lowercase para unir variantes como mayúsculas/espacios
+                const groupedMap: Record<string, { displayName: string; value: number }> = {};
+                dataArr.forEach((p: any, i: number) => {
+                    const rawName = (p.name ?? p.label ?? `Paquete ${i + 1}`).toString();
+                    const displayName = rawName.trim();
+                    const key = displayName.toLowerCase();
+                    const value = Number(p.value ?? p.count ?? p.total ?? 0) || 0;
+                    if (!groupedMap[key]) groupedMap[key] = { displayName, value: 0 };
+                    groupedMap[key].value += value;
+                });
+
+                const normalized = Object.keys(groupedMap).map((k) => ({ name: groupedMap[k].displayName, value: groupedMap[k].value }));
+                // Ordenar de mayor a menor para mejor visual
+                normalized.sort((a, b) => b.value - a.value);
+                console.log('Normalized packages:', normalized);
+                setPackagesStats(normalized);
+            } catch (err: any) {
+                console.error('Error fetching packages stats:', err);
+                if (err.response?.status === 401) {
+                    console.error('401 Unauthorized - Check if you are logged in and the token is valid.');
+                }
+                // Mostrar datos vacíos si hay error, pero no fallar
+                setPackagesStats([]);
+            }
+        };
+
+        fetchPackagesStats();
     }, []);
 
     const totalVotosCalculated = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
@@ -118,7 +177,9 @@ const Dashboard = () => {
                         {item.icon}
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">{item.value}</Typography>
+                            <Typography variant="h5" color="primary">
+                                {item.isAsync ? (item.key === 'customersCount' ? customersCount : item.value) : item.value}
+                            </Typography>
                         </Box>
                     </Box>
                 ))}
@@ -158,19 +219,31 @@ const Dashboard = () => {
                     />
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 350, maxWidth: 500, height: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f1f1ff', borderRadius: 2, boxShadow: 2, p: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 1 }}>Paquetes Más Vendidos</Typography>
-                    <PieChart
-                        series={[{
-                            data: [
-                                { id: 0, value: 40, label: 'Quince Años', color: '#d297e0ff' },
-                                { id: 1, value: 39, label: 'Bodas', color: '#fdd1deff' },
-                                { id: 2, value: 15, label: 'Bautizos', color: '#9c97e0ff' },
-                                { id: 3, value: 18, label: 'yepa', color: '#1b0fbdff' },
-                            ],
-                        }]}
-                        width={150}
-                        height={150}
-                    />
+                        <Typography variant="h6" sx={{ mb: 1 }}>Paquetes Más Vendidos</Typography>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: '100%', justifyContent: 'center' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <PieChart
+                                    series={[{
+                                        data: packagesStats.map((p, i) => ({ id: i, value: p.value, label: p.name, color: purpleColors[i % purpleColors.length] })),
+                                    }]}
+                                    width={180}
+                                    height={180}
+                                />
+                            </Box>
+                            <Box sx={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1, pr: 1 }}>
+                                {packagesStats.length === 0 ? (
+                                    <Typography variant="body2" sx={{ color: '#999' }}>No hay paquetes todavía.</Typography>
+                                ) : (
+                                    packagesStats.map((p, i) => (
+                                        <Box key={p.name} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{ width: 12, height: 12, bgcolor: purpleColors[i % purpleColors.length], borderRadius: '50%' }} />
+                                            <Typography variant="body2" sx={{ color: '#444', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>{p.name}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#888', ml: 1 }}>({p.value})</Typography>
+                                        </Box>
+                                    ))
+                                )}
+                            </Box>
+                        </Box>
                 </Box>
             </Box>
 
