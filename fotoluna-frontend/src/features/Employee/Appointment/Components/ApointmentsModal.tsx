@@ -1,12 +1,36 @@
-import React from "react";
-import type { CitaFormData, CitaStatus } from "../Components/Types/types";
+import React, { useRef, useCallback } from "react";
+// 🚨 CORRECCIÓN 1: Importar TODOS los tipos necesarios desde el archivo central types.ts
+import type {ExtendedCitaFormData } from "../Components/Types/types";
 
+// Asumimos que CustomerOption y EventOption se definen e importan desde types.ts
+interface CustomerOption { id: number; name: string; }
+interface EventOption { id: number; name: string; }
+
+// 🚨 CORRECCIÓN 2: ELIMINAR type ExtendedCitaFormData de este archivo.
+// ELIMINAR:
+/*
+type ExtendedCitaFormData = CitaFormData & {
+    customerIdFK: number | null;
+    eventIdFK: number | null;
+    appointmentDuration: number;
+    employeeIdFK: number | null;
+};
+*/
+
+
+// 🚨 CORRECCIÓN 3: La interfaz de props usa el tipo importado/definido
 interface AppointmentModalProps {
     show: boolean;
     isEditing: boolean;
-    form: CitaFormData;
+    form: ExtendedCitaFormData; // Usa el tipo ExtendedCitaFormData (debe estar importado/definido)
     errors: Record<string, string>;
     success: string;
+
+    customers: CustomerOption[]; // Resultados de la búsqueda
+    events: EventOption[];       // Lista de eventos
+    onClientSelect: (id: number, name: string) => void; 
+    onSearchClient: (query: string) => void; 
+
     onChange: (
         e: React.ChangeEvent<
             HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -16,8 +40,7 @@ interface AppointmentModalProps {
     onClose: () => void;
 }
 
-const AppointmentModal: React.FC<AppointmentModalProps> = ({
-    
+const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
     show,
     isEditing,
     form,
@@ -26,16 +49,45 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     onChange,
     onSubmit,
     onClose,
+    customers,
+    events,
+    onClientSelect,
+    onSearchClient,
 }) => {
     if (!show) return null;
+
+    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    // 1. Handler con Debounce para la Búsqueda de Cliente
+    const handleClientChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const query = e.target.value;
+        onChange(e); 
+
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
+
+        if (query.length > 2) {
+            searchTimeout.current = setTimeout(() => {
+                onSearchClient(query);
+            }, 300);
+        } else {
+            onSearchClient(''); 
+        }
+    }, [onChange, onSearchClient]);
+
+    // 2. Handler al seleccionar un cliente de la lista
+    const handleSelectCustomer = useCallback((id: number, name: string) => {
+        onClientSelect(id, name); 
+    }, [onClientSelect]);
+
 
     return (
         <div className="modal-cita-backdrop" onClick={onClose}>
             <div className="modal-cita" onClick={(e) => e.stopPropagation()}>
                 <h2 className="mb-3">
                     <i
-                        className={`fas ${isEditing ? "fa-edit" : "fa-calendar-plus"
-                            } me-2`}
+                        className={`fas ${isEditing ? "fa-edit" : "fa-calendar-plus"} me-2`}
                     />
                     {isEditing ? "Editar Cita" : "Registrar Nueva Cita"}
                 </h2>
@@ -44,22 +96,92 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     className="row g-3 needs-validation appointment-form"
                     onSubmit={onSubmit}
                 >
-                    {/* CLIENTE */}
-                    <div className="col-mb-4">
+                    {/* 1. CLIENTE (AUTOCOMPLETADO) */}
+                    <div className="col-mb-4 position-relative">
                         <label className="form-label col-lg-3">Cliente:</label>
                         <input
                             type="text"
                             className="col-lg-9 form-control-s"
                             name="client"
                             value={form.client}
-                            onChange={onChange}
-                            disabled={isEditing}
-                            required
+                            onChange={handleClientChange} 
+                            disabled={isEditing && form.customerIdFK !== null}
+                            autoComplete="off"
+                            placeholder="Nombre o Documento del Cliente"
+                            required={!isEditing}
                         />
-                        {errors.client && (
-                            <div className="text-danger small">
-                                {errors.client}
+
+                        <input type="hidden" name="customerIdFK" value={form.customerIdFK ?? ''} />
+                        {/* El campo employeeIdFK NO es visible, viaja en el payload */}
+                        {/* <input type="hidden" name="employeeIdFK" value={form.employeeIdFK ?? ''} /> */}
+
+
+                        {errors.client && (<div className="text-danger small">{errors.client}</div>)}
+
+                        {/* Dropdown de Resultados */}
+                        {customers.length > 0 && !isEditing && (
+                            <ul className="autocomplete-dropdown list-group shadow">
+                                {customers.map((c) => (
+                                    <li
+                                        key={c.id}
+                                        className="list-group-item list-group-item-action"
+                                        onClick={() => handleSelectCustomer(c.id, c.name)}
+                                    >
+                                        {c.name} (ID: {c.id})
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {form.customerIdFK && (
+                            <div className="text-success small mt-1">
+                                Cliente ID: **{form.customerIdFK}** seleccionado.
                             </div>
+                        )}
+                    </div>
+
+                    {/* 2. EVENTO (eventIdFK) - SELECT */}
+                    <div className="col-mb-4">
+                        <label className="form-label col-lg-3">Evento:</label>
+
+                        <select
+                            name="eventIdFK"
+                            className="col-lg-9 form-select-s"
+                            value={form.eventIdFK ?? ''}
+                            onChange={onChange}
+                            required={!isEditing}
+                            disabled={isEditing}
+                        >
+                            <option key="select-event-placeholder" value="">
+                                Seleccione un evento...
+                            </option>
+
+                            {events.map((event) => (
+                                <option key={event.id} value={event.id}> 
+                                    {event.name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.eventIdFK && (
+                            <div className="text-danger small">{errors.eventIdFK}</div>
+                        )}
+                    </div>
+
+                    {/* 3. DURACIÓN (appointmentDuration) */}
+                    <div className="col-mb-4">
+                        <label className="form-label col-lg-3">Duración (min):</label>
+                        <input
+                            type="number"
+                            className="col-lg-9 form-control-s"
+                            name="appointmentDuration"
+                            value={form.appointmentDuration ?? 60}
+                            onChange={onChange}
+                            min="15"
+                            step="15"
+                            required
+                            disabled={isEditing}
+                        />
+                        {errors.appointmentDuration && (
+                            <div className="text-danger small">{errors.appointmentDuration}</div>
                         )}
                     </div>
 
@@ -74,16 +196,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             onChange={onChange}
                             required
                         />
-                        {errors.date && (
-                            <div className="text-danger small">{errors.date}</div>
-                        )}
+                        {errors.date && (<div className="text-danger small">{errors.date}</div>)}
                     </div>
 
                     {/* HORA DE INICIO */}
                     <div className="col-mb-4">
-                        <label className="form-label col-lg-3">
-                            Hora de Inicio:
-                        </label>
+                        <label className="form-label col-lg-3">Hora de Inicio:</label>
                         <input
                             type="time"
                             className="col-lg-9 form-control-s"
@@ -92,11 +210,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             onChange={onChange}
                             required
                         />
-                        {errors.startTime && (
-                            <div className="text-danger small">
-                                {errors.startTime}
-                            </div>
-                        )}
+                        {errors.startTime && (<div className="text-danger small">{errors.startTime}</div>)}
                     </div>
 
                     {/* ESTADO (SOLO AL EDITAR) */}
@@ -109,19 +223,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                                 value={form.status}
                                 onChange={onChange}
                             >
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="Confirmada">Confirmada</option>
-                                <option value="Cancelada">Cancelada</option>
-                                <option value="Completada">Completada</option>
+                                <option key="status-pending" value="Pendiente">Pendiente</option>
+                                <option key="status-scheduled" value="Confirmada">Confirmada</option>
+                                <option key="status-cancelled" value="Cancelada">Cancelada</option>
+                                <option key="status-completed" value="Completada">Completada</option>
                             </select>
                         </div>
                     )}
 
                     {/* LOCALIZACIÓN */}
                     <div className="col-mb-4">
-                        <label className="form-label col-lg-3">
-                            Localización:
-                        </label>
+                        <label className="form-label col-lg-3">Localización:</label>
                         <input
                             className="col-lg-9 form-control-s"
                             name="location"
@@ -130,11 +242,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             placeholder="Localización"
                             required
                         />
-                        {errors.location && (
-                            <div className="text-danger small">
-                                {errors.location}
-                            </div>
-                        )}
+                        {errors.location && (<div className="text-danger small">{errors.location}</div>)}
                     </div>
 
                     {/* NOTAS */}
@@ -156,7 +264,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                             <i className="fas fa-save me-1" />
                             {isEditing ? "Actualizar" : "Guardar"}
                         </button>
-
                         <button
                             type="button"
                             className="reject-btn"
@@ -177,7 +284,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </div>
         </div>
     );
-};
+});
 
 export default AppointmentModal;
-

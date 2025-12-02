@@ -9,7 +9,7 @@ interface ClientCardProps {
   onClick?: () => void;
 }
 
-const ClientCard: React.FC<ClientCardProps> = ({
+const ClientCard: React.FC<ClientCardProps> = React.memo(({
   name,
   documentNumber,
   image,
@@ -65,6 +65,6 @@ const ClientCard: React.FC<ClientCardProps> = ({
       </Card.Body>
     </Card>
   );
-};
+});
 
 export default ClientCard;

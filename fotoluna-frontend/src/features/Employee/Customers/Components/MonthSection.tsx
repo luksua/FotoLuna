@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import ClientCard from "./ClientCard";
 
 export interface Client {
@@ -15,7 +15,7 @@ interface MonthSectionProps {
   onClientClick?: (client: Client) => void;
 }
 
-const MonthSection: React.FC<MonthSectionProps> = ({
+const MonthSection: React.FC<MonthSectionProps> = React.memo(({
   month,
   clients,
   onClientClick,
@@ -24,7 +24,7 @@ const MonthSection: React.FC<MonthSectionProps> = ({
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  const scroll = (direction: "left" | "right") => {
+  const scroll = useCallback((direction: "left" | "right") => {
     const container = scrollRef.current;
     if (!container) return;
     const amount = 260; // px por “tarjeta”
@@ -33,7 +33,7 @@ const MonthSection: React.FC<MonthSectionProps> = ({
       left: direction === "left" ? -amount : amount,
       behavior: "smooth",
     });
-  };
+  }, []);
 
   return (
     <div className="mb-5">
@@ -109,6 +109,6 @@ const MonthSection: React.FC<MonthSectionProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default MonthSection;

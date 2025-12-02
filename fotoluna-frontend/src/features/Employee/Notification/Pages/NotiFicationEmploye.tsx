@@ -196,6 +196,8 @@ const EmployeeNotifications: React.FC<EmployeeNotificationsProps> = ({ onClose }
 
     const unreadCount = notifications.filter(notif => !notif.read).length;
 
+    
+
     return (
         <>
             {showPanel && (

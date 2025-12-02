@@ -6,10 +6,10 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { red, teal } from '@mui/material/colors';
+import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { Gauge } from '@mui/x-charts/Gauge';
 import { PieChart } from '@mui/x-charts/PieChart';
-import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useEffect, useState } from "react";
 import api from "../../../../lib/api";
 
@@ -26,7 +26,6 @@ const resumen2 = [
     { label: "Ventas", value: 0, id: "monthly-sales", icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
 ];
 
-// Datos para el gráfico de barras
 const data = [
     { mes: "Enero", ventas: 20 },
     { mes: "Febrero", ventas: 58 },

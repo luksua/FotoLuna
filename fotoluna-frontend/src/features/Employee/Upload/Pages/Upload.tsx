@@ -1,10 +1,24 @@
 // components/Upload/Upload.tsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
+import { useAuth } from "../../../../context/useAuth"; // Importar useAuth
 import "../Styles/uplo.css";
-import type { Photo, EventInfo } from "../../PhotoAdmin/Components/types/Photo";
 
+// Tipos para mayor claridad
+type TCustomer = {
+    id: number;
+    fullName: string;
+};
+
+type TLinkedCustomer = {
+    id: number;
+    name: string;
+};
+
+
+// ⚠ Ajusta este valor si tu backend no está en localhost:8000
+const API_BASE_URL = "http://localhost:8000/api";
 /* Helpers para formatear fecha y hora para <input type="date/time"> */
 const formatDateInput = (date: Date): string => {
     const y = date.getFullYear();
@@ -21,14 +35,26 @@ const formatTimeInput = (date: Date): string => {
 
 const Upload: React.FC = () => {
     const now = new Date();
+    const { user } = useAuth(); // Obtener el usuario autenticado
+
+    // Estado para la lista de eventos que vendrán de la API
+    const [eventsList, setEventsList] = useState<any[]>(
+        []
+    );
+
 
     const [files, setFiles] = useState<File[]>([]);
     const [event, setEvent] = useState("");
     const [time, setTime] = useState(formatTimeInput(now));   // hora actual
     const [date, setDate] = useState(formatDateInput(now));   // fecha actual
     const [location, setLocation] = useState("");
-    const [linkedUsers, setLinkedUsers] = useState<string[]>([]);
+    
+    // --- Estados para la búsqueda de clientes ---
+    const [linkedUsers, setLinkedUsers] = useState<TLinkedCustomer[]>([]);
     const [searchUser, setSearchUser] = useState("");
+    const [allClients, setAllClients] = useState<TCustomer[]>([]);
+    const [filteredClients, setFilteredClients] = useState<TCustomer[]>([]);
+    
     const [dragActive, setDragActive] = useState(false);
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -37,6 +63,88 @@ const Upload: React.FC = () => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+
+    // --- Cargar eventos desde la API al montar el componente ---
+    useEffect(() => {
+        const fetchEvents = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("No se encontró el token para obtener los eventos.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/events`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setEventsList(data); 
+                } else {
+                    console.error("Error al obtener la lista de eventos.");
+                }
+            } catch (error) {
+                console.error("Error de conexión al obtener los eventos:", error);
+            }
+        };
+
+        fetchEvents();
+    }, []);
+
+    // --- Cargar todos los clientes al montar ---
+    useEffect(() => {
+        const fetchAllClients = async () => {
+            const token = localStorage.getItem("token");
+            if (!token || !user) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/customers?employee_id=${user.id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("API Response for clients:", JSON.stringify(data, null, 2));
+                    const clients = data.data || data || [];
+                    setAllClients(clients);
+                    setFilteredClients(clients.filter(
+                        (customer: TCustomer) => !linkedUsers.some(linked => linked.id === customer.id)
+                    ));
+                } else {
+                    console.error("Error al obtener la lista completa de clientes.");
+                }
+            } catch (error) {
+                console.error("Error de conexión al obtener clientes:", error);
+            }
+        };
+
+        fetchAllClients();
+    }, [user, linkedUsers]); // Recargar si el usuario cambia o si se vincula uno nuevo
+
+    // --- Filtrar clientes en el frontend ---
+    useEffect(() => {
+        let filtered = allClients;
+
+        if (searchUser.trim() !== '') {
+            filtered = allClients.filter(client =>
+                client.fullName
+                    .toLowerCase()
+                    .includes(searchUser.toLowerCase())
+            );
+        }
+
+        const availableClients = filtered.filter(
+            (customer: TCustomer) => !linkedUsers.some(linked => linked.id === customer.id)
+        );
+
+        setFilteredClients(availableClients);
+    }, [searchUser, allClients, linkedUsers]);
+
 
     /* -------- Drag & Drop -------- */
 
@@ -76,24 +184,17 @@ const Upload: React.FC = () => {
 
     /* -------- Vincular usuarios -------- */
 
-    const handleAddUser = () => {
-        const value = searchUser.trim();
-        if (value && !linkedUsers.includes(value)) {
-            setLinkedUsers((prev) => [...prev, value]);
-            setSearchUser("");
-        }
+    const handleSelectUser = (customer: TCustomer) => {
+        // Añadir el cliente seleccionado a la lista de vinculados
+        setLinkedUsers((prev) => [...prev, { id: customer.id, name: customer.fullName }]);
+        // Limpiar el input para resetear el filtro
+        setSearchUser("");
     };
 
-    const handleRemoveUser = (userToRemove: string) => {
-        setLinkedUsers((prev) => prev.filter((user) => user !== userToRemove));
+    const handleRemoveUser = (userIdToRemove: number) => {
+        setLinkedUsers((prev) => prev.filter((user) => user.id !== userIdToRemove));
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleAddUser();
-        }
-    };
 
     /* -------- Validaciones -------- */
 
@@ -119,7 +220,7 @@ const Upload: React.FC = () => {
         return newErrors;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
         setStatusType("");
@@ -133,60 +234,95 @@ const Upload: React.FC = () => {
             return;
         }
 
+        if (files.length > 100) {
+            const msg = `No puedes subir más de 100 fotos a la vez (intentaste subir ${files.length}).`;
+            setErrors((prev) => ({
+                ...prev,
+                files: msg,
+            }));
+            setStatusType("error");
+            setStatusMessage("No se pudieron subir las fotos debido al límite de 100.");
+            return;
+        }
+
+        
         try {
-            const existingPhotos: Photo[] = JSON.parse(
-                localStorage.getItem("uploadedPhotos") || "[]"
+            const token = localStorage.getItem("token");
+
+            if (!token || !user) { // También chequear que el usuario esté cargado
+                setStatusType("error");
+                setStatusMessage("No se encontró la sesión del empleado. Por favor, inicia sesión de nuevo.");
+                return; 
+            }
+
+            const formData = new FormData();
+
+            files.forEach((file) => {
+                formData.append("photos[]", file);
+            });
+
+            formData.append("event_name", event.trim());
+            formData.append("date", date);
+            formData.append("time", time);
+            formData.append("location", location.trim());
+            formData.append("employee_id", String(user.id)); // Enviar el ID del empleado
+
+            // Enviar los IDs de los clientes vinculados
+            const linkedUserIds = linkedUsers.map(u => u.id);
+            formData.append("linked_users", JSON.stringify(linkedUserIds));
+
+            // Manejar customerIdFK y bookingIdFK (si es necesario)
+            // Si el primer cliente vinculado es el principal, podrías hacer esto:
+            if (linkedUserIds.length > 0) {
+                 formData.append("customerIdFK", String(linkedUserIds[0]));
+            } else {
+                 formData.append("customerIdFK", ""); // O manejar como el backend espere
+            }
+            formData.append("bookingIdFK", "");   // bookingIdFK es nullable
+
+            setStatusType("");
+            setStatusMessage("");
+
+            const response = await fetch(
+                `${API_BASE_URL}/employee/cloud-photos`,
+                {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "application/json",
+                    },
+                }
             );
 
-            if (existingPhotos.length + files.length > 100) {
-                const msg = `No puedes tener más de 100 fotos. Actualmente tienes ${existingPhotos.length} y estás intentando subir ${files.length}.`;
-                setErrors((prev) => ({
-                    ...prev,
-                    files: msg,
-                }));
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error("Error al subir las fotos:", errorData);
+                
+                if (response.status === 422 && errorData.errors) {
+                    const validationErrorMsg = Object.values(errorData.errors).flat().join(' ');
+                    setStatusMessage(`Error de validación: ${validationErrorMsg}`);
+                } else {
+                    setStatusMessage(errorData.message || "Error al subir las fotos al servidor.");
+                }
+
                 setStatusType("error");
-                setStatusMessage("No se pudieron subir las fotos por el límite de 100.");
                 return;
             }
 
-            const eventInfo: EventInfo = {
-                name: event.trim(),
-                date,
-                time,
-                location: location.trim(),
-                linkedUsers,
-            };
+            const data = await response.json();
+            console.log("Respuesta del servidor:", data);
 
-            const nowIso = new Date().toISOString();
-
-            const newPhotos: Photo[] = files.map((file, index) => ({
-                id: Date.now() + index,
-                name: file.name,
-                path: URL.createObjectURL(file),
-                size: file.size,
-                uploaded_at: nowIso,
-                event: eventInfo,
-            }));
-
-            const updatedPhotos = [...newPhotos, ...existingPhotos];
-            localStorage.setItem("uploadedPhotos", JSON.stringify(updatedPhotos));
-
-            window.dispatchEvent(new Event("storage"));
-
-            // Mensaje de éxito -> luego redirigimos a admin
             setStatusType("success");
             setStatusMessage(
                 files.length === 1
-                    ? "La foto se subió correctamente."
-                    : `Las ${files.length} fotos se subieron correctamente.`
+                    ? "La foto se subió correctamente a la nube."
+                    : `Las ${files.length} fotos se subieron correctamente a la nube.`
             );
 
-            // Opcional: limpiar formulario
             setFiles([]);
-            // dejamos fecha/hora actuales
-            // setEvent(""); setLocation(""); setLinkedUsers([]);
+            setLinkedUsers([]);
 
-            // Redirigir después de un pequeño tiempo para que se alcance a ver el mensaje
             setTimeout(() => {
                 navigate("/employee/admin");
             }, 1200);
@@ -194,10 +330,11 @@ const Upload: React.FC = () => {
             console.error(err);
             setStatusType("error");
             setStatusMessage(
-                "Ocurrió un error al guardar las fotos. Intenta nuevamente."
+                "Ocurrió un error de conexión. Por favor, intenta nuevamente."
             );
         }
     };
+
 
     const handleCancel = () => {
         navigate("/employee/admin");
@@ -210,7 +347,7 @@ const Upload: React.FC = () => {
             <div className="upload-container">
                 <div className="upload-box">
                     <div className="upload-header">
-                        <h3 className="upload-title">Subir Archivo</h3>
+                        <h3 className="upload-title">Subir Fotos</h3>
                     </div>
                     <hr />
 
@@ -239,16 +376,17 @@ const Upload: React.FC = () => {
                                 <i className="bi bi-images file-icon"></i>
                                 <div className="file-info">
                                     <h4>
-                                        {files.length} archivo
-                                        {files.length > 1 && "s"} seleccionado
-                                        {files.length > 1 && "s"}
+                                        {files.length}{" "}
+                                        {files.length > 1
+                                            ? "archivos seleccionados"
+                                            : "archivo seleccionado"}
                                     </h4>
                                     <ul>
                                         {files.slice(0, 3).map((f, idx) => (
                                             <li key={idx}>{f.name}</li>
                                         ))}
                                         {files.length > 3 && (
-                                            <li>+ {files.length - 3} más…</li>
+                                            <li>y {files.length - 3} más...</li>
                                         )}
                                     </ul>
                                 </div>
@@ -261,12 +399,13 @@ const Upload: React.FC = () => {
                                     }}
                                 >
                                     <i className="bi bi-arrow-repeat"></i>
+                                    Cambiar
                                 </button>
                             </div>
                         ) : (
                             <div className="upload-content">
                                 <i className="bi bi-cloud-arrow-up upload-icon"></i>
-                                <span>Arrastra y suelta tus archivos aquí</span>
+                                <span>Arrastra y suelta las fotos aquí</span>
                                 <span className="upload-subtext">
                                     o haz clic para seleccionar
                                 </span>
@@ -285,8 +424,7 @@ const Upload: React.FC = () => {
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Evento</label>
-                                <input
-                                    type="text"
+                                <select
                                     value={event}
                                     onChange={(e) => {
                                         setEvent(e.target.value);
@@ -297,8 +435,16 @@ const Upload: React.FC = () => {
                                         setStatusType("");
                                         setStatusMessage("");
                                     }}
-                                    placeholder="Nombre del evento"
-                                />
+                                >
+                                    <option value="" disabled>
+                                        -- Selecciona el tipo de evento --
+                                    </option>
+                                    {eventsList.map((evt) => (
+                                        <option key={evt.id} value={evt.eventType}>
+                                            {evt.eventType}
+                                        </option>
+                                    ))}
+                                </select>
                                 {errors.event && (
                                     <p className="upload-error-text">
                                         {errors.event}
@@ -374,40 +520,46 @@ const Upload: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Vincular usuarios */}
+                        {/* Vincular clientes */}
                         <div className="upload-link">
-                            <label>Vincular a:</label>
+                            <label>Vincular clientes:</label>
                             <div className="search-container">
                                 <input
                                     type="text"
-                                    placeholder="Buscar usuarios"
+                                    placeholder="Buscar cliente por nombre o email..."
                                     value={searchUser}
-                                    onChange={(e) =>
-                                        setSearchUser(e.target.value)
-                                    }
-                                    onKeyDown={handleKeyPress}
+                                    onChange={(e) => setSearchUser(e.target.value)}
+                                    autoComplete="off"
                                 />
-                                <button
-                                    className="upload-search-btn"
-                                    onClick={handleAddUser}
-                                    type="button"
-                                >
-                                    <i className="bi bi-plus-lg"></i>
-                                </button>
                             </div>
 
+                            {/* --- Resultados de la búsqueda --- */}
+                            {filteredClients.length > 0 && (
+                                <ul className="search-results">
+                                    {filteredClients.map((customer) => (
+                                        <li
+                                            key={customer.id}
+                                            onClick={() => handleSelectUser(customer)}
+                                        >
+                                            {customer.fullName}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            
+                            {/* --- Clientes Vinculados --- */}
                             {linkedUsers.length > 0 && (
                                 <div className="linked-users">
-                                    {linkedUsers.map((user, index) => (
+                                    {linkedUsers.map((linked) => (
                                         <div
-                                            key={index}
+                                            key={linked.id}
                                             className="user-tag"
                                         >
-                                            <span>{user}</span>
+                                            <span>{linked.name}</span>
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    handleRemoveUser(user)
+                                                    handleRemoveUser(linked.id)
                                                 }
                                             >
                                                 <i className="bi bi-x"></i>
@@ -422,8 +574,8 @@ const Upload: React.FC = () => {
                         {statusType && statusMessage && (
                             <div
                                 className={`upload-alert ${statusType === "success"
-                                        ? "upload-alert-success"
-                                        : "upload-alert-error"
+                                    ? "upload-alert-success"
+                                    : "upload-alert-error"
                                     }`}
                             >
                                 <i
@@ -441,7 +593,7 @@ const Upload: React.FC = () => {
                         <div className="upload-actions">
                             <button className="accept-btn" type="submit">
                                 <i className="bi bi-cloud-arrow-up me-2"></i>
-                                Subir archivos
+                                Subir Fotos
                             </button>
                             <button
                                 className="reject-btn"
