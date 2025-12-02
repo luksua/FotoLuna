@@ -308,8 +308,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-
-
 // Admin Citas
 
 Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {

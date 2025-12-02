@@ -13,17 +13,20 @@ import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useEffect, useState } from "react";
 import api from "../../../../lib/api";
 
+// Paleta púrpura coherente con la estética del sitio
+const purpleColors = ['#efe6ff', '#e9d5ff', '#c4b5fd', '#9f7aea', '#ab64fcff'];
+
 // Tarjetas de resumen
 const resumen = [
-    { label: "Citas Pendientes", value: 0, id: "pending-appointments", icon: <EventIcon color="warning" sx={{ color: teal[500], fontSize: 35, mr: 2 }} /> },
+    { label: "Citas Pendientes", value: 14, icon: <EventIcon color="warning" sx={{ color: teal[500], fontSize: 35, mr: 2 }} /> },
     { label: "Cita Más Cercana", value: "11 octubre", icon: <AccessTimeIcon color="action" sx={{ fontSize: 35, mr: 2 }} /> },
     { label: "Citas Canceladas", value: 7, icon: <EventBusyIcon color="success" sx={{ color: red[500], fontSize: 35, mr: 2 }} /> },
 ];
 
 const resumen2 = [
-    { label: "Clientes Registrados", value: 0, id: "customer-count", icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
+    { label: "Clientes Registrados", value: 25, icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
     { label: "Paquetes Vendidos en total", value: 25, icon: <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} /> },
-    { label: "Ventas", value: 0, id: "monthly-sales", icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
+    { label: "Ventas en el mes", value: 14, icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
 ];
 
 // Datos para el gráfico de barras
@@ -46,7 +49,7 @@ type EmployeeRating = {
     employeeId: number;
     name: string;
     averageRating: number;
-};
+}
 
 const Dashboard = () => {
     const [estrellasData, setEstrellasData] = useState<Array<{ estrellas: number; cantidad: number }>>([
@@ -58,11 +61,7 @@ const Dashboard = () => {
     ]);
     const [averageRating, setAverageRating] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [packagesStats, setPackagesStats] = useState<Array<{name: string; value: number}>>([]);
     const [topEmployees, setTopEmployees] = useState<EmployeeRating[]>([]);
-    const [monthlySales, setMonthlySales] = useState(0);
-    const [customersCount, setCustomersCount] = useState(0);
-    const [pendingAppointmentsCount, setPendingAppointmentsCount] = useState(0);
 
     useEffect(() => {
         const fetchRatings = async () => {
@@ -71,7 +70,6 @@ const Dashboard = () => {
                 if (response.data.success) {
                     setEstrellasData(response.data.data);
                     setAverageRating(response.data.average);
-                    setTotalVotos(response.data.total);
                 }
             } catch (error) {
                 console.warn('Error al obtener estadísticas de puntuaciones:', error);
@@ -80,22 +78,10 @@ const Dashboard = () => {
             }
         };
 
-        const fetchPackagesStats = async () => {
-            try {
-                const res = await api.get('/api/admin/packages/stats');
-                if (res.data && res.data.success) {
-                    setPackagesStats(res.data.data || []);
-                }
-            } catch (err) {
-                console.warn('Error fetching package stats:', err);
-            }
-        };
-
         const fetchEmployeeRatings = async () => {
             try {
                 const res = await api.get('/api/employees/ratings');
                 if (res.data && res.data.success && Array.isArray(res.data.data)) {
-                    // Ordenar por averageRating descendente y tomar top 3
                     const sorted = res.data.data
                         .sort((a: EmployeeRating, b: EmployeeRating) => b.averageRating - a.averageRating)
                         .slice(0, 3);
@@ -106,45 +92,8 @@ const Dashboard = () => {
             }
         };
 
-        const fetchMonthlySales = async () => {
-            try {
-                const res = await api.get('/api/admin/packages/sales/monthly');
-                if (res.data && res.data.success) {
-                    setMonthlySales(res.data.data.totalSales || 0);
-                }
-            } catch (err) {
-                console.warn('Error fetching monthly sales:', err);
-            }
-        };
-
-        const fetchCustomersCount = async () => {
-            try {
-                const res = await api.get('/api/admin/customers/count');
-                if (res.data && res.data.success) {
-                    setCustomersCount(res.data.data.total || 0);
-                }
-            } catch (err) {
-                console.warn('Error fetching customers count:', err);
-            }
-        };
-
-        const fetchPendingAppointmentsCount = async () => {
-            try {
-                const res = await api.get('/api/admin/appointments/pending-count');
-                if (res.data && res.data.success) {
-                    setPendingAppointmentsCount(res.data.data.total || 0);
-                }
-            } catch (err) {
-                console.warn('Error fetching pending appointments count:', err);
-            }
-        };
-
         fetchRatings();
-        fetchPackagesStats();
         fetchEmployeeRatings();
-        fetchMonthlySales();
-        fetchCustomersCount();
-        fetchPendingAppointmentsCount();
     }, []);
 
     const totalVotosCalculated = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
@@ -160,12 +109,7 @@ const Dashboard = () => {
                         {item.icon}
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">
-                                {item.id === 'pending-appointments'
-                                    ? pendingAppointmentsCount
-                                    : item.value
-                                }
-                            </Typography>
+                            <Typography variant="h5" color="primary">{item.value}</Typography>
                         </Box>
                     </Box>
                 ))}
@@ -174,14 +118,7 @@ const Dashboard = () => {
                         {item.icon}
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">
-                                {item.id === 'monthly-sales' 
-                                    ? `$ ${monthlySales.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-                                    : item.id === 'customer-count'
-                                    ? customersCount
-                                    : item.value
-                                }
-                            </Typography>
+                            <Typography variant="h5" color="primary">{item.value}</Typography>
                         </Box>
                     </Box>
                 ))}
@@ -215,7 +152,7 @@ const Dashboard = () => {
                                 fill: '#ab64fcff',
                             },
                         }}
-                        text={({ value, valueMax }) => `${(averageRating).toFixed(1)} / 5`}
+                        text={() => `${(averageRating).toFixed(1)} / 5`}
                         width={200}
                         height={200}
                     />
@@ -224,13 +161,11 @@ const Dashboard = () => {
                     <Typography variant="h6" sx={{ mb: 1 }}>Paquetes Más Vendidos</Typography>
                     <PieChart
                         series={[{
-                            data: packagesStats.length > 0 ? packagesStats.map((p, idx) => ({
-                                id: idx,
-                                value: p.value,
-                                label: p.name,
-                                color: ['#d297e0ff', '#fdd1deff', '#9c97e0ff', '#c792dfff', '#efd6f9ff'][idx % 5]
-                            })) : [
-                                { id: 0, value: 1, label: 'Sin datos', color: '#efe6ff' }
+                            data: [
+                                { id: 0, value: 40, label: 'Quince Años', color: '#d297e0ff' },
+                                { id: 1, value: 39, label: 'Bodas', color: '#fdd1deff' },
+                                { id: 2, value: 15, label: 'Bautizos', color: '#9c97e0ff' },
+                                { id: 3, value: 18, label: 'yepa', color: '#1b0fbdff' },
                             ],
                         }]}
                         width={150}
@@ -248,8 +183,9 @@ const Dashboard = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
                         {estrellasData.map((item, idx) => {
                             const percent = totalVotosCalculated ? (item.cantidad / totalVotosCalculated) * 100 : 0;
-                            // Paleta morada coherente con la estética
-                            const purpleColors = ['#EFE6FF', '#E9D5FF', '#C4B5FD', '#9F7AEA', '#9569dbff'];
+                            // Usar un tono más oscuro cuanto mayor sea la estrella (1..5)
+                            const colorIndex = Math.min(purpleColors.length - 1, Math.max(0, item.estrellas - 1));
+                            const color = purpleColors[colorIndex];
                             return (
                                 <Box key={idx} sx={{ width: '100%' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
@@ -262,7 +198,7 @@ const Dashboard = () => {
                                             role="progressbar"
                                             style={{
                                                 width: `${percent}%`,
-                                                backgroundColor: purpleColors[idx % purpleColors.length],
+                                                backgroundColor: color,
                                                 height: '100%',
                                                 borderRadius: 9,
                                                 transition: 'width 400ms ease'
@@ -282,48 +218,66 @@ const Dashboard = () => {
             {/* Línea decorativa */}
             <Box sx={{ my: 4, display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <Box sx={{ flex: 1, height: 2, background: 'linear-gradient(to right, #d1a3e2, #e9d5ff, #f3e8ff, transparent)', borderRadius: 1 }} />
-                <Typography variant="body2" sx={{ color: '#9569dbff', fontWeight: 500, px: 2 }}></Typography>
+                <Typography variant="body2" sx={{ color: '#9569dbff', fontWeight: 500, px: 2 }}>Empleados</Typography>
                 <Box sx={{ flex: 1, height: 2, background: 'linear-gradient(to left, #d1a3e2, #e9d5ff, #f3e8ff, transparent)', borderRadius: 1 }} />
             </Box>
 
-            {/* Top 3 Empleados con Mejor Puntuación */}
+            {/* Top 3 Empleados con Mejor Puntuación (estilo similar a la gráfica de puntuación) */}
             <Box sx={{ mb: 2, width: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>Top 3 Empleados con Mejor Puntuación</Typography>
-                {loading ? (
-                    <Typography>Cargando empleados...</Typography>
-                ) : topEmployees.length > 0 ? (
+                {topEmployees.length === 0 ? (
+                    <Typography variant="body2" sx={{ color: '#999' }}>No hay datos de empleados aún.</Typography>
+                ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
-                        {topEmployees.map((employee, idx) => {
-                            const purpleColors = ['#d1a3e2', '#e9d5ff', '#f3e8ff'];
-                            const medalEmojis = ['1.', '2.', '3.'];
+                        {topEmployees.map((emp, idx) => {
+                            const percent = (emp.averageRating / 5) * 100;
+                            // Mapear la puntuación (0..5) a un índice de color (más alto -> más oscuro)
+                            const colorIndex = Math.min(
+                                purpleColors.length - 1,
+                                Math.max(0, Math.round((emp.averageRating / 5) * (purpleColors.length - 1)))
+                            );
+                            const color = purpleColors[colorIndex];
                             return (
-                                <Box key={employee.employeeId} sx={{ width: '100%' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-                                        <span style={{ marginRight: 8, fontSize: 20 }}>{medalEmojis[idx]}</span>
-                                        <span style={{ fontWeight: 500, flex: 1 }}>{employee.name}</span>
-                                        <span style={{ marginLeft: 8, color: '#888', fontWeight: '600' }}>⭐ {employee.averageRating.toFixed(1)}/5</span>
+                                <Box key={emp.employeeId} sx={{ width: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                                        <span style={{ marginRight: 8, fontSize: 18, color: '#6d5ba6ff' }}>📸</span>
+                                        <span style={{ fontWeight: 600 }}>{emp.name}</span>
+                                        <span style={{ marginLeft: 8, color: '#888' }}>({emp.averageRating.toFixed(2)})</span>
                                     </div>
-                                    <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%', backgroundColor: '#f5f3ff' }}>
+                                    <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%', backgroundColor: '#f5f3ff', position: 'relative' }}>
                                         <div
                                             role="progressbar"
                                             style={{
-                                                width: `${(employee.averageRating / 5) * 100}%`,
-                                                backgroundColor: purpleColors[idx % purpleColors.length],
+                                                width: `${percent}%`,
+                                                backgroundColor: color,
                                                 height: '100%',
                                                 borderRadius: 9,
-                                                transition: 'width 400ms ease'
+                                                transition: 'width 400ms ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: percent > 15 ? 'center' : 'flex-end',
+                                                paddingRight: 8
                                             }}
-                                            aria-valuenow={employee.averageRating}
+                                            aria-valuenow={emp.averageRating}
                                             aria-valuemin={0}
                                             aria-valuemax={5}
-                                        />
+                                        >
+                                            {percent > 15 && (
+                                                <Typography variant="caption" sx={{ color: '#fff', fontWeight: 700, fontSize: '0.7rem' }}>
+                                                    {emp.averageRating.toFixed(2)}
+                                                </Typography>
+                                            )}
+                                        </div>
+                                        {percent <= 15 && (
+                                            <Typography variant="caption" sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', color: '#666', fontWeight: 700, fontSize: '0.7rem' }}>
+                                                {emp.averageRating.toFixed(2)}
+                                            </Typography>
+                                        )}
                                     </div>
                                 </Box>
                             );
                         })}
                     </Box>
-                ) : (
-                    <Typography color="text.secondary">No hay empleados con calificaciones aún.</Typography>
                 )}
             </Box>
 
