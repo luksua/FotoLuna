@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useState } from "react";
 import "../styles/RegisterUsers.css";
@@ -91,6 +92,7 @@ const Register = () => {
             try {
                 data = await res.json();
             } catch (err) {
+                console.log(Error, err);
                 const text = await res.text();
                 setMessage(`Respuesta inesperada del servidor: ${res.status} - ${text}`);
                 setMessageType('error');

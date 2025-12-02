@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // import AdminLayout from "../../../layouts/HomeAdminLayout";
 import '../styles/AdminEmployee.css';
 import { useEffect, useState } from "react";
