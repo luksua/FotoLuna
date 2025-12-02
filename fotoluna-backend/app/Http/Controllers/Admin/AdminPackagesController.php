@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Event;
 use App\Models\Booking;
+use App\Models\Payment;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminPackagesController extends Controller
 {
@@ -81,6 +83,35 @@ class AdminPackagesController extends Controller
             }
 
             return response()->json(['success' => true, 'data' => $data], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Obtener ventas del mes actual
+     * Suma todos los pagos aprobados del mes actual
+     */
+    public function monthlySales()
+    {
+        try {
+            $now = Carbon::now();
+            $startOfMonth = $now->clone()->startOfMonth();
+            $endOfMonth = $now->clone()->endOfMonth();
+
+            $totalSales = DB::table('payments')
+                ->whereBetween('paymentDate', [$startOfMonth, $endOfMonth])
+                ->where('paymentStatus', 'Approved')
+                ->sum('amount');
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'month' => $now->format('F Y'),
+                    'totalSales' => (float) $totalSales,
+                    'currency' => 'COP'
+                ]
+            ], Response::HTTP_OK);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

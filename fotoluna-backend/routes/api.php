@@ -228,6 +228,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/employees', [AdminUsersController::class, 'index']);
 
     Route::get('/admin/customers', [AdminUsersController::class, 'getCustomers']);
+    
+    Route::get('/admin/customers/count', [AdminUsersController::class, 'getCustomersCount']);
 
     Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
 
@@ -247,6 +249,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Estadísticas de paquetes vendidos
     Route::get('/admin/packages/stats', [AdminPackagesController::class, 'stats']);
+
+    // Ventas del mes actual
+    Route::get('/admin/packages/sales/monthly', [AdminPackagesController::class, 'monthlySales']);
+
+    // Citas pendientes de un usuario
+    Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class, 'pendingByUserId']);
+
+    // Contar citas pendientes totales
+    Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
 
     Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
 

@@ -1,7 +1,6 @@
 export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogout: () => void;
 }
 
 export interface SettingsOption {

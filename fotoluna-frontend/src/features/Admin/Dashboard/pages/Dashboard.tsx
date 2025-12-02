@@ -15,15 +15,15 @@ import api from "../../../../lib/api";
 
 // Tarjetas de resumen
 const resumen = [
-    { label: "Citas Pendientes", value: 14, icon: <EventIcon color="warning" sx={{ color: teal[500], fontSize: 35, mr: 2 }} /> },
+    { label: "Citas Pendientes", value: 0, id: "pending-appointments", icon: <EventIcon color="warning" sx={{ color: teal[500], fontSize: 35, mr: 2 }} /> },
     { label: "Cita Más Cercana", value: "11 octubre", icon: <AccessTimeIcon color="action" sx={{ fontSize: 35, mr: 2 }} /> },
     { label: "Citas Canceladas", value: 7, icon: <EventBusyIcon color="success" sx={{ color: red[500], fontSize: 35, mr: 2 }} /> },
 ];
 
 const resumen2 = [
-    { label: "Clientes Registrados", value: 25, icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
+    { label: "Clientes Registrados", value: 0, id: "customer-count", icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
     { label: "Paquetes Vendidos en total", value: 25, icon: <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} /> },
-    { label: "Ventas en el mes", value: 14, icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
+    { label: "Ventas", value: 0, id: "monthly-sales", icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
 ];
 
 // Datos para el gráfico de barras
@@ -60,6 +60,9 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [packagesStats, setPackagesStats] = useState<Array<{name: string; value: number}>>([]);
     const [topEmployees, setTopEmployees] = useState<EmployeeRating[]>([]);
+    const [monthlySales, setMonthlySales] = useState(0);
+    const [customersCount, setCustomersCount] = useState(0);
+    const [pendingAppointmentsCount, setPendingAppointmentsCount] = useState(0);
 
     useEffect(() => {
         const fetchRatings = async () => {
@@ -103,9 +106,45 @@ const Dashboard = () => {
             }
         };
 
+        const fetchMonthlySales = async () => {
+            try {
+                const res = await api.get('/api/admin/packages/sales/monthly');
+                if (res.data && res.data.success) {
+                    setMonthlySales(res.data.data.totalSales || 0);
+                }
+            } catch (err) {
+                console.warn('Error fetching monthly sales:', err);
+            }
+        };
+
+        const fetchCustomersCount = async () => {
+            try {
+                const res = await api.get('/api/admin/customers/count');
+                if (res.data && res.data.success) {
+                    setCustomersCount(res.data.data.total || 0);
+                }
+            } catch (err) {
+                console.warn('Error fetching customers count:', err);
+            }
+        };
+
+        const fetchPendingAppointmentsCount = async () => {
+            try {
+                const res = await api.get('/api/admin/appointments/pending-count');
+                if (res.data && res.data.success) {
+                    setPendingAppointmentsCount(res.data.data.total || 0);
+                }
+            } catch (err) {
+                console.warn('Error fetching pending appointments count:', err);
+            }
+        };
+
         fetchRatings();
         fetchPackagesStats();
         fetchEmployeeRatings();
+        fetchMonthlySales();
+        fetchCustomersCount();
+        fetchPendingAppointmentsCount();
     }, []);
 
     const totalVotosCalculated = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
@@ -121,7 +160,12 @@ const Dashboard = () => {
                         {item.icon}
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">{item.value}</Typography>
+                            <Typography variant="h5" color="primary">
+                                {item.id === 'pending-appointments'
+                                    ? pendingAppointmentsCount
+                                    : item.value
+                                }
+                            </Typography>
                         </Box>
                     </Box>
                 ))}
@@ -130,7 +174,14 @@ const Dashboard = () => {
                         {item.icon}
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">{item.value}</Typography>
+                            <Typography variant="h5" color="primary">
+                                {item.id === 'monthly-sales' 
+                                    ? `$ ${monthlySales.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                                    : item.id === 'customer-count'
+                                    ? customersCount
+                                    : item.value
+                                }
+                            </Typography>
                         </Box>
                     </Box>
                 ))}
@@ -228,6 +279,13 @@ const Dashboard = () => {
                 )}
             </Box>
 
+            {/* Línea decorativa */}
+            <Box sx={{ my: 4, display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                <Box sx={{ flex: 1, height: 2, background: 'linear-gradient(to right, #d1a3e2, #e9d5ff, #f3e8ff, transparent)', borderRadius: 1 }} />
+                <Typography variant="body2" sx={{ color: '#9569dbff', fontWeight: 500, px: 2 }}></Typography>
+                <Box sx={{ flex: 1, height: 2, background: 'linear-gradient(to left, #d1a3e2, #e9d5ff, #f3e8ff, transparent)', borderRadius: 1 }} />
+            </Box>
+
             {/* Top 3 Empleados con Mejor Puntuación */}
             <Box sx={{ mb: 2, width: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>Top 3 Empleados con Mejor Puntuación</Typography>
@@ -237,7 +295,7 @@ const Dashboard = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
                         {topEmployees.map((employee, idx) => {
                             const purpleColors = ['#d1a3e2', '#e9d5ff', '#f3e8ff'];
-                            const medalEmojis = ['🥇', '🥈', '🥉'];
+                            const medalEmojis = ['1.', '2.', '3.'];
                             return (
                                 <Box key={employee.employeeId} sx={{ width: '100%' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
