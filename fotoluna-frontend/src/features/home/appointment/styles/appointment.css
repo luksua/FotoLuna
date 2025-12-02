@@ -960,7 +960,6 @@
 
   /* si usas el contenedor del brick, lo encojemos un poquito */
   .payment-brick-container {
-    transform: scale(0.95);
     transform-origin: top center;
   }
 }
@@ -971,48 +970,457 @@
 
 /* Paginación */
 .admin-pagination {
-    margin: 22px 0 8px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
+  margin: 22px 0 8px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
 }
 
 .admin-pagination button {
-    background: transparent;
-    border: 1px solid var(--border);
-    min-width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text);
-    transition:
-        background .12s ease,
-        color .12s ease,
-        transform .08s ease;
+  background: transparent;
+  border: 1px solid var(--border);
+  min-width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  transition:
+    background .12s ease,
+    color .12s ease,
+    transform .08s ease;
 }
 
 .admin-pagination button:hover:not([disabled]) {
-    transform: translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .admin-pagination button[disabled] {
-    opacity: 0.45;
-    cursor: default;
+  opacity: 0.45;
+  cursor: default;
 }
 
 .admin-pagination button.active {
-    background: var(--accent);
-    color: white;
-    border-color: transparent;
+  background: var(--accent);
+  color: white;
+  border-color: transparent;
 }
 
 /* Botón de puntos suspensivos */
 .admin-pagination button.ellipsis {
-    border: none;
-    background: transparent;
-    opacity: 0.7;
+  border: none;
+  background: transparent;
+  opacity: 0.7;
+  transform: none !important;
+  cursor: default;
+}
+
+/* ============================
+   TABLETS 768px – 1023.98px
+   ============================ */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+
+  /* Contenedor principal un poco más compacto */
+  .appointment-section {
+    padding: 24px 20px;
+    padding-top: 16px;
+  }
+
+  /* Caja interior donde está la tabla */
+  .appointment-section .bg-custom-9 {
+    padding: 16px 14px;
+  }
+
+  /* Título "Mis Reservas" más pequeño */
+  .appointment-header h1 {
+    font-size: 32px;
+  }
+
+  /* Evitar overflow horizontal de la tabla en md */
+  .appointment-table th,
+  .appointment-table td {
+    white-space: normal;
+    font-size: 0.9rem;
+  }
+
+  /* Las columnas de texto más largas ocupan varias líneas sin romper layout */
+  .appointment-table td[data-label="Reserva"],
+  .appointment-table td[data-label="Paquete"],
+  .appointment-table td[data-label="Fecha y Hora"] {
+    max-width: 220px;
+  }
+
+  /* Botón "Nueva Cita" que no se pierda a la derecha */
+  .appointment-section .d-flex.justify-content-end {
+    justify-content: flex-start;
+  }
+
+  .appointment-section .btn-perfil {
+    width: auto;
+    min-width: 180px;
+  }
+
+  /* Modales: ocupar casi todo el ancho en tablet */
+  .custom-modal {
+    max-width: 95vw;
+    width: 95vw;
+  }
+
+  .custom-modal.large-modal {
+    max-width: 95vw;
+    width: 95vw;
+  }
+}
+
+/* ============================
+   LAPTOP ~1024px – 1279.98px
+   (ej. 1024x768 / 1280x720)
+   ============================ */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+
+  .appointment-section {
+    padding: 32px 28px;
+    padding-top: 18px;
+  }
+
+  .appointment-section .bg-custom-9 {
+    padding: 18px 16px;
+  }
+
+  .appointment-header h1 {
+    font-size: 40px;
+  }
+
+  /* Un poco de respiro para la tabla en laptops chicas */
+  .appointment-table th,
+  .appointment-table td {
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+
+  .appointment-table td[data-label="Reserva"],
+  .appointment-table td[data-label="Paquete"],
+  .appointment-table td[data-label="Fecha y Hora"] {
+    max-width: 260px;
+  }
+
+  /* Paginación más contenida para que no rompa el ancho */
+  .admin-pagination button {
+    min-width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+
+  /* Modales: ancho cómodo en laptop pequeña */
+  .custom-modal {
+    max-width: 80vw;
+    width: 80vw;
+  }
+
+  .custom-modal.large-modal {
+    max-width: 85vw;
+    width: 85vw;
+  }
+}
+
+/* ============================
+   MEJORAS MOBILE: PAGINACIÓN + MODALES
+   ============================ */
+@media (max-width: 575.98px) {
+
+  /* Paginación más cómoda en móviles */
+  .admin-pagination {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    gap: 6px;
+    flex-wrap: wrap;
+    /* permite que los botones bajen a otra fila */
+  }
+
+  .admin-pagination button {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+    border-radius: 999px;
+    /* más pill-style */
+    padding: 0 8px;
+  }
+
+  .admin-pagination button.ellipsis {
+    min-width: auto;
+    padding: 0 4px;
+  }
+
+  /* Modales con margen respecto a los bordes del celular */
+  .custom-modal-overlay {
+    padding: 16px;
+    /* espacio lateral y arriba/abajo */
+    box-sizing: border-box;
+  }
+
+  .custom-modal {
+    width: 100%;
+    max-width: 92vw;
+    /* pequeño margen a los lados */
+    max-height: calc(100vh - 32px);
+    /* margen arriba y abajo */
+    border-radius: 14px;
+  }
+
+  .custom-modal.large-modal {
+    max-width: 94vw;
+  }
+
+  /* Un poco menos de padding interno para que no se sienta apretado */
+  .custom-modal .modal-body {
+    padding: 12px 14px;
+  }
+
+  .custom-modal .modal-header,
+  .custom-modal .modal-footer {
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 320.98px) {
+  .admin-pagination {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    gap: 3px !important;
+    flex-wrap: wrap;
+    /* permite que los botones bajen a otra fila */
+  }
+}
+/* ================================
+   Estilizar botón del Brick de MP
+================================ */
+button.linear-1LoS9f.svelte-11b9rht,
+button.svelte-11b9rht {
+    background: linear-gradient(90deg, #C792DF 0%, #DCABDF 100%) !important;
+    background-size: 200% !important;
+    background-position: 0% !important;
+    border: none !important;
+    width: 100% !important;
+    padding: 14px !important;
+    border-radius: 12px !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    transition: background-position 1s ease-out, transform .15s ease !important;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .15) !important;
+}
+
+/* Hover */
+button.linear-1LoS9f.svelte-11b9rht:hover,
+button.svelte-11b9rht:hover {
+    background-position: 100% !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Active */
+button.linear-1LoS9f.svelte-11b9rht:active,
+button.svelte-11b9rht:active {
+    transform: translateY(0) !important;
+}
+
+/* Disabled */
+button.linear-1LoS9f.svelte-11b9rht:disabled,
+button.svelte-11b9rht:disabled {
+    opacity: .45 !important;
+    cursor: not-allowed !important;
     transform: none !important;
-    cursor: default;
+}
+
+/* ============================
+    FIX: MODAL DE PAGO RECORTADO
+   ============================ */
+@media (max-width: 575.98px) {
+
+  /* Más espacio interno y evitar recortes */
+  .custom-modal.large-modal {
+    max-width: 95vw;
+    max-height: calc(100vh - 40px); /* margen arriba y abajo */
+    padding-bottom: 16px;
+  }
+
+  .custom-modal .modal-body {
+    padding: 16px !important;
+    overflow-y: auto;
+    max-height: calc(100vh - 140px); /* evita cortar inputs */
+  }
+
+  /* Contenedor del brick (Mercado Pago) */
+  .payment-brick-container,
+  .mp-container,
+  .mp-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+}
+/* ================================
+   FIX MP BRICK EN 320px
+================================ */
+@media (max-width: 320px) {
+
+  /* Que el overlay no meta demasiado padding extra */
+  .custom-modal-overlay {
+    padding: 6px;
+    box-sizing: border-box;
+  }
+
+  /* El modal ocupa el ancho completo del viewport, centrado */
+  .custom-modal,
+  .custom-modal.large-modal {
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0 auto;
+    border-radius: 10px;
+    max-height: calc(100vh - 12px);
+  }
+
+  /* El cuerpo del modal puede scrollear en X si el brick es un pelín más ancho */
+  .custom-modal .modal-body {
+    padding: 8px 6px;
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  /* Contenedor de la página de pago */
+  .payment-page {
+    margin-top: 12px;
+    padding: 4px 4px;
+    grid-template-columns: 1fr; /* por si acaso */
+  }
+
+  /* 🔑 Contenedor del brick de Mercado Pago:
+     sin escala y ancho 100% real */
+  .payment-brick-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    transform-origin: top center !important;
+    margin: 0 auto !important;
+  }
+
+  /* Por si el brick viene dentro de un div con id raro */
+  div[id*="Brick_container"],
+  div[id*="paymentBrick_container"],
+  div[id*="cardPaymentBrick_container"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
+}
+/* ================================
+   ARREGLO FORM BRICK MERCADO PAGO
+   EVITAR QUE SE DESPLACE A LA DERECHA
+================================ */
+@media (max-width: 480px) {
+
+  /* El modal ocupa el ancho completo del viewport, centrado */
+  .custom-modal.large-modal {
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0 auto;
+    border-radius: 10px;
+    max-height: calc(100vh - 20px);
+  }
+
+  .custom-modal .modal-body {
+    padding: 10px;
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  /* Contenedor del brick: que no tenga ancho raro */
+  .payment-brick-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    overflow-x: auto;
+  }
+
+  /* 🔑 El form del brick que se va a la derecha */
+  .payment-brick-container form.visible-BQhSi2.svelte-734qla,
+  form.visible-BQhSi2.svelte-734qla {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 8px 10px !important;   /* menos padding horizontal */
+    margin: 0 auto !important;
+    border-radius: 8px;
+  }
+
+  /* Fallback por si MP cambia el nombre de la clase en el futuro */
+  .payment-brick-container form[class*="visible-"][class*="svelte-"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 8px 10px !important;
+    margin: 0 auto !important;
+  }
+}
+/* ===================================
+   MP BRICK EN TELÉFONOS PEQUEÑOS
+   (sin scroll horizontal, sin scale)
+=================================== */
+@media (max-width: 360px) {
+
+  /* Modal bien pegado al viewport pero sin recortar */
+  .custom-modal,
+  .custom-modal.large-modal {
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    border-radius: 12px;
+    max-height: calc(100vh - 16px);
+  }
+
+  .custom-modal-overlay {
+    padding: 8px;
+    box-sizing: border-box;
+  }
+
+  .custom-modal .modal-body {
+    padding: 10px 8px;
+    overflow-x: hidden;   /* ✅ nada se puede ir fuera a la derecha */
+    overflow-y: auto;
+  }
+
+  /* La página de pago en una sola columna y sin padding extra */
+  .payment-page {
+    grid-template-columns: 1fr;
+    padding: 0;
+    margin-top: 8px;
+  }
+
+  .payment-summary-card {
+    margin-bottom: 10px;
+  }
+
+  /* Contenedor del brick de MP ajustado al ancho del modal */
+  .payment-brick-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* 🔑 FORM del brick: que NO tenga min-width rara y se adapte al 100% */
+  .payment-brick-container form.visible-BQhSi2.svelte-734qla,
+  .payment-brick-container form[class*="visible-"][class*="svelte-"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;          /* 💥 clave: permite que encoja */
+    padding: 8px 6px !important;      /* menos padding horizontal */
+    border: none !important;          /* el borde sumaba ancho */
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  /* Inputs internos del brick: full width, sin pasarse */
+
 }

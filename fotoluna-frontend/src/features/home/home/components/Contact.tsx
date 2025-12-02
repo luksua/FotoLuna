@@ -5,6 +5,7 @@ import Select from "../../../../components/Home/Select";
 import Textarea from "../../../../components/Home/Textarea";
 import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
+import { useState } from "react";
 
 type FormValues = {
     firstName: string;
@@ -20,6 +21,7 @@ const Contact = () => {
     const {
         control,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm<FormValues>({
         defaultValues: {
@@ -32,9 +34,43 @@ const Contact = () => {
         },
     });
 
-    const onSubmit: SubmitHandler<FormValues> = (data) => {
-        console.log("Datos del formulario:", data);
+    const [loading, setLoading] = useState(false);
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const [alertType, setAlertType] = useState<"success" | "danger" | null>(null);
+
+    const onSubmit: SubmitHandler<FormValues> = async (data) => {
+        try {
+            const response = await fetch("http://localhost:8000/api/contact", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setAlertType("danger");
+                setAlertMessage(result.message || "Hubo un error al enviar el mensaje.");
+                return;
+            }
+
+            // Éxito
+            setAlertType("success");
+            setAlertMessage("¡Mensaje enviado correctamente!");
+            reset(); // Limpia formulario
+
+        } catch (error) {
+            console.error("Error:", error);
+            setAlertType("danger");
+            setAlertMessage("Error de conexión con el servidor.");
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     return (
         <div className="bg-custom-2">
@@ -54,6 +90,18 @@ const Contact = () => {
             <div className="contact-overlay">
                 <div className="contact-form">
                     <h2 className="bg-custom-2">¡Habla con Nosotros!</h2>
+                    {alertMessage && (
+                        <div className={`alert alert-${alertType} alert-dismissible fade show`} role="alert">
+                            {alertMessage}
+                            <button
+                                type="button"
+                                className="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                                onClick={() => setAlertMessage(null)}
+                            ></button>
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div>
                             <Controller
@@ -110,6 +158,23 @@ const Contact = () => {
                                 )}
                             />
                             <Controller
+                                name="phone"
+                                control={control}
+                                rules={{ required: "El teléfono es obligatorio" }}
+                                render={({ field }) => (
+                                    <InputLabel
+                                        id="phone"
+                                        label="Teléfono"
+                                        type="text"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        onBlur={field.onBlur}
+                                        inputRef={field.ref}
+                                        error={errors.phone?.message}
+                                    />
+                                )}
+                            />
+                            <Controller
                                 name="select"
                                 control={control}
                                 rules={{ required: "Debe seleccionar una opción" }}
@@ -149,9 +214,7 @@ const Contact = () => {
                             )}
                         />
                         <div>
-                            <Button
-                                value="Enviar"
-                            />
+                            <Button value={loading ? "Enviando..." : "Enviar"} />
                         </div>
                     </form>
                 </div>

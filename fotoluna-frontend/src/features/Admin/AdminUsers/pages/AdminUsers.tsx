@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import React, { useEffect, useMemo, useState } from "react";
 import "../../../Admin/AdminUsers/styles/AdminUsers.css";

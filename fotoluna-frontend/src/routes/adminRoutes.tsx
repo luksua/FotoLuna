@@ -7,19 +7,22 @@ import AdminEmployee from "../features/Admin/AdminEmployee/pages/AdminEmployee";
 import NotificationsEmployee from "../features/Admin/Notification/Pages/NotificationsEmployee";
 import AdminEvents from "../features/Admin/AdminEvents/pages/AdminEvents";
 import AdminAppointments from "../features/Admin/AdminApointments/pages/AdminAppointments";
+import PaymentsAndSubscriptions from "../features/Admin/AdminPayments/pages/PaymentsAndSubscriptions";
+import SubscriptionsPage from "../features/Admin/AdminPayments/components/Subscriptions";
 
 export const adminRoutes = [
     {
         path: "/admin",
         element: <HomeAdmin />
     },
-    { path: "/dashboard", element: <Dashboard/> },
-    { path: "/RegisterUsers", element: <RegisterUsers/> },
+    { path: "/dashboard", element: <Dashboard /> },
+    { path: "/RegisterUsers", element: <RegisterUsers /> },
     { path: "/AdminUsers", element: <AdminUsers /> },
     { path: "/AdminEmployee", element: <AdminEmployee /> },
     { path: "/notifications", element: <NotificationsEmployee /> },
     { path: "/AdminEvents", element: <AdminEvents /> },
     { path: "/AdminAppointments", element: <AdminAppointments /> },
-
-]; 
+    { path: "/adminPayments", element: <PaymentsAndSubscriptions /> },
+    { path: "/storage-plan", element: <SubscriptionsPage /> },
+];
 

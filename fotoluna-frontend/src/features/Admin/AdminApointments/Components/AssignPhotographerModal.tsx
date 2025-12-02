@@ -1,4 +1,4 @@
-// src/components/admin/appointments/AssignPhotographerModal.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";

@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\AdminDocumentTypesController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminAppointmentController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ContactController;
 
 
 // RUTAS SIN LOGIN
@@ -33,6 +34,7 @@ Route::get('/document-types', [DocumentTypeController::class, 'index']);
 Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
 Route::get('/events', [EventController::class, 'index']);
 Route::get('/availability', [AppointmentController::class, 'availability']);
+Route::post('/contact', [ContactController::class, 'store']);
 
 // RUTAS COMUNES PARA CUALQUIER USUARIO AUTENTICADO
 Route::middleware('auth:sanctum')->group(function () {
@@ -312,9 +314,14 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     // 👉 NUEVA: asignar fotógrafo a una cita
     Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+
 });
 
-
+    Route::get('admin/payments', [PaymentController::class, 'index']);
+    Route::get('adminpayments/summary', [PaymentController::class, 'summary']);
+    
+    Route::get('adminstorage-plans', [StoragePlanController::class, 'indexAdmin']);
+    Route::put('adminstorage-plans/{id}', [StoragePlanController::class, 'update']);
 // ===== COMENTARIOS (públicos + autenticados) =====
 // Obtener todos los comentarios (público, sin autenticación)
 Route::get('/comments', [CommentsController::class, 'index']);

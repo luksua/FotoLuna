@@ -639,7 +639,53 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function index(Request $request)
+    {
+        $query = Payment::query()
+            ->with(['booking.customer.user']); // ajusta a tus relaciones reales
 
+        if ($search = $request->input('search')) {
+            $query->where('paymentId', $search)
+                ->orWhereHas('booking.customer', function ($q) use ($search) {
+                    $q->where('emailCustomer', 'like', "%{$search}%")
+                        ->orWhere('firstNameCustomer', 'like', "%{$search}%")
+                        ->orWhere('lastNameCustomer', 'like', "%{$search}%");
+                });
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('paymentStatus', $status);
+        }
+
+        if ($from = $request->input('from')) {
+            $query->whereDate('paymentDate', '>=', $from);
+        }
+
+        if ($to = $request->input('to')) {
+            $query->whereDate('paymentDate', '<=', $to);
+        }
+
+        $payments = $query
+            ->orderByDesc('paymentDate')
+            ->paginate($request->input('per_page', 10));
+
+        return response()->json($payments);
+    }
+
+    public function summary()
+    {
+        $totalApproved = Payment::where('paymentStatus', 'approved')->sum('amount');
+        $pendingCount  = Payment::where('paymentStatus', 'pending')->count();
+        $approvedCount = Payment::where('paymentStatus', 'approved')->count();
+
+        return response()->json([
+            'totalApprovedAmount' => $totalApproved,
+            'pendingCount'        => $pendingCount,
+            'approvedCount'       => $approvedCount,
+            // aquí puedes añadir variaciones (% vs mes pasado, etc.)
+        ]);
+    }
+    
     // public function employeePayments(Request $request)
     // {
     //     // Usuario logueado (Sanctum / token)

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useMemo, useEffect } from 'react';
 import HomeAdminLayout from '../../../../layouts/HomeAdminLayout';
 import EventModal from '../components/EventModal';
@@ -260,7 +261,7 @@ const AdminEvents: React.FC = () => {
 
             if (!response.ok) {
                 let errorData = null;
-                try { errorData = await response.json(); } catch(e) { /* ignore */ }
+                try { errorData = await response.json(); } catch { /* ignore */ }
                 const msg = errorData?.error || errorData?.message || JSON.stringify(errorData) || `Error: ${response.status}`;
                 throw new Error(msg);
             }
@@ -286,7 +287,7 @@ const AdminEvents: React.FC = () => {
 
             if (!response.ok) {
                 let errorData = null;
-                try { errorData = await response.json(); } catch(e) { /* ignore */ }
+                try { errorData = await response.json(); } catch { /* ignore */ }
                 const msg = errorData?.error || errorData?.message || JSON.stringify(errorData) || `Error: ${response.status}`;
                 throw new Error(msg);
             }
@@ -348,7 +349,7 @@ const AdminEvents: React.FC = () => {
 
             if (!response.ok) {
                 let errorData = null;
-                try { errorData = await response.json(); } catch(e) { /* ignore */ }
+                try { errorData = await response.json(); } catch { /* ignore */ }
                 const msg = errorData?.error || errorData?.message || JSON.stringify(errorData) || `Error: ${response.status}`;
                 throw new Error(msg);
             }
@@ -374,7 +375,7 @@ const AdminEvents: React.FC = () => {
 
             if (!response.ok) {
                 let errorData = null;
-                try { errorData = await response.json(); } catch(e) { /* ignore */ }
+                try { errorData = await response.json(); } catch { /* ignore */ }
                 const msg = errorData?.error || errorData?.message || JSON.stringify(errorData) || `Error: ${response.status}`;
                 throw new Error(msg);
             }
