@@ -42,6 +42,12 @@ const data = [
     { mes: "Diciembre", ventas: 0 },
 ];
 
+type EmployeeRating = {
+    employeeId: number;
+    name: string;
+    averageRating: number;
+};
+
 const Dashboard = () => {
     const [estrellasData, setEstrellasData] = useState<Array<{ estrellas: number; cantidad: number }>>([
         { estrellas: 1, cantidad: 0 },
@@ -52,6 +58,8 @@ const Dashboard = () => {
     ]);
     const [averageRating, setAverageRating] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [packagesStats, setPackagesStats] = useState<Array<{name: string; value: number}>>([]);
+    const [topEmployees, setTopEmployees] = useState<EmployeeRating[]>([]);
 
     useEffect(() => {
         const fetchRatings = async () => {
@@ -69,7 +77,35 @@ const Dashboard = () => {
             }
         };
 
+        const fetchPackagesStats = async () => {
+            try {
+                const res = await api.get('/api/admin/packages/stats');
+                if (res.data && res.data.success) {
+                    setPackagesStats(res.data.data || []);
+                }
+            } catch (err) {
+                console.warn('Error fetching package stats:', err);
+            }
+        };
+
+        const fetchEmployeeRatings = async () => {
+            try {
+                const res = await api.get('/api/employees/ratings');
+                if (res.data && res.data.success && Array.isArray(res.data.data)) {
+                    // Ordenar por averageRating descendente y tomar top 3
+                    const sorted = res.data.data
+                        .sort((a: EmployeeRating, b: EmployeeRating) => b.averageRating - a.averageRating)
+                        .slice(0, 3);
+                    setTopEmployees(sorted);
+                }
+            } catch (err) {
+                console.warn('Error fetching employee ratings:', err);
+            }
+        };
+
         fetchRatings();
+        fetchPackagesStats();
+        fetchEmployeeRatings();
     }, []);
 
     const totalVotosCalculated = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
@@ -137,10 +173,13 @@ const Dashboard = () => {
                     <Typography variant="h6" sx={{ mb: 1 }}>Paquetes Más Vendidos</Typography>
                     <PieChart
                         series={[{
-                            data: [
-                                { id: 0, value: 40, label: 'Quince Años', color: '#d297e0ff' },
-                                { id: 1, value: 39, label: 'Bodas', color: '#fdd1deff' },
-                                { id: 2, value: 15, label: 'Bautizos', color: '#9c97e0ff' },
+                            data: packagesStats.length > 0 ? packagesStats.map((p, idx) => ({
+                                id: idx,
+                                value: p.value,
+                                label: p.name,
+                                color: ['#d297e0ff', '#fdd1deff', '#9c97e0ff', '#c792dfff', '#efd6f9ff'][idx % 5]
+                            })) : [
+                                { id: 0, value: 1, label: 'Sin datos', color: '#efe6ff' }
                             ],
                         }]}
                         width={150}
@@ -186,6 +225,47 @@ const Dashboard = () => {
                             );
                         })}
                     </Box>
+                )}
+            </Box>
+
+            {/* Top 3 Empleados con Mejor Puntuación */}
+            <Box sx={{ mb: 2, width: '100%' }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Top 3 Empleados con Mejor Puntuación</Typography>
+                {loading ? (
+                    <Typography>Cargando empleados...</Typography>
+                ) : topEmployees.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+                        {topEmployees.map((employee, idx) => {
+                            const purpleColors = ['#d1a3e2', '#e9d5ff', '#f3e8ff'];
+                            const medalEmojis = ['🥇', '🥈', '🥉'];
+                            return (
+                                <Box key={employee.employeeId} sx={{ width: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                                        <span style={{ marginRight: 8, fontSize: 20 }}>{medalEmojis[idx]}</span>
+                                        <span style={{ fontWeight: 500, flex: 1 }}>{employee.name}</span>
+                                        <span style={{ marginLeft: 8, color: '#888', fontWeight: '600' }}>⭐ {employee.averageRating.toFixed(1)}/5</span>
+                                    </div>
+                                    <div className="progress" style={{ height: 18, borderRadius: 9, width: '100%', backgroundColor: '#f5f3ff' }}>
+                                        <div
+                                            role="progressbar"
+                                            style={{
+                                                width: `${(employee.averageRating / 5) * 100}%`,
+                                                backgroundColor: purpleColors[idx % purpleColors.length],
+                                                height: '100%',
+                                                borderRadius: 9,
+                                                transition: 'width 400ms ease'
+                                            }}
+                                            aria-valuenow={employee.averageRating}
+                                            aria-valuemin={0}
+                                            aria-valuemax={5}
+                                        />
+                                    </div>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                ) : (
+                    <Typography color="text.secondary">No hay empleados con calificaciones aún.</Typography>
                 )}
             </Box>
 

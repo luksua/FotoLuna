@@ -204,6 +204,8 @@ Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
 Route::get('/employees/available', [EmployeeController::class, 'available']);
 // Ruta pública para obtener todos los empleados (selector de fotógrafo)
 Route::get('/employees/all', [EmployeeController::class, 'all']);
+// Ruta para obtener ratings promedio de empleados (fotografos)
+Route::get('/employees/ratings', [EmployeeController::class, 'ratings']);
 
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
@@ -242,6 +244,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
+
+    // Estadísticas de paquetes vendidos
+    Route::get('/admin/packages/stats', [AdminPackagesController::class, 'stats']);
 
     Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
 

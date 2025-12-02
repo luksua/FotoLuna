@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Event;
+use App\Models\Booking;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminPackagesController extends Controller
 {
@@ -37,6 +39,50 @@ class AdminPackagesController extends Controller
             );
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Estadísticas: cantidad de ventas por paquete
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function stats()
+    {
+        try {
+            $rows = DB::table('bookings')
+                ->select('packageIdFK', DB::raw('COUNT(*) as total'))
+                ->groupBy('packageIdFK')
+                ->orderByDesc('total')
+                ->limit(3)
+                ->get();
+
+            $data = [];
+            $seenPackageIds = [];
+
+            foreach ($rows as $r) {
+                $pkg = Package::find($r->packageIdFK);
+                $name = $pkg ? ($pkg->packageName ?? 'Sin nombre') : 'Desconocido';
+                $data[] = [
+                    'name' => $name,
+                    'value' => (int) $r->total,
+                ];
+                $seenPackageIds[] = $r->packageIdFK;
+            }
+
+            if (count($data) < 3) {
+                $needed = 3 - count($data);
+                $more = Package::whereNotIn('packageId', $seenPackageIds)->limit($needed)->get();
+                foreach ($more as $pkg) {
+                    $data[] = [
+                        'name' => $pkg->packageName ?? 'Sin nombre',
+                        'value' => 0,
+                    ];
+                }
+            }
+
+            return response()->json(['success' => true, 'data' => $data], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

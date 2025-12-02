@@ -12,6 +12,7 @@ type Employee = {
     documento: string;
     correo: string;
     estado: boolean;
+    puntuacion?: number;
     address?: string;
     EPS?: string;
 };
@@ -29,6 +30,7 @@ type EditFormData = {
 const EmployeeCustomers = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [ratings, setRatings] = useState<{[key: number]: number}>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -97,6 +99,28 @@ const EmployeeCustomers = () => {
 
         return () => { mounted = false; };
     }, []);
+
+    // Cargar ratings de fotografos
+    useEffect(() => {
+        let mounted = true;
+        fetch('/api/employees/ratings', { headers: getAuthHeaders() })
+            .then((res) => res.json())
+            .then((data) => {
+                if (!mounted) return;
+                if (data && data.success && Array.isArray(data.data)) {
+                    // Crear mapa de employeeId -> averageRating
+                    const ratingsMap: {[key: number]: number} = {};
+                    data.data.forEach((item: any) => {
+                        ratingsMap[item.employeeId] = item.averageRating || 0;
+                    });
+                    setRatings(ratingsMap);
+                }
+            })
+            .catch((err) => console.error('Error cargando ratings:', err));
+
+        return () => { mounted = false; };
+    }, []);
+
     //////////////////// Filtro 
     const filteredEmployees = employees.filter(emp => 
         Object.values(emp)
@@ -240,13 +264,14 @@ const EmployeeCustomers = () => {
                                 <th>Teléfono</th>
                                 <th>Documento</th>
                                 <th>Correo</th>
+                                <th>Puntuación</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: 20 }}>Cargando...</td></tr>
+                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 20 }}>Cargando...</td></tr>
                             ) : paginatedEmployees.length ? (
                                 paginatedEmployees.map((employee) => (
                                     <tr key={employee.id}>
@@ -254,6 +279,15 @@ const EmployeeCustomers = () => {
                                         <td>{employee.telefono}</td>
                                         <td>{employee.documento}</td>
                                         <td>{employee.correo}</td>
+                                        <td>
+                                            <span style={{
+                                                fontWeight: '600',
+                                                color: ratings[employee.id] ? '#ffc107' : '#999',
+                                                fontSize: '14px'
+                                            }}>
+                                                {ratings[employee.id] ? `${ratings[employee.id].toFixed(1)} 📸` : 'Sin calificación'}
+                                            </span>
+                                        </td>
                                         <td>
                                             <button
                                                 className={`status ${employee.estado ? 'active' : 'inactive'}`}
@@ -282,7 +316,7 @@ const EmployeeCustomers = () => {
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: 20 }}>No se encontraron empleados.</td></tr>
+                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 20 }}>No se encontraron empleados.</td></tr>
                             )}
                         </tbody>
                     </table>
