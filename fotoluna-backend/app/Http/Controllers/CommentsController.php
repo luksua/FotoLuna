@@ -163,6 +163,46 @@ class CommentsController extends Controller
     }
 
     /**
+     * Obtener estadísticas de puntuaciones (para dashboard admin)
+     */
+    public function ratings(): JsonResponse
+    {
+        try {
+            // Agrupar comentarios por rating y contar
+            $ratingsData = Comment::selectRaw('rating, COUNT(*) as cantidad')
+                ->groupBy('rating')
+                ->orderBy('rating', 'asc')
+                ->get();
+
+            // Crear array con todas las puntuaciones (1-5)
+            $allRatings = [];
+            for ($i = 1; $i <= 5; $i++) {
+                $found = $ratingsData->firstWhere('rating', $i);
+                $allRatings[] = [
+                    'estrellas' => $i,
+                    'cantidad' => $found ? $found->cantidad : 0,
+                ];
+            }
+
+            // Calcular promedio
+            $totalComments = Comment::count();
+            $averageRating = $totalComments > 0 ? Comment::avg('rating') : 0;
+
+            return response()->json([
+                'success' => true,
+                'data' => $allRatings,
+                'total' => $totalComments,
+                'average' => round($averageRating, 2),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener estadísticas: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Eliminar un comentario (solo el propietario o admin)
      */
     public function destroy(Comment $comment, Request $request): JsonResponse

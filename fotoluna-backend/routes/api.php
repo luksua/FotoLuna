@@ -206,6 +206,8 @@ Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
 Route::get('/employees/available', [EmployeeController::class, 'available']);
 // Ruta pública para obtener todos los empleados (selector de fotógrafo)
 Route::get('/employees/all', [EmployeeController::class, 'all']);
+// Ruta para obtener ratings promedio de empleados (fotografos)
+Route::get('/employees/ratings', [EmployeeController::class, 'ratings']);
 
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
@@ -228,6 +230,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/employees', [AdminUsersController::class, 'index']);
 
     Route::get('/admin/customers', [AdminUsersController::class, 'getCustomers']);
+    
+    Route::get('/admin/customers/count', [AdminUsersController::class, 'getCustomersCount']);
 
     Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
 
@@ -244,6 +248,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
+
+    // Estadísticas de paquetes vendidos
+    Route::get('/admin/packages/stats', [AdminPackagesController::class, 'stats']);
+
+    // Ventas del mes actual
+    Route::get('/admin/packages/sales/monthly', [AdminPackagesController::class, 'monthlySales']);
+
+    // Citas pendientes de un usuario
+    Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class, 'pendingByUserId']);
+
+    // Contar citas pendientes totales
+    Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
 
     Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
 
@@ -325,6 +341,9 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 // ===== COMENTARIOS (públicos + autenticados) =====
 // Obtener todos los comentarios (público, sin autenticación)
 Route::get('/comments', [CommentsController::class, 'index']);
+
+// Obtener estadísticas de puntuaciones (público, para dashboard)
+Route::get('/comments/ratings/stats', [CommentsController::class, 'ratings']);
 
 // Crear comentario (requiere autenticación)
 Route::middleware('auth:sanctum')->post('/comments', [CommentsController::class, 'store']);

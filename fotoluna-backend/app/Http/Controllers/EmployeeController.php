@@ -4,10 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Package;
+use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeController extends Controller
 {
+    /**
+     * Devuelve promedio de puntuaciones para cada fotógrafo/empleado
+     */
+    public function ratings()
+    {
+        $employees = Employee::all();
+        
+        $data = $employees->map(function ($emp) {
+            // Obtener user_id del empleado
+            $userId = $emp->user_id;
+            
+            // Calcular promedio de comentarios donde photographer_id = user_id
+            $avgRating = Comment::where('photographer_id', $userId)
+                ->avg('rating');
+            
+            return [
+                'employeeId' => $emp->employeeId,
+                'name' => trim($emp->firstNameEmployee . ' ' . $emp->lastNameEmployee),
+                'averageRating' => $avgRating ? round($avgRating, 2) : 0,
+            ];
+        });
+        
+        return response()->json(['success' => true, 'data' => $data], 200);
+    }
+
     /**
      * Devuelve todos los empleados para el selector de fotógrafo (público)
      */
