@@ -2,6 +2,7 @@ import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import React from "react";
 import "../Styles/home.css";
 import { useAuth } from "../../../../context/useAuth";
+import WeatherCardFallback from "../../../../components/WeatherCardFallback";
 
 const EmployeeHome: React.FC = () => {
     const { user } = useAuth();
@@ -16,12 +17,7 @@ const EmployeeHome: React.FC = () => {
                         <p>Es un día perfecto para crear fotos increíbles</p>
                     </div>
                     <div className="weather-info">
-                        <div className="weather-icon">
-                            <i className="bi bi-cloud-sun-fill"></i>
-                        </div>
-                        <div className="weather-details">
-                            <p>Parcialmente nublado</p>
-                        </div>
+                        <WeatherCardFallback />
                     </div>
                 </section>
 
