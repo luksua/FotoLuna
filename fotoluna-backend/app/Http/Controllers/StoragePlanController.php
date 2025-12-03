@@ -10,6 +10,14 @@ use App\Models\CloudPhoto;
 
 class StoragePlanController extends Controller
 {
+    public function indexCustomer()
+{
+    $plans = StoragePlan::where('is_active', true)
+        ->orderBy('price')
+        ->get();
+
+    return response()->json($plans);
+}
     public function index(Request $request)
     {
         // Si ya estás usando /api/storage/dashboard para el front,

@@ -20,12 +20,18 @@ class RegisterRequest extends FormRequest
             'password' => 'required|string|min:8|confirmed',
             'role' => 'nullable|in:admin,empleado,cliente',
 
+            // 🚨 CAMPO AÑADIDO: ID del empleado que crea al cliente
+            // El frontend lo envía siempre si es un registro manual por un empleado.
+            'employee_id' => 'nullable|integer|exists:users,id',
+            // Usamos 'required_if:role,cliente' para asegurar que se envíe solo al crear un cliente.
+
             // campos específicos para cliente (se validan si role == cliente)
             'firstNameCustomer' => 'required_if:role,cliente|string|max:255',
             'lastNameCustomer' => 'required_if:role,cliente|string|max:255',
-            'phoneCustomer' => 'nullable:role,cliente|string|max:255',
-            'documentType' => 'nullable:role,cliente|in:CC,CE,PAS',
-            'documentNumber' => 'nullable:role,cliente|string|max:255',
+            // HE CORREGIDO la sintaxis de 'nullable' aquí
+            'phoneCustomer' => 'nullable|string|max:255',
+            'documentType' => 'nullable|in:CC,CE,PAS',
+            'documentNumber' => 'nullable|string|max:255',
             'photoCustomer' => 'sometimes|file|image|max:5120',
 
             // campos específicos para empleado (se validan si role == empleado)

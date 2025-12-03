@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Button, Modal, Form } from "react-bootstrap";
 import MonthSection from "../Components/MonthSection";
@@ -20,7 +20,7 @@ interface ClientsByMonth {
     [month: string]: Client[];
 }
 
-const EmployeeCustomers: React.FC = () => {
+const EmployeeCustomers: React.FC = React.memo(() => {
     const [clientsByMonth, setClientsByMonth] = useState<ClientsByMonth>({});
     const [searchTerm, setSearchTerm] = useState("");
     const [filterMonth, setFilterMonth] = useState("Todos");
@@ -99,40 +99,42 @@ const EmployeeCustomers: React.FC = () => {
     // ==========================
     //   FILTRADO POR MES Y BUSCADOR
     // ==========================
-    const filteredClients: ClientsByMonth = Object.entries(
-        clientsByMonth
-    ).reduce((acc: ClientsByMonth, [month, clients]) => {
-        if (filterMonth !== "Todos" && month !== filterMonth) return acc;
+    const filteredClients: ClientsByMonth = useMemo(() => {
+        return Object.entries(
+            clientsByMonth
+        ).reduce((acc: ClientsByMonth, [month, clients]) => {
+            if (filterMonth !== "Todos" && month !== filterMonth) return acc;
 
-        const filtered = clients.filter((c) => {
-            const term = searchTerm.toLowerCase();
+            const filtered = clients.filter((c) => {
+                const term = searchTerm.toLowerCase();
 
-            const nameMatch = c.name.toLowerCase().includes(term);
-            const documentMatch =
-                c.documentNumber?.toString().toLowerCase().includes(term);
+                const nameMatch = c.name.toLowerCase().includes(term);
+                const documentMatch =
+                    c.documentNumber?.toString().toLowerCase().includes(term);
 
-            return nameMatch || documentMatch;
-        });
+                return nameMatch || documentMatch;
+            });
 
-        if (filtered.length > 0) acc[month] = filtered;
-        return acc;
-    }, {});
+            if (filtered.length > 0) acc[month] = filtered;
+            return acc;
+        }, {});
+    }, [clientsByMonth, filterMonth, searchTerm]);
 
     // ==========================
     //   CLICK EN "VER MÁS"
     // ==========================
-    const handleClientClick = (client: Client) => {
+    const handleClientClick = useCallback((client: Client) => {
         setSelectedClient(client);
         setShowClientModal(true);
-    };
+    }, []);
 
     // ==========================
     //   CUANDO SE CREA UN CLIENTE DESDE EL MODAL
     // ==========================
-    const handleCustomerCreated = () => {
+    const handleCustomerCreated = useCallback(() => {
         setShowModal(false);
         fetchCustomers();
-    };
+    }, [fetchCustomers]);
 
     return (
         <EmployeeLayout>
@@ -225,6 +227,6 @@ const EmployeeCustomers: React.FC = () => {
             </div>
         </EmployeeLayout>
     );
-};
+});
 
 export default EmployeeCustomers;

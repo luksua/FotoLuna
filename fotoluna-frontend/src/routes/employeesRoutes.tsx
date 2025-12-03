@@ -1,20 +1,62 @@
-import HomeEmployee from "../features/Employee/Home/Pages/HomeEmployee";
-import AppointmentsEmployee from "../features/Employee/Appointment/Pages/ApointmentsEmploye";
-import EmployeeUpload from "../features/Employee/Upload/Pages/Upload";
-import AdminEmployee from "../features/Employee/PhotoAdmin/Pages/PhotoAdmin";
-import CustomersEmployee from "../features/Employee/Customers/Pages/CustomersEmployee";
-import EmployeeNotifications from "../features/Employee/Notification/Pages/NotiFicationEmploye";
-import Payments from "../features/Employee/Payment/Pages/PaymentEmployee";
+import { lazy, Suspense } from "react";
+import Spinner from "../features/Employee/Appointment/Components/Spinner";
 
-export const employeeRoutes = [
-{
+const HomeEmployee = lazy(() => import("../features/Employee/Home/Pages/HomeEmployee"));
+const AppointmentsEmployee = lazy(() => import("../features/Employee/Appointment/Pages/ApointmentsEmploye"));
+const EmployeeUpload = lazy(() => import("../features/Employee/Upload/Pages/Upload"));
+const AdminEmployee = lazy(() => import("../features/Employee/PhotoAdmin/Pages/PhotoAdmin"));
+const CustomersEmployee = lazy(() => import("../features/Employee/Customers/Pages/CustomersEmployee"));
+const Payments = lazy(() => import("../features/Employee/Payment/Pages/PaymentEmployee"));
+
+const employeeRoutes = [
+    {
         path: "/empleado",
-        element: <HomeEmployee />
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <HomeEmployee />
+            </Suspense>
+        ),
     },
-    { path: "/employee/appointments", element: <AppointmentsEmployee /> },
-    { path: "/employee/upload", element: <EmployeeUpload /> },
-    { path: "/employee/admin", element: <AdminEmployee /> },
-    { path: "/employee/customers", element: <CustomersEmployee /> },
-    { path: "/employee/notifications", element: <EmployeeNotifications /> },
-    { path: "/employee/payments", element: <Payments /> },
+    {
+        path: "/employee/appointments",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AppointmentsEmployee />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/employee/upload",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <EmployeeUpload />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/employee/admin",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AdminEmployee />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/employee/customers",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <CustomersEmployee />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/employee/payments",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <Payments />
+            </Suspense>
+        ),
+    },
 ];
+
+export { employeeRoutes };

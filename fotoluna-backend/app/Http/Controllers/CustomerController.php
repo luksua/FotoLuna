@@ -273,4 +273,54 @@ class CustomerController extends Controller
     {
         //
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->query('query');
+        $user = $request->user();
+
+        // 1. Verificación mínima de la consulta
+        if (!$query || strlen($query) < 2) {
+            // Devuelve un array vacío si la consulta es muy corta
+            return response()->json([]);
+        }
+
+        $customers = Customer::query()
+            // Buscar en las columnas de nombre y documento
+            ->where(function ($q) use ($query) {
+                $q->where('firstNameCustomer', 'LIKE', "%{$query}%")
+                    ->orWhere('lastNameCustomer', 'LIKE', "%{$query}%")
+                    ->orWhere('documentNumber', 'LIKE', "%{$query}%");
+            });
+
+        // 2. 🔐 Regla de Seguridad: Filtrar clientes por empleado
+        if ($user && $user->employee) {
+            $employeeId = $user->employee->employeeId;
+
+            $customers->where(function ($q) use ($employeeId, $user) {
+                // Clientes asociados por booking con este empleado
+                $q->whereHas('appointments.bookings', function ($sub) use ($employeeId) {
+                    $sub->where('employeeIdFK', $employeeId);
+                })
+                    // O clientes que fueron creados por este usuario
+                    ->orWhere('created_by_user_id', $user->id);
+            });
+        }
+
+        $results = $customers
+            ->limit(10) // Limitar resultados para autocompletado
+            ->get(['customerId', 'firstNameCustomer', 'lastNameCustomer', 'documentNumber'])
+            ->map(function (Customer $customer) {
+                // 3. Formatear la salida para el Frontend (ID y Nombre completo)
+                $fullName = trim("{$customer->firstNameCustomer} {$customer->lastNameCustomer}");
+
+                return [
+                    'id' => $customer->customerId,
+                    'name' => $fullName,
+                    'documentNumber' => $customer->documentNumber,
+                ];
+            })->values();
+
+        return response()->json($results);
+    }
 }

@@ -1,0 +1,27 @@
+.custom-file-upload {
+    display: inline-block;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.custom-upload-btn {
+    background-color: #C792DF;
+    color: white;
+    border: none;
+}
+
+.custom2-upload-btn {
+    background-color: #b37cc5;
+    color: white;
+    border: none;
+}
+
+.custom-upload-btn:hover {
+    background-color: #a47ec8;
+    color: white;
+}
+
+.custom2-upload-btn:hover {
+    background-color: #876ba0;
+    color: white;
+}

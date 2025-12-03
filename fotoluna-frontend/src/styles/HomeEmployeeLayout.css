@@ -1,0 +1,46 @@
+.layout-root {
+    display: flex;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-left: 200px;
+    margin-top: 70px;
+    width: calc(100% - 200px);
+}
+
+.scrollspy-example-2 {
+    flex: 1;
+    overflow-y: auto;
+    padding-left: 40px;
+    padding-right: 32px;
+    padding-top: 15px;
+    padding-bottom: 24px;
+    background: #f7f3fa46;
+    min-height: 0;
+}
+
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 70px;
+        width: calc(100% - 70px);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 0 12px;
+    }
+
+    .scrollspy-example-2 {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}

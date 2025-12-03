@@ -1,9 +1,7 @@
-import React, { useState } from "react";
 import "../../styles/EmployeeSidebar.css";
 import { Link, useLocation } from "react-router-dom";
 
 const AdminSidebar: React.FC = () => {
-    const [activeItem, setActiveItem] = useState("inicio");
     const location = useLocation();
 
     const menuItems = [

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import type {
     AssignPhotographerModalProps,
@@ -8,6 +8,31 @@ import type {
     CandidatesResponse,
     AvailabilityStatus,
 } from "./Types/types";
+
+const PAGE_SIZE = 10; // Puedes hacerlo prop si quieres
+
+// Normaliza cualquier string de disponibilidad que venga del backend
+const normalizeAvailability = (value: any): AvailabilityStatus => {
+    if (!value) return "busy"; // fallback, ajusta según tu lógica
+
+    const v = String(value).trim().toLowerCase();
+
+    // libres
+    if (v.includes("free") || v.includes("available") || v.includes("disponible")) {
+        return "free";
+    }
+    // parciales
+    if (v.includes("partial") || v.includes("parcial")) {
+        return "partial";
+    }
+    // ocupados
+    if (v.includes("busy") || v.includes("ocupado")) {
+        return "busy";
+    }
+
+    // por defecto
+    return "busy";
+};
 
 const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
     show,
@@ -28,13 +53,23 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
         useState<AvailabilityStatus | "all">("all");
     const [sortBy, setSortBy] = useState<"score" | "load">("score");
 
+    // paginación
+    const [currentPage, setCurrentPage] = useState<number>(1);
+
     useEffect(() => {
         if (!show || !appointment) return;
         loadCandidates();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show, appointment?.appointmentId]);
 
+    // Cuando cambien filtros/orden/reset de modal, vuelve a la página 1
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterAvailability, sortBy, show]);
+
     const loadCandidates = async () => {
+        if (!appointment) return;
+
         setLoadingCandidates(true);
         try {
             const response = await axios.get<CandidatesResponse>(
@@ -42,8 +77,24 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                 { headers: getAuthHeaders() }
             );
 
-            setSuggested(response.data.suggestedEmployee ?? null);
-            setCandidates(response.data.employees ?? []);
+            // Normalizamos disponibilidad para que siempre sea "free" | "partial" | "busy"
+            const rawSuggested = response.data.suggestedEmployee ?? null;
+            const normalizedSuggested = rawSuggested
+                ? {
+                    ...rawSuggested,
+                    availabilityStatus: normalizeAvailability(rawSuggested.availabilityStatus),
+                }
+                : null;
+
+            const normalizedEmployees: CandidateEmployee[] = (response.data.employees ?? []).map(
+                (emp) => ({
+                    ...emp,
+                    availabilityStatus: normalizeAvailability(emp.availabilityStatus),
+                })
+            );
+
+            setSuggested(normalizedSuggested);
+            setCandidates(normalizedEmployees);
         } catch (error) {
             console.error(error);
             alert("Error cargando los candidatos.");
@@ -107,19 +158,41 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
         );
     };
 
-    const filteredCandidates = candidates
-        .filter((c) => {
-            if (filterAvailability === "all") return true;
-            return c.availabilityStatus === filterAvailability;
-        })
-        .sort((a, b) => {
-            if (sortBy === "score") return (b.score || 0) - (a.score || 0);
-            if (sortBy === "load")
-                return (a.dayAppointmentsCount || 0) - (b.dayAppointmentsCount || 0);
-            return 0;
-        });
+    // --- Filtros + ordenamiento memoizados ---
+    const filteredCandidates = useMemo(() => {
+        return candidates
+            .filter((c) => {
+                if (filterAvailability === "all") return true;
+                return c.availabilityStatus === filterAvailability;
+            })
+            .sort((a, b) => {
+                if (sortBy === "score") return (b.score || 0) - (a.score || 0);
+                if (sortBy === "load")
+                    return (a.dayAppointmentsCount || 0) - (b.dayAppointmentsCount || 0);
+                return 0;
+            });
+    }, [candidates, filterAvailability, sortBy]);
 
-    if (!show) return null;
+    // --- Paginación sobre los candidatos filtrados ---
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredCandidates.length / PAGE_SIZE)
+    );
+
+    // Si la cantidad de registros cambia y la página actual queda fuera de rango, ajústala
+    useEffect(() => {
+        setCurrentPage((prev) =>
+            prev > totalPages ? totalPages : prev < 1 ? 1 : prev
+        );
+    }, [totalPages]);
+
+    const paginatedCandidates = useMemo(() => {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        return filteredCandidates.slice(start, end);
+    }, [filteredCandidates, currentPage]);
+
+    if (!show || !appointment) return null;
 
     return (
         <>
@@ -173,7 +246,6 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                     )}
                                 </div>
                             </div>
-
 
                             {loadingCandidates ? (
                                 <p>Cargando candidatos...</p>
@@ -257,7 +329,6 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                             </select>
                                         </div>
                                     </div>
-                                    
 
                                     {/* Tabla candidatos */}
                                     <div className="table-responsive">
@@ -273,8 +344,9 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {filteredCandidates.map((c) => (
-                                                    <tr key={c.employeeId}
+                                                {paginatedCandidates.map((c) => (
+                                                    <tr
+                                                        key={c.employeeId}
                                                         onClick={() =>
                                                             setFocusedEmployeeId((prev) =>
                                                                 prev === c.employeeId ? null : c.employeeId
@@ -296,17 +368,101 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                                                 type="button"
                                                                 className="btn btn-sm btn-outline-success"
                                                                 disabled={
-                                                                    assigning || c.availabilityStatus === "busy"
+                                                                    assigning ||
+                                                                    c.availabilityStatus === "busy"
                                                                 }
-                                                                onClick={() => handleAssign(c.employeeId)}
+                                                                onClick={(e) => {
+                                                                    // Evita que el click en el botón dispare también el onClick del <tr>
+                                                                    e.stopPropagation();
+                                                                    handleAssign(c.employeeId);
+                                                                }}
                                                             >
                                                                 Elegir
                                                             </button>
                                                         </td>
                                                     </tr>
                                                 ))}
+
+                                                {paginatedCandidates.length === 0 && (
+                                                    <tr>
+                                                        <td colSpan={6} className="text-center text-muted">
+                                                            No hay fotógrafos que coincidan con los filtros.
+                                                        </td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    {/* Controles de paginación */}
+                                    <div className="d-flex justify-content-between align-items-center mt-2">
+                                        <small className="text-muted">
+                                            Mostrando{" "}
+                                            {filteredCandidates.length === 0
+                                                ? 0
+                                                : (currentPage - 1) * PAGE_SIZE + 1}{" "}
+                                            -{" "}
+                                            {Math.min(
+                                                currentPage * PAGE_SIZE,
+                                                filteredCandidates.length
+                                            )}{" "}
+                                            de {filteredCandidates.length} fotógrafos
+                                        </small>
+
+                                        <nav>
+                                            <ul className="pagination pagination-sm mb-0">
+                                                <li
+                                                    className={`page-item ${
+                                                        currentPage === 1 ? "disabled" : ""
+                                                    }`}
+                                                >
+                                                    <button
+                                                        className="page-link"
+                                                        onClick={() =>
+                                                            setCurrentPage((p) => Math.max(1, p - 1))
+                                                        }
+                                                    >
+                                                        Anterior
+                                                    </button>
+                                                </li>
+
+                                                {Array.from(
+                                                    { length: totalPages },
+                                                    (_, i) => i + 1
+                                                ).map((page) => (
+                                                    <li
+                                                        key={page}
+                                                        className={`page-item ${
+                                                            page === currentPage ? "active" : ""
+                                                        }`}
+                                                    >
+                                                        <button
+                                                            className="page-link"
+                                                            onClick={() => setCurrentPage(page)}
+                                                        >
+                                                            {page}
+                                                        </button>
+                                                    </li>
+                                                ))}
+
+                                                <li
+                                                    className={`page-item ${
+                                                        currentPage === totalPages ? "disabled" : ""
+                                                    }`}
+                                                >
+                                                    <button
+                                                        className="page-link"
+                                                        onClick={() =>
+                                                            setCurrentPage((p) =>
+                                                                Math.min(totalPages, p + 1)
+                                                            )
+                                                        }
+                                                    >
+                                                        Siguiente
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </nav>
                                     </div>
 
                                     {focusedEmployeeId && (
@@ -333,7 +489,10 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                                                         key={idx}
                                                                         className="px-2 py-1 rounded border bg-light"
                                                                     >
-                                                                        <div className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+                                                                        <div
+                                                                            className="fw-semibold"
+                                                                            style={{ fontSize: "0.85rem" }}
+                                                                        >
                                                                             {cita.time}
                                                                         </div>
                                                                         <small className="text-muted">
@@ -348,8 +507,8 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                             })()}
                                         </div>
                                     )}
-                                    <br />
 
+                                    <br />
 
                                     <small className="text-muted">
                                         Leyenda:&nbsp;
@@ -359,7 +518,6 @@ const AssignPhotographerModal: React.FC<AssignPhotographerModalProps> = ({
                                         </span>
                                         <span className="badge bg-danger">Ocupado</span>
                                     </small>
-
                                 </>
                             )}
                         </div>

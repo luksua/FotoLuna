@@ -387,13 +387,23 @@ class AppointmentController extends Controller
     {
         $user = $request->user();
 
-        // Asegurar que el appointment pertenece al cliente logueado
-        if (!$user || !$user->customer || $appointment->customerIdFK !== $user->customer->customerId) {
+        if (!$user) {
+            abort(401, 'No autenticado');
+        }
+
+        $isCustomerOwner = $user->customer && $appointment->customerIdFK == $user->customer->customerId;
+        $isAssignedEmployee = $user->employee && $appointment->employeeIdFK == $user->employee->employeeId;
+
+        // 👇 Nuevo: permitir a cualquier usuario con rol "empleado"
+        $isEmployeeRole = $user->role === 'empleado';
+        $isAdmin = $user->role === 'admin';
+
+        if (!($isCustomerOwner || $isAssignedEmployee || $isAdmin || $isEmployeeRole)) {
             abort(403, 'No autorizado');
         }
 
         // Asegurar que la cuota pertenece a esa cita
-        if ($installment->booking->appointmentIdFK !== $appointment->appointmentId) {
+        if ((int) $installment->booking->appointmentIdFK !== (int) $appointment->appointmentId) {
             abort(403, 'No autorizado');
         }
 
@@ -410,6 +420,7 @@ class AppointmentController extends Controller
         return response()->download($fullPath);
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
@@ -421,7 +432,7 @@ class AppointmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function storeCustomer(Request $request)
     {
         try {
             \Log::info('Datos recibidos en store appointment:', $request->all());
@@ -450,19 +461,15 @@ class AppointmentController extends Controller
 
             $customerId = $user->customer->customerId;
 
-            $employeeId = $request->employeeIdFK ?? null;
-
-
-
             // ✅ Crear la cita
             $appointment = Appointment::create([
                 'customerIdFK' => $customerId,
                 'eventIdFK' => $request->eventIdFK,
                 'appointmentDate' => $request->appointmentDate,
                 'appointmentTime' => $request->appointmentTime,
-                'appointmentTimeEnd' => $request->appointmentTimeEnd ?? null,
                 'place' => $request->place ?? null,
                 'comment' => $request->comment,
+                'appointmentStatus' => 'Pending confirmation',
             ]);
 
             // ✅ Respuesta JSON limpia
@@ -474,6 +481,75 @@ class AppointmentController extends Controller
         } catch (Throwable $e) {
             \Log::error('Error al crear cita: ' . $e->getMessage());
 
+            return response()->json([
+                'message' => 'Error interno del servidor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // STORE PARA EMPLOYEES
+    public function store(Request $request)
+    {
+        try {
+            \Log::info('Datos recibidos en store appointment:', $request->all());
+
+            // 1. ✅ VALIDACIÓN
+            $validator = Validator::make($request->all(), [
+                'customerIdFK' => 'required|integer|exists:customers,customerId',
+                'eventIdFK' => 'required|exists:events,eventId',
+                'appointmentDate' => 'required|date|after_or_equal:today',
+                'appointmentTime' => 'required|date_format:H:i:s',
+
+                'appointmentDuration' => 'nullable|integer|min:1',
+                'appointmentTimeEnd' => 'nullable|date_format:H:i:s|after:appointmentTime',
+
+                'place' => 'nullable|string|max:100',
+                'comment' => 'nullable|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            // 2. 🔐 OBTENER LA ID DEL EMPLEADO CREADOR
+            $user = $request->user();
+            $employeeCreatorId = null;
+
+            // Asignamos la ID del empleado si el usuario autenticado tiene el perfil 'employee'
+            if ($user && $user->employee) {
+                // Asumiendo que employeeIdFK en appointments apunta a employees.employeeId
+                $employeeCreatorId = $user->employee->employeeId;
+            }
+
+            $customerId = $request->customerIdFK; // ID del cliente seleccionado.
+
+            // 3. ✅ CREAR LA CITA
+            $appointment = Appointment::create([
+                'customerIdFK' => $customerId,
+                'eventIdFK' => $request->eventIdFK,
+
+                // 🚨 CORRECCIÓN CLAVE: Guardar el ID del empleado que creó la cita
+                'employeeIdFK' => $employeeCreatorId,
+
+                'appointmentDate' => $request->appointmentDate,
+                'appointmentTime' => $request->appointmentTime,
+                'appointmentDuration' => $request->appointmentDuration ?? 60,
+                'appointmentTimeEnd' => $request->appointmentTimeEnd ?? null,
+                'place' => $request->place ?? null,
+                'comment' => $request->comment ?? null,
+                'appointmentStatus' => 'Pending confirmation',
+            ]);
+
+            // 4. ✅ RESPUESTA
+            return response()->json([
+                'message' => 'Cita creada correctamente',
+                'appointmentId' => $appointment->appointmentId,
+                'status' => $appointment->appointmentStatus,
+            ], 201);
+
+        } catch (Throwable $e) {
+            \Log::error('Error al crear cita: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error interno del servidor',
                 'error' => $e->getMessage(),
@@ -573,120 +649,120 @@ class AppointmentController extends Controller
     //     return response()->json($days);
     // }
 
-   public function availability(Request $request)
-{
-    $baseSlotsWeekday = [
-        '08:00:00',
-        '09:00:00',
-        '10:00:00',
-        '11:00:00',
-        '12:00:00',
-        '13:00:00',
-        '14:00:00',
-        '15:00:00',
-        '16:00:00',
-        '17:00:00',
-        '18:00:00',
-        '19:00:00',
-    ];
+    public function availability(Request $request)
+    {
+        $baseSlotsWeekday = [
+            '08:00:00',
+            '09:00:00',
+            '10:00:00',
+            '11:00:00',
+            '12:00:00',
+            '13:00:00',
+            '14:00:00',
+            '15:00:00',
+            '16:00:00',
+            '17:00:00',
+            '18:00:00',
+            '19:00:00',
+        ];
 
-    $baseSlotsSunday = [
-        '09:00:00',
-        '10:00:00',
-        '11:00:00',
-        '14:00:00',
-        '15:00:00',
-        '16:00:00',
-    ];
+        $baseSlotsSunday = [
+            '09:00:00',
+            '10:00:00',
+            '11:00:00',
+            '14:00:00',
+            '15:00:00',
+            '16:00:00',
+        ];
 
-    $date  = $request->query('date');
-    $month = $request->query('month');
-    $year  = $request->query('year', now()->year);
+        $date = $request->query('date');
+        $month = $request->query('month');
+        $year = $request->query('year', now()->year);
 
-    /* ------------ DÍA ESPECÍFICO ------------ */
-    if ($date) {
-        $day = Carbon::parse($date);
+        /* ------------ DÍA ESPECÍFICO ------------ */
+        if ($date) {
+            $day = Carbon::parse($date);
 
-        // días pasados bloqueados
-        if ($day->isBefore(Carbon::today())) {
-            return response()->json([
-                'available'   => [],
-                'blocked'     => [],
-                'allBlocked'  => true,
-            ]);
-        }
-
-        $dayOfWeek = $day->dayOfWeek;
-        $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
-            ? $baseSlotsSunday
-            : $baseSlotsWeekday;
-
-        $appointments = Appointment::whereDate('appointmentDate', $date)
-            ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
-            ->pluck('appointmentTime')
-            ->toArray();
-
-        $available = array_values(array_diff($baseSlots, $appointments));
-        $allBlocked = count($available) === 0;
-
-        return response()->json([
-            'available'  => $available,
-            'blocked'    => $appointments,
-            'allBlocked' => $allBlocked,
-        ]);
-    }
-
-    /* ------------ DISPONIBILIDAD MENSUAL ------------ */
-    if ($month) {
-        $today = Carbon::today();
-
-        // Traemos todas las citas del mes
-        $appointments = Appointment::whereMonth('appointmentDate', $month)
-            ->whereYear('appointmentDate', $year)
-            ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
-            ->get(['appointmentDate', 'appointmentTime']);
-
-        // Agrupamos por fecha
-        $grouped = $appointments->groupBy(function ($a) {
-            return Carbon::parse($a->appointmentDate)->toDateString(); // Y-m-d
-        });
-
-        $days = [];
-
-        $current = Carbon::createFromDate($year, $month, 1)->startOfDay();
-        $end     = (clone $current)->endOfMonth();
-
-        while ($current->lessThanOrEqualTo($end)) {
-            $dateStr   = $current->toDateString();
-            $dayOfWeek = $current->dayOfWeek;
-
-            // Past days → bloqueados
-            if ($current->isBefore($today)) {
-                $days[$dateStr] = ['allBlocked' => true];
-                $current->addDay();
-                continue;
+            // días pasados bloqueados
+            if ($day->isBefore(Carbon::today())) {
+                return response()->json([
+                    'available' => [],
+                    'blocked' => [],
+                    'allBlocked' => true,
+                ]);
             }
 
-            // slots según día (mismo criterio que arriba)
-            $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+            $dayOfWeek = $day->dayOfWeek;
+            $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
                 ? $baseSlotsSunday
                 : $baseSlotsWeekday;
 
-            $taken = ($grouped[$dateStr] ?? collect())
+            $appointments = Appointment::whereDate('appointmentDate', $date)
+                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
                 ->pluck('appointmentTime')
                 ->toArray();
 
-            $available = array_diff($baseSlotsForDay, $taken);
-            $days[$dateStr] = ['allBlocked' => count($available) === 0];
+            $available = array_values(array_diff($baseSlots, $appointments));
+            $allBlocked = count($available) === 0;
 
-            $current->addDay();
+            return response()->json([
+                'available' => $available,
+                'blocked' => $appointments,
+                'allBlocked' => $allBlocked,
+            ]);
         }
 
-        return response()->json($days);
-    }
+        /* ------------ DISPONIBILIDAD MENSUAL ------------ */
+        if ($month) {
+            $today = Carbon::today();
 
-    return response()->json(['message' => 'Debe proporcionar date o month'], 400);
-}
+            // Traemos todas las citas del mes
+            $appointments = Appointment::whereMonth('appointmentDate', $month)
+                ->whereYear('appointmentDate', $year)
+                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+                ->get(['appointmentDate', 'appointmentTime']);
+
+            // Agrupamos por fecha
+            $grouped = $appointments->groupBy(function ($a) {
+                return Carbon::parse($a->appointmentDate)->toDateString(); // Y-m-d
+            });
+
+            $days = [];
+
+            $current = Carbon::createFromDate($year, $month, 1)->startOfDay();
+            $end = (clone $current)->endOfMonth();
+
+            while ($current->lessThanOrEqualTo($end)) {
+                $dateStr = $current->toDateString();
+                $dayOfWeek = $current->dayOfWeek;
+
+                // Past days → bloqueados
+                if ($current->isBefore($today)) {
+                    $days[$dateStr] = ['allBlocked' => true];
+                    $current->addDay();
+                    continue;
+                }
+
+                // slots según día (mismo criterio que arriba)
+                $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+                    ? $baseSlotsSunday
+                    : $baseSlotsWeekday;
+
+                $taken = ($grouped[$dateStr] ?? collect())
+                    ->pluck('appointmentTime')
+                    ->toArray();
+
+                $available = array_diff($baseSlotsForDay, $taken);
+                $days[$dateStr] = ['allBlocked' => count($available) === 0];
+
+                $current->addDay();
+            }
+
+            return response()->json($days);
+        }
+
+        return response()->json(['message' => 'Debe proporcionar date o month'], 400);
+    }
 
 
 
@@ -736,47 +812,72 @@ class AppointmentController extends Controller
      */
     public function employeeAppointments(Request $request)
     {
-        $employee = $request->user()->employee;
+        $user = $request->user();
 
-        if (!$employee) {
+        // 1. CONTROL DE ACCESO
+        if (!$user || !$user->employee) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
-        $rows = Booking::query()
-            ->where('employeeIdFK', $employee->employeeId)
-            ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
-            ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
-            ->selectRaw('
-                appointments.appointmentId,
-                bookings.bookingId,
-                appointments.appointmentDate AS date,
-                appointments.appointmentTime AS startTime,
-                appointments.place,
-                appointments.comment,
-                appointments.appointmentStatus AS status,
-                customers.firstNameCustomer AS firstName,
-                customers.lastNameCustomer  AS lastName,
-                customers.documentNumber    AS document,
-                customers.emailCustomer     AS email
-            ')
-            ->orderBy('appointments.appointmentDate')
-            ->orderBy('appointments.appointmentTime')
+        $employeeId = $user->employee->employeeId;
+
+        // 2. CONSULTA Y FILTRO
+        $appointments = Appointment::query()
+            ->with([
+                'customer',
+                // Cargar SÓLO los bookings asignados a este empleado (para el mapeo)
+                'bookings' => function ($query) use ($employeeId) {
+                    $query->where('employeeIdFK', $employeeId);
+                }
+            ])
+
+            // 🚨 FILTRO PRINCIPAL (Condición OR)
+            ->where(function ($query) use ($employeeId) {
+
+                // CONDISIÓN A: La cita fue creada por este empleado
+                $query->where('employeeIdFK', $employeeId);
+
+                // CONDISIÓN B (OR): La cita tiene un booking asociado a ESTE empleado
+                $query->orWhereHas('bookings', function ($subQuery) use ($employeeId) {
+                    $subQuery->where('employeeIdFK', $employeeId);
+                });
+
+            })
+            ->orderBy('appointmentDate')
+            ->orderBy('appointmentTime')
             ->get();
 
-        $data = $rows->map(function ($r) {
+        // 3. MAPEO DE DATOS
+        $data = $appointments->map(function ($a) use ($employeeId) {
+            $customer = $a->customer;
+
+            // Buscar el booking específico (que ya fue cargado con el filtro 'with')
+            $booking = $a->bookings
+                ? $a->bookings->where('employeeIdFK', $employeeId)->first()
+                : null;
+
+            // Si no hay customer, descartar (seguridad)
+            if (!$customer)
+                return null;
+
             return [
-                'appointmentId' => $r->appointmentId,
-                'bookingId' => $r->bookingId,
-                'date' => $r->date,
-                'startTime' => $r->startTime,
-                'place' => $r->place,
-                'comment' => $r->comment,
-                'status' => $r->status,
-                'clientName' => trim("{$r->firstName} {$r->lastName}"),
-                'clientDocument' => $r->document,
-                'clientEmail' => $r->email,
+                'appointmentId' => $a->appointmentId,
+                // bookingId será null si la cita fue solo creada por él (sin booking asignado aún)
+                'bookingId' => $booking->bookingId ?? null,
+                'date' => $a->appointmentDate,
+                'startTime' => $a->appointmentTime,
+                'place' => $a->place,
+                'comment' => $a->comment,
+                'status' => $a->appointmentStatus,
+
+                'clientName' => trim("{$customer->firstNameCustomer} {$customer->lastNameCustomer}"),
+                'clientDocument' => $customer->documentNumber,
+                'clientEmail' => $customer->emailCustomer,
+
+                // Indicador para el frontend: útil para saber si necesita asignar un paquete/booking
+                'needsAssignment' => $booking === null,
             ];
-        });
+        })->filter()->values();
 
         return response()->json($data);
     }
@@ -790,31 +891,40 @@ class AppointmentController extends Controller
      */
     public function updateByEmployee(Request $request, $appointmentId)
     {
+        // 🚨 CORRECCIÓN CLAVE: Inicializar $user al inicio del método
         $user = $request->user();
 
-        // Verificar que el usuario tenga empleado asociado
-        $employee = $user->employee;
-        if (!$employee) {
+        // 1. VERIFICACIÓN DE AUTENTICACIÓN Y ROL
+        if (!$user || !$user->employee) {
             return response()->json([
                 'message' => 'El usuario autenticado no tiene un empleado asociado'
-            ], 403);
+            ], 403); // 403 Forbidden
         }
 
-        // Buscar la cita
+        $employee = $user->employee;
+        $employeeId = $employee->employeeId;
         $appointment = Appointment::findOrFail($appointmentId);
 
-        // Asegurarnos de que esta cita está asignada a este empleado mediante un booking
+        // 2. VERIFICACIÓN DE SEGURIDAD (Creador O Asignado)
+
+        // Buscar el booking que lo asigna (necesario si vamos a actualizar el status del booking)
         $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)
-            ->where('employeeIdFK', $employee->employeeId)
+            ->where('employeeIdFK', $employeeId)
             ->first();
 
-        if (!$booking) {
+        $bookingExists = !is_null($booking);
+
+        // Verificar si el empleado es el creador de la cita (usando la columna en appointments)
+        $isCreator = $appointment->employeeIdFK === $employeeId;
+
+        if (!$bookingExists && !$isCreator) {
+            // Si no es el creador Y no tiene un booking asignado, rechazar el acceso
             return response()->json([
-                'message' => 'Esta cita no está asignada a este empleado'
+                'message' => 'Esta cita no está asignada a este empleado ni fue creada por él.'
             ], 403);
         }
 
-        // ✅ VALIDACIÓN: lo que acepta la API
+        // 3. VALIDACIÓN DE LOS DATOS DE ENTRADA
         $data = $request->validate([
             'date' => ['required', 'date_format:Y-m-d'],
             'startTime' => ['required', 'date_format:H:i'],
@@ -824,15 +934,15 @@ class AppointmentController extends Controller
                 'required',
                 'string',
                 Rule::in([
-                    'Pending confirmation', // pendiente
-                    'Scheduled',            // confirmada
+                    'Pending confirmation',
+                    'Scheduled',
                     'Cancelled',
                     'Completed',
                 ]),
             ],
         ]);
 
-        // ✅ Actualizar la cita con el texto que maneja tu app
+        // 4. ACTUALIZAR APPOINTMENT
         $appointment->update([
             'appointmentDate' => $data['date'],
             'appointmentTime' => $data['startTime'],
@@ -841,33 +951,36 @@ class AppointmentController extends Controller
             'appointmentStatus' => $data['status'],
         ]);
 
-        // ✅ MAPEO: texto de la API → ENUM de la tabla bookings
-        switch ($data['status']) {
-            case 'Pending confirmation':
-                $bookingStatus = 'Pending';
-                break;
-            case 'Scheduled':
-                $bookingStatus = 'Confirmed';
-                break;
-            case 'Cancelled':
-                $bookingStatus = 'Cancelled';
-                break;
-            case 'Completed':
-                $bookingStatus = 'Completed';
-                break;
-            default:
-                $bookingStatus = 'Pending';
+        // 5. ACTUALIZAR BOOKING (SOLO SI EXISTE)
+        if ($booking) {
+            // Mapeo: texto de la API → ENUM de la tabla bookings
+            switch ($data['status']) {
+                case 'Pending confirmation':
+                    $bookingStatus = 'Pending';
+                    break;
+                case 'Scheduled':
+                    $bookingStatus = 'Confirmed';
+                    break;
+                case 'Cancelled':
+                    $bookingStatus = 'Cancelled';
+                    break;
+                case 'Completed':
+                    $bookingStatus = 'Completed';
+                    break;
+                default:
+                    $bookingStatus = 'Pending';
+            }
+
+            $booking->update([
+                'bookingStatus' => $bookingStatus,
+            ]);
         }
 
-        // ✅ Actualizar booking usando SOLO valores válidos del ENUM
-        $booking->update([
-            'bookingStatus' => $bookingStatus,
-        ]);
-
+        // 6. RESPUESTA FINAL
         return response()->json([
             'message' => 'Cita actualizada correctamente',
             'appointment' => $appointment->fresh(),
-            'booking' => $booking->fresh(),
+            'booking' => $booking ? $booking->fresh() : null,
         ], 200);
     }
 
@@ -880,13 +993,13 @@ class AppointmentController extends Controller
     public function pendingByUserId($userId)
     {
         \Log::info("PendingByUserId called with userId: {$userId}");
-        
+
         try {
             // Obtener el customer asociado al user_id
             $customer = Customer::where('user_id', $userId)->first();
-            
+
             \Log::info("Customer found: " . ($customer ? "Yes (id: {$customer->customerId})" : "No"));
-            
+
             if (!$customer) {
                 return response()->json([
                     'success' => true,
@@ -908,14 +1021,14 @@ class AppointmentController extends Controller
             // Transformar datos
             $data = $appointments->map(function ($apt) {
                 return [
-                    'appointmentId' => (int)$apt->appointmentId,
-                    'date' => (string)($apt->appointmentDate ?? ''),
-                    'time' => (string)($apt->appointmentTime ?? ''),
-                    'place' => (string)($apt->place ?? ''),
-                    'eventType' => (string)(optional($apt->event)->eventType ?? 'Sin evento'),
-                    'packageName' => (string)(optional(optional($apt->bookings->first())->package)->packageName ?? 'Sin paquete'),
-                    'comment' => (string)($apt->comment ?? ''),
-                    'status' => (string)($apt->appointmentStatus ?? ''),
+                    'appointmentId' => (int) $apt->appointmentId,
+                    'date' => (string) ($apt->appointmentDate ?? ''),
+                    'time' => (string) ($apt->appointmentTime ?? ''),
+                    'place' => (string) ($apt->place ?? ''),
+                    'eventType' => (string) (optional($apt->event)->eventType ?? 'Sin evento'),
+                    'packageName' => (string) (optional(optional($apt->bookings->first())->package)->packageName ?? 'Sin paquete'),
+                    'comment' => (string) ($apt->comment ?? ''),
+                    'status' => (string) ($apt->appointmentStatus ?? ''),
                 ];
             })->toArray();
 
@@ -937,7 +1050,7 @@ class AppointmentController extends Controller
     {
         try {
             $count = Appointment::whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])->count();
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [

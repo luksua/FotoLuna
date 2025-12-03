@@ -1,8 +1,38 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useState } from "react";
 import "../styles/RegisterUsers.css";
 
+// Definición de la URL base (asumiendo que está en tu .env o similar)
+// const API_BASE = "http://127.0.0.1:8000"; // Ajustar si usas VITE_API_URL
+
+// 🚨 Definición de un tipo para el estado del formulario (mejor práctica)
+// interface RegisterForm {
+//     firstNameEmployee: string;
+//     lastNameEmployee: string;
+//     phoneEmployee: string;
+//     EPS: string;
+//     documentType: string;
+//     documentNumber: string;
+//     emailEmployee: string;
+//     address: string;
+//     photoEmployee: File | null; // El tipo debe ser File
+//     password: string;
+//     employeeType: string;
+//     role: string;
+//     specialty: string;
+//     isAvailable: boolean;
+//     gender: string;
+//     // Campo que Laravel espera para confirmar el password
+//     password_confirmation: string;
+// }
+
+
 const Register = () => {
+    // 🚨 CORRECCIÓN TS6133: 'setIsSubmitting' no estaba definido.
+    // const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // 🚨 Añadimos confirmación de contraseña al estado
     const [form, setForm] = useState({
         firstNameEmployee: "",
         lastNameEmployee: "",
@@ -18,7 +48,7 @@ const Register = () => {
         employeeType: "Employee",
         specialty: "",
         isAvailable: true,
-        gender: "Female"
+        gender: "Female",
     });
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState<"success" | "error" | "">("");
@@ -28,6 +58,7 @@ const Register = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target as HTMLInputElement;
         const { name } = target;
+
         if (target.type === "file") {
             setForm({ ...form, [name]: target.files && target.files[0] });
             return;
@@ -91,6 +122,7 @@ const Register = () => {
             try {
                 data = await res.json();
             } catch (err) {
+                console.log(Error, err);
                 const text = await res.text();
                 setMessage(`Respuesta inesperada del servidor: ${res.status} - ${text}`);
                 setMessageType('error');
@@ -175,6 +207,7 @@ const Register = () => {
                         <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required className="register-input" />
 
                         <label>Correo:</label>
+                        {/* 🚨 CORRECCIÓN: Laravel espera 'email' para la tabla users, pero usaremos emailEmployee en el form */}
                         <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
 
                         <label>Contraseña:</label>
@@ -242,6 +275,10 @@ const Register = () => {
                             <label htmlFor="photoEmployee" className="register-filelabel">Elegir archivo</label>
                             {form.photoEmployee && <span style={{ marginLeft: 8 }}>{(form.photoEmployee as File).name}</span>}
                         </div>
+                        {/* Campo de confirmación de contraseña AÑADIDO */}
+                        {/* <label>Confirmar Contraseña:</label>
+                        <input type="password" name="password_confirmation" value={form.password_confirmation} onChange={handleChange} required className="register-input" /> */}
+
 
                     </div>
                     <div className="register-col">
@@ -283,10 +320,11 @@ const Register = () => {
             </div>
 
             <footer>
-                <p>FotoLuna &copy;  </p>
+                <p>FotoLuna &copy;  </p>
             </footer>
 
         </HomeLayout>
     );
 };
+
 export default Register;
