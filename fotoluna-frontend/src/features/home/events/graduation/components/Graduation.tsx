@@ -83,7 +83,7 @@ const GraduationPhotography: React.FC = () => {
                             "Entrega digital",
                         ],
                     popular: index === 0, // por ejemplo el primero como "popular"
-                    image: pkg.photos?.[0]?.url ?? "/img/bautizo.jpg", // fallback
+                    image: pkg.photos?.[0]?.url ?? "/img/grado.jpg", // fallback
                     // si en el backend tienes un campo category, úsalo; si no, default:
                     category: (pkg.category as Package["category"]) ?? "standard",
                     duration: pkg.duration ?? "1 hora",

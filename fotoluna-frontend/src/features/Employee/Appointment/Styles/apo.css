@@ -18,12 +18,12 @@
 }
 
 .appointments-page .appointments-new-btn {
-    background: linear-gradient(135deg, #f3c4e3, #f687b9);
-    box-shadow: 0 5px 12px rgba(246, 135, 185, 0.35);
+    background: linear-gradient(135deg, #daabdf, #eb88ff);
+    box-shadow: 0 5px 12px rgba(246, 135, 241, 0.35);
 }
 
 .appointments-page .appointments-new-btn:hover {
-    box-shadow: 0 8px 18px rgba(246, 135, 185, 0.45);
+    box-shadow: 0 8px 18px rgba(229, 135, 246, 0.45);
 }
 
 /* =========================================================
@@ -41,8 +41,8 @@
 }
 
 .appointments-page .appointment-card-icon {
-    background: radial-gradient(circle at 30% 30%, #fef2fb, #f49ac3);
-    box-shadow: 0 3px 8px rgba(244, 154, 195, 0.4);
+    background: radial-gradient(circle at 30% 30%, #fef2fb, #630868);
+    box-shadow: 0 3px 8px rgba(231, 154, 244, 0.4);
 }
 
 .appointments-page .card:hover {
@@ -59,7 +59,7 @@
 
 .appointments-page .appointment-card.selected {
     background: #fff9fd;
-    border: 1px solid #f4c5de;
+    border: 1px solid #f4adff;
 }
 
 /* =========================================================
@@ -102,7 +102,7 @@
     background: #f7f7fa;
     color: #777;
     border: none;
-    box-shadow: 0 3px 8px rgba(157, 50, 130, 0.3);
+    box-shadow: 0 3px 8px rgba(141, 50, 157, 0.3);
     transition: transform 0.18s, box-shadow 0.18s;
 }
 
@@ -149,7 +149,7 @@
 .day-column:hover {
      background: #fafafa;
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(217, 130, 189, 0.28);
+    box-shadow: 0 4px 14px rgba(195, 130, 217, 0.28);
 }
 
 .day-column.selected {
@@ -168,8 +168,8 @@
 
 /* Día actual */
 .day-column.today .day-number {
-    border: 2px solid #ee439b;
-    color: #ee439b;
+    border: 2px solid #ca73df;
+    color: #d143ee;
 }
 
 /* Días fuera del mes */
@@ -238,14 +238,14 @@
 
 /* Botón “Nueva cita” estilo pill */
 .appointments-new-btn {
-    background: linear-gradient(135deg, #dcabdf, #ee439b);
+    background: linear-gradient(135deg, #dcabdf, #c943ee);
     border-radius: 999px;
     color: white;
     border: none;
     padding: 0.35rem 0.8rem;
     font-size: 0.85rem;
     font-weight: 600;
-    box-shadow: 0 6px 14px rgba(238, 67, 155, 0.38);
+    box-shadow: 0 6px 14px #daab;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -254,7 +254,7 @@
 
 .appointments-new-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(238, 67, 155, 0.5);
+    box-shadow: 0 10px 22px rgba(204, 67, 238, 0.5);
 }
 
 /* =========================================================
@@ -292,13 +292,13 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ffe5f5, #ee439b);
+    background: radial-gradient(circle at 30% 30%, #ffe5f5, #9e54c1);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(238, 67, 155, 0.45);
+    box-shadow: 0 4px 12px rgba(198, 67, 238, 0.45);
     font-size: 0.9rem;
 }
 
@@ -310,12 +310,12 @@
 .appointment-card-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #262626;
+    color: #000000;
 }
 
 .appointment-card-subtitle {
     font-size: 0.78rem;
-    color: #888;
+    color: #616161;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -325,7 +325,7 @@
 .appointment-card-time {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #444;
+    color: #747474;
     margin-right: 6px;
 }
 
@@ -333,7 +333,7 @@
 .appointment-card-edit {
     border: none;
     background: transparent;
-    color: #c2a4d4;
+    color: #aa7fc3;
     font-size: 0.85rem;
     padding: 2px;
     border-radius: 50%;
@@ -351,7 +351,7 @@
     width: 100%;
     padding-top: 0.45rem;
     margin-top: 0.4rem;
-    border-top: 1px dashed #ecdaf7;
+    border-top: 1px dashed #dcc0ee;
 }
 
 .appointment-card-body-text {
@@ -363,7 +363,7 @@
 .appointment-card-body-meta {
     margin: 0.25rem 0 0;
     font-size: 0.78rem;
-    color: #777;
+    color: #898989;
 }
 
 /* Expandida */
@@ -379,7 +379,7 @@
 /* Cuando está seleccionada visualmente */
 .appointment-card.selected {
     background: #fff4fb;
-    border: 1px solid #f0b2d4;
+    border: 1px solid #d1b2f0;
 }
 
 /* =========================================================
@@ -418,13 +418,13 @@
 
 .form-control-s:focus,
 .form-select-s:focus {
-    border-color: #c995cc;
+    border-color: #c480c7;
     box-shadow: 0 0 0 3px rgba(220, 171, 223, 0.28);
 }
 
 /* Botones modal */
 .accept-btn {
-    background: linear-gradient(135deg, #dcabdf, #ee439b);
+    background: linear-gradient(135deg,#daabdf, #eb88ff);
     color: white;
     border-radius: 12px;
     padding: 10px;
@@ -527,7 +527,7 @@
 .appointments-filter-chip.active {
     background: #fce7f5;
     border-color: #f3b3d4;
-    color: #c23c82;
+    color: #983cc2;
     
 }
 .appointment-dot {

@@ -74,7 +74,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             {photos.length > 0 && !loading && (
                 <div className="text-center mt-5">
                     <button
-                        className="btn btn-primary"
+                        className="btn appointments-new-btn mx-auto"
                         onClick={onNavigateToUpload}
                     >
                         <i className="bi bi-cloud-arrow-up me-2"></i>

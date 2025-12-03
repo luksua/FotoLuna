@@ -25,7 +25,12 @@ type Appointment = {
     status: string;
 };
 
-
+type AppointmentMeta = {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+};
 
 type TabType = 'info' | 'reservas' | 'historial';
 
@@ -39,16 +44,18 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loadingAppointments, setLoadingAppointments] = useState(false);
     const [appointmentsError, setAppointmentsError] = useState<string | null>(null);
+    const [appointmentsMeta, setAppointmentsMeta] = useState<AppointmentMeta | null>(null);
+    const perPage = 5;
 
     // Cargar citas cuando se abre la pestaña de reservas
     const handleTabChange = (tab: TabType) => {
         setActiveTab(tab);
         if (tab === 'reservas' && appointments.length === 0 && !loadingAppointments) {
-            fetchAppointments();
+            fetchAppointments(1);
         }
     };
 
-    const fetchAppointments = async () => {
+    const fetchAppointments = async (page = 1) => {
         setLoadingAppointments(true);
         setAppointmentsError(null);
         try {
@@ -65,9 +72,11 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
             console.log('Debug - User:', user);
             console.log('Debug - userIdToUse:', userIdToUse);
             
-            const response = await fetch(`/api/admin/appointments/pending/${userIdToUse}`, {
-                headers
-            });
+            const response = await fetch(
+                `/api/admin/appointments/pending/${userIdToUse}?page=${page}&per_page=${perPage}`,
+                {
+                    headers
+                });
             console.log('Debug - Response status:', response.status);
             
             const data = await response.json();
@@ -75,6 +84,9 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
             
             if (data.success) {
                 setAppointments(data.data || []);
+                if (data.meta) {
+                    setAppointmentsMeta(data.meta);
+                }
             } else {
                 setAppointmentsError('No se pudieron cargar las citas');
             }
@@ -171,6 +183,25 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
                                             </div>
                                         </div>
                                     ))}
+                                    {appointmentsMeta && appointmentsMeta.last_page > 1 && (
+                                        <div className="admin-pagination" style={{ marginTop: '12px' }}>
+                                            <button
+                                                disabled={appointmentsMeta.current_page <= 1}
+                                                onClick={() => fetchAppointments(appointmentsMeta.current_page - 1)}
+                                            >
+                                                Anterior
+                                            </button>
+                                            <span style={{ minWidth: 140, textAlign: 'center' }}>
+                                                Página {appointmentsMeta.current_page} de {appointmentsMeta.last_page}
+                                            </span>
+                                            <button
+                                                disabled={appointmentsMeta.current_page >= appointmentsMeta.last_page}
+                                                onClick={() => fetchAppointments(appointmentsMeta.current_page + 1)}
+                                            >
+                                                Siguiente
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <p>No hay reservas activas</p>

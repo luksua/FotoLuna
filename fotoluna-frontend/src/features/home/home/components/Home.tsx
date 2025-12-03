@@ -70,21 +70,21 @@ const Home = () => {
             sectionId: "sacraments"
         },
         {
-            src: "img/folclor.jpg",
+            src: "img/documentovida.jpg",
             alt: "Documento",
             title: "Documento",
             description: "La belleza de nuestras tradiciones",
             sectionId: "documents"
         },
         {
-            src: "img/folclor.jpg",
+            src: "img/grado.jpg",
             alt: "Grados",
             title: "Grados",
             description: "Celebra y recuerda tu grado con fotografías",
             sectionId: "graduation"
         },
         {
-            src: "img/folclor.jpg",
+            src: "img/otro.jpg",
             alt: "Otros",
             title: "Otros",
             description: "Muchas más sesiones de fotos",

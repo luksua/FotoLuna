@@ -20,7 +20,7 @@
 .admin-title {
     font-size: 28px;
     font-weight: 600;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
 /* --- TABS --- */
@@ -170,6 +170,45 @@
     color: #b91c1c;
 }
 
+/* Modal overlay y contenedor (reutilizado) */
+.custom-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 2000;
+}
+
+.custom-modal {
+    width: min(700px, 95vw);
+    max-height: 90vh;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(148, 163, 184, 0.18);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-modal .modal-body {
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+@media (max-width: 576px) {
+    .custom-modal {
+        width: 100%;
+        max-height: 95vh;
+    }
+}
+
 /* --- PAGINACIÓN --- */
 .pagination {
     display: flex;
@@ -189,4 +228,42 @@
 .page-btn.disabled {
     opacity: 0.4;
     pointer-events: none;
+}
+
+/* --- ACCENTO GLOBAL (excepto filtros de pagos) --- */
+:root {
+    --admin-accent: #ac98c4;
+    --admin-accent-dark: #967fb0;
+}
+
+.admin-container .btn:not(.filter-btn) {
+    background: var(--admin-accent);
+    border-color: var(--admin-accent);
+    color: #fff;
+}
+
+.admin-container .btn:not(.filter-btn):hover,
+.admin-container .btn:not(.filter-btn):focus {
+    background: var(--admin-accent-dark);
+    border-color: var(--admin-accent-dark);
+    color: #fff;
+}
+
+/* Paginação / bootstrap pagination */
+.admin-container .pagination .page-link {
+    background: var(--admin-accent);
+    border-color: var(--admin-accent);
+    color: #fff;
+}
+
+.admin-container .pagination .page-link:hover {
+    background: var(--admin-accent-dark);
+    border-color: var(--admin-accent-dark);
+    color: #fff;
+}
+
+.admin-container .pagination .page-item.active .page-link {
+    background: var(--admin-accent-dark);
+    border-color: var(--admin-accent-dark);
+    color: #fff;
 }

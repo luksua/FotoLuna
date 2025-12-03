@@ -70,9 +70,9 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
                         <button type="button" className="btn btn-employee btn-outline-primary btn-sm">
                             Cambiar
                         </button>
-                        <button type="button" className="btn btn-employee btn-outline-danger btn-sm">
+                        {/* <button type="button" className="btn btn-employee btn-outline-danger btn-sm">
                             Eliminar
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>

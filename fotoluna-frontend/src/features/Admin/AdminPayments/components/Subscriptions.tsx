@@ -26,10 +26,12 @@ const Subscriptions: React.FC = () => {
 
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState<"" | PaymentStatus>("");
+    const [fromDate, setFromDate] = useState<string>("");  // yyyy-mm-dd
+    const [toDate, setToDate] = useState<string>("");      // yyyy-mm-dd
+
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
 
-    // Subscriptions.tsx
     const fetchSummary = async () => {
         try {
             const { data } = await axios.get<PaymentSummary>(
@@ -50,10 +52,15 @@ const Subscriptions: React.FC = () => {
                     params: {
                         search: search || undefined,
                         status: status || undefined,
+                        from: fromDate || undefined,
+                        to: toDate || undefined,
                         page,
+                        per_page: 10,
                     },
                 }
             );
+
+            // el controlador devuelve un LengthAwarePaginator completo
             setPayments(data.data);
             setLastPage(data.last_page);
         } catch (error) {
@@ -67,13 +74,23 @@ const Subscriptions: React.FC = () => {
         fetchSummary();
     }, []);
 
+    // Recarga cuando cambian page o status / fechas
     useEffect(() => {
         fetchPayments();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, status]);
+    }, [page, status, fromDate, toDate]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setPage(1);
+        fetchPayments();
+    };
+
+    const resetFilters = () => {
+        setSearch("");
+        setStatus("");
+        setFromDate("");
+        setToDate("");
         setPage(1);
         fetchPayments();
     };
@@ -136,8 +153,38 @@ const Subscriptions: React.FC = () => {
                         <option value="rejected">Rechazado</option>
                     </select>
 
+                    {/* rango de fechas */}
+                    <input
+                        type="date"
+                        className="filter-input"
+                        value={fromDate}
+                        onChange={(e) => {
+                            setFromDate(e.target.value);
+                            setPage(1);
+                        }}
+                        placeholder="Desde"
+                    />
+                    <input
+                        type="date"
+                        className="filter-input"
+                        value={toDate}
+                        onChange={(e) => {
+                            setToDate(e.target.value);
+                            setPage(1);
+                        }}
+                        placeholder="Hasta"
+                    />
+
                     <button type="submit" className="btn-primary">
                         Buscar
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={resetFilters}
+                    >
+                        Limpiar
                     </button>
                 </div>
             </form>
@@ -194,9 +241,7 @@ const Subscriptions: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                        className={
-                            "page-btn" + (page <= 1 ? " disabled" : "")
-                        }
+                        className={"page-btn" + (page <= 1 ? " disabled" : "")}
                     >
                         Anterior
                     </button>
@@ -232,8 +277,8 @@ const StatusBadge: React.FC<{ status: PaymentStatus }> = ({ status }) => {
         status === "approved"
             ? "Aprobado"
             : status === "pending"
-                ? "Pendiente"
-                : "Rechazado";
+            ? "Pendiente"
+            : "Rechazado";
 
     return <span className={className}>{label}</span>;
 };

@@ -270,10 +270,15 @@ Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class
 Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
 
 Route::get('admin/payments', [PaymentController::class, 'index']);
-Route::get('adminpayments/summary', [PaymentController::class, 'summary']);
+Route::get('admin/payments/summary', [PaymentController::class, 'summary']);
 
-Route::get('adminstorage-plans', [StoragePlanController::class, 'indexAdmin']);
-Route::put('adminstorage-plans/{id}', [StoragePlanController::class, 'update']);
+Route::get('admin/storage-plans', [StoragePlanController::class, 'indexAdmin']);
+Route::put('admins/torage-plans/{id}', [StoragePlanController::class, 'update']);
+Route::middleware(['auth:sanctum', 'role:admin'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/booking-payments', [PaymentController::class, 'bookingPayments']);
+    });
 // ===== COMENTARIOS (públicos + autenticados) =====
 // Obtener todos los comentarios (público, sin autenticación)
 Route::get('/comments', [CommentsController::class, 'index']);

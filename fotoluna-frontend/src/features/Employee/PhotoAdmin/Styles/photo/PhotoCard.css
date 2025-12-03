@@ -10,7 +10,7 @@
 }
 
 .photo-card.expiring-soon {
-  border-left: 4px solid #ffc107;
+  border-left: 4px solid #f6c2ff !important;
 }
 
 .photo-card.expired {
