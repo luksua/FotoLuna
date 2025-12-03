@@ -47,6 +47,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+    // cambio de contraseña - disponible para cualquier usuario autenticado
+    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
+
+    // actualizar perfil - disponible para cualquier usuario autenticado
+    Route::post('/customer', [ProfileController::class, 'update']);
     Route::get('/appointments/{appointment}/installments/{installment}/receipt', [BookingActionsController::class, 'installmentReceipt']);
     Route::prefix('bookings/{booking}')->group(function () {
         Route::get('/receipt', [BookingActionsController::class, 'receipt']);
@@ -255,6 +261,9 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
 });
 
+Route::get('/admin/appointments/next', [AppointmentController::class, 'next']);
+
+
 Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
 
 // Estadísticas de paquetes vendidos
@@ -269,11 +278,89 @@ Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class
 // Contar citas pendientes totales
 Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
 
-Route::get('admin/payments', [PaymentController::class, 'index']);
+    Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
+
+    Route::patch('/admin/packages/{id}', [AdminPackagesController::class, 'update']);
+
+    Route::patch('/admin/packages/{id}/status', [AdminPackagesController::class, 'updateStatus']);
+
+
+    Route::get('/admin/document-types', [AdminDocumentTypesController::class, 'index']);
+
+    Route::post('/admin/document-types', [AdminDocumentTypesController::class, 'store']);
+
+    Route::patch('/admin/document-types/{id}', [AdminDocumentTypesController::class, 'update']);
+
+    Route::patch('/admin/document-types/{id}/status', [AdminDocumentTypesController::class, 'updateStatus']);
+
+
 Route::get('adminpayments/summary', [PaymentController::class, 'summary']);
 
 Route::get('adminstorage-plans', [StoragePlanController::class, 'indexAdmin']);
 Route::put('adminstorage-plans/{id}', [StoragePlanController::class, 'update']);
+
+// Empleado
+Route::middleware('auth:sanctum')->group(function () {
+    // LISTAR citas de un empleado (calendario del fotógrafo)
+    Route::get('/employee/{employee}/appointments', [
+        AppointmentController::class,
+        'employeeAppointments',
+    ]);
+
+    // ACTUALIZAR una cita desde el panel del empleado
+    Route::put('/employee/appointments/{appointment}', [
+        AppointmentController::class,
+        'updateByEmployee',
+    ]);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/employee/payments', [PaymentController::class, 'employeePayments']);
+});
+
+
+
+
+// === CLIENTES (panel empleado / admin) ===
+Route::middleware('auth:sanctum')->group(function () {
+    // Lista de clientes (con filtro ?year=2024 opcional)
+    Route::get('/customers', [CustomerController::class, 'index']);
+
+    // Detalle de un cliente para el modal "Ver más"
+    Route::get('/customers/{customer}', [CustomerController::class, 'show']);
+});
+
+
+
+
+
+// Admin Citas
+
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+
+    // Citas sin asignar (esto ya lo tienes)
+    Route::get('/appointments/unassigned', [AdminAppointmentController::class, 'unassigned']);
+
+    // Disponibilidad general de empleados (ya funciona)
+    Route::get('/employees/availability', [AdminAppointmentController::class, 'employeesAvailability']);
+
+    // 👉 NUEVA: todas las citas para el admin (tabla principal)
+    Route::get('/appointments', [AdminAppointmentController::class, 'index']);
+
+    // 👉 NUEVA: candidatos para una cita concreta (para el modal)
+    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
+
+    // 👉 NUEVA: asignar fotógrafo a una cita
+    Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+
+    // 👉 NUEVA: contar paquetes asociados a citas
+    Route::get('/packages/count-booked', [AdminAppointmentController::class, 'packagesCount']);
+
+    // 👉 NUEVA: obtener ventas por mes
+    Route::get('/sales/by-month', [AdminAppointmentController::class, 'salesByMonth']);
+});
+
+
 // ===== COMENTARIOS (públicos + autenticados) =====
 // Obtener todos los comentarios (público, sin autenticación)
 Route::get('/comments', [CommentsController::class, 'index']);

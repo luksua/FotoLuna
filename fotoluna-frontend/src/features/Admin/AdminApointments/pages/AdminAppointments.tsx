@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 import AssignPhotographerModal from "../Components/AssignPhotographerModal";
 import type { AdminAppointment } from "../Components/Types/types";
 import type { AdminAppointmentsResponse } from "../Components/Types/types";
@@ -55,14 +56,16 @@ const getPageItems = (
 };
 
 const AdminAppointments: React.FC = () => {
+    const location = useLocation();
     const [appointments, setAppointments] = useState<AdminAppointment[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    // filtros
+    // filtros - aplica valores del location.state si existen
+    const locationState = location.state as { filterStatus?: string; sortOrder?: string } | null;
     const [filterText, setFilterText] = useState<string>("");
-    const [filterStatus, setFilterStatus] = useState<string>("all");
+    const [filterStatus, setFilterStatus] = useState<string>(locationState?.filterStatus || "all");
     const [filterAssigned, setFilterAssigned] = useState<string>("all"); // all | assigned | unassigned
-    const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "all">("all");
+    const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "all">(locationState?.sortOrder || "all");
 
     // paginación server-side
     const [currentPage, setCurrentPage] = useState<number>(1);
