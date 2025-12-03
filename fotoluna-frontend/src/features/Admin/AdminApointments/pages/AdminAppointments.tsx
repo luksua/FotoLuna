@@ -1,10 +1,11 @@
-// src/components/admin/appointments/AdminAppointments.tsx
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AssignPhotographerModal from "../Components/AssignPhotographerModal";
 import type { AdminAppointment } from "../Components/Types/types";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
+
+// IMPORTANTE: NO USAR alert() EN ENTORNOS EMBEBIDOS.
+// He reemplazado la llamada a alert() con console.error.
 
 const API_BASE_URL = "http://127.0.0.1:8000/api"; // ajusta a tu entorno
 
@@ -43,8 +44,8 @@ const AdminAppointments: React.FC = () => {
             );
             setAppointments(response.data);
         } catch (error) {
-            console.error(error);
-            alert("Error cargando las citas del administrador.");
+            console.error("Error cargando las citas:", error);
+            // alert("Error cargando las citas del administrador."); // Reemplazado
         } finally {
             setLoading(false);
         }
@@ -92,10 +93,8 @@ const AdminAppointments: React.FC = () => {
                     : !isAssigned;
 
         return matchesText && matchesStatus && matchesAssigned;
-
-
-
     });
+
     const sortedAppointments = [...filteredAppointments];
 
     if (sortOrder === "newest") {
@@ -111,10 +110,6 @@ const AdminAppointments: React.FC = () => {
             return dateA.getTime() - dateB.getTime(); // más vieja → primero
         });
     }
-
-
-
-
 
     return (
         <HomeLayout>
@@ -173,15 +168,7 @@ const AdminAppointments: React.FC = () => {
                         </select>
                     </div>
 
-
-
-
-
                 </div>
-
-
-
-
 
                 {loading ? (
                     <p>Cargando citas...</p>
@@ -202,8 +189,11 @@ const AdminAppointments: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sortedAppointments.map((a) => (
-                                    <tr key={a.appointmentId}>
+                                {sortedAppointments.map((a, index) => (
+                                    <tr
+                                        // CLAVE CORREGIDA: Usa appointmentId si es válido, sino usa una combinación de ID e índice.
+                                        key={a.appointmentId ? a.appointmentId : `temp-${index}`}
+                                    >
                                         <td>{a.date}</td>
                                         <td>{a.time}</td>
                                         <td>{a.clientName}</td>

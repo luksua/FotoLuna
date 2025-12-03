@@ -1,4 +1,3 @@
-// components/Upload/Upload.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
@@ -9,12 +8,21 @@ import "../Styles/uplo.css";
 type TCustomer = {
     id: number;
     fullName: string;
+    email?: string;
+    documentId?: string; // <--- Este campo es clave
 };
 
 type TLinkedCustomer = {
     id: number;
     name: string;
+
 };
+interface BookingOption {
+    bookingId: number;
+    bookingStatus: string;
+    created_at: string;
+    appointmentIdFK: number;
+}
 
 
 // ⚠ Ajusta este valor si tu backend no está en localhost:8000
@@ -44,17 +52,20 @@ const Upload: React.FC = () => {
 
 
     const [files, setFiles] = useState<File[]>([]);
-    const [event, setEvent] = useState("");
-    const [time, setTime] = useState(formatTimeInput(now));   // hora actual
-    const [date, setDate] = useState(formatDateInput(now));   // fecha actual
+    const [selectedEventId, setSelectedEventId] = useState("");
+    const [time, setTime] = useState(formatTimeInput(now));
+    const [date, setDate] = useState(formatDateInput(now));
     const [location, setLocation] = useState("");
-    
+
     // --- Estados para la búsqueda de clientes ---
     const [linkedUsers, setLinkedUsers] = useState<TLinkedCustomer[]>([]);
     const [searchUser, setSearchUser] = useState("");
     const [allClients, setAllClients] = useState<TCustomer[]>([]);
     const [filteredClients, setFilteredClients] = useState<TCustomer[]>([]);
-    
+    // 🚨 ESTADO CLAVE: RESERVA SELECCIONADA
+    const [availableBookings, setAvailableBookings] = useState<BookingOption[]>([]);
+    const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
+
     const [dragActive, setDragActive] = useState(false);
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -82,7 +93,7 @@ const Upload: React.FC = () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setEventsList(data); 
+                    setEventsList(data);
                 } else {
                     console.error("Error al obtener la lista de eventos.");
                 }
@@ -126,27 +137,84 @@ const Upload: React.FC = () => {
         fetchAllClients();
     }, [user, linkedUsers]); // Recargar si el usuario cambia o si se vincula uno nuevo
 
-    // --- Filtrar clientes en el frontend ---
+    // --- Filtrar clientes en el frontend (Soporte extendido: nombre, email, id) ---
     useEffect(() => {
         let filtered = allClients;
 
         if (searchUser.trim() !== '') {
+            const searchLower = searchUser.toLowerCase();
+
+            // Lógica de búsqueda flexible: busca por nombre completo, email o ID de documento
             filtered = allClients.filter(client =>
-                client.fullName
-                    .toLowerCase()
-                    .includes(searchUser.toLowerCase())
+                !linkedUsers.some(linked => linked.id === client.id) && // Excluir ya vinculados
+                (client.fullName.toLowerCase().includes(searchLower) || // BUSCAR POR NOMBRE
+                    (client.email && client.email.toLowerCase().includes(searchLower)) || // BUSCAR POR CORREO
+                    (client.documentId && client.documentId.toLowerCase().includes(searchLower))) // BUSCAR POR CÉDULA/ID
+            );
+        } else {
+            // Si el campo de búsqueda está vacío, solo mostrar clientes no vinculados
+            filtered = allClients.filter(client =>
+                !linkedUsers.some(linked => linked.id === client.id)
             );
         }
 
-        const availableClients = filtered.filter(
-            (customer: TCustomer) => !linkedUsers.some(linked => linked.id === customer.id)
-        );
+        setFilteredClients(filtered);
 
-        setFilteredClients(availableClients);
     }, [searchUser, allClients, linkedUsers]);
 
+    // Efecto para cargar las reservas cuando el cliente principal o el evento cambian
+    useEffect(() => {
+        const primaryCustomer = linkedUsers[0];
+        if (primaryCustomer && selectedEventId) {
+            fetchBookingsForCustomer(primaryCustomer.id, selectedEventId);
+        } else {
+            setAvailableBookings([]);
+            setSelectedBookingId(null);
+        }
+    }, [linkedUsers, selectedEventId]);
 
-    /* -------- Drag & Drop -------- */
+
+    // logica del bookingd
+    // =========================================================
+    // 🔹 LÓGICA DE VINCULACIÓN Y SELECCIÓN DE RESERVA
+    // =========================================================
+
+    // 🚨 FUNCIÓN CLAVE: Cargar las reservas disponibles para un cliente Y evento específico
+    const fetchBookingsForCustomer = async (customerId: number, eventId: string) => {
+        const token = localStorage.getItem("token");
+        if (!token || !eventId) {
+            setAvailableBookings([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/customers/${customerId}/bookings?event_id=${eventId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const bookings = data.data || data || [];
+                setAvailableBookings(bookings);
+                if (bookings.length === 1) {
+                    setSelectedBookingId(bookings[0].bookingId);
+                } else {
+                    setSelectedBookingId(null);
+                }
+            } else {
+                console.error("Error al obtener las reservas:", response.status);
+                setAvailableBookings([]);
+                setSelectedBookingId(null);
+            }
+        } catch (error) {
+            console.error("Error de conexión al obtener reservas:", error);
+            setAvailableBookings([]);
+            setSelectedBookingId(null);
+        }
+    };
+
+
+    /* -------- Drag & Drop (sin cambios) -------- */
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
@@ -162,6 +230,13 @@ const Upload: React.FC = () => {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            setFiles(droppedFiles);
+            setErrors((prev) => ({ ...prev, files: "" }));
+            setStatusType("");
+            setStatusMessage("");
+        }
 
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const droppedFiles = Array.from(e.dataTransfer.files);
@@ -182,30 +257,47 @@ const Upload: React.FC = () => {
         }
     };
 
-    /* -------- Vincular usuarios -------- */
+    /* -------- Vincular usuarios (sin cambios en la lógica) -------- */
 
     const handleSelectUser = (customer: TCustomer) => {
-        // Añadir el cliente seleccionado a la lista de vinculados
-        setLinkedUsers((prev) => [...prev, { id: customer.id, name: customer.fullName }]);
-        // Limpiar el input para resetear el filtro
+        // Vincular el cliente (Solo si no está ya vinculado)
+        if (!linkedUsers.some(u => u.id === customer.id)) {
+            setLinkedUsers((prev) => [...prev, { id: customer.id, name: customer.fullName }]);
+        }
         setSearchUser("");
+        // El useEffect se encargará de llamar a fetchBookingsForCustomer
+    };
+    // Manejar la selección final del dropdown de reservas
+    const handleBookingSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const id = parseInt(e.target.value);
+        setSelectedBookingId(id);
     };
 
     const handleRemoveUser = (userIdToRemove: number) => {
-        setLinkedUsers((prev) => prev.filter((user) => user.id !== userIdToRemove));
+        setLinkedUsers((prev) => {
+            const updated = prev.filter((user) => user.id !== userIdToRemove);
+
+            // Si el cliente eliminado era el principal, la lógica del useEffect se encargará de limpiar.
+            if (userIdToRemove === linkedUsers[0]?.id) {
+                setAvailableBookings([]);
+                setSelectedBookingId(null);
+            }
+            return updated;
+        });
     };
 
 
-    /* -------- Validaciones -------- */
+    /* -------- Validaciones (sin cambios) -------- */
 
     const validate = (): { [key: string]: string } => {
         const newErrors: { [key: string]: string } = {};
 
+
         if (files.length === 0) {
             newErrors.files = "Selecciona al menos una foto.";
         }
-        if (!event.trim()) {
-            newErrors.event = "El nombre del evento es obligatorio.";
+        if (!selectedEventId) {
+            newErrors.event = "El evento es obligatorio.";
         }
         if (!date) {
             newErrors.date = "La fecha es obligatoria.";
@@ -215,6 +307,13 @@ const Upload: React.FC = () => {
         }
         if (!location.trim()) {
             newErrors.location = "La ubicación es obligatoria.";
+        }
+
+        if (linkedUsers.length === 0) {
+            newErrors.client = "Debe vincular al menos un cliente principal.";
+        }
+        if (availableBookings.length > 0 && !selectedBookingId) {
+            newErrors.bookingId = "Debe seleccionar la cita/reserva asociada.";
         }
 
         return newErrors;
@@ -245,40 +344,49 @@ const Upload: React.FC = () => {
             return;
         }
 
-        
+
         try {
             const token = localStorage.getItem("token");
 
             if (!token || !user) { // También chequear que el usuario esté cargado
                 setStatusType("error");
                 setStatusMessage("No se encontró la sesión del empleado. Por favor, inicia sesión de nuevo.");
-                return; 
+                return;
             }
 
             const formData = new FormData();
+            // Enviar los IDs de los clientes vinculados
+            const linkedUserIds = linkedUsers.map(u => u.id);
 
             files.forEach((file) => {
                 formData.append("photos[]", file);
             });
 
-            formData.append("event_name", event.trim());
+            const eventName = eventsList.find(e => e.id.toString() === selectedEventId)?.eventType || "";
+            formData.append("event_name", eventName);
             formData.append("date", date);
             formData.append("time", time);
             formData.append("location", location.trim());
             formData.append("employee_id", String(user.id)); // Enviar el ID del empleado
+            formData.append("linked_users", JSON.stringify(linkedUserIds)); // linkedUserIds debe ser accesible
 
-            // Enviar los IDs de los clientes vinculados
-            const linkedUserIds = linkedUsers.map(u => u.id);
-            formData.append("linked_users", JSON.stringify(linkedUserIds));
 
+            // Asegurar que esta línea está dentro del scope o se mueve aquí
+            formData.append("customerIdFK", String(linkedUserIds[0])); // Usar el primer cliente vinculado
+            formData.append("bookingIdFK", String(selectedBookingId)); // 🚨 ENVIAR LA ID DE LA RESERVA SELECCIONADA
+            formData.append("storage_subscription_id", ""); // Si tienes un ID de suscripción, añádelo aquí
             // Manejar customerIdFK y bookingIdFK (si es necesario)
             // Si el primer cliente vinculado es el principal, podrías hacer esto:
             if (linkedUserIds.length > 0) {
-                 formData.append("customerIdFK", String(linkedUserIds[0]));
+                formData.append("customerIdFK", String(linkedUserIds[0]));
             } else {
-                 formData.append("customerIdFK", ""); // O manejar como el backend espere
+                formData.append("customerIdFK", ""); // O manejar como el backend espere
             }
-            formData.append("bookingIdFK", "");   // bookingIdFK es nullable
+            if (selectedBookingId) {
+                formData.append("bookingIdFK", String(selectedBookingId));
+            } else {
+                formData.append("bookingIdFK", ""); // O manejar como el backend espere si es nullable
+            }
 
             setStatusType("");
             setStatusMessage("");
@@ -298,7 +406,7 @@ const Upload: React.FC = () => {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 console.error("Error al subir las fotos:", errorData);
-                
+
                 if (response.status === 422 && errorData.errors) {
                     const validationErrorMsg = Object.values(errorData.errors).flat().join(' ');
                     setStatusMessage(`Error de validación: ${validationErrorMsg}`);
@@ -351,7 +459,7 @@ const Upload: React.FC = () => {
                     </div>
                     <hr />
 
-                    {/* Área de subida */}
+                    {/* Área de subida (sin cambios) */}
                     <div
                         className={`upload-dropzone ${dragActive ? "drag-active" : ""
                             } ${files.length > 0 ? "has-file" : ""}`}
@@ -419,15 +527,15 @@ const Upload: React.FC = () => {
                         <p className="upload-error-text">{errors.files}</p>
                     )}
 
-                    {/* Formulario de información */}
+                    {/* Formulario de información (sin cambios) */}
                     <form className="upload-form" onSubmit={handleSubmit}>
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Evento</label>
                                 <select
-                                    value={event}
+                                    value={selectedEventId}
                                     onChange={(e) => {
-                                        setEvent(e.target.value);
+                                        setSelectedEventId(e.target.value);
                                         setErrors((prev) => ({
                                             ...prev,
                                             event: "",
@@ -440,7 +548,7 @@ const Upload: React.FC = () => {
                                         -- Selecciona el tipo de evento --
                                     </option>
                                     {eventsList.map((evt) => (
-                                        <option key={evt.id} value={evt.eventType}>
+                                        <option key={evt.id} value={evt.id}>
                                             {evt.eventType}
                                         </option>
                                     ))}
@@ -519,58 +627,83 @@ const Upload: React.FC = () => {
                                 )}
                             </div>
                         </div>
+                        {/* 🚨 NUEVO: DROPDOWN DE RESERVAS */}
+                        {linkedUsers.length > 0 && selectedEventId && (
+                            <div className="form-group">
+                                <label>Cita/Reserva Asociada</label>
+                                <select
+                                    value={selectedBookingId || ''}
+                                    onChange={handleBookingSelect}
+                                    required
+                                    className="register-select"
+                                >
+                                    <option value="" disabled>Seleccione la reserva</option>
+                                    {availableBookings.map(b => (
+                                        <option key={b.bookingId} value={b.bookingId}>
+                                            {`Reserva #${b.bookingId} - ${b.bookingStatus} (${new Date(b.created_at).toLocaleDateString()})`}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.bookingId && (<p className="upload-error-text">{errors.bookingId}</p>)}
+                            </div>
+                        )}
 
-                        {/* Vincular clientes */}
+                        {/* Vincular clientes (MODIFICADO) */}
                         <div className="upload-link">
                             <label>Vincular clientes:</label>
+
+                            {/* --- CONTENEDOR DE BÚSQUEDA Y TAGS --- */}
+                            {/* Este div debe ser `position: relative` en el CSS para el dropdown */}
                             <div className="search-container">
+
+                                {/* 1. Clientes Vinculados (Tags/Chips) */}
+                                {linkedUsers.length > 0 && (
+                                    <div className="linked-users">
+                                        {linkedUsers.map((linked) => (
+                                            <div
+                                                key={linked.id}
+                                                className="user-tag"
+                                            >
+                                                <span>{linked.name}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleRemoveUser(linked.id)
+                                                    }
+                                                >
+                                                    <i className="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* 2. Input de Búsqueda */}
                                 <input
                                     type="text"
-                                    placeholder="Buscar cliente por nombre o email..."
+                                    placeholder={linkedUsers.length > 0 ? "" : "Buscar cliente por nombre, cédula o email..."}
                                     value={searchUser}
                                     onChange={(e) => setSearchUser(e.target.value)}
                                     autoComplete="off"
                                 />
-                            </div>
 
-                            {/* --- Resultados de la búsqueda --- */}
-                            {filteredClients.length > 0 && (
-                                <ul className="search-results">
-                                    {filteredClients.map((customer) => (
-                                        <li
-                                            key={customer.id}
-                                            onClick={() => handleSelectUser(customer)}
-                                        >
-                                            {customer.fullName}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                            
-                            {/* --- Clientes Vinculados --- */}
-                            {linkedUsers.length > 0 && (
-                                <div className="linked-users">
-                                    {linkedUsers.map((linked) => (
-                                        <div
-                                            key={linked.id}
-                                            className="user-tag"
-                                        >
-                                            <span>{linked.name}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    handleRemoveUser(linked.id)
-                                                }
+                                {/* 3. Resultados de la búsqueda (Dropdown) */}
+                                {filteredClients.length > 0 && searchUser.trim() !== '' && (
+                                    <ul className="search-results">
+                                        {filteredClients.map((customer) => (
+                                            <li
+                                                key={customer.id}
+                                                onClick={() => handleSelectUser(customer)}
                                             >
-                                                <i className="bi bi-x"></i>
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                                {customer.fullName}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Mensaje de estado global */}
+                        {/* Mensaje de estado global (sin cambios) */}
                         {statusType && statusMessage && (
                             <div
                                 className={`upload-alert ${statusType === "success"
@@ -589,7 +722,7 @@ const Upload: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Botones */}
+                        {/* Botones (sin cambios) */}
                         <div className="upload-actions">
                             <button className="accept-btn" type="submit">
                                 <i className="bi bi-cloud-arrow-up me-2"></i>

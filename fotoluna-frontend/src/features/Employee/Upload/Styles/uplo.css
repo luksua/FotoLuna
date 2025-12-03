@@ -500,3 +500,127 @@
     animation-delay: 0.1s;
     animation-fill-mode: both;
 }
+/*
+ * =========================================
+ * ESTILOS PARA VINCULAR CLIENTES (SELECT CON TAGS)
+ * =========================================
+ */
+
+.upload-link {
+    margin-top: 20px;
+}
+
+/* Contenedor principal de la búsqueda y los tags */
+.search-container {
+    position: relative;
+    border: 1px solid #ccc; /* Borde del input original */
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap; /* Permite que los tags se ajusten */
+    align-items: center;
+    min-height: 48px; /* Altura mínima para el campo */
+}
+
+.search-container input[type="text"] {
+    flex-grow: 1; /* El input crece para ocupar el espacio restante */
+    border: none;
+    outline: none;
+    padding: 0 5px; /* Ajuste interno */
+    min-width: 150px; /* Asegura que el input sea lo suficientemente ancho */
+}
+
+/*
+ * Estilos para los tags de clientes vinculados
+ */
+.linked-users {
+    /* 💡 AÑADE ESTO: Mueve los tags dentro del contenedor de búsqueda */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px; /* Espacio entre los tags */
+}
+
+.user-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: #e0e0e0; /* Color de fondo del tag */
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.user-tag span {
+    margin-right: 5px;
+}
+
+.user-tag button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 5px;
+    color: #555;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.user-tag button:hover {
+    color: #d9534f; /* Color de hover para el botón de cerrar */
+}
+
+
+/*
+ * Estilos para los resultados de la búsqueda (lista desplegable)
+ */
+.search-results {
+    position: absolute;
+    z-index: 10;
+    width: 100%; /* El mismo ancho que el contenedor de búsqueda */
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 1px;
+    border: 1px solid #ccc;
+    border-top: none;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 8px 8px;
+    left: 0;
+    top: 100%; /* Aparece debajo del input/contenedor */
+}
+
+/* 💡 IMPORTANTE: Si quieres que la lista de resultados aparezca en la página principal, 
+    debes darle al contenedor padre (upload-link o search-container si lo modificas) 
+    un position: relative. */
+.upload-link {
+    position: relative; /* Clave para que el dropdown se posicione correctamente */
+}
+
+/* Ajuste para que la lista de resultados no se solape con el contenedor de búsqueda */
+.search-results li {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.search-results li:last-child {
+    border-bottom: none;
+}
+
+.search-results li:hover {
+    background-color: #f0f0f0;
+}
+
+/*
+ * MODIFICACIÓN NECESARIA EN EL JSX
+ * Si quieres que los tags aparezcan *dentro* del mismo cuadro del input
+ * (como en la imagen), debes mover la renderización de `linkedUsers`
+ * *dentro* del div con `className="search-container"`.
+ */
+ 

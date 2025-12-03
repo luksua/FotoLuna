@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+// Las siguientes importaciones fallan en el entorno de compilación, 
+// pero se mantienen ya que son necesarias en su proyecto original.
 import "../Styles/apo.css";
 import "react-calendar/dist/Calendar.css";
 
@@ -10,7 +12,7 @@ import AppointmentModal from "../Components/ApointmentsModal";
 import Spinner from "../Components/Spinner";
 import api from "../../../../lib/api";
 // Importar tipos base (asumidos)
-import type { ExtendedCitaFormData, CustomerOption, EventOption } from "../Components/Types/types";
+import type { ExtendedCitaFormData, CustomerOption, EventOption, DocumentTypeOption } from "../Components/Types/types";
 import type { Cita, CitaStatus } from "../Components/Types/types";
 import { useAuth } from "../../../../context/useAuth";
 
@@ -103,10 +105,15 @@ const mapBackendAppointments = (data: any[]): Cita[] =>
 const EmployeeAppointments: React.FC = () => {
     const { user, token, loading: authLoading } = useAuth();
     const EMPLOYEE_ID = user?.id;
+    // 🔑 ID del evento "Documento" es 6, basado en tu tabla de Eventos
+    const DOCUMENT_EVENT_ID = 6;
 
     // --- ESTADOS ---
     const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([]);
     const [events, setEvents] = useState<EventOption[]>([]);
+    // 🟢 ESTADO: Lista completa de tipos de documento de la BD
+    const [documentTypes, setDocumentTypes] = useState<DocumentTypeOption[]>([]);
+
     const searchClientTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -127,10 +134,9 @@ const EmployeeAppointments: React.FC = () => {
         notes: "",
         customerIdFK: null,
         eventIdFK: null,
+        packageIdFK: null,
+        documentTypeIdFK: null,
         appointmentDuration: 60,
-
-        // 🔑 ASIGNACIÓN DE ID DEL EMPLEADO LOGUEADO
-        // Si 'user' está disponible, toma el ID; de lo contrario, es null.
         employeeIdFK: user?.id ?? null,
 
     }), [user]);
@@ -168,19 +174,43 @@ const EmployeeAppointments: React.FC = () => {
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
     }, [citas, selectedDate]);
 
-    //  Effekt to keep selection in sync
+    //  Effekt to keep selection in sync
     useEffect(() => {
-        // If there are appointments for the day, select the first one by default
         if (citasDelDia.length > 0) {
-            // Avoid re-selecting if the current one is already in the list
             if (!selectedCita || !citasDelDia.some(c => c.id === selectedCita.id)) {
                 setSelectedCita(citasDelDia[0]);
             }
         } else {
-            // If there are no appointments, clear the selection
             setSelectedCita(null);
         }
     }, [citasDelDia, selectedCita]);
+
+
+    // =========================================================
+    // 🔹 Lógica para Paquetes (Lógica de Sustitución)
+    // =========================================================
+
+    // 🔑 LÓGICA CRÍTICA: Filtra o sustituye los paquetes en función del Evento seleccionado.
+    const packagesForSelectedEvent = useMemo(() => {
+        if (form.eventIdFK === null) return [];
+
+        // 1. CASO ESPECIAL: Evento "Documento" (ID 6)
+        if (form.eventIdFK === DOCUMENT_EVENT_ID) {
+            // Usa la lista de Document Types como si fueran Paquetes
+            return documentTypes.map(d => ({
+                id: d.id,
+                name: d.name,
+                // documentTypeIdFK es la clave que usa el modal para determinar si el campo 'Tipo Documento' debe mostrarse
+                documentTypeIdFK: d.id,
+            }));
+        }
+
+        // 2. CASO ESTÁNDAR: Eventos normales 
+        const selectedEvent = events.find(e => e.id === form.eventIdFK);
+        return selectedEvent?.packages || [];
+
+    }, [form.eventIdFK, events, documentTypes, DOCUMENT_EVENT_ID]);
+
 
     // =========================================================
     // 🔹 Lógica de Formulario
@@ -192,6 +222,21 @@ const EmployeeAppointments: React.FC = () => {
         if (!isEditing) {
             if (!form.customerIdFK) er.client = "Debe seleccionar un cliente.";
             if (!form.eventIdFK) er.eventIdFK = "Debe seleccionar un evento.";
+
+            // Validar paquete si no estamos editando
+            if (!form.packageIdFK) {
+                er.packageIdFK = form.eventIdFK === DOCUMENT_EVENT_ID
+                    ? "Debe seleccionar un tipo de documento."
+                    : "Debe seleccionar un paquete.";
+            }
+
+            // Validar que el campo documentTypeIdFK esté lleno si el paquete lo exige 
+            const pkg = packagesForSelectedEvent.find(p => p.id === form.packageIdFK);
+            if (pkg?.documentTypeIdFK !== null && !form.documentTypeIdFK) {
+                if (form.eventIdFK !== DOCUMENT_EVENT_ID) {
+                    er.documentTypeIdFK = "El paquete requiere un tipo de documento.";
+                }
+            }
         }
 
         if (!form.date) er.date = "La fecha es obligatoria";
@@ -201,16 +246,51 @@ const EmployeeAppointments: React.FC = () => {
 
 
         return er;
-    }, [form]);
+    }, [form, DOCUMENT_EVENT_ID, packagesForSelectedEvent]);
 
     const handleChange = useCallback((
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
-        const { name, value, type } = e.target;
+        const { name, value } = e.target;
+        const key = name as keyof ExtendedCitaFormData;
 
-        const newValue = (type === 'number' && name === 'appointmentDuration') ? Number(value) : value;
+        setForm((f) => {
+            let parsedValue: string | number | null;
 
-        setForm((f) => ({ ...f, [name]: newValue as any }));
+            // 1. Manejo de valores numéricos (IDs y Duration)
+            if (key === 'appointmentDuration') {
+                // Se asegura que la duración sea un número
+                parsedValue = Number(value);
+            } else if (key === 'eventIdFK' || key === 'packageIdFK' || key === 'documentTypeIdFK' || key === 'customerIdFK' || key === 'employeeIdFK') {
+                // Se asegura que los IDs sean números o null (si el string es vacío)
+                parsedValue = value ? Number(value) : null;
+            } else {
+                // 2. Manejo de valores de texto y otros (status, client, location, notes, date, startTime, endTime)
+                // Se asigna directamente el string.
+                parsedValue = value;
+            }
+            
+            // 3. Creación inmutable del nuevo formulario con el valor actualizado
+            let newForm: ExtendedCitaFormData = {
+                ...f, 
+                // Usamos 'as any' solo para satisfacer al índice dinámico de TypeScript
+                // ya que el valor de parsedValue ya fue correctamente tipado previamente.
+                [key]: parsedValue as any, 
+            };
+            
+            // 4. Lógica CLAVE de Limpieza: (Se mantiene la lógica de negocio)
+            if (key === 'eventIdFK') {
+                newForm.packageIdFK = null;
+                newForm.documentTypeIdFK = null;
+            }
+
+            if (key === 'packageIdFK') {
+                newForm.documentTypeIdFK = null;
+            }
+            
+            return newForm;
+        });
+        
         setErrors((er) => ({ ...er, [name]: "" }));
     }, []);
 
@@ -218,7 +298,7 @@ const EmployeeAppointments: React.FC = () => {
         setIsEditing(true);
         setSelectedCita(cita);
 
-        // Al editar, cargamos los datos necesarios
+        // 🔑 Al editar, NO cargar las FKs de Paquete/Documento
         setForm({
             ...initialForm,
             date: cita.date.toISOString().split("T")[0],
@@ -229,6 +309,8 @@ const EmployeeAppointments: React.FC = () => {
             notes: cita.notes ?? "",
             customerIdFK: cita.customerIdFK,
             eventIdFK: cita.eventIdFK,
+            packageIdFK: null,
+            documentTypeIdFK: null,
             appointmentDuration: cita.appointmentDuration,
         });
 
@@ -237,7 +319,8 @@ const EmployeeAppointments: React.FC = () => {
 
     const handleNewClick = useCallback(() => {
         setIsEditing(false);
-        setForm(initialForm);
+        // 🔑 Limpieza explícita de FKs al crear nueva cita
+        setForm({ ...initialForm, eventIdFK: null, packageIdFK: null, documentTypeIdFK: null });
         setCustomerOptions([]);
         setShowModal(true);
     }, [initialForm]);
@@ -295,14 +378,23 @@ const EmployeeAppointments: React.FC = () => {
                 const citasMap = mapBackendAppointments(resCitas.data || []);
                 setCitas(citasMap);
 
-                const resEvents = await api.get('/api/events');
+                // 🔑 RUTA CLAVE: Obtiene Eventos (con Paquetes o Tipos de Documento anidados)
+                const resEvents = await api.get('/api/events-with-packages');
                 const eventOptions = (resEvents.data || []).map((e: any) => ({
                     id: e.id,
-                    name: e.eventType
+                    name: e.name || e.eventType,
+                    packages: e.packages || [],
                 }));
                 setEvents(eventOptions);
 
-                // Set selected date to today, the effect will handle the rest
+                // 🟢 CARGA TIPOS DE DOCUMENTO (Lista global para el select secundario del modal)
+                const resDocTypes = await api.get('/api/document-types');
+                const docTypeOptions = (resDocTypes.data.data || resDocTypes.data || []).map((d: any) => ({
+                    id: d.id,
+                    name: d.name
+                }));
+                setDocumentTypes(docTypeOptions);
+
                 setSelectedDate(new Date());
 
             } catch (e) {
@@ -328,10 +420,25 @@ const EmployeeAppointments: React.FC = () => {
         setIsLoading(true);
         const headers = { 'Authorization': `Bearer ${token}` };
 
+        let finalPackageIdFK = form.packageIdFK;
+        let finalDocumentTypeIdFK = form.documentTypeIdFK;
+
+        if (form.eventIdFK === DOCUMENT_EVENT_ID) {
+            // 🔑 CASO ESPECIAL: Evento Documento (ID 6). 
+            // El packageIdFK es el documentTypeIdFK seleccionado.
+            finalPackageIdFK = form.packageIdFK; // ID del documento
+            finalDocumentTypeIdFK = form.packageIdFK; // Usamos el mismo ID para documentTypeIdFK en el Booking
+        }
+
         const payload = {
             eventIdFK: form.eventIdFK,
             customerIdFK: form.customerIdFK,
             employeeIdFK: form.employeeIdFK,
+
+            // 🔑 USAMOS LAS VARIABLES FINALES PARA LA DB
+            packageIdFK: finalPackageIdFK,
+            documentTypeIdFK: finalDocumentTypeIdFK,
+
             appointmentDate: form.date,
             appointmentTime: form.startTime + ':00',
             place: form.location || null,
@@ -340,75 +447,43 @@ const EmployeeAppointments: React.FC = () => {
         };
 
         if (isEditing && selectedCita) {
-            // 💡 Asumimos que setIs-Loading(true) se llama antes de este bloque.
+            // ... (Lógica PUT - No se envían FKs de paquete/documento)
             try {
-                // 🚨 PAYLOAD CORREGIDO PARA EL PUT: SOLO CAMPOS DE ACTUALIZACIÓN
                 const updatePayload = {
-                    // Enviamos 'date' y 'startTime' sin las claves foráneas
                     date: form.date,
-
-                    // CORRECCIÓN: Laravel espera HH:MM, NO HH:MM:00
                     startTime: form.startTime,
-
                     place: form.location || null,
                     comment: form.notes || null,
-
-                    // 'status' se envía porque es el campo principal que cambia en la edición
                     status: STATUS_FRONT_TO_BACK[form.status],
-
-                    // appointmentDuration, eventIdFK, customerIdFK NO se envían en la actualización de la cita.
                 };
 
                 await api.put(
                     `/api/employee/appointments/${selectedCita.appointmentId}`,
                     updatePayload,
-                    { headers } // Asumimos que 'headers' y 'token' están definidos
+                    { headers }
                 );
 
                 setSuccess("Cita actualizada exitosamente.");
                 refreshAppointments();
 
             } catch (err) {
-                console.error("Error al actualizar", err);
-
-                // Manejar errores de validación si existen
                 const errorData = (err as any).response?.data?.errors;
                 if (errorData) {
                     setErrors(errorData);
                 } else {
                     setErrors({ general: "No se pudo actualizar la cita. Error de servidor." });
                 }
-
             } finally {
-                // 🚨 Asegurar que el estado de carga siempre se desactive
-                // Esto asume que tienes un estado global o local llamado setIsLoading
-                // setIsLoading(false); 
+                setIsLoading(false);
             }
             return;
         }
 
         try {
-            const res = await api.post(`/api/appointments`, payload, { headers });
-            const newAppointmentData = res.data;
+            // ✅ CORRECCIÓN: Se elimina el nombre de la variable de respuesta
+            // para evitar el warning '6133' de variable no leída.
+            await api.post(`/api/appointments`, payload, { headers }); 
 
-            const mappedNewCita: Cita = {
-                id: String(newAppointmentData.appointmentId || newAppointmentData.id),
-                appointmentId: newAppointmentData.appointmentId || newAppointmentData.id,
-                customerIdFK: form.customerIdFK,
-                employeeIdFK: form.employeeIdFK,
-                eventIdFK: form.eventIdFK,
-                appointmentDuration: form.appointmentDuration,
-                date: parseBackendDate(newAppointmentData.appointmentDate || form.date),
-                startTime: form.startTime,
-                client: form.client,
-                status: 'Pendiente',
-                location: form.location,
-                notes: form.notes,
-            };
-
-            console.log("Nueva cita creada:", mappedNewCita);
-
-            setCitas((prevCitas) => [...prevCitas, mappedNewCita]);
             setSuccess("Cita creada exitosamente. Recargando citas...");
             setTimeout(() => {
                 setShowModal(false);
@@ -422,7 +497,7 @@ const EmployeeAppointments: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [validate, token, form, isEditing, selectedCita, refreshAppointments]);
+    }, [validate, token, form, isEditing, selectedCita, refreshAppointments, DOCUMENT_EVENT_ID]);
 
 
     return (
@@ -470,6 +545,8 @@ const EmployeeAppointments: React.FC = () => {
 
                         customers={customerOptions}
                         events={events}
+                        packages={packagesForSelectedEvent} // 🔑 Lista unificada
+                        documentTypes={documentTypes} // 🟢 Lista global de Document Types
                         onClientSelect={handleClientSelect}
                         onSearchClient={handleSearchClient}
 

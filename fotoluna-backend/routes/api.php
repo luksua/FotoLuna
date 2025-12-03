@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Citas (Acciones Generales del Cliente/Sistema) ---
     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
+    Route::get('/bookings', [BookingController::class, 'index']);
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
     Route::get('/appointments/{appointment}/installments/{installment}/receipt', [AppointmentController::class, 'downloadReceipt']);
@@ -92,11 +93,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/employee/cloud-photos', [CloudPhotoController::class, 'store']); // Subir fotos
     Route::get('/employee/payments', [PaymentController::class, 'employeePayments']); // Pagos de empleado
 
+    Route::get('events-with-packages', [AppointmentController::class, 'getEventsWithPackages']); // Eventos con paquetes
+
     // --- Gestión y Búsqueda de Clientes (Panel) ---
     // 💡 NUEVA RUTA PARA AUTOCOMPLETADO
     Route::get('/customers/search', [CustomerController::class, 'search']);
     Route::get('/customers', [CustomerController::class, 'index']); // Lista de clientes
     Route::get('/customers/{customer}', [CustomerController::class, 'show']); // Detalle de cliente
+    Route::get('/customers/{customer}/bookings', [CustomerController::class, 'bookings']); // Obtener reservas de un cliente
 });
 
 
@@ -112,6 +116,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::get('/appointments', [AdminAppointmentController::class, 'index']);
     Route::get('/appointments/unassigned', [AdminAppointmentController::class, 'unassigned']);
     Route::get('/employees/availability', [AdminAppointmentController::class, 'employeesAvailability']);
+   
     
     // Acciones de asignación
     Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);

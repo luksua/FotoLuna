@@ -188,8 +188,14 @@ class AdminAppointmentController extends Controller
 
         return response()->json($result);
     }
+
     public function candidates(Request $request, Appointment $appointment)
     {
+        // VERIFICACIÓN AÑADIDA PARA PREVENIR ERROR 500 si la cita no existe
+        if (!$appointment->appointmentId) {
+            return response()->json(['message' => 'Cita no encontrada.'], 404);
+        }
+
         $date = $appointment->appointmentDate;
         $time = substr($appointment->appointmentTime, 0, 5);
 
