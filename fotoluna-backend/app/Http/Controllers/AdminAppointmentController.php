@@ -135,6 +135,54 @@ class AdminAppointmentController extends Controller
         return response()->json($data);
     }
 
+    public function packagesCount()
+    {
+        $count = Booking::count();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total' => $count
+            ]
+        ]);
+    }
+
+    public function salesByMonth()
+    {
+        $currentYear = Carbon::now()->year;
+
+        // Obtener todas las reservas (bookings) del año actual con sus pagos
+        $bookingsByMonth = Booking::selectRaw('
+            MONTH(bookings.created_at) AS month,
+            COALESCE(SUM(payments.amount), 0) AS total_sales
+        ')
+            ->leftJoin('payments', 'payments.bookingIdFK', '=', 'bookings.bookingId')
+            ->whereYear('bookings.created_at', $currentYear)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Crear array con todos los meses
+        $monthNames = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+
+        $salesData = [];
+        foreach (range(1, 12) as $month) {
+            $monthData = $bookingsByMonth->firstWhere('month', $month);
+            $salesData[] = [
+                'mes' => $monthNames[$month - 1],
+                'ventas' => $monthData ? (int)$monthData->total_sales : 0
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $salesData,
+            'year' => $currentYear
+        ]);
+    }
+
     public function employeesAvailability(Request $request)
     {
         $request->validate([

@@ -11,9 +11,10 @@ import AdminAppointments from "../features/Admin/AdminApointments/pages/AdminApp
 export const adminRoutes = [
     {
         path: "/admin",
-        element: <HomeAdmin />
+        element: <Dashboard />
     },
     { path: "/dashboard", element: <Dashboard/> },
+    { path: "/admin-home", element: <HomeAdmin /> },
     { path: "/RegisterUsers", element: <RegisterUsers/> },
     { path: "/AdminUsers", element: <AdminUsers /> },
     { path: "/AdminEmployee", element: <AdminEmployee /> },

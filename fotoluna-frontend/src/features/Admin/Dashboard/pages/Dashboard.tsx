@@ -11,34 +11,27 @@ import { Gauge } from '@mui/x-charts/Gauge';
 import { PieChart } from '@mui/x-charts/PieChart';
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../../../lib/api";
+import { useDashboardAppointments } from "../../../../hooks/useDashboardAppointments";
+import { useWeather } from "../../../../hooks/useWeather";
+import { useAuth } from "../../../../context/useAuth";
+import { getSalesByMonth, type SalesMonth } from "../../../../services/appointmentService";
+import "../Styles/dashboard.css";
 
-// Tarjetas de resumen
-const resumen = [
-    { label: "Citas Pendientes", value: 0, id: "pending-appointments", icon: <EventIcon color="warning" sx={{ color: teal[500], fontSize: 35, mr: 2 }} /> },
-    { label: "Cita Más Cercana", value: "11 octubre", icon: <AccessTimeIcon color="action" sx={{ fontSize: 35, mr: 2 }} /> },
-    { label: "Citas Canceladas", value: 7, icon: <EventBusyIcon color="success" sx={{ color: red[500], fontSize: 35, mr: 2 }} /> },
-];
-
-const resumen2 = [
-    { label: "Clientes Registrados", value: 0, id: "customer-count", icon: <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} /> },
-    { label: "Paquetes Vendidos en total", value: 25, icon: <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} /> },
-    { label: "Ventas", value: 0, id: "monthly-sales", icon: <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} /> },
-];
-
-// Datos para el gráfico de barras
-const data = [
-    { mes: "Enero", ventas: 20 },
-    { mes: "Febrero", ventas: 58 },
-    { mes: "Marzo", ventas: 100 },
-    { mes: "Abril", ventas: 15 },
-    { mes: "Mayo", ventas: 12 },
-    { mes: "Junio", ventas: 76 },
-    { mes: "Julio", ventas: 55 },
-    { mes: "Agosto", ventas: 96 },
-    { mes: "Septiembre", ventas: 83 },
-    { mes: "Octubre", ventas: 30 },
-    { mes: "Noviembre", ventas: 84 },
+// Datos para el gráfico de barras - Se cargarán dinámicamente
+let initialChartData = [
+    { mes: "Enero", ventas: 0 },
+    { mes: "Febrero", ventas: 0 },
+    { mes: "Marzo", ventas: 0 },
+    { mes: "Abril", ventas: 0 },
+    { mes: "Mayo", ventas: 0 },
+    { mes: "Junio", ventas: 0 },
+    { mes: "Julio", ventas: 0 },
+    { mes: "Agosto", ventas: 0 },
+    { mes: "Septiembre", ventas: 0 },
+    { mes: "Octubre", ventas: 0 },
+    { mes: "Noviembre", ventas: 0 },
     { mes: "Diciembre", ventas: 0 },
 ];
 
@@ -49,6 +42,12 @@ type EmployeeRating = {
 };
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const displayName = user?.displayName ?? user?.name ?? "Admin";
+    const { weather, iconClass, description } = useWeather();
+    const { pendingCount, cancelledCount, bookedPackagesCount, nextAppointment, formatDate } = useDashboardAppointments();
+    const [chartData, setChartData] = useState<SalesMonth[]>(initialChartData);
     const [estrellasData, setEstrellasData] = useState<Array<{ estrellas: number; cantidad: number }>>([
         { estrellas: 1, cantidad: 0 },
         { estrellas: 2, cantidad: 0 },
@@ -62,7 +61,6 @@ const Dashboard = () => {
     const [topEmployees, setTopEmployees] = useState<EmployeeRating[]>([]);
     const [monthlySales, setMonthlySales] = useState(0);
     const [customersCount, setCustomersCount] = useState(0);
-    const [pendingAppointmentsCount, setPendingAppointmentsCount] = useState(0);
 
     useEffect(() => {
         const fetchRatings = async () => {
@@ -71,7 +69,6 @@ const Dashboard = () => {
                 if (response.data.success) {
                     setEstrellasData(response.data.data);
                     setAverageRating(response.data.average);
-                    setTotalVotos(response.data.total);
                 }
             } catch (error) {
                 console.warn('Error al obtener estadísticas de puntuaciones:', error);
@@ -95,7 +92,7 @@ const Dashboard = () => {
             try {
                 const res = await api.get('/api/employees/ratings');
                 if (res.data && res.data.success && Array.isArray(res.data.data)) {
-                    // Ordenar por averageRating descendente y tomar top 3
+                    // Ordenar y tomar top 3
                     const sorted = res.data.data
                         .sort((a: EmployeeRating, b: EmployeeRating) => b.averageRating - a.averageRating)
                         .slice(0, 3);
@@ -117,6 +114,17 @@ const Dashboard = () => {
             }
         };
 
+        const fetchChartData = async () => {
+            try {
+                const salesData = await getSalesByMonth();
+                if (salesData && salesData.length > 0) {
+                    setChartData(salesData);
+                }
+            } catch (err) {
+                console.warn('Error fetching chart data:', err);
+            }
+        };
+
         const fetchCustomersCount = async () => {
             try {
                 const res = await api.get('/api/admin/customers/count');
@@ -128,23 +136,12 @@ const Dashboard = () => {
             }
         };
 
-        const fetchPendingAppointmentsCount = async () => {
-            try {
-                const res = await api.get('/api/admin/appointments/pending-count');
-                if (res.data && res.data.success) {
-                    setPendingAppointmentsCount(res.data.data.total || 0);
-                }
-            } catch (err) {
-                console.warn('Error fetching pending appointments count:', err);
-            }
-        };
-
         fetchRatings();
         fetchPackagesStats();
         fetchEmployeeRatings();
         fetchMonthlySales();
         fetchCustomersCount();
-        fetchPendingAppointmentsCount();
+        fetchChartData();
     }, []);
 
     const totalVotosCalculated = estrellasData.reduce((acc, curr) => acc + curr.cantidad, 0);
@@ -152,44 +149,107 @@ const Dashboard = () => {
     return (
         <HomeLayout>
 
+            {/* Sección de Bienvenida y Clima */}
+            <section className="welcome-section">
+                <div className="welcome-text">
+                    <h2>¡Bienvenid@, {displayName}!</h2>
+                    <p>Es un día perfecto para crear fotos increíbles</p>
+                </div>
+                <div className="weather-info">
+                    <div className="weather-icon">
+                        <i className={`bi ${iconClass}`}></i>
+                    </div>
+                    <div className="weather-details">
+                        <h3>{description}</h3>
+                        {weather && (
+                            <p>{weather.temp}°C</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
             {/* Tarjetas de resumen */}
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 4, justifyContent: 'center', width: '100%' }}>
-                {resumen.map((item, idx) => (
-                    <Box key={idx} sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
-                        {item.icon}
-                        <Box sx={{ ml: 2 }}>
-                            <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">
-                                {item.id === 'pending-appointments'
-                                    ? pendingAppointmentsCount
-                                    : item.value
-                                }
-                            </Typography>
-                        </Box>
+                {/* Tarjeta de Citas Pendientes */}
+                <Box 
+                    onClick={() => navigate('/AdminAppointments', { state: { filterStatus: 'Scheduled' } })}
+                    sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2, cursor: 'pointer', transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4, bgcolor: '#eeeeee' } }}
+                >
+                    <EventIcon color="warning" sx={{ color: teal[500], fontSize: 35, mr: 2 }} />
+                    <Box sx={{ ml: 2 }}>
+                        <Typography variant="subtitle1" color="text.secondary">Citas Pendientes</Typography>
+                        <Typography variant="h5" color="primary">
+                            {pendingCount}
+                        </Typography>
                     </Box>
-                ))}
-                {resumen2.map((item, idx) => (
-                    <Box key={idx} sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
-                        {item.icon}
-                        <Box sx={{ ml: 2 }}>
-                            <Typography variant="subtitle1" color="text.secondary">{item.label}</Typography>
-                            <Typography variant="h5" color="primary">
-                                {item.id === 'monthly-sales' 
-                                    ? `$ ${monthlySales.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-                                    : item.id === 'customer-count'
-                                    ? customersCount
-                                    : item.value
-                                }
-                            </Typography>
-                        </Box>
+                </Box>
+
+                {/* Tarjeta de Cita Más Cercana */}
+                <Box 
+                    onClick={() => navigate('/AdminAppointments', { state: { sortOrder: 'oldest' } })}
+                    sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2, cursor: 'pointer', transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4, bgcolor: '#eeeeee' } }}
+                >
+                    <AccessTimeIcon color="action" sx={{ fontSize: 35, mr: 2 }} />
+                    <Box sx={{ ml: 2 }}>
+                        <Typography variant="subtitle1" color="text.secondary">Cita Más Cercana</Typography>
+                        <Typography variant="h5" color="primary">
+                            {nextAppointment ? formatDate(nextAppointment.date) : "Sin citas"}
+                        </Typography>
                     </Box>
-                ))}
+                </Box>
+
+                {/* Tarjeta de Citas Canceladas */}
+                <Box 
+                    onClick={() => navigate('/AdminAppointments', { state: { filterStatus: 'Cancelled' } })}
+                    sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2, cursor: 'pointer', transition: 'all 0.3s ease', '&:hover': { transform: 'translateY(-4px)', boxShadow: 4, bgcolor: '#eeeeee' } }}
+                >
+                    <EventBusyIcon color="success" sx={{ color: red[500], fontSize: 35, mr: 2 }} />
+                    <Box sx={{ ml: 2 }}>
+                        <Typography variant="subtitle1" color="text.secondary">Citas Canceladas</Typography>
+                        <Typography variant="h5" color="primary">
+                            {cancelledCount}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                {/* Tarjeta de Clientes Registrados */}
+                <Box sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
+                    <PeopleIcon color="secondary" sx={{ fontSize: 35, mr: 2 }} />
+                    <Box sx={{ ml: 2 }}>
+                        <Typography variant="subtitle1" color="text.secondary">Clientes Registrados</Typography>
+                        <Typography variant="h5" color="primary">
+                            {customersCount}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                {/* Tarjeta de Paquetes Vendidos */}
+                <Box sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
+                    <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} />
+                    <Box sx={{ ml: 2 }}>
+                        <Typography variant="subtitle1" color="text.secondary">Paquetes Vendidos en total</Typography>
+                        <Typography variant="h5" color="primary">
+                            {bookedPackagesCount}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                {/* Tarjeta de Ventas */}
+                <Box sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
+                    <EventIcon color="primary" sx={{ fontSize: 35, mr: 2 }} />
+                    <Box sx={{ ml: 2 }}>
+                        <Typography variant="subtitle1" color="text.secondary">Ventas</Typography>
+                        <Typography variant="h5" color="primary">
+                            $ {monthlySales.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </Typography>
+                    </Box>
+                </Box>
             </Box>
 
             {/* Gráfica de ventas*/}
             <BarChart
-                dataset={data}
+                dataset={chartData}
                 xAxis={[{ dataKey: 'mes', tickPlacement: 'middle', tickLabelPlacement: 'middle' }]}
                 yAxis={[{ label: 'Ventas', width: 60 }]}
                 series={[{ dataKey: 'ventas', label: 'Ventas por mes al año', color: '#805fa6'}]}

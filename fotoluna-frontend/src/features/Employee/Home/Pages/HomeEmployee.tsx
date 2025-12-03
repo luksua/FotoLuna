@@ -2,10 +2,12 @@ import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import React from "react";
 import "../Styles/home.css";
 import { useAuth } from "../../../../context/useAuth";
+import { useWeather } from "../../../../hooks/useWeather";
 
 const EmployeeHome: React.FC = () => {
     const { user } = useAuth();
     const displayName = user?.displayName ?? user?.name ?? "Amalia";
+    const { weather, iconClass, description } = useWeather();
 
     return (
         <EmployeeLayout >
@@ -17,10 +19,13 @@ const EmployeeHome: React.FC = () => {
                     </div>
                     <div className="weather-info">
                         <div className="weather-icon">
-                            <i className="bi bi-cloud-sun-fill"></i>
+                            <i className={`bi ${iconClass}`}></i>
                         </div>
                         <div className="weather-details">
-                            <p>Parcialmente nublado</p>
+                            <h3>{description}</h3>
+                            {weather && (
+                                <p>{weather.temp}°C</p>
+                            )}
                         </div>
                     </div>
                 </section>

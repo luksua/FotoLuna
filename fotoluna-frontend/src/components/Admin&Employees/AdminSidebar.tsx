@@ -3,11 +3,10 @@ import "../../styles/EmployeeSidebar.css";
 import { Link, useLocation } from "react-router-dom";
 
 const AdminSidebar: React.FC = () => {
-    const [activeItem, setActiveItem] = useState("inicio");
+    const [activeItem, setActiveItem] = useState("dashboard");
     const location = useLocation();
 
     const menuItems = [
-        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/admin" },
         { id: "dashboard", icon: "bi bi-graph-up", text: "Dashboard", path: "/dashboard" },
         { id: "subir", icon: "bi bi-journal-plus", text: "Registro Usuarios", path: "/RegisterUsers" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/AdminUsers" },

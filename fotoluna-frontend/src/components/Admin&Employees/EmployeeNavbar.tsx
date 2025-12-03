@@ -27,7 +27,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
 
     const mapUserToProfile = (u: any): UserProfileData => ({
         id: u?.id ?? 0,
-        name: u?.displayName ?? u?.firstName ?? u?.name ?? "Usuario",
+        name: u?.name ?? u?.displayName ?? u?.firstName ?? "Usuario",
         email: u?.email ?? "",
         bio: "",
         avatar: u?.avatar ?? null,

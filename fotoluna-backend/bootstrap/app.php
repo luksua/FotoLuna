@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // 👇 agregar middleware de CORS
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
         // 👇 intercepta las respuestas de autenticación fallida
         $middleware->redirectGuestsTo(function ($request) {
             // Si es una petición API, no redirige — devuelve JSON 401

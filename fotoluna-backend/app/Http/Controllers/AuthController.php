@@ -145,7 +145,7 @@ class AuthController extends Controller
         // Agregar ruta de redirección según rol
         switch ($user->role) {
             case 'admin':
-                $response['redirect_to'] = '/admin';
+                $response['redirect_to'] = '/dashboard';
                 break;
 
             case 'empleado':

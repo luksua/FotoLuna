@@ -1,0 +1,127 @@
+:root {
+    --pastel-mint: #e1c0f7;
+    --pastel-lavender: #e6e6fa;
+    --pastel-peach: #ffdab9;
+    --pastel-blue: #ebb5ca;
+    --pastel-pink: #f2c8f8;
+    --pastel-lilac: #d8bfd8;
+    --white: #ffffff;
+    --light-gray: #f9f9f9;
+    --text-dark: #5a5a5a;
+    --text-light: #888888;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
+}
+
+.welcome-section {
+    background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-blue));
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+    color: var(--text-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome-text h2 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.welcome-text p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-light);
+}
+
+.weather-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 12px 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    min-width: 200px;
+}
+
+.weather-icon {
+    font-size: 2.5rem;
+    color: #dfb9df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+.weather-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.weather-details h3 {
+    font-size: 0.95rem;
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.weather-details p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .welcome-text h2 {
+        font-size: 1.3rem;
+    }
+
+    .weather-info {
+        min-width: auto;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .welcome-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .welcome-text h2 {
+        font-size: 1.1rem;
+    }
+
+    .weather-info {
+        padding: 10px 15px;
+    }
+
+    .weather-icon {
+        font-size: 2rem;
+    }
+
+    .weather-details h3 {
+        font-size: 0.85rem;
+    }
+
+    .weather-details p {
+        font-size: 0.75rem;
+    }
+}

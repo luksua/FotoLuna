@@ -43,12 +43,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+    // cambio de contraseña - disponible para cualquier usuario autenticado
+    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
+
+    // actualizar perfil - disponible para cualquier usuario autenticado
+    Route::post('/customer', [ProfileController::class, 'update']);
 });
 
 // RUTAS CLIENTE
 Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
-    Route::post('/customer', [ProfileController::class, 'update']);
-    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::get('/packages', [PackageController::class, 'index']);
     Route::post('/appointments', [AppointmentController::class, 'store']);
@@ -328,6 +332,12 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     // 👉 NUEVA: asignar fotógrafo a una cita
     Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+
+    // 👉 NUEVA: contar paquetes asociados a citas
+    Route::get('/packages/count-booked', [AdminAppointmentController::class, 'packagesCount']);
+
+    // 👉 NUEVA: obtener ventas por mes
+    Route::get('/sales/by-month', [AdminAppointmentController::class, 'salesByMonth']);
 });
 
 
