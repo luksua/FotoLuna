@@ -384,3 +384,4 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
 };
 
 export default AppointmentFormStep4PaymentEmbedded;
+
