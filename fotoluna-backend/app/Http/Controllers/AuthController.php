@@ -54,8 +54,10 @@ class AuthController extends Controller
             // Crear la fila domain y asociar user_id
             if ($role === 'cliente') {
 
-                $creatorId = (int) $request->input('employee_id', 0);
-                \Log::info('Valor de employee_id recibido por Laravel: ' . $creatorId);
+                // Si no viene employee_id, será null
+                $creatorId = $request->input('employee_id');
+
+                \Log::info('Valor de employee_id recibido por Laravel: ' . var_export($creatorId, true));
 
                 Customer::create([
                     'user_id' => $user->id,
@@ -68,9 +70,8 @@ class AuthController extends Controller
                     'documentType' => $data['documentType'] ?? 'CC',
                     'documentNumber' => $data['documentNumber'] ?? '',
 
-                    // 👈 CAMBIO CLAVE: Usar la ID que viene del frontend
-                    'created_by_user_id' => $creatorId,
-
+                    // 👇 Si no hay employee_id → se guarda null
+                    'created_by_user_id' => $creatorId ?: null,
                 ]);
             }
 

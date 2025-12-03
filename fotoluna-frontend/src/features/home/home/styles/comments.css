@@ -101,6 +101,6 @@
 
 /* color del cosito de anonimo cuando está activao */
 .form-check-input:checked {
-    background-color: #DCABDF;
+    background-color: #DCABDF !important;
     border-color: #DCABDF;
 }

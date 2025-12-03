@@ -262,7 +262,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
             };
 
             const res = await axios.post(
-                `${API_BASE}/api/appointments`,
+                `${API_BASE}/api/appointmentsCustomer`,
                 payload, // Enviamos el payload completo
                 { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
             );

@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // RUTA PARA ALMACENAR CITAS PARA CLIENTE Y EMPLEADO
     Route::post('/appointments', [AppointmentController::class, 'store']);
+    Route::post('/appointmentsCustomer', [AppointmentController::class, 'storeCustomer']);
 });
 // RUTAS CLIENTE
 Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
@@ -73,6 +74,7 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::post('/mercadopago/checkout/pay', [PaymentController::class, 'pay']);
     Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
     Route::get('/storage-plans', [StoragePlanController::class, 'index']);
+    Route::get('/storage-plans-customer', [StoragePlanController::class, 'indexCustomer']);
     Route::post('/storage/subscribe', [StorageSubscriptionController::class, 'createSubscription']);
     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
@@ -244,6 +246,8 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // Acciones de asignación
     Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
     Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
+    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
+
 });
 
 Route::get('/admin/packages', [AdminPackagesController::class, 'index']);

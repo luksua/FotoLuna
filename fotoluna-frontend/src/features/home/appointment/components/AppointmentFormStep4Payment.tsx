@@ -146,21 +146,11 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
 
                   const token = localStorage.getItem("token");
 
-                  let endpoint = "/api/mercadopago/checkout/pay";
-                  let payload: any = {
-                    booking_id: bookingId,
-                    transaction_amount: total,
-                    payment_method_id: paymentMethodId,
-                    token: formData?.token,
-                    installments: formData?.installments,
-                    payer: { email: userEmail },
-                    raw_form: formData,
-                    client_payment_method: paymentMethod,
-                    installment_id: installmentIdRef.current ?? null,
-                  };
+                  let endpoint = "";
+                  let payload: any = {};
 
-                  // 👇 SI ES COMPRA DE PLAN, USAR OTRO ENDPOINT Y OTRO PAYLOAD
-                  if (storagePlanId) {
+                  // 🔹 CASO 1: PAGO DE PLAN DE ALMACENAMIENTO (NO hay booking)
+                  if (storagePlanId && !bookingId) {
                     endpoint = "/api/mercadopago/storage/pay";
                     payload = {
                       storage_plan_id: storagePlanId,
@@ -169,7 +159,21 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       token: formData?.token,
                       installments: formData?.installments,
                       payer: { email: userEmail },
-                      client_payment_method: paymentMethod,
+                      client_payment_method: paymentMethod, // "Card" o "PSE"
+                    };
+                  } else {
+                    // 🔹 CASO 2: PAGO DE RESERVA (booking)
+                    endpoint = "/api/mercadopago/checkout/pay";
+                    payload = {
+                      booking_id: bookingId,
+                      transaction_amount: total,
+                      payment_method_id: paymentMethodId,
+                      token: formData?.token,
+                      installments: formData?.installments,
+                      payer: { email: userEmail },
+                      raw_form: formData,
+                      client_payment_method: paymentMethod, // "Card" o "PSE"
+                      installment_id: installmentIdRef.current ?? null,
                     };
                   }
 
@@ -183,7 +187,6 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       },
                     }
                   );
-
 
                   const { status, status_detail } = res.data;
 
@@ -210,11 +213,103 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                   setShowErrorModal(true);
 
                   reject(err);
-                } finally {
-                  // setLoading(false);
                 }
               });
             },
+
+            // onSubmit: ({
+            //   formData,
+            //   selectedPaymentMethod,
+            // }: {
+            //   formData: any;
+            //   selectedPaymentMethod: any;
+            // }) => {
+            //   return new Promise<void>(async (resolve, reject) => {
+            //     try {
+            //       setMountError(null);
+
+            //       const paymentMethodId =
+            //         selectedPaymentMethod?.id ??
+            //         formData?.paymentMethodId ??
+            //         formData?.payment_method_id ??
+            //         null;
+
+            //       console.log("formData =>", formData);
+            //       console.log("selectedPaymentMethod =>", selectedPaymentMethod);
+            //       console.log("paymentMethodId que se enviará =>", paymentMethodId);
+            //       console.log("installmentIdRef.current =>", installmentIdRef.current);
+
+            //       const token = localStorage.getItem("token");
+
+            //       let endpoint = "/api/mercadopago/checkout/pay";
+            //       let payload: any = {
+            //         booking_id: bookingId,
+            //         transaction_amount: total,
+            //         payment_method_id: paymentMethodId,
+            //         token: formData?.token,
+            //         installments: formData?.installments,
+            //         payer: { email: userEmail },
+            //         raw_form: formData,
+            //         client_payment_method: paymentMethod,
+            //         installment_id: installmentIdRef.current ?? null,
+            //       };
+
+            //       // 👇 SI ES COMPRA DE PLAN, USAR OTRO ENDPOINT Y OTRO PAYLOAD
+            //       if (storagePlanId) {
+            //         endpoint = "/api/mercadopago/storage/pay";
+            //         payload = {
+            //           storage_plan_id: storagePlanId,
+            //           transaction_amount: total,
+            //           payment_method_id: paymentMethodId,
+            //           token: formData?.token,
+            //           installments: formData?.installments,
+            //           payer: { email: userEmail },
+            //           client_payment_method: paymentMethod,
+            //         };
+            //       }
+
+            //       const res = await axios.post(
+            //         `${API_BASE}${endpoint}`,
+            //         payload,
+            //         {
+            //           headers: {
+            //             Authorization: `Bearer ${token}`,
+            //             Accept: "application/json",
+            //           },
+            //         }
+            //       );
+
+
+            //       const { status, status_detail } = res.data;
+
+            //       if (status === "approved" || status === "in_process") {
+            //         onSuccess();
+            //         resolve();
+            //       } else {
+            //         setErrorMessage(
+            //           `Pago con estado: ${status}. ${status_detail ? `Detalle: ${status_detail}. ` : ""
+            //           }Verifica tu medio de pago o intenta nuevamente.`
+            //         );
+            //         setShowErrorModal(true);
+            //         reject();
+            //       }
+            //     } catch (err: any) {
+            //       console.error("ERROR PAGO MP =>", err);
+
+            //       const backendMessage =
+            //         err.response?.data?.message ||
+            //         err.response?.data?.error ||
+            //         "Ocurrió un error al procesar el pago. Intenta nuevamente.";
+
+            //       setErrorMessage(backendMessage);
+            //       setShowErrorModal(true);
+
+            //       reject(err);
+            //     } finally {
+            //       // setLoading(false);
+            //     }
+            //   });
+            // },
 
             onError: (error: any) => {
               console.error("Error en Payment Brick:", error);

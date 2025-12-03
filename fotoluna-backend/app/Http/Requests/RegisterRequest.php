@@ -22,7 +22,7 @@ class RegisterRequest extends FormRequest
 
             // 🚨 CAMPO AÑADIDO: ID del empleado que crea al cliente
             // El frontend lo envía siempre si es un registro manual por un empleado.
-            'employee_id' => 'required_if:role,cliente|integer|exists:users,id',
+            'employee_id' => 'nullable|integer|exists:users,id',
             // Usamos 'required_if:role,cliente' para asegurar que se envíe solo al crear un cliente.
 
             // campos específicos para cliente (se validan si role == cliente)
