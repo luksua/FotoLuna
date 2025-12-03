@@ -387,13 +387,23 @@ class AppointmentController extends Controller
     {
         $user = $request->user();
 
-        // Asegurar que el appointment pertenece al cliente logueado
-        if (!$user || !$user->customer || $appointment->customerIdFK !== $user->customer->customerId) {
+        if (!$user) {
+            abort(401, 'No autenticado');
+        }
+
+        $isCustomerOwner = $user->customer && $appointment->customerIdFK == $user->customer->customerId;
+        $isAssignedEmployee = $user->employee && $appointment->employeeIdFK == $user->employee->employeeId;
+
+        // 👇 Nuevo: permitir a cualquier usuario con rol "empleado"
+        $isEmployeeRole = $user->role === 'empleado';
+        $isAdmin = $user->role === 'admin';
+
+        if (!($isCustomerOwner || $isAssignedEmployee || $isAdmin || $isEmployeeRole)) {
             abort(403, 'No autorizado');
         }
 
         // Asegurar que la cuota pertenece a esa cita
-        if ($installment->booking->appointmentIdFK !== $appointment->appointmentId) {
+        if ((int) $installment->booking->appointmentIdFK !== (int) $appointment->appointmentId) {
             abort(403, 'No autorizado');
         }
 
@@ -409,6 +419,7 @@ class AppointmentController extends Controller
 
         return response()->download($fullPath);
     }
+
 
     /**
      * Show the form for creating a new resource.

@@ -780,7 +780,7 @@ const Apointment: React.FC = () => {
 
                                                         {payment && pending > 0 && (
                                                             <Button
-                                                                className="btn btn-sm btn-primary"
+                                                                className="btn btn-sm custom-upload-btn"
                                                                 onClick={() => openPaymentFor(c)}
                                                             >
                                                                 Pagar

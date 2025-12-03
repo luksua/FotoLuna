@@ -25,6 +25,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminAppointmentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CloudPhotoController;
+use App\Http\Controllers\ContactController;
+
 
 // RUTAS SIN LOGIN
 Route::post('/register', [AuthController::class, 'register']);
@@ -34,6 +36,7 @@ Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent'
 Route::get('/events', [EventController::class, 'index']);
 Route::get('/availability', [AppointmentController::class, 'availability']);
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
+Route::post('/contact', [ContactController::class, 'store']);
 
 // RUTAS COMUNES PARA CUALQUIER USUARIO AUTENTICADO
 Route::middleware('auth:sanctum')->group(function () {
@@ -44,7 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
-
+    Route::get('/appointments/{appointment}/installments/{installment}/receipt', [BookingActionsController::class, 'installmentReceipt']);
+    Route::prefix('bookings/{booking}')->group(function () {
+        Route::get('/receipt', [BookingActionsController::class, 'receipt']);
+    });
     // RUTA PARA ALMACENAR CITAS PARA CLIENTE Y EMPLEADO
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::post('/appointmentsCustomer', [AppointmentController::class, 'storeCustomer']);
@@ -58,14 +64,13 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
     Route::patch('/api/appointments/{id}', [AppointmentController::class, 'update']);
     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
-    Route::get('/appointments/{appointment}/installments/{installment}/receipt', [BookingActionsController::class, 'installmentReceipt']);
+
     Route::post('/bookings/{booking}/installments-plan', [BookingInstallmentController::class, 'createInstallmentsPlan']);
     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::prefix('bookings/{booking}')->group(function () {
         Route::post('/send-confirmation', [BookingActionsController::class, 'sendConfirmation']);
         Route::get('/calendar-link', [BookingActionsController::class, 'calendarLink']);
-        Route::get('/receipt', [BookingActionsController::class, 'receipt']);
         Route::get('/summary', [BookingController::class, 'summary']);
         Route::post('/send-confirmation', [BookingController::class, 'sendConfirmation']);
     });
@@ -101,12 +106,12 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 //     [AppointmentController::class, 'index']
 // );
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get(
-        '/appointments/{appointment}/installments/{installment}/receipt',
-        [AppointmentController::class, 'downloadReceipt']
-    );
-});
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get(
+//         '/appointments/{appointment}/installments/{installment}/receipt',
+//         [AppointmentController::class, 'downloadReceipt']
+//     );
+// });
 
 // Route::get('/bookings/{booking}/summary', [BookingController::class, 'summary']);
 // Route::post('/bookings/{booking}/send-confirmation', [BookingController::class, 'sendConfirmation']);
@@ -264,7 +269,11 @@ Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class
 // Contar citas pendientes totales
 Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
 
+Route::get('admin/payments', [PaymentController::class, 'index']);
+Route::get('adminpayments/summary', [PaymentController::class, 'summary']);
 
+Route::get('adminstorage-plans', [StoragePlanController::class, 'indexAdmin']);
+Route::put('adminstorage-plans/{id}', [StoragePlanController::class, 'update']);
 // ===== COMENTARIOS (públicos + autenticados) =====
 // Obtener todos los comentarios (público, sin autenticación)
 Route::get('/comments', [CommentsController::class, 'index']);

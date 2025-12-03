@@ -154,22 +154,41 @@ class BookingActionsController extends Controller
      * GET /api/appointments/{appointment}/installments/{installment}/receipt
      * Recibo PDF de una cuota específica
      */
+
     public function installmentReceipt($appointmentId, $installmentId)
     {
+        // 1) Buscar la reserva ligada a esa cita
         $booking = Booking::whereHas('appointment', function ($q) use ($appointmentId) {
             $q->where('appointmentId', $appointmentId);
         })
-            ->with(['appointment.customer'])
-            ->firstOrFail();
+            ->with(['appointment.customer', 'installments'])
+            ->first(); // 👈 OJO: sin OrFail
 
-        $installment = $booking->installments()
+        if (!$booking) {
+            dd([
+                'error' => 'No se encontró booking para esa appointment',
+                'appointmentId_param' => $appointmentId,
+            ]);
+        }
+
+        // 2) Ver qué cuotas tiene ese booking
+        $availableInstallments = $booking->installments->pluck('id');
+
+        $installment = $booking->installments
             ->where('id', $installmentId)
-            ->firstOrFail();
+            ->first(); // 👈 sin OrFail
+
+        if (!$installment) {
+            dd([
+                'error' => 'No se encontró installment para ese booking',
+                'bookingId' => $booking->bookingId ?? $booking->id,
+                'requested_installment_id' => $installmentId,
+                'available_installments' => $availableInstallments,
+            ]);
+        }
 
         $customer = $booking->appointment->customer ?? null;
-
-        // Si tienes algún log de pagos asociado a la cuota, podrías sacarlo aquí.
-        $lastPayment = null; // o lo que corresponda
+        $lastPayment = null;
 
         $pdf = Pdf::loadView('pdf.installment_receipt', [
             'booking' => $booking,
@@ -182,6 +201,35 @@ class BookingActionsController extends Controller
 
         return $pdf->download($fileName);
     }
+
+    // public function installmentReceipt($appointmentId, $installmentId)
+    // {
+    //     $booking = Booking::whereHas('appointment', function ($q) use ($appointmentId) {
+    //         $q->where('appointmentId', $appointmentId);
+    //     })
+    //         ->with(['appointment.customer'])
+    //         ->firstOrFail();
+
+    //     $installment = $booking->installments()
+    //         ->where('id', $installmentId)
+    //         ->firstOrFail();
+
+    //     $customer = $booking->appointment->customer ?? null;
+
+    //     // Si tienes algún log de pagos asociado a la cuota, podrías sacarlo aquí.
+    //     $lastPayment = null; // o lo que corresponda
+
+    //     $pdf = Pdf::loadView('pdf.installment_receipt', [
+    //         'booking' => $booking,
+    //         'installment' => $installment,
+    //         'customer' => $customer,
+    //         'lastPayment' => $lastPayment,
+    //     ]);
+
+    //     $fileName = 'recibo-cuota-' . $installment->id . '-FL-' . $booking->bookingId . '.pdf';
+
+    //     return $pdf->download($fileName);
+    // }
 
     // private function sendBookingConfirmationEmail(Booking $booking, ?Payment $payment = null): void
     // {
