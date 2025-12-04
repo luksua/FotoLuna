@@ -347,7 +347,7 @@ const Upload: React.FC = () => {
             <div className="upload-container">
                 <div className="upload-box">
                     <div className="upload-header">
-                        <h3 className="upload-title">Subir Fotos</h3>
+                        <h2 className="text-dark">Subir Fotos</h2>
                     </div>
                     <hr />
 

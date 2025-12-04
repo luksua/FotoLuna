@@ -144,9 +144,17 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
                             placeholder="Ingresa tu nombre"
                         />
                     </div>
-                    {errors.name && (
-                        <div className="invalid-feedback d-block">{errors.name}</div>
-                    )}
+                </div>
+                <div className="col-md-6">
+                    <label className="form-label form-label-employee fw-semibold d-block">&nbsp;</label>
+                    <div className="d-flex gap-2">
+                        <button type="button" className="btn btn-employee btn-outline-primary btn-sm">
+                            Cambiar
+                        </button>
+                        {/* <button type="button" className="btn btn-employee btn-outline-danger btn-sm">
+                            Eliminar
+                        </button> */}
+                    </div>
                 </div>
             </div>
 

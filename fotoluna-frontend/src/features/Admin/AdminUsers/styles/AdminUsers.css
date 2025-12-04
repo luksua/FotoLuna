@@ -370,3 +370,33 @@
     padding: 16px 0;
 }
 
+/* Paginación en modal de reservas */
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px 0;
+}
+
+.admin-pagination button {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 10px;
+    min-width: 100px;
+    cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+}
+
+.admin-pagination button:hover:not(:disabled) {
+    background: #957eb1;
+    transform: translateY(-1px);
+}
+
+.admin-pagination button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+

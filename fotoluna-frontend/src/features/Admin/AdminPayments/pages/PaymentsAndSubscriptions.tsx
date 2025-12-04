@@ -1,22 +1,32 @@
-// src/modules/AdminPayments/pages/PaymentsAndSubscriptions.tsx
 import React, { useState } from "react";
 import Subscriptions from "../components/Subscriptions";
 import StoragePlan from "../components/StoragePlan";
 import "../styles/payment.css";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
+import AdminBookingPayments from "../components/BookingPayments";
 
-type Tab = "subscriptions" | "storage";
+type Tab = "bookingPayments" | "subscriptions" | "storage";
 
 const PaymentsAndSubscriptions: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("subscriptions");
+  const [activeTab, setActiveTab] = useState<Tab>("bookingPayments");
 
   return (
     <HomeLayout>
       <div className="admin-container">
         <h1 className="admin-title">Gestión de Pagos y Suscripciones</h1>
 
-        {/* Tabs */}
         <div className="admin-tabs">
+          <button
+            type="button"
+            onClick={() => setActiveTab("bookingPayments")}
+            className={
+              "admin-tab" +
+              (activeTab === "bookingPayments" ? " active" : "")
+            }
+          >
+            Pagos de reservas
+          </button>
+
           <button
             type="button"
             onClick={() => setActiveTab("subscriptions")}
@@ -25,21 +35,21 @@ const PaymentsAndSubscriptions: React.FC = () => {
               (activeTab === "subscriptions" ? " active" : "")
             }
           >
-            Transacciones / Suscripciones
+            Pagos de almacenamiento
           </button>
+
           <button
             type="button"
             onClick={() => setActiveTab("storage")}
             className={
-              "admin-tab" +
-              (activeTab === "storage" ? " active" : "")
+              "admin-tab" + (activeTab === "storage" ? " active" : "")
             }
           >
             Planes de almacenamiento
           </button>
         </div>
 
-        {/* Contenido de cada tab */}
+        {activeTab === "bookingPayments" && <AdminBookingPayments />}
         {activeTab === "subscriptions" && <Subscriptions />}
         {activeTab === "storage" && <StoragePlan />}
       </div>

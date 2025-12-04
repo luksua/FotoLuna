@@ -141,7 +141,7 @@ const EmployeeCustomers: React.FC = React.memo(() => {
             <div className="container my-4">
                 {/* Encabezado */}
                 <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-                    <h3 className="mb-0">Nuestros Clientes</h3>
+                    <h2 className="text-dark">Nuestros Clientes</h2>
 
                     <div className="d-flex flex-wrap gap-2">
                         {/* Buscar */}
@@ -180,7 +180,7 @@ const EmployeeCustomers: React.FC = React.memo(() => {
                         </Form.Select>
 
                         <Button
-                            variant="primary"
+                            className="appointments-new-btn"
                             onClick={() => setShowModal(true)}
                             style={{ backgroundColor: "#8c2db0", border: "none" }}
                         >

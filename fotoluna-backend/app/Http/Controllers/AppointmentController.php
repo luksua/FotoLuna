@@ -990,7 +990,7 @@ class AppointmentController extends Controller
     /**
      * Obtener citas pendientes de un cliente por su user_id
      */
-    public function pendingByUserId($userId)
+    public function pendingByUserId(Request $request, $userId)
     {
         \Log::info("PendingByUserId called with userId: {$userId}");
 
@@ -1003,23 +1003,30 @@ class AppointmentController extends Controller
             if (!$customer) {
                 return response()->json([
                     'success' => true,
-                    'data' => []
+                    'data' => [],
+                    'meta' => [
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => (int) $request->query('per_page', 5),
+                        'total' => 0,
+                    ],
                 ], 200);
             }
 
-            // Obtener citas pendientes del customer
-            // Active statuses: 'Scheduled' or 'Pending confirmation'
+            $perPage = (int) $request->query('per_page', 5);
+            $perPage = max(1, min(50, $perPage));
+
             $appointments = Appointment::where('customerIdFK', $customer->customerId)
                 ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
                 ->with(['event', 'bookings.package'])
                 ->orderBy('appointmentDate', 'asc')
                 ->orderBy('appointmentTime', 'asc')
-                ->get();
+                ->paginate($perPage);
 
-            \Log::info("Found {$appointments->count()} pending appointments for customer {$customer->customerId}");
+            \Log::info("Found {$appointments->total()} pending appointments for customer {$customer->customerId}");
 
-            // Transformar datos
-            $data = $appointments->map(function ($apt) {
+            // Transformar datos de la colección
+            $data = $appointments->getCollection()->map(function ($apt) {
                 return [
                     'appointmentId' => (int) $apt->appointmentId,
                     'date' => (string) ($apt->appointmentDate ?? ''),
@@ -1030,18 +1037,27 @@ class AppointmentController extends Controller
                     'comment' => (string) ($apt->comment ?? ''),
                     'status' => (string) ($apt->appointmentStatus ?? ''),
                 ];
-            })->toArray();
+            })->values();
+
+            // Reemplazar colección paginada con data transformada
+            $appointments->setCollection($data);
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $appointments->items(),
+                'meta' => [
+                    'current_page' => $appointments->currentPage(),
+                    'last_page' => $appointments->lastPage(),
+                    'per_page' => $appointments->perPage(),
+                    'total' => $appointments->total(),
+                ],
             ], 200);
         } catch (\Exception $e) {
             \Log::error("pendingByUserId error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => $e->getMessage(),
-                'data' => []
+                'data' => [],
             ], 500);
         }
     }

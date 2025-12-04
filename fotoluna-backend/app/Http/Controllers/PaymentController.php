@@ -475,7 +475,9 @@ class PaymentController extends Controller
             $event = $appointment?->event;
             $package = $booking?->package;
             $installments = $booking?->installments ?? collect();
-            $date = $payment->paymentDate ?? $payment->created_at;
+            $date = $payment->paymentDate
+                ? \Carbon\Carbon::parse($payment->paymentDate)
+                : $payment->created_at;
 
             // ---------------------------
             // NORMALIZAR ESTADO
@@ -900,6 +902,214 @@ class PaymentController extends Controller
             'pendingCount' => $pendingCount,
             'approvedCount' => $approvedCount,
             // aquí puedes añadir variaciones (% vs mes pasado, etc.)
+        ]);
+    }
+
+    public function bookingPayments(Request $request)
+    {
+        $query = Payment::with([
+            'booking',
+            'booking.appointment.customer',
+            'booking.appointment.event',
+            'booking.package',
+            'booking.installments',
+        ]);
+
+        // --------- Filtros de query ---------
+        $statusFilter = $request->query('status'); // all | paid | pending | overdue | partial | no_info
+
+        // Solo filtramos en BD por pago aprobado
+        if ($statusFilter === 'paid') {
+            $query->whereIn('paymentStatus', ['approved', 'paid']);
+        }
+
+        $clientSearch = $request->query('client');
+        if (!empty($clientSearch)) {
+            $query->whereHas('booking.appointment.customer', function ($q) use ($clientSearch) {
+                $q->where('firstNameCustomer', 'like', "%{$clientSearch}%")
+                    ->orWhere('lastNameCustomer', 'like', "%{$clientSearch}%")
+                    ->orWhere('documentNumber', 'like', "%{$clientSearch}%")
+                    ->orWhere('emailCustomer', 'like', "%{$clientSearch}%")
+                    ->orWhere('phoneCustomer', 'like', "%{$clientSearch}%");
+            });
+        }
+
+        if ($from = $request->query('from_date')) {
+            $query->whereDate('paymentDate', '>=', $from);
+        }
+        if ($to = $request->query('to_date')) {
+            $query->whereDate('paymentDate', '<=', $to);
+        }
+
+        $order = strtolower($request->query('order', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $query->orderByRaw('COALESCE(paymentDate, created_at) ' . $order);
+
+        // 👇 Traemos todos y paginamos en memoria para que el filtro por status funcione bien
+        $payments = $query->get();
+
+        // --------- Mapeo al formato de frontend (igual que employeePayments) ---------
+        $collection = $payments->map(function (Payment $payment) {
+            $booking = $payment->booking;
+            $appointment = $booking?->appointment;
+            $customer = $appointment?->customer;
+            $event = $appointment?->event;
+            $package = $booking?->package;
+            $installments = $booking?->installments ?? collect();
+            $date = $payment->paymentDate
+                ? \Carbon\Carbon::parse($payment->paymentDate)
+                : $payment->created_at;
+
+            // ---------------------------
+            // NORMALIZAR ESTADO
+            // ---------------------------
+            $normalizedStatus = 'no_info';
+
+            if ($installments->isEmpty()) {
+                // 🔹 SIN cuotas: pago único
+                if (in_array($payment->paymentStatus, ['approved', 'paid'])) {
+                    $normalizedStatus = 'paid';
+                } elseif (in_array($payment->paymentStatus, ['pending', 'in_process'])) {
+                    $normalizedStatus = 'pending';
+                } else {
+                    $normalizedStatus = 'no_info';
+                }
+            } else {
+                // 🔹 CON cuotas reales
+                $total = (float) $installments->sum('amount');
+                $paid = (float) $installments->where('status', 'paid')->sum('amount');
+                $overdueCount = $installments->where('status', 'overdue')->count();
+                $pendingCount = $installments->where('status', 'pending')->count();
+
+                if ($total > 0 && $paid >= $total) {
+                    $normalizedStatus = 'paid';
+                } elseif ($overdueCount > 0) {
+                    $normalizedStatus = 'overdue';
+                } elseif ($paid > 0 && $paid < $total) {
+                    $normalizedStatus = 'partial';   // en cuotas
+                } elseif ($total > 0 && $paid == 0 && $pendingCount > 0) {
+                    $normalizedStatus = 'pending';
+                } else {
+                    $normalizedStatus = 'no_info';
+                }
+            }
+
+            // ---------------------------
+            // CUOTAS + TOTALES
+            // ---------------------------
+            if ($installments->isEmpty()) {
+                // 🔹 SIN cuotas reales → cuota única virtual
+                $installment = [
+                    'current' => 1,
+                    'total' => 1,
+                ];
+
+                $installmentAmount = (float) $payment->amount;
+                $dueDate = optional($date)->format('Y-m-d');
+                $totalAmount = (float) $payment->amount;
+
+                $normalizedInstallments = collect([
+                    [
+                        'id' => null,
+                        'amount' => (float) $payment->amount,
+                        'due_date' => optional($date)->toIso8601String(),
+                        'paid' => in_array($normalizedStatus, ['paid'], true),
+                        'paid_at' => optional($date)->toIso8601String(),
+                        'status' => $normalizedStatus,
+                        'is_overdue' => false,
+                        'receipt_path' => null,
+                    ],
+                ]);
+            } else {
+                // 🔹 CON cuotas reales
+                $sorted = $installments->sortBy('number');
+                $current = $sorted->firstWhere('status', 'pending') ?? $sorted->last();
+
+                $installment = [
+                    'current' => (int) $current->number,
+                    'total' => (int) $installments->count(),
+                ];
+
+                $installmentAmount = (float) $current->amount;
+                $dueDate = optional($current->due_date ?? $current->created_at)->format('Y-m-d');
+                $totalAmount = (float) $installments->sum('amount');
+
+                $normalizedInstallments = $installments->map(function ($ins) {
+                    return [
+                        'id' => $ins->id,
+                        'amount' => (float) $ins->amount,
+                        'due_date' => optional($ins->due_date)->toIso8601String(),
+                        'paid' => $ins->status === 'paid',
+                        'paid_at' => $ins->paid_at
+                            ? ($ins->paid_at instanceof \Carbon\Carbon
+                                ? $ins->paid_at->toIso8601String()
+                                : \Carbon\Carbon::parse($ins->paid_at)->toIso8601String())
+                            : null,
+                        'status' => $ins->status,
+                        'is_overdue' => $ins->status === 'overdue',
+                        'receipt_path' => $ins->receipt_path,
+                    ];
+                });
+            }
+
+            $clientName = trim(
+                ($customer->firstNameCustomer ?? '') . ' ' .
+                ($customer->lastNameCustomer ?? '')
+            );
+
+            return [
+                'id' => (int) $payment->paymentId,
+                'booking_id' => $booking?->bookingId,
+                'appointment_id' => $appointment?->appointmentId,
+
+                'date' => optional($date)->format('Y-m-d'),
+                'clientName' => $clientName,
+                'clientCedula' => $customer->documentNumber ?? '',
+                'clientEmail' => $customer->emailCustomer ?? '',
+                'clientPhone' => $customer->phoneCustomer ?? '',
+
+                'description' => ($package->packageName ?? 'Sin paquete') . ' - ' .
+                    ($event->eventType ?? 'Sin evento'),
+
+                'installment' => $installment,
+                'installmentAmount' => $installmentAmount,
+                'totalAmount' => $totalAmount,
+
+                'status' => $normalizedStatus,
+                'dueDate' => $dueDate,
+
+                'installments' => $normalizedInstallments->values(),
+            ];
+        });
+
+        // --------- Filtro final por estado normalizado ---------
+        if ($statusFilter && $statusFilter !== 'all') {
+            $collection = $collection->filter(function ($row) use ($statusFilter) {
+                if ($statusFilter === 'pending') {
+                    return in_array($row['status'], ['pending', 'partial'], true);
+                }
+                return $row['status'] === $statusFilter;
+            })->values();
+        }
+
+        // --------- Paginación en memoria ---------
+        $perPage = (int) $request->query('per_page', 5);
+        $page = (int) $request->query('page', 1);
+
+        $total = $collection->count();
+        $lastPage = (int) max(1, ceil($total / $perPage));
+
+        $items = $collection
+            ->forPage($page, $perPage)
+            ->values();
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => $lastPage,
+            ],
         ]);
     }
 

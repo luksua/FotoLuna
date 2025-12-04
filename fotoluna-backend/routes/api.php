@@ -61,22 +61,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::post('/appointmentsCustomer', [AppointmentController::class, 'storeCustomer']);
 });
+
 // RUTAS CLIENTE
 Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
-    Route::post('/customer', [ProfileController::class, 'update']);
-    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
-
+    Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::get('/packages', [PackageController::class, 'index']);
+    Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
     Route::patch('/api/appointments/{id}', [AppointmentController::class, 'update']);
     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
-
+    Route::get('/appointments/{appointment}/installments/{installment}/receipt', [BookingActionsController::class, 'installmentReceipt']);
     Route::post('/bookings/{booking}/installments-plan', [BookingInstallmentController::class, 'createInstallmentsPlan']);
     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::prefix('bookings/{booking}')->group(function () {
         Route::post('/send-confirmation', [BookingActionsController::class, 'sendConfirmation']);
         Route::get('/calendar-link', [BookingActionsController::class, 'calendarLink']);
+        Route::get('/receipt', [BookingActionsController::class, 'receipt']);
         Route::get('/summary', [BookingController::class, 'summary']);
         Route::post('/send-confirmation', [BookingController::class, 'sendConfirmation']);
     });
@@ -95,6 +96,19 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::get('/employees/available', [EmployeeController::class, 'available']);
     Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 });
+
+
+// Route::post('/mercadopago/storage/pay', [PaymentController::class, 'payStoragePlan'])
+//     ->middleware('auth:sanctum');
+
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
+//     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
+//     Route::post('storage/cancel-subscription', [StoragePlanController::class, 'cancelSubscription']);
+// });
+
+
 // Route::middleware('auth:sanctum')->group(function () {
 //     Route::prefix('bookings/{booking}')->group(function () {
 //         Route::post('/send-confirmation', [BookingActionsController::class, 'sendConfirmation']);
@@ -102,15 +116,31 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 //         Route::get('/receipt', [BookingActionsController::class, 'receipt']);
 //     });
 // });
-// Route::get('/employees/available', [EmployeeController::class, 'available']);
 
-// ESTE
-// Route::get('/storage-plans', [StoragePlanController::class, 'index']);
+// Route::middleware('auth:sanctum')->group(function () {
+
+//     Route::get('/notifications', [NotificationController::class, 'index']);
+//     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+//     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+// });
 
 // Route::middleware('auth:sanctum')->get(
 //     '/appointments-customer',
 //     [AppointmentController::class, 'index']
 // );
+// Route::middleware('auth:sanctum')->get(
+//     '/appointments/{appointment}/installments/{installment}/receipt',
+//     [BookingActionsController::class, 'installmentReceipt']
+// );
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::post(
+//         '/bookings/{booking}/installments-plan',
+//         [BookingInstallmentController::class, 'createInstallmentsPlan']
+//     );
+// });
+
 
 // Route::middleware('auth:sanctum')->group(function () {
 //     Route::get(
@@ -125,12 +155,9 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 // Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt']);
 
 
-/*
-|--------------------------------------------------------------------------
-| Rutas Autenticadas (Middleware: auth:sanctum)
-|--------------------------------------------------------------------------
-*/
-
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::post('/mercadopago/checkout/pay', [MercadoPagoController::class, 'pay']);
+// });
 
 // use App\Http\Controllers\AdminController;
 // use App\Http\Controllers\CustomerController;
@@ -147,11 +174,24 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 //     Route::get('/empleado/panel', [EmployeeController::class, 'index']);
 // });
 
+
+
+
+
+// Route::middleware('auth:sanctum')->get('/bookings/{booking}', [BookingController::class, 'show']);
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Route::patch('/api/appointments/{id}', [AppointmentController::class, 'update']);
+
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::post('/logout', [AuthController::class, 'logout']);
+//     Route::get('/me', [AuthController::class, 'me']);
+// });
+
+
 
 // Route::middleware('auth:sanctum')->group(function () {
 //     Route::post('/customer', [ProfileController::class, 'update']);
@@ -159,14 +199,14 @@ Route::get('/user', function (Request $request) {
 //     Route::post('/appointments', [AppointmentController::class, 'store']);
 // });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/packages', [PackageController::class, 'index']);
-    // Route::post('/appointments', [AppointmentController::class, 'store']);
-    // Route::get('/appointments-customer', [AppointmentController::class, 'index']);
-    Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
-    Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/packages', [PackageController::class, 'index']);
+//     Route::post('/appointments', [AppointmentController::class, 'store']);
+//     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
+//     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
+//     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
 
-});
+
 
 Route::get('/events/{eventId}/packages', [PackageController::class, 'getByEvent']);
 
@@ -178,6 +218,10 @@ Route::get('/events', [EventController::class, 'index']);
 Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
 
 Route::get('/employees/available', [EmployeeController::class, 'available']);
+// Ruta pública para obtener todos los empleados (selector de fotógrafo)
+Route::get('/employees/all', [EmployeeController::class, 'all']);
+// Ruta para obtener ratings promedio de empleados (fotografos)
+Route::get('/employees/ratings', [EmployeeController::class, 'ratings']);
 
 Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
@@ -186,97 +230,54 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
 });
 
-Route::get('/storage-plans', [StoragePlanController::class, 'index']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/storage/subscribe', [StorageSubscriptionController::class, 'createSubscription']);
-});
-
-// Empleado
-Route::middleware('auth:sanctum')->group(function () {
-    // LISTAR citas de un empleado (calendario del fotógrafo)
-    // Route::get('/employee/{employee}/appointments', [
-    //     AppointmentController::class,
-    //     'employeeAppointments',
-    // ]);
-
-    // ACTUALIZAR una cita desde el panel del empleado
-    // Route::put('/employee/appointments/{appointment}', [
-    //     AppointmentController::class,
-    //     'updateByEmployee',
-    // ]);
-
-    // === CLIENTES (panel empleado / admin) ===
-
-    // Lista de clientes (con filtro ?year=2024 opcional)
-    // Route::get('/customers', [CustomerController::class, 'index']);
-
-    // Detalle de un cliente para el modal "Ver más"
-    // Route::get('/customers/{customer}', [CustomerController::class, 'show']);
-
-
-    // --- Rutas del Empleado (Fotógrafo) ---
-    Route::get('/employee/{employee}/appointments', [AppointmentController::class, 'employeeAppointments']); // Calendario
-    Route::put('/employee/appointments/{appointment}', [AppointmentController::class, 'updateByEmployee']); // Actualizar cita
-    Route::post('/employee/cloud-photos', [CloudPhotoController::class, 'store']); // Subir fotos
-    Route::get('/employee/payments', [PaymentController::class, 'employeePayments']); // Pagos de empleado
-
-    // --- Gestión y Búsqueda de Clientes (Panel) ---
-    // 💡 NUEVA RUTA PARA AUTOCOMPLETADO
-    Route::get('/customers/search', [CustomerController::class, 'search']);
-    Route::get('/customers', [CustomerController::class, 'index']); // Lista de clientes
-    Route::get('/customers/{customer}', [CustomerController::class, 'show']); // Detalle de cliente
-});
+// Route::get('/storage-plans', [StoragePlanController::class, 'index']);
 
 // Route::middleware('auth:sanctum')->group(function () {
-//     Route::get('/employee/payments', [PaymentController::class, 'employeePayments']);
+//     Route::post('/storage/subscribe', [StorageSubscriptionController::class, 'createSubscription']);
 // });
 
+/////////////////////////////  (admin)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/admin/employees', [RegisterEmployeeController::class, 'store']);
+    
 
-// Admin Citas
-Route::get('/admin/events', [AdminEventsController::class, 'index']);
-Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
-Route::get('/admin/document-types', [AdminDocumentTypesController::class, 'index']);
-Route::get('/employees/ratings', [EmployeeController::class, 'ratings']);
-Route::get('/admin/employees', [AdminUsersController::class, 'index']);
-Route::get('/admin/customers', [AdminUsersController::class, 'getCustomers']);
-Route::get('/admin/employees', [AdminUsersController::class, 'index']);
-Route::post('/admin/employees', [RegisterEmployeeController::class, 'store']);
-Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
-Route::patch('/admin/employees/{id}', [AdminUsersController::class, 'update']);
-Route::get('/admin/customers/count', [AdminUsersController::class, 'getCustomersCount']);
+    Route::get('/admin/employees', [AdminUsersController::class, 'index']);
+
+    Route::get('/admin/customers', [AdminUsersController::class, 'getCustomers']);
+    
+    Route::get('/admin/customers/count', [AdminUsersController::class, 'getCustomersCount']);
+
+    Route::patch('/admin/employees/{id}/availability', [AdminUsersController::class, 'toggleAvailability']);
+
+    Route::patch('/admin/employees/{id}', [AdminUsersController::class, 'update']);
 
 
-Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::get('/admin/events', [AdminEventsController::class, 'index']);
 
-    // --- Gestión de Citas ---
-    Route::get('/appointments', [AdminAppointmentController::class, 'index']);
-    Route::get('/appointments/unassigned', [AdminAppointmentController::class, 'unassigned']);
-    Route::get('/employees/availability', [AdminAppointmentController::class, 'employeesAvailability']);
+    Route::post('/admin/events', [AdminEventsController::class, 'store']);
 
-    // Acciones de asignación
-    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
-    Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
-    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
+    Route::patch('/admin/events/{id}', [AdminEventsController::class, 'update']);
+
+    Route::patch('/admin/events/{id}/status', [AdminEventsController::class, 'updateStatus']);
 
 });
 
 Route::get('/admin/appointments/next', [AppointmentController::class, 'next']);
 
 
-Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
+    Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
 
-// Estadísticas de paquetes vendidos
-Route::get('/admin/packages/stats', [AdminPackagesController::class, 'stats']);
+    // Estadísticas de paquetes vendidos
+    Route::get('/admin/packages/stats', [AdminPackagesController::class, 'stats']);
 
-// Ventas del mes actual
-Route::get('/admin/packages/sales/monthly', [AdminPackagesController::class, 'monthlySales']);
+    // Ventas del mes actual
+    Route::get('/admin/packages/sales/monthly', [AdminPackagesController::class, 'monthlySales']);
 
-// Citas pendientes de un usuario
-Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class, 'pendingByUserId']);
+    // Citas pendientes de un usuario
+    Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class, 'pendingByUserId']);
 
-// Contar citas pendientes totales
-Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
+    // Contar citas pendientes totales
+    Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
 
     Route::post('/admin/packages', [AdminPackagesController::class, 'store']);
 
@@ -292,12 +293,6 @@ Route::get('/admin/appointments/pending-count', [AppointmentController::class, '
     Route::patch('/admin/document-types/{id}', [AdminDocumentTypesController::class, 'update']);
 
     Route::patch('/admin/document-types/{id}/status', [AdminDocumentTypesController::class, 'updateStatus']);
-
-
-Route::get('adminpayments/summary', [PaymentController::class, 'summary']);
-
-Route::get('adminstorage-plans', [StoragePlanController::class, 'indexAdmin']);
-Route::put('adminstorage-plans/{id}', [StoragePlanController::class, 'update']);
 
 // Empleado
 Route::middleware('auth:sanctum')->group(function () {

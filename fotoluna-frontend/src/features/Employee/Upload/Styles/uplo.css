@@ -151,7 +151,7 @@
 }
 
 .change-file-btn {
-    background: linear-gradient(135deg, #dcabdf 0%, #a06bb5 100%);
+    background: linear-gradient(135deg, #ac98c4 0%, #957eb1 100%);
     color: white;
     border: none;
     border-radius: 10px;
@@ -205,8 +205,8 @@
 }
 
 .form-group input:focus {
-    border-color: #a06bb5;
-    box-shadow: 0 0 0 3px rgba(160, 107, 181, 0.1);
+    border-color: #ac98c4;
+    box-shadow: 0 0 0 3px rgba(172, 152, 196, 0.15);
     outline: none;
     transform: translateY(-1px);
 }

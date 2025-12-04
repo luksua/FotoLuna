@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 // 👈 Cambia este valor por el eventId real de BODAS en tu base de datos
-const WEDDING_EVENT_ID = 7;
+const WEDDING_EVENT_ID = 4;
 
 const weddingThemes = [
   {
@@ -17,28 +17,28 @@ const weddingThemes = [
     name: "Clásico",
     description: "Elegancia atemporal",
     image:
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&auto=format&fit=crop",
+      "img/boda2.jpg",
   },
   {
     id: 2,
     name: "Rústico",
     description: "Naturaleza y campo",
     image:
-      "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&auto=format&fit=crop",
+      "img/boda3.jpg",
   },
   {
     id: 3,
     name: "Urbano",
     description: "Moderno y citadino",
     image:
-      "https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?w=400&auto=format&fit=crop",
+      "img/boda4.jpg",
   },
   {
     id: 4,
     name: "Bohemio",
     description: "Romántico y soñador",
     image:
-      "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&auto=format&fit=crop",
+      "img/boda.jpg",
   },
 ];
 
@@ -170,7 +170,7 @@ const Wedding = () => {
         {/* Main Content */}
         <div className="row elegant-content-row">
           {/* Image Section */}
-          <div className="col-lg-5 elegant-image-section">
+          <div className="col-lg-4 elegant-image-section">
             <div className="elegant-image-wrapper">
               <div className="elegant-image-frame">
                 <img
@@ -190,7 +190,7 @@ const Wedding = () => {
           </div>
 
           {/* Packages Section */}
-          <div className="col-lg-7 elegant-packages-section">
+          <div className="col-lg-8 elegant-packages-section">
             <div className="elegant-packages-grid bg-custom-5">
               <div className="row align-items-stretch">
                 {loading && (

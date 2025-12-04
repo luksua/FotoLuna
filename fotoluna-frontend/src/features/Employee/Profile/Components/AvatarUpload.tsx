@@ -32,13 +32,12 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) =
         }
     };
 
-    const handleRemoveAvatar = () => {
-        setAvatarState({ preview: null, file: null });
-        onAvatarChange(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
+    // const handleRemoveAvatar = () => {
+    //     onAvatarChange(null);
+    //     if (fileInputRef.current) {
+    //         fileInputRef.current.value = '';
+    //     }
+    // };
 
     return (
         <div className="avatar-upload">
@@ -68,7 +67,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) =
                         <i className="bi bi-arrow-repeat me-1"></i>
                         Cambiar
                     </button>
-                    <button
+                    {/* <button
                         type="button"
                         className="btn btn-outline-danger btn-sm"
                         onClick={handleRemoveAvatar}
@@ -76,7 +75,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) =
                     >
                         <i className="bi bi-trash me-1"></i>
                         Eliminar
-                    </button>
+                    </button> */}
                 </div>
             </div>
 
