@@ -258,7 +258,15 @@ const Register = () => {
                         </select>
 
                         <label>Especialidad:</label>
-                        <input type="text" name="specialty" value={form.specialty} onChange={handleChange} className="register-input" />
+                        <select name="specialty" value={form.specialty} onChange={handleChange} required className="register-select">
+                            <option value="">Seleccione una especialidad</option>
+                            <option value="Social">Social</option>
+                            <option value="Familia">Familia</option>
+                            <option value="Retratos">Retratos</option>
+                            <option value="Infantil">Infantil</option>
+                            <option value="Parejas">Parejas</option>
+                            <option value="Exteriores">Exteriores</option>
+                        </select>
 
                         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <input type="checkbox" name="isAvailable" checked={form.isAvailable} onChange={handleChange} /> Disponible

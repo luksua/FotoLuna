@@ -578,7 +578,7 @@ const AdminEvents: React.FC = () => {
                                             className={`btn-toggle ${pkg.estado ? 'enabled' : 'disabled'}`}
                                             onClick={() => handleToggleStatus('package', pkg.id)}
                                         >
-                                            {pkg.estado ? 'Habilitar' : 'Deshabilitar'}
+                                            {pkg.estado ? 'Habilitado' : 'Deshabilitado'}
                                         </button>
                                     </div>
                                 </div>
@@ -628,7 +628,7 @@ const AdminEvents: React.FC = () => {
                                             className={`btn-toggle ${doc.estado ? 'enabled' : 'disabled'}`}
                                             onClick={() => handleToggleStatus('documentType', doc.id)}
                                         >
-                                            {doc.estado ? 'Habilitar' : 'Deshabilitar'}
+                                            {doc.estado ? 'Habilitado' : 'Deshabilitado'}
                                         </button>
                                     </div>
                                 </div>

@@ -25,10 +25,12 @@ type EditFormData = {
     documentNumber: string;
     address: string;
     EPS: string;
+    specialty: string;
 };
 
 const EmployeeCustomers = () => {
     const [searchQuery, setSearchQuery] = useState("");
+    const [specialtyFilter, setSpecialtyFilter] = useState("");
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [ratings, setRatings] = useState<{[key: number]: number}>({});
     const [loading, setLoading] = useState(true);
@@ -43,6 +45,7 @@ const EmployeeCustomers = () => {
         documentNumber: '',
         address: '',
         EPS: '',
+        specialty: '',
     });
     const [savingEdit, setSavingEdit] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -87,6 +90,7 @@ const EmployeeCustomers = () => {
                             estado: !!e.isAvailable,
                             address: e.address || '',
                             EPS: e.EPS || '',
+                            specialty: e.specialty || '',
                         };
                     });
                     setEmployees(mapped);
@@ -122,12 +126,16 @@ const EmployeeCustomers = () => {
     }, []);
 
     //////////////////// Filtro 
-    const filteredEmployees = employees.filter(emp => 
-        Object.values(emp)
+    const filteredEmployees = employees.filter(emp => {
+        const matchesSearch = Object.values(emp)
             .join(" ")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-    );
+            .includes(searchQuery.toLowerCase());
+        
+        const matchesSpecialty = !specialtyFilter || emp.specialty === specialtyFilter;
+        
+        return matchesSearch && matchesSpecialty;
+    });
 
     //////////////////// Paginación
     const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
@@ -138,6 +146,11 @@ const EmployeeCustomers = () => {
     // Resetear a página 1 cuando se busca
     const handleSearchChange = (value: string) => {
         setSearchQuery(value);
+        setCurrentPage(1);
+    };
+
+    const handleSpecialtyFilter = (value: string) => {
+        setSpecialtyFilter(value);
         setCurrentPage(1);
     };
 
@@ -173,6 +186,7 @@ const EmployeeCustomers = () => {
             documentNumber: employee.documento,
             address: employee.address || '',
             EPS: employee.EPS || '',
+            specialty: (employee as any).specialty || '',
         });
     };
 
@@ -186,6 +200,7 @@ const EmployeeCustomers = () => {
             documentNumber: '',
             address: '',
             EPS: '',
+            specialty: '',
         });
     };
 
@@ -219,6 +234,7 @@ const EmployeeCustomers = () => {
                             documento: editForm.documentNumber,
                             address: editForm.address,
                             EPS: editForm.EPS,
+                            specialty: editForm.specialty,
                         }
                         : emp
                 ));
@@ -244,6 +260,20 @@ const EmployeeCustomers = () => {
                         placeholder="Buscar empleados..."
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}/>
+                    
+                    <select 
+                        value={specialtyFilter}
+                        onChange={(e) => handleSpecialtyFilter(e.target.value)}
+                        className="search-box select"
+                    >
+                        <option value="">Todas las especialidades</option>
+                        <option value="Social">Social</option>
+                        <option value="Familia">Familia</option>
+                        <option value="Retratos">Retratos</option>
+                        <option value="Infantil">Infantil</option>
+                        <option value="Parejas">Parejas</option>
+                        <option value="Exteriores">Exteriores</option>
+                    </select>
                 </div>
 
                 {showSuccessAlert && (
@@ -423,6 +453,23 @@ const EmployeeCustomers = () => {
                                 onChange={(e) => handleEditFormChange('EPS', e.target.value)}
                                 className="modal-input"
                             />
+                        </div>
+
+                        <div className="modal-row">
+                            <label>Especialidad:</label>
+                            <select
+                                value={editForm.specialty}
+                                onChange={(e) => handleEditFormChange('specialty', e.target.value)}
+                                className="modal-input"
+                            >
+                                <option value="">Seleccione una especialidad</option>
+                                <option value="Social">Social</option>
+                                <option value="Familia">Familia</option>
+                                <option value="Retratos">Retratos</option>
+                                <option value="Infantil">Infantil</option>
+                                <option value="Parejas">Parejas</option>
+                                <option value="Exteriores">Exteriores</option>
+                            </select>
                         </div>
 
                         <div className="modal-actions">

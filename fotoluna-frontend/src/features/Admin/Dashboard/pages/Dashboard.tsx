@@ -4,7 +4,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import EventIcon from "@mui/icons-material/Event";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import { red, teal } from '@mui/material/colors';
 import { BarChart } from "@mui/x-charts/BarChart";
 import { Gauge } from '@mui/x-charts/Gauge';
@@ -226,7 +226,7 @@ const Dashboard = () => {
 
                 {/* Tarjeta de Paquetes Vendidos */}
                 <Box sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
-                    <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} />
+                    <LocalOfferIcon color="success" sx={{ fontSize: 35, mr: 2 }} />
                     <Box sx={{ ml: 2 }}>
                         <Typography variant="subtitle1" color="text.secondary">Paquetes Vendidos en total</Typography>
                         <Typography variant="h5" color="primary">
