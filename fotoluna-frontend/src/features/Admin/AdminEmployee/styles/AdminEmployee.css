@@ -8,15 +8,30 @@
 /* Barra de búsqueda */
 .search-box {
     margin: 2px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .search-box input {
-    width: 100%;
+    flex: 1;
+    min-width: 200px;
     max-width: 400px;
     padding: 10px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 14px;
+}
+
+.search-box select {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #fff;
+    cursor: pointer;
+    font-family: inherit;
 }
 
 .table-container {

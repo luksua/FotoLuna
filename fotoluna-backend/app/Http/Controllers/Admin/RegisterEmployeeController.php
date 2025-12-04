@@ -30,7 +30,7 @@ class RegisterEmployeeController extends Controller
                     'employeeType' => 'required|in:Employee,Admin',
                     'gender' => 'required|in:Female,Male,Other',
                     'photoEmployee' => 'nullable|image|max:2048',
-                    'specialty' => 'nullable|string|max:255',
+                    'specialty' => 'nullable|in:Social,Familia,Retratos,Infantil,Parejas,Exteriores',
                     'isAvailable' => 'nullable|boolean',
                 ],
                 [

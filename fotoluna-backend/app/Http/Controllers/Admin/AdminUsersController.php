@@ -71,6 +71,7 @@ class AdminUsersController extends Controller
             'documentNumber' => 'nullable|string|max:255|unique:employees,documentNumber,'.$employee->employeeId.',employeeId',
             'address' => 'nullable|string|max:255',
             'EPS' => 'nullable|string|max:255',
+            'specialty' => 'nullable|in:Social,Familia,Retratos,Infantil,Parejas,Exteriores',
         ]);
 
         $employee->update($validated);
