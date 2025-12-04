@@ -13,6 +13,7 @@ const Notification = lazy(() => import("../features/home/notification/pages/Noti
 const Quinces = lazy(() => import("../features/home/events/quinces/pages/Quinces"));
 const ProfilePage = lazy(() => import("../features/home/home/pages/Account"));
 const Photos = lazy(() => import("../features/home/home/pages/Photos"));
+import Plan from "../features/home/plan/pages/PlanDashboard";
 
 const routes = [
     {
@@ -110,6 +111,9 @@ const routes = [
                 <Photos />
             </Suspense>
         ),
+    }, {
+        path: "/plan",
+        element: <Plan />
     },
 ];
 

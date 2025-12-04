@@ -61,3 +61,13 @@ export interface AssignPhotographerModalProps {
     apiBaseUrl: string;
     getAuthHeaders: () => Record<string, string>;
 }
+
+export interface AdminAppointmentsResponse {
+    data: AdminAppointment[];  // registros de la página actual
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+}

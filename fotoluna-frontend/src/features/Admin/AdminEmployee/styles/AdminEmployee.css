@@ -1,12 +1,13 @@
 .employee-container {
     padding: 30px;
+    padding-top: 6px;
     max-width: 1400px;
     margin: 0 auto;
 }
 
 /* Barra de búsqueda */
 .search-box {
-    margin: 25px 0;
+    margin: 2px 0;
 }
 
 .search-box input {
@@ -68,5 +69,162 @@
 .status.inactive {
     background-color: #ffebee;
     color: #d32f2f;
+}
+
+/* Responsive pal modal*/
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    /* default modal width for desktop */
+    max-width: 520px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    /* limit height and enable internal scroll */
+    max-height: 80vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.modal-title {
+    margin: 0 0 16px 0;
+    font-size: 20px;
+}
+
+.modal-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.modal-row label {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+.modal-btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.modal-btn-primary {
+    background: #7a3fbf;
+    color: #fff;
+}
+
+.modal-btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+/* Paginación */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    background-color: #ac98c4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #9a7ab6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(172, 152, 196, 0.3);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1c4dd;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination-info {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    min-width: 140px;
+    text-align: center;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+    .modal-content { padding: 14px; max-width: 95%; height: 96vh; max-height: 96vh; }
+    .modal-title { font-size: 18px; }
+    .modal-input { padding: 9px; }
+    
+    .pagination-controls {
+        gap: 8px;
+        padding: 14px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .pagination-info {
+        font-size: 12px;
+        min-width: 120px;
+    }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .modal-content { max-width: 560px; }
+    
+    .pagination-controls {
+        gap: 12px;
+    }
+    
+    .pagination-btn {
+        padding: 7px 14px;
+        font-size: 13px;
+    }
 }
 

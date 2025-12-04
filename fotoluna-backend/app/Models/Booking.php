@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Booking extends Model
 {
     use HasFactory;
@@ -47,5 +48,14 @@ class Booking extends Model
     public function installments()
     {
         return $this->hasMany(BookingPaymentInstallment::class, 'bookingIdFK', 'bookingId');
+    }
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customerIdFK');
+    }
+
+    public function cloudPhotos()
+    {
+        return $this->hasMany(CloudPhoto::class, 'bookingIdFK', 'bookingId');
     }
 }

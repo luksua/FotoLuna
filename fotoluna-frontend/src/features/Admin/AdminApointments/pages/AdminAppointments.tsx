@@ -2,12 +2,55 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AssignPhotographerModal from "../Components/AssignPhotographerModal";
 import type { AdminAppointment } from "../Components/Types/types";
+import type { AdminAppointmentsResponse } from "../Components/Types/types";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
-
-// IMPORTANTE: NO USAR alert() EN ENTORNOS EMBEBIDOS.
-// He reemplazado la llamada a alert() con console.error.
+import "../styles/adminAppointments.css";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api"; // ajusta a tu entorno
+const PAGE_SIZE = 10;
+
+// Helper para paginación compacta: 1 2 … 10 … 27 28
+const getPageItems = (
+    totalPages: number,
+    currentPage: number
+): (number | "ellipsis")[] => {
+    const items: (number | "ellipsis")[] = [];
+
+    if (totalPages <= 7) {
+        // pocas páginas: mostrar todas
+        for (let i = 1; i <= totalPages; i++) {
+            items.push(i);
+        }
+        return items;
+    }
+
+    const delta = 1; // cuántas páginas mostrar alrededor de la actual
+    const left = Math.max(2, currentPage - delta);
+    const right = Math.min(totalPages - 1, currentPage + delta);
+
+    // siempre mostramos la página 1
+    items.push(1);
+
+    // ellipsis si hay hueco entre 2 y left
+    if (left > 2) {
+        items.push("ellipsis");
+    }
+
+    // páginas alrededor de la actual
+    for (let i = left; i <= right; i++) {
+        items.push(i);
+    }
+
+    // ellipsis si hay hueco entre right y última-1
+    if (right < totalPages - 1) {
+        items.push("ellipsis");
+    }
+
+    // siempre mostramos la última
+    items.push(totalPages);
+
+    return items;
+};
 
 const AdminAppointments: React.FC = () => {
     const [appointments, setAppointments] = useState<AdminAppointment[]>([]);
@@ -19,6 +62,10 @@ const AdminAppointments: React.FC = () => {
     const [filterAssigned, setFilterAssigned] = useState<string>("all"); // all | assigned | unassigned
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "all">("all");
 
+    // paginación server-side
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [totalItems, setTotalItems] = useState<number>(0);
 
     const [showModal, setShowModal] = useState<boolean>(false);
     const [selectedAppointment, setSelectedAppointment] =
@@ -35,14 +82,30 @@ const AdminAppointments: React.FC = () => {
             : { Accept: "application/json" };
     };
 
-    const loadAppointments = async () => {
+    const loadAppointments = async (page = 1) => {
         setLoading(true);
         try {
-            const response = await axios.get<AdminAppointment[]>(
+            const response = await axios.get<AdminAppointmentsResponse>(
                 `${API_BASE_URL}/admin/appointments`,
-                { headers: getAuthHeaders() }
+                {
+                    headers: getAuthHeaders(),
+                    params: {
+                        page,
+                        per_page: PAGE_SIZE,
+                        search: filterText || undefined,
+                        status: filterStatus,
+                        assigned: filterAssigned,
+                        sort: sortOrder,
+                    },
+                }
             );
-            setAppointments(response.data);
+
+            const data = response.data;
+
+            setAppointments(data.data);
+            setCurrentPage(data.current_page);
+            setTotalPages(data.last_page);
+            setTotalItems(data.total);
         } catch (error) {
             console.error("Error cargando las citas:", error);
             // alert("Error cargando las citas del administrador."); // Reemplazado
@@ -51,10 +114,11 @@ const AdminAppointments: React.FC = () => {
         }
     };
 
+    // carga inicial y cada vez que cambien filtros / orden / página
     useEffect(() => {
-        loadAppointments();
+        loadAppointments(currentPage);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [currentPage, filterText, filterStatus, filterAssigned, sortOrder]);
 
     const handleOpenModal = (appointment: AdminAppointment) => {
         setSelectedAppointment(appointment);
@@ -68,53 +132,24 @@ const AdminAppointments: React.FC = () => {
 
     const handleAssigned = () => {
         // Se ejecuta cuando el modal asigna correctamente
-        loadAppointments();
+        // Recargamos la página actual
+        loadAppointments(currentPage);
         handleCloseModal();
     };
-    const filteredAppointments = appointments.filter((a) => {
-        // filtro por texto (cliente o evento)
-        const text = filterText.toLowerCase();
-        const matchesText =
-            !text ||
-            a.clientName.toLowerCase().includes(text) ||
-            (a.eventName || "").toLowerCase().includes(text);
 
-        // filtro por estado
-        const matchesStatus =
-            filterStatus === "all" ? true : a.status === filterStatus;
+    const handlePageChange = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        setCurrentPage(page);
+    };
 
-        // filtro por asignación
-        const isAssigned = !!a.employeeId;
-        const matchesAssigned =
-            filterAssigned === "all"
-                ? true
-                : filterAssigned === "assigned"
-                    ? isAssigned
-                    : !isAssigned;
-
-        return matchesText && matchesStatus && matchesAssigned;
-    });
-
-    const sortedAppointments = [...filteredAppointments];
-
-    if (sortOrder === "newest") {
-        sortedAppointments.sort((a, b) => {
-            const dateA = new Date(`${a.date} ${a.time}`);
-            const dateB = new Date(`${b.date} ${b.time}`);
-            return dateB.getTime() - dateA.getTime(); // más nueva → primero
-        });
-    } else if (sortOrder === "oldest") {
-        sortedAppointments.sort((a, b) => {
-            const dateA = new Date(`${a.date} ${a.time}`);
-            const dateB = new Date(`${b.date} ${b.time}`);
-            return dateA.getTime() - dateB.getTime(); // más vieja → primero
-        });
-    }
+    const pageItems = getPageItems(totalPages, currentPage);
 
     return (
         <HomeLayout>
             <div className="container mt-4">
-                <h2 className="mb-3">Citas (Administrador)</h2>
+                <h2 className="mb-3">Citas</h2>
+
+                {/* Filtros */}
                 <div className="row g-3 mb-3">
                     <div className="col-12 col-md-3">
                         <label className="form-label mb-1">Buscar</label>
@@ -123,15 +158,22 @@ const AdminAppointments: React.FC = () => {
                             className="form-control form-control-sm"
                             placeholder="Cliente o evento..."
                             value={filterText}
-                            onChange={(e) => setFilterText(e.target.value)}
+                            onChange={(e) => {
+                                setFilterText(e.target.value);
+                                setCurrentPage(1); // reset a página 1 si cambia filtro
+                            }}
                         />
                     </div>
+
                     <div className="col-12 col-sm-6 col-lg-3">
                         <label className="form-label mb-1">Estado</label>
                         <select
                             className="form-select form-select-sm"
                             value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
+                            onChange={(e) => {
+                                setFilterStatus(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         >
                             <option value="all">Todos</option>
                             <option value="Pending_assignment">Pendiente asignación</option>
@@ -140,12 +182,16 @@ const AdminAppointments: React.FC = () => {
                             <option value="Cancelled">Cancelada</option>
                         </select>
                     </div>
+
                     <div className="col-12 col-sm-6 col-lg-3">
                         <label className="form-label mb-1">Asignación</label>
                         <select
                             className="form-select form-select-sm"
                             value={filterAssigned}
-                            onChange={(e) => setFilterAssigned(e.target.value)}
+                            onChange={(e) => {
+                                setFilterAssigned(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         >
                             <option value="all">Todas</option>
                             <option value="assigned">Con fotógrafo</option>
@@ -158,62 +204,108 @@ const AdminAppointments: React.FC = () => {
                         <select
                             className="form-select form-select-sm"
                             value={sortOrder}
-                            onChange={(e) =>
-                                setSortOrder(e.target.value as "newest" | "oldest" | "all")
-                            }
+                            onChange={(e) => {
+                                setSortOrder(e.target.value as "newest" | "oldest" | "all");
+                                setCurrentPage(1);
+                            }}
                         >
                             <option value="all">Todas (sin orden)</option>
                             <option value="newest">Más nueva primero</option>
                             <option value="oldest">Más vieja primero</option>
                         </select>
                     </div>
-
                 </div>
 
+                {/* Tabla */}
                 {loading ? (
                     <p>Cargando citas...</p>
                 ) : appointments.length === 0 ? (
                     <p>No hay citas registradas.</p>
                 ) : (
-                    <div className="table-responsive">
-                        <table className="table table-striped table-hover align-middle">
-                            <thead className="table-light">
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Hora</th>
-                                    <th>Cliente</th>
-                                    <th>Evento</th>
-                                    <th>Fotógrafo</th>
-                                    <th>Estado</th>
-                                    <th className="text-end">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sortedAppointments.map((a, index) => (
-                                    <tr
-                                        // CLAVE CORREGIDA: Usa appointmentId si es válido, sino usa una combinación de ID e índice.
-                                        key={a.appointmentId ? a.appointmentId : `temp-${index}`}
-                                    >
-                                        <td>{a.date}</td>
-                                        <td>{a.time}</td>
-                                        <td>{a.clientName}</td>
-                                        <td>{a.eventName}</td>
-                                        <td>{a.employeeName || <em>Sin asignar</em>}</td>
-                                        <td>{a.status}</td>
-                                        <td className="text-end">
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-primary"
-                                                onClick={() => handleOpenModal(a)}
-                                            >
-                                                {a.employeeId ? "Reasignar" : "Asignar"}
-                                            </button>
-                                        </td>
+                    <>
+                        <div className="table-responsive">
+                            <table className="table table-striped table-hover align-middle">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Evento</th>
+                                        <th>Fotógrafo</th>
+                                        <th>Estado</th>
+                                        <th className="text-end">Acciones</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {appointments.map((a) => (
+                                        <tr key={a.appointmentId}>
+                                            <td>{a.date}</td>
+                                            <td>{a.time}</td>
+                                            <td>{a.clientName}</td>
+                                            <td>{a.eventName}</td>
+                                            <td>{a.employeeName || <em>Sin asignar</em>}</td>
+                                            <td>{a.status}</td>
+                                            <td className="text-end">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm admin-custom-btn"
+                                                    onClick={() => handleOpenModal(a)}
+                                                >
+                                                    {a.employeeId ? "Reasignar" : "Asignar"}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Paginación compacta */}
+                        <div className="d-flex justify-content-between align-items-center mt-2">
+                            <small className="text-muted">
+                                Página {currentPage} de {totalPages} – {totalItems} citas en total
+                            </small>
+
+                            {/* Paginación compacta con estilo admin-pagination */}
+                            <nav className="admin-pagination" aria-label="Paginación usuarios">
+
+                                {/* Flecha izquierda */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    &larr;
+                                </button>
+
+                                {/* Páginas + “…” */}
+                                {pageItems.map((item, idx) =>
+                                    item === "ellipsis" ? (
+                                        <button key={`e-${idx}`} disabled style={{ cursor: "default" }}>
+                                            …
+                                        </button>
+                                    ) : (
+                                        <button
+                                            key={item}
+                                            className={item === currentPage ? "active" : ""}
+                                            onClick={() => handlePageChange(item)}
+                                        >
+                                            {item}
+                                        </button>
+                                    )
+                                )}
+
+                                {/* Flecha derecha */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    &rarr;
+                                </button>
+
+                            </nav>
+
+                        </div>
+                    </>
                 )}
 
                 {showModal && selectedAppointment && (

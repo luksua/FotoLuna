@@ -30,7 +30,7 @@ const HomeSidebar: React.FC = () => {
             <div className="offcanvas-header justify-content-end">
                 <button
                     type="button"
-                    className="sidebar-close-btn"   // 👈 clase custom para tu "X"
+                    className="sidebar-close-btn"
                     data-bs-dismiss="offcanvas"
                     aria-label="Cerrar"
                 >
@@ -84,11 +84,13 @@ const HomeSidebar: React.FC = () => {
                             <a href="/citas" className="btn btn-perfil2 w-100 mb-3">
                                 Citas
                             </a>
-                            <a href="/fotos" className="btn btn-perfil2 w-100 mb-3">
-                                Mis Fotos
-                            </a>
-                            <a href="/notificaciones" className="btn btn-perfil2 w-100 mb-3">
-                                Notificaciones
+                            {user.role === "cliente" && user.has_storage_subscription && (
+                                <a href="/fotos" className="btn btn-perfil2 w-100 mb-3">
+                                    Mis Fotos
+                                </a>
+                            )}
+                            <a href="/plan" className="btn btn-perfil2 w-100 mb-3">
+                                Administrar Plan
                             </a>
                         </div>
                     )}

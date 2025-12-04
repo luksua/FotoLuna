@@ -9,6 +9,7 @@ const AdminEmployee = lazy(() => import("../features/Admin/AdminEmployee/pages/A
 const NotificationsEmployee = lazy(() => import("../features/Admin/Notification/Pages/NotificationsEmployee"));
 const AdminEvents = lazy(() => import("../features/Admin/AdminEvents/pages/AdminEvents"));
 const AdminAppointments = lazy(() => import("../features/Admin/AdminApointments/pages/AdminAppointments"));
+const AdminPhotosPage = lazy(() => import("../features/Admin/AdminPhotos/pages"));
 
 const adminRoutes = [
     {
@@ -72,6 +73,14 @@ const adminRoutes = [
         element: (
             <Suspense fallback={<Spinner />}>
                 <AdminAppointments />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/AdminPhotos",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AdminPhotosPage />
             </Suspense>
         ),
     },

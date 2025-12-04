@@ -5,6 +5,7 @@ import { useAuth } from "../../context/useAuth";
 import { Link, useLocation } from "react-router-dom";
 import HomeButton from "./HomeButton";
 import { Offcanvas } from "bootstrap";
+import NotificationBell from "../NotificationBell";
 
 const HomeMobileSidebar: React.FC = () => {
     const { user, logout } = useAuth();
@@ -100,15 +101,20 @@ const HomeMobileSidebar: React.FC = () => {
                                         <i className="bi bi-calendar-event me-3"></i>Citas
                                     </Link>
                                 </li>
+                                {user.role === "cliente" && user.has_storage_subscription && (
+                                    <li>
+                                        <Link to="/fotos" className="nav-link">
+                                            <i className="bi bi-images me-3"></i>Mis Fotos
+                                        </Link>
+                                    </li>
+                                )}
                                 <li>
-                                    <Link to="/fotos" className="nav-link">
-                                        <i className="bi bi-images me-3"></i>Mis Fotos
+                                    <Link to="/plan" className="nav-link">
+                                        <i className="bi bi-cloud me-3"></i>Administrar Plan
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to="/notificaciones" className="nav-link">
-                                        <i className="bi bi-bell me-3"></i>Notificaciones
-                                    </Link>
+                                    {user && <NotificationBell />}
                                 </li>
                             </ul>
 

@@ -1,8 +1,6 @@
-// components/PaymentTable.tsx
 import React from 'react';
 import { Table, Card, Button, Badge, ProgressBar, Pagination } from 'react-bootstrap';
 import type { Payment } from './Types/payment';
-
 
 interface PaymentTableProps {
     payments: Payment[];
@@ -10,7 +8,7 @@ interface PaymentTableProps {
     totalPages: number;
     totalItems: number;
     onPageChange: (page: number) => void;
-    onViewDetails: (paymentId: string) => void;
+    onViewDetails: (paymentId: number) => void;
 }
 
 const PaymentTable: React.FC<PaymentTableProps> = ({
@@ -25,7 +23,9 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
         switch (status) {
             case 'paid': return 'success';
             case 'pending': return 'warning';
+            case 'partial': return 'info';     
             case 'overdue': return 'danger';
+            case 'no_info': return 'secondary';
             default: return 'secondary';
         }
     };
@@ -34,15 +34,17 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
         switch (status) {
             case 'paid': return 'Pagado';
             case 'pending': return 'Pendiente';
+            case 'partial': return 'En cuotas';
             case 'overdue': return 'Vencido';
+            case 'no_info': return 'Sin info';
             default: return status;
         }
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-AR', {
+        return new Intl.NumberFormat('es-CO', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'COP',
         }).format(amount);
     };
 
@@ -51,7 +53,7 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
         const maxVisiblePages = 5;
 
         let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -72,11 +74,13 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
         return items;
     };
 
+    const itemsPerPage = 5; // para el texto "Mostrando X-Y"
+
     return (
         <Card className="payment-table-card shadow-sm">
             <Card.Body>
                 <div className="table-responsive">
-                    <Table hover className="payment-table">
+                    <Table hover className="payment-table align-middle">
                         <thead className="table-light">
                             <tr>
                                 <th>Fecha</th>
@@ -86,8 +90,8 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                 <th>Teléfono</th>
                                 <th>Descripción</th>
                                 <th>Cuota</th>
-                                <th>Monto Cuota</th>
-                                <th>Monto Total</th>
+                                <th>Monto cuota</th>
+                                <th>Monto total</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -121,19 +125,24 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                                             {payment.installment.total > 1 ? (
                                                 <div className="installment-progress">
                                                     <ProgressBar
-                                                        now={(payment.installment.current / payment.installment.total) * 100}
+                                                        now={
+                                                            (payment.installment.current /
+                                                                payment.installment.total) *
+                                                            100
+                                                        }
                                                         variant={getStatusVariant(payment.status)}
                                                         className="mb-2"
                                                     />
                                                     <small className="text-muted">
-                                                        {payment.installment.current} de {payment.installment.total}
+                                                        Cuota {payment.installment.current} de{' '}
+                                                        {payment.installment.total}
                                                     </small>
                                                 </div>
                                             ) : (
                                                 <Badge bg="secondary">Pago único</Badge>
                                             )}
                                         </td>
-                                        <td className="fw-bold text-primary">
+                                        <td className="fw-bold text-price">
                                             {formatCurrency(payment.installmentAmount)}
                                         </td>
                                         <td className="fw-semibold">
@@ -167,8 +176,9 @@ const PaymentTable: React.FC<PaymentTableProps> = ({
                     <div className="pagination-section mt-4">
                         <div className="d-flex justify-content-between align-items-center">
                             <div className="text-muted">
-                                Mostrando {(currentPage - 1) * 5 + 1}-
-                                {Math.min(currentPage * 5, totalItems)} de {totalItems} resultados
+                                Mostrando {(currentPage - 1) * itemsPerPage + 1}-
+                                {Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems}{' '}
+                                resultados
                             </div>
                             <Pagination className="mb-0">
                                 <Pagination.Prev

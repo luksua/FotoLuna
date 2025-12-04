@@ -8,7 +8,8 @@ use App\Models\Appointment;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use App\Notifications\BookingAssignedToEmployee;
+use App\Notifications\PhotographerAssignedClient;
 
 use App\Models\BookingPaymentInstallment;
 
@@ -30,7 +31,16 @@ class AdminAppointmentController extends Controller
      */
     public function index(Request $request)
     {
-        $rows = Booking::query()
+        // Parámetros que manda el front
+        $perPage = $request->integer('per_page', 10);
+        $page = $request->integer('page', 1);
+
+        $search = $request->get('search');          // filtro texto (cliente / evento)
+        $status = $request->get('status', 'all');   // 'all' | 'Pending_assignment' | ...
+        $assigned = $request->get('assigned', 'all'); // 'all' | 'assigned' | 'unassigned'
+        $sort = $request->get('sort', 'all');     // 'newest' | 'oldest' | 'all'
+
+        $query = Booking::query()
             ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
             ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
             ->leftJoin('events', 'events.eventId', '=', 'appointments.eventIdFK')
@@ -54,12 +64,47 @@ class AdminAppointmentController extends Controller
             employees.employeeId AS employeeId,
             employees.firstNameEmployee AS employeeFirstName,
             employees.lastNameEmployee AS employeeLastName
-        ')
-            ->orderBy('appointments.appointmentDate')
-            ->orderBy('appointments.appointmentTime')
-            ->get();
+        ');
 
-        $data = $rows->map(function ($r) {
+        // ---- Filtro texto (cliente o evento) ----
+        if ($search) {
+            $search = trim($search);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw("CONCAT(customers.firstNameCustomer, ' ', customers.lastNameCustomer) LIKE ?", ['%' . $search . '%'])
+                    ->orWhere('events.eventType', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        // ---- Filtro por estado ----
+        if ($status && $status !== 'all') {
+            $query->where('appointments.appointmentStatus', $status);
+        }
+
+        // ---- Filtro por asignación ----
+        if ($assigned === 'assigned') {
+            $query->whereNotNull('bookings.employeeIdFK');
+        } elseif ($assigned === 'unassigned') {
+            $query->whereNull('bookings.employeeIdFK');
+        }
+
+        // ---- Orden ----
+        if ($sort === 'newest') {
+            $query->orderByDesc('appointments.appointmentDate')
+                ->orderByDesc('appointments.appointmentTime');
+        } elseif ($sort === 'oldest') {
+            $query->orderBy('appointments.appointmentDate')
+                ->orderBy('appointments.appointmentTime');
+        } else {
+            // orden por defecto (como lo tenías)
+            $query->orderBy('appointments.appointmentDate')
+                ->orderBy('appointments.appointmentTime');
+        }
+
+        // ---- Paginación ----
+        $rows = $query->paginate($perPage, ['*'], 'page', $page);
+
+        // Transformamos solo la colección, conservando los metadatos del paginator
+        $rows->getCollection()->transform(function ($r) {
             return [
                 'appointmentId' => $r->appointmentId,
                 'bookingId' => $r->bookingId,
@@ -82,8 +127,65 @@ class AdminAppointmentController extends Controller
             ];
         });
 
-        return response()->json($data);
+        // Devuelve paginator completo (data + meta)
+        return response()->json($rows);
     }
+    // public function index(Request $request)
+    // {
+    //     $rows = Booking::query()
+    //         ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
+    //         ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
+    //         ->leftJoin('events', 'events.eventId', '=', 'appointments.eventIdFK')
+    //         ->leftJoin('employees', 'employees.employeeId', '=', 'bookings.employeeIdFK')
+    //         ->selectRaw('
+    //         appointments.appointmentId AS appointmentId,
+    //         bookings.bookingId AS bookingId,
+    //         appointments.appointmentDate AS date,
+    //         appointments.appointmentTime AS time,
+    //         appointments.place AS place,
+    //         appointments.comment AS comment,
+    //         appointments.appointmentStatus AS status,
+
+    //         customers.firstNameCustomer AS clientFirstName,
+    //         customers.lastNameCustomer AS clientLastName,
+    //         customers.emailCustomer AS clientEmail,
+    //         customers.documentNumber AS clientDocument,
+
+    //         events.eventType AS eventName,
+
+    //         employees.employeeId AS employeeId,
+    //         employees.firstNameEmployee AS employeeFirstName,
+    //         employees.lastNameEmployee AS employeeLastName
+    //     ')
+    //         ->orderBy('appointments.appointmentDate')
+    //         ->orderBy('appointments.appointmentTime')
+    //         ->get();
+
+    //     $data = $rows->map(function ($r) {
+    //         return [
+    //             'appointmentId' => $r->appointmentId,
+    //             'bookingId' => $r->bookingId,
+    //             'date' => $r->date,
+    //             'time' => substr($r->time, 0, 5),
+    //             'place' => $r->place,
+    //             'comment' => $r->comment,
+    //             'status' => $r->status,
+
+    //             'clientName' => trim($r->clientFirstName . ' ' . $r->clientLastName),
+    //             'clientEmail' => $r->clientEmail,
+    //             'clientDocument' => $r->clientDocument,
+
+    //             'eventName' => $r->eventName,
+
+    //             'employeeId' => $r->employeeId,
+    //             'employeeName' => $r->employeeId
+    //                 ? trim($r->employeeFirstName . ' ' . $r->employeeLastName)
+    //                 : null,
+    //         ];
+    //     });
+
+    //     return response()->json($data);
+    // }
 
     public function unassigned(Request $request)
     {
@@ -210,7 +312,7 @@ class AdminAppointmentController extends Controller
 
         foreach ($employees as $emp) {
             // 2. Citas de ese empleado en ese día
-            $citas = Booking::where('employeeIdFK', $emp->employeeId)
+            $citas = Booking::where('bookings.employeeIdFK', $emp->employeeId)
                 ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
                 ->whereDate('appointments.appointmentDate', $date)
                 ->select('appointments.appointmentTime', 'appointments.appointmentStatus')
@@ -295,7 +397,7 @@ class AdminAppointmentController extends Controller
         $time = substr($appointment->appointmentTime, 0, 5);
 
         // Verificar de nuevo que ese empleado no tenga cita a esa hora
-        $citas = Booking::where('employeeIdFK', $employeeId)
+        $citas = Booking::where('bookings.employeeIdFK', $employeeId)
             ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
             ->whereDate('appointments.appointmentDate', $date)
             ->select('appointments.appointmentTime', 'appointments.appointmentStatus')
@@ -318,6 +420,29 @@ class AdminAppointmentController extends Controller
         if ($booking) {
             $booking->employeeIdFK = $employeeId;
             $booking->save();
+
+            // 🔔 NOTIFICACIONES AQUÍ 🔔
+
+            // 1) Notificar al empleado
+            $employee = Employee::with('user')->find($employeeId);
+
+            if ($employee && $employee->user) {
+                $employee->user->notify(
+                    new BookingAssignedToEmployee($booking)
+                );
+            }
+
+            // 2) Notificar al cliente que ya tiene fotógrafo asignado
+            $customer = null;
+            if ($appointment->customerIdFK) {
+                $customer = Customer::with('user')->find($appointment->customerIdFK);
+            }
+
+            if ($customer && $customer->user) {
+                $customer->user->notify(
+                    new PhotographerAssignedClient($booking)
+                );
+            }
         }
 
         // Opcional: actualizar estado de la cita
@@ -331,9 +456,53 @@ class AdminAppointmentController extends Controller
         ]);
     }
 
+    // public function assign(Request $request, Appointment $appointment)
+    // {
+    //     $data = $request->validate([
+    //         'employee_id' => ['required', 'exists:employees,employeeId'],
+    //     ]);
 
+    //     $employeeId = $data['employee_id'];
 
+    //     $date = $appointment->appointmentDate;
+    //     $time = substr($appointment->appointmentTime, 0, 5);
 
+    //     // Verificar de nuevo que ese empleado no tenga cita a esa hora
+    //     $citas = Booking::where('employeeIdFK', $employeeId)
+    //         ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
+    //         ->whereDate('appointments.appointmentDate', $date)
+    //         ->select('appointments.appointmentTime', 'appointments.appointmentStatus')
+    //         ->get();
+
+    //     $ocupadoEnHora = $citas->contains(function ($c) use ($time) {
+    //         return substr($c->appointmentTime, 0, 5) === $time
+    //             && in_array($c->appointmentStatus, ['Scheduled', 'Pending confirmation']);
+    //     });
+
+    //     if ($ocupadoEnHora) {
+    //         return response()->json([
+    //             'message' => 'El empleado no está disponible en ese horario.',
+    //         ], 422);
+    //     }
+
+    //     // Buscar la reserva (booking) de esta cita
+    //     $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)->first();
+
+    //     if ($booking) {
+    //         $booking->employeeIdFK = $employeeId;
+    //         $booking->save();
+    //     }
+
+    //     // Opcional: actualizar estado de la cita
+    //     $appointment->appointmentStatus = 'Scheduled';
+    //     $appointment->save();
+
+    //     return response()->json([
+    //         'message' => 'Empleado asignado correctamente.',
+    //         'appointmentId' => $appointment->appointmentId,
+    //         'employeeId' => $employeeId,
+    //     ]);
+    // }
 
     /**
      * Store a newly created resource in storage.

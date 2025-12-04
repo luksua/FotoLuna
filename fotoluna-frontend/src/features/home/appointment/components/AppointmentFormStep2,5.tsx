@@ -29,20 +29,32 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
     const [plans, setPlans] = useState<StoragePlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    
     useEffect(() => {
         const fetchPlans = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                const res = await axios.get(`${API_BASE}/api/storage-plans`, {
+                const token = localStorage.getItem("token");
+
+                const res = await axios.get(`${API_BASE}/api/storage-plans-customer`, {
                     headers: {
                         Accept: "application/json",
+                        Authorization: token ? `Bearer ${token}` : "",
                     },
                 });
 
-                setPlans(res.data);
+                console.log("storage-plans-customer response:", res.data);
+
+                const payload = res.data;
+
+                // 👇 soporta ambas formas: [ ... ] o { plans: [ ... ] }
+                const fetchedPlans = Array.isArray(payload)
+                    ? payload
+                    : payload.plans ?? [];
+
+                setPlans(fetchedPlans);
             } catch (err) {
                 console.error("Error cargando planes de almacenamiento:", err);
                 setError("No se pudieron cargar los planes de almacenamiento.");
@@ -53,6 +65,33 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
 
         fetchPlans();
     }, []);
+
+    // useEffect(() => {
+    //     const fetchPlans = async () => {
+    //         try {
+    //             setLoading(true);
+    //             setError(null);
+
+    //             const token = localStorage.getItem("token");
+
+    //             const res = await axios.get(`${API_BASE}/api/storage-plans-customer`, {
+    //                 headers: {
+    //                     Accept: "application/json",
+    //                     Authorization: `Bearer ${token}`,
+    //                 },
+    //             });
+
+    //             setPlans(res.data.plans || []);
+    //         } catch (err) {
+    //             console.error("Error cargando planes de almacenamiento:", err);
+    //             setError("No se pudieron cargar los planes de almacenamiento.");
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     fetchPlans();
+    // }, []);
 
     const handleSelect = (plan: StoragePlan) => {
         // si ya está seleccionado, al hacer click otra vez se deselecciona

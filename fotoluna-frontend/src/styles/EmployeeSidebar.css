@@ -1,7 +1,7 @@
 
 :root {
-    --pastel-mint: #b8e0d2;
-    --pastel-lavender: #e6e6fa;
+    --pastel-mint: #dfb8e0;
+    --pastel-lavender: #f8e6fa;
     --pastel-peach: #ffdab9;
     --pastel-blue: #b5d8eb;
     --pastel-pink: #f8c8dc;
@@ -61,13 +61,13 @@
 
 .menu-item:hover {
     background-color: var(--pastel-lavender);
-    border-left: 4px solid var(--pastel-mint);
+    border-left: 4px solid #eccded;
     padding-left: 30px;
 }
 
 .menu-item.active {
     background-color: var(--pastel-lavender);
-    border-left: 4px solid var(--pastel-mint);
+    border-left: 4px solid #dfb8e0;
 }
 
 .menu-item i {
@@ -116,4 +116,43 @@
     .sidebar {
         width: 0;
     }
+}
+
+/* boton ambuguesa */
+/* Fondo oscuro cuando sidebar está abierto */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 998;
+}
+
+/* Sidebar cerrado en móvil */
+@media (max-width: 992px) {
+    .sidebar {
+        left: -220px;  
+        width: 200px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar.sidebar-open {
+        left: 0;
+    }
+}
+
+/* Botón hamburguesa */
+.hamburger-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    margin-right: 12px;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+.hamburger-btn:hover {
+    color: var(--pastel-lilac);
 }

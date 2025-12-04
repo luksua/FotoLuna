@@ -1,18 +1,19 @@
+// src/Components/types/Photo.ts (Asegúrate de que este archivo refleje la realidad de tu API)
+
 export interface Photo {
   id: number;
+  // 🚨 Nueva URL firmada de la nube (Contiene la firma y expira en 7 días)
+  url: string;
+  // 🚨 El nombre que viene del backend (Evento, Plan, o 'Foto Individual')
   name: string;
-  path: string;
-  size: number;
+  // 🚨 Se utiliza la fecha de subida del backend
   uploaded_at: string;
-  event?: EventInfo;
-}
-
-export interface EventInfo {
-  name: string;
-  date: string;
-  time: string;
-  location: string;
-  linkedUsers: string[];
+  // Tamaño en bytes
+  size: number;
+  // Opcional: ID del cliente
+  customerIdFK?: number;
+  // Opcional: Nombre del Evento (si lo quieres como campo separado)
+  event_name: string;
 }
 
 export interface Stats {
@@ -23,12 +24,12 @@ export interface Stats {
 
 export interface PhotoCardProps {
   photo: Photo;
-  onDelete: (photoId: number) => void;
+  onDelete?: (photoId: number) => void;
 }
 
 export interface PhotoGalleryProps {
   photos: Photo[];
-  onPhotoDelete: (photoId: number) => void;
+  onPhotoDelete: (photoId: number) => Promise<void>;
   loading: boolean;
   onNavigateToUpload: () => void;
 }

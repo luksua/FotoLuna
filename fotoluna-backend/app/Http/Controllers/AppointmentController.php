@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Throwable;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 use App\Models\Booking;
 use App\Models\Employee;
 use App\Models\Event;
@@ -208,7 +208,14 @@ class AppointmentController extends Controller
         $user = $request->user();
 
         if (!$user || !$user->customer) {
-            return response()->json(['data' => []]);
+            // Para mantener la forma, devolvemos un paginador vacío
+            return response()->json([
+                'data' => [],
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => 8,
+                'total' => 0,
+            ]);
         }
 
         $customerId = $user->customer->customerId;
@@ -222,31 +229,38 @@ class AppointmentController extends Controller
             ->where('customerIdFK', $customerId)
             ->orderByDesc('appointmentDate')
             ->orderByDesc('appointmentTime')
-            ->get();
+            ->paginate(8);
 
-        $data = $appointments->map(function ($a) {
-
+        // Mapear SOLO la colección interna
+        $mapped = $appointments->getCollection()->map(function ($a) {
             $booking = $a->booking;
 
-            // Si por algún motivo no hay booking asociado
+            // ---------------------------
+            //  SIN BOOKING ASOCIADO
+            // ---------------------------
             if (!$booking) {
                 return [
                     'id' => $a->appointmentId,
+                    'booking_id' => null,          // no hay booking
+                    'package' => null,
+
                     'event_type' => $a->event?->eventType,
                     'datetime' => Carbon::parse(
                         ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
                     )->toIso8601String(),
                     'place' => $a->place,
-                    'reservation_status' => $a->appointmentStatus,
+
+                    'reservation_status' => $a->appointmentStatus ?? 'Sin estado',
                     'payment_status' => 'Sin información',
                     'document_types' => [],
+                    'appointment_status' => $a->appointmentStatus,
                     'payment' => null,
                 ];
             }
 
-            /** --------------------
-             *  DOCUMENTOS
-             * --------------------*/
+            // ---------------------------
+            //  DOCUMENTOS
+            // ---------------------------
             $documentTypes = [];
             if ($booking->documentType) {
                 $documentTypes[] = [
@@ -256,9 +270,9 @@ class AppointmentController extends Controller
                 ];
             }
 
-            /** --------------------
-             *  CUOTAS / PAGOS
-             * --------------------*/
+            // ---------------------------
+            //  CUOTAS / PAGOS
+            // ---------------------------
             $installments = $booking->installments ?? collect();
 
             $total = (float) $installments->sum('amount');
@@ -269,7 +283,7 @@ class AppointmentController extends Controller
             $pendingCount = $installments->where('status', 'pending')->count();
             $overdueCount = $installments->where('status', 'overdue')->count();
 
-            // ------- Estado de pago (usando SOLO las cuotas) -------
+            // Estado de pago (usando SOLO las cuotas)
             if ($installments->isEmpty()) {
                 $paymentStatus = 'Sin información';
             } elseif ($pendingAmount == 0 && $total > 0) {
@@ -284,16 +298,45 @@ class AppointmentController extends Controller
                 $paymentStatus = 'Pendiente';
             }
 
+            // ---------------------------
+            //  ESTADO DE LA RESERVA (bookingStatus)
+            // ---------------------------
+            $bookingStatus = $booking->bookingStatus ?? null;
+
+            switch ($bookingStatus) {
+                case 'Pending':
+                    $reservationStatus = 'Pendiente de confirmación';
+                    break;
+                case 'Confirmed':
+                    $reservationStatus = 'Confirmada';
+                    break;
+                case 'Completed':
+                    $reservationStatus = 'Completada';
+                    break;
+                case 'Cancelled':
+                    $reservationStatus = 'Cancelada';
+                    break;
+                default:
+                    $reservationStatus = $a->appointmentStatus ?? 'Sin estado';
+                    break;
+            }
+
             return [
                 'id' => $a->appointmentId,
+                'booking_id' => $booking->bookingId,                              // 👈 para pagos/recibos
+                'package' => $booking->package?->packageName ?? null,            // 👈 nombre de paquete
+
                 'event_type' => $a->event?->eventType ?? '—',
                 'datetime' => Carbon::parse(
                     ($a->appointmentDate ?? '') . ' ' . ($a->appointmentTime ?? '')
                 )->toIso8601String(),
                 'place' => $a->place,
-                'reservation_status' => $a->appointmentStatus,
+
+                'reservation_status' => $reservationStatus,
                 'payment_status' => $paymentStatus,
+
                 'document_types' => $documentTypes,
+                'appointment_status' => $a->appointmentStatus,
 
                 'payment' => $installments->isEmpty() ? null : [
                     'total' => $total,
@@ -322,7 +365,11 @@ class AppointmentController extends Controller
             ];
         });
 
-        return response()->json(['data' => $data]);
+        // Reemplazamos la colección original por la mapeada
+        $appointments->setCollection($mapped);
+
+        // Devolvemos el paginador completo (data + meta + links)
+        return response()->json($appointments);
     }
 
     // public function downloadReceipt(Appointment $appointment, BookingPaymentInstallment $installment)
@@ -383,6 +430,63 @@ class AppointmentController extends Controller
      * 🟢 CREACIÓN DE CITA (Condicional Appointment & Booking)
      * =======================================================
      */
+    public function storeCustomer(Request $request)
+    {
+        try {
+            \Log::info('Datos recibidos en store appointment:', $request->all());
+
+            // ✅ Validar entrada
+            $validator = Validator::make($request->all(), [
+                'eventIdFK' => 'required|exists:events,eventId',
+                'appointmentDate' => 'required|date|after_or_equal:today',
+                'appointmentTime' => 'required|string',
+                'place' => 'nullable|string|max:100',
+                'comment' => 'nullable|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            // ✅ Obtener el cliente del usuario autenticado
+            $user = auth()->user();
+
+            if (!$user || !$user->customer) {
+                return response()->json([
+                    'message' => 'El usuario autenticado no tiene un cliente asociado'
+                ], 403);
+            }
+
+            $customerId = $user->customer->customerId;
+
+            // ✅ Crear la cita
+            $appointment = Appointment::create([
+                'customerIdFK' => $customerId,
+                'eventIdFK' => $request->eventIdFK,
+                'appointmentDate' => $request->appointmentDate,
+                'appointmentTime' => $request->appointmentTime,
+                'place' => $request->place ?? null,
+                'comment' => $request->comment,
+                'appointmentStatus' => 'Pending confirmation',
+            ]);
+
+            // ✅ Respuesta JSON limpia
+            return response()->json([
+                'message' => 'Cita creada correctamente',
+                'appointmentId' => $appointment->appointmentId,
+                'status' => $appointment->appointmentStatus,
+            ], 201);
+        } catch (Throwable $e) {
+            \Log::error('Error al crear cita: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error interno del servidor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // STORE PARA EMPLOYEES
     public function store(Request $request)
     {
         // Usaremos una transacción para garantizar que, si el empleado crea el booking,
@@ -665,7 +769,7 @@ class AppointmentController extends Controller
 
     public function availability(Request $request)
     {
-        $baseSlots = [
+        $baseSlotsWeekday = [
             '08:00:00',
             '09:00:00',
             '10:00:00',
@@ -680,16 +784,25 @@ class AppointmentController extends Controller
             '19:00:00',
         ];
 
+        $baseSlotsSunday = [
+            '09:00:00',
+            '10:00:00',
+            '11:00:00',
+            '14:00:00',
+            '15:00:00',
+            '16:00:00',
+        ];
+
         $date = $request->query('date');
         $month = $request->query('month');
         $year = $request->query('year', now()->year);
 
-        // Si piden disponibilidad de un día específico:
+        /* ------------ DÍA ESPECÍFICO ------------ */
         if ($date) {
-            $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+            $day = Carbon::parse($date);
 
-            // Bloquear domingos o días pasados
-            if (Carbon::parse($date)->isBefore(Carbon::today())) {
+            // días pasados bloqueados
+            if ($day->isBefore(Carbon::today())) {
                 return response()->json([
                     'available' => [],
                     'blocked' => [],
@@ -697,10 +810,10 @@ class AppointmentController extends Controller
                 ]);
             }
 
-            // Limitar horarios los domingos (opcional)
-            if ($dayOfWeek === 0) {
-                $baseSlots = ['09:00:00', '10:00:00', '11:00:00', '14:00:00', '15:00:00', '16:00:00'];
-            }
+            $dayOfWeek = $day->dayOfWeek;
+            $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
+                ? $baseSlotsSunday
+                : $baseSlotsWeekday;
 
             $appointments = Appointment::whereDate('appointmentDate', $date)
                 ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
@@ -717,30 +830,58 @@ class AppointmentController extends Controller
             ]);
         }
 
-        // Si piden disponibilidad mensual (month + year)
+        /* ------------ DISPONIBILIDAD MENSUAL ------------ */
         if ($month) {
+            $today = Carbon::today();
+
+            // Traemos todas las citas del mes
             $appointments = Appointment::whereMonth('appointmentDate', $month)
                 ->whereYear('appointmentDate', $year)
                 ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
                 ->get(['appointmentDate', 'appointmentTime']);
 
+            // Agrupamos por fecha
             $grouped = $appointments->groupBy(function ($a) {
-                return Carbon::parse($a->appointmentDate)->format('Y-m-d');
+                return Carbon::parse($a->appointmentDate)->toDateString(); // Y-m-d
             });
 
             $days = [];
-            foreach ($grouped as $d => $slots) {
-                $taken = $slots->pluck('appointmentTime')->toArray();
-                $available = array_diff($baseSlots, $taken);
-                $days[$d] = ['allBlocked' => count($available) === 0];
+
+            $current = Carbon::createFromDate($year, $month, 1)->startOfDay();
+            $end = (clone $current)->endOfMonth();
+
+            while ($current->lessThanOrEqualTo($end)) {
+                $dateStr = $current->toDateString();
+                $dayOfWeek = $current->dayOfWeek;
+
+                // Past days → bloqueados
+                if ($current->isBefore($today)) {
+                    $days[$dateStr] = ['allBlocked' => true];
+                    $current->addDay();
+                    continue;
+                }
+
+                // slots según día (mismo criterio que arriba)
+                $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+                    ? $baseSlotsSunday
+                    : $baseSlotsWeekday;
+
+                $taken = ($grouped[$dateStr] ?? collect())
+                    ->pluck('appointmentTime')
+                    ->toArray();
+
+                $available = array_diff($baseSlotsForDay, $taken);
+                $days[$dateStr] = ['allBlocked' => count($available) === 0];
+
+                $current->addDay();
             }
 
             return response()->json($days);
         }
 
-        // Si no se pasó parámetro, error
         return response()->json(['message' => 'Debe proporcionar date o month'], 400);
     }
+
 
 
 
@@ -963,6 +1104,86 @@ class AppointmentController extends Controller
 
 
 
+
+    /**
+     * Obtener citas pendientes de un cliente por su user_id
+     */
+    public function pendingByUserId($userId)
+    {
+        \Log::info("PendingByUserId called with userId: {$userId}");
+
+        try {
+            // Obtener el customer asociado al user_id
+            $customer = Customer::where('user_id', $userId)->first();
+
+            \Log::info("Customer found: " . ($customer ? "Yes (id: {$customer->customerId})" : "No"));
+
+            if (!$customer) {
+                return response()->json([
+                    'success' => true,
+                    'data' => []
+                ], 200);
+            }
+
+            // Obtener citas pendientes del customer
+            // Active statuses: 'Scheduled' or 'Pending confirmation'
+            $appointments = Appointment::where('customerIdFK', $customer->customerId)
+                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+                ->with(['event', 'bookings.package'])
+                ->orderBy('appointmentDate', 'asc')
+                ->orderBy('appointmentTime', 'asc')
+                ->get();
+
+            \Log::info("Found {$appointments->count()} pending appointments for customer {$customer->customerId}");
+
+            // Transformar datos
+            $data = $appointments->map(function ($apt) {
+                return [
+                    'appointmentId' => (int) $apt->appointmentId,
+                    'date' => (string) ($apt->appointmentDate ?? ''),
+                    'time' => (string) ($apt->appointmentTime ?? ''),
+                    'place' => (string) ($apt->place ?? ''),
+                    'eventType' => (string) (optional($apt->event)->eventType ?? 'Sin evento'),
+                    'packageName' => (string) (optional(optional($apt->bookings->first())->package)->packageName ?? 'Sin paquete'),
+                    'comment' => (string) ($apt->comment ?? ''),
+                    'status' => (string) ($apt->appointmentStatus ?? ''),
+                ];
+            })->toArray();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error("pendingByUserId error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+    public function getPendingCount(): JsonResponse
+    {
+        try {
+            $count = Appointment::whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])->count();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total' => $count
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error("getPendingCount error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
 
     /**
      * Remove the specified resource from storage.

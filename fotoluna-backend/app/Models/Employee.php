@@ -30,7 +30,6 @@ class Employee extends Model
         'employeeType',
         'gender',
         'EPS',
-        'role',
         'specialty',
         'isAvailable',
     ];
@@ -64,15 +63,21 @@ class Employee extends Model
             $q->whereIn('bookingStatus', ['Pending', 'Confirmed'])   // ajusta según tu lógica
                 ->whereHas('appointment', function ($qa) use ($startStr, $endStr) {
                     $qa->whereRaw("
-                  CONCAT(appointmentDate, ' ', appointmentTime) < ?
-                  AND DATE_ADD(
-                      CONCAT(appointmentDate, ' ', appointmentTime),
-                      INTERVAL appointmentDuration MINUTE
-                  ) > ?
-              ", [$endStr, $startStr]);
+                CONCAT(appointmentDate, ' ', appointmentTime) < ?
+                AND DATE_ADD(
+                    CONCAT(appointmentDate, ' ', appointmentTime),
+                    INTERVAL appointmentDuration MINUTE
+                ) > ?
+            ", [$endStr, $startStr]);
                 });
         });
     }
+
+    public function scopeAdmins($query)
+    {
+        return $query->where('employeeType', 'Admin');
+    }
+
 
     public function user()
     {

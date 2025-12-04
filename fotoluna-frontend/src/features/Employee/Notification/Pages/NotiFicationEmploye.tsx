@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
-import "../Styles/noti.css";
-
+// import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 
 
 type Notification = {
@@ -122,7 +120,11 @@ const mockNotifications: Notification[] = [
 
 ];
 
-const EmployeeNotifications: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+type EmployeeNotificationsProps = {
+    onClose?: () => void;
+};
+
+const EmployeeNotifications: React.FC<EmployeeNotificationsProps> = ({ onClose }) => {
     const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
     const [deletedNotifications, setDeletedNotifications] = useState<Notification[]>([]); // <-- nuevo estado para historial de eliminadas
     const [selected, setSelected] = useState<Notification | null>(null);
@@ -136,11 +138,11 @@ const EmployeeNotifications: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 n.id === notif.id ? { ...n, read: true } : n
             ));
         }
-        onClose();
     };
 
     const handleClosePanel = () => {
         setShowPanel(false); // <-- Oculta el panel
+        if (onClose) onClose();
     };
 
     const handleCloseModal = () => {
@@ -197,11 +199,9 @@ const EmployeeNotifications: React.FC<{ onClose: () => void }> = ({ onClose }) =
     
 
     return (
-        <EmployeeLayout>
-
-            {showPanel &&
-                (
-                    <div className="notifications-panel" onClick={e => e.stopPropagation()}>
+        <>
+            {showPanel && (
+                <div className="notifications-panel" onClick={e => e.stopPropagation()}>
 
                         {/* Header del Panel */}
                         <div className="notifications-header">
@@ -351,7 +351,7 @@ const EmployeeNotifications: React.FC<{ onClose: () => void }> = ({ onClose }) =
                     </div>
                 </div>
             )}
-        </EmployeeLayout>
+        </>
     );
 };
 

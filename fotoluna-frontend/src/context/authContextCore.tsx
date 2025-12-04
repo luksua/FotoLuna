@@ -9,6 +9,7 @@ export type User = {
     email?: string;
     role?: string;
     avatar: string;
+    has_storage_subscription?: boolean; 
 };
 
 export type AuthContextType = {

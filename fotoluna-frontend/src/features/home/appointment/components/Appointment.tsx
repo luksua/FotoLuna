@@ -34,8 +34,10 @@ type Payment = {
 };
 
 type Appointment = {
-    id: number;
+    id: number;            // appointmentId
+    booking_id: number;    // bookingId
     event_type: string;
+    package: string;
     datetime: string;
     place?: string | null;
     reservation_status: string;
@@ -45,6 +47,10 @@ type Appointment = {
 };
 
 const Apointment: React.FC = () => {
+    // paginación
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [lastPage, setLastPage] = useState<number>(1);
+
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -58,7 +64,6 @@ const Apointment: React.FC = () => {
     const [paymentBookingId, setPaymentBookingId] = useState<number | null>(null);
     const [paymentTotal, setPaymentTotal] = useState<number | null>(null);
     const [paymentEmail, setPaymentEmail] = useState<string>("");
-
     const [paymentInstallmentId, setPaymentInstallmentId] = useState<number | null>(null);
 
     // Helper token
@@ -74,17 +79,62 @@ const Apointment: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const fetchAppointments = async () => {
+    // Devuelve algo como: [1, '...', 4, 5, 6, '...', 10]
+    const getPageNumbers = (current: number, last: number, delta = 1): (number | string)[] => {
+        const pages: (number | string)[] = [];
+
+        if (last <= 1) return [1];
+
+        const left = Math.max(2, current - delta);
+        const right = Math.min(last - 1, current + delta);
+
+        // Siempre la primera
+        pages.push(1);
+
+        // Puntos suspensivos a la izquierda
+        if (left > 2) {
+            pages.push("left-ellipsis");
+        }
+
+        // Rango alrededor de la página actual
+        for (let i = left; i <= right; i++) {
+            pages.push(i);
+        }
+
+        // Puntos suspensivos a la derecha
+        if (right < last - 1) {
+            pages.push("right-ellipsis");
+        }
+
+        // Siempre la última
+        if (last > 1) {
+            pages.push(last);
+        }
+
+        return pages;
+    };
+
+    const fetchAppointments = async (page = 1) => {
         setLoading(true);
         setError(null);
         try {
             const res = await axios.get(`${API_BASE}/api/appointments-customer`, {
                 headers: getAuthHeaders(),
+                params: {
+                    page, // 👈 esto hace que Laravel devuelva la página correcta
+                },
             });
 
             const payload = res.data;
+
+            // Laravel paginator: { data: [...], current_page, last_page, ... }
             const items = Array.isArray(payload) ? payload : payload.data ?? [];
+
             setAppointments(items);
+            if (!Array.isArray(payload)) {
+                setCurrentPage(payload.current_page ?? 1);
+                setLastPage(payload.last_page ?? 1);
+            }
         } catch (err: any) {
             console.error("Error fetching appointments:", err);
             setError(
@@ -94,6 +144,11 @@ const Apointment: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePageChange = (page: number) => {
+        if (page < 1 || page > lastPage || page === currentPage) return;
+        fetchAppointments(page);
     };
 
     const openDetails = (a: Appointment) => {
@@ -114,7 +169,10 @@ const Apointment: React.FC = () => {
     const formatDateTime = (iso?: string) => {
         if (!iso) return "—";
         const d = new Date(iso);
-        return d.toLocaleString();
+        return d.toLocaleString("es-CO", {
+            dateStyle: "medium",
+            timeStyle: "short",
+        });
     };
 
     const formatCurrency = (value: number) =>
@@ -161,7 +219,33 @@ const Apointment: React.FC = () => {
         );
     };
 
-    // Resumen de cuotas
+    const getInstallmentBadge = (ins: Installment) => {
+        let cls = "status-pill ";
+        let label = "";
+
+        if (ins.paid) {
+            cls += "paid";
+            label = "Pagada";
+        } else if (ins.is_overdue) {
+            cls += "expired";
+            label = "Vencida";
+        } else {
+            cls += "pending";
+            label = "Pendiente";
+        }
+
+        return (
+            <span
+                className={cls + " sm"}
+                role="status"
+                aria-label={`Estado de la cuota: ${label}`}
+            >
+                {label}
+            </span>
+        );
+    };
+
+    // Resumen de cuotas (para mobile)
     const summarizeInstallments = (installments: Installment[]) => {
         const total = installments.length;
         const paidCount = installments.filter((i) => i.paid).length;
@@ -185,35 +269,50 @@ const Apointment: React.FC = () => {
             return;
         }
 
-        // ID de la reserva
-        setPaymentBookingId(a.id);
+        // ID de la reserva (bookingId), no el appointmentId
+        setPaymentBookingId(a.booking_id);
 
         if (installment) {
-            // 🟦 Pago de cuota específica
+            // Pago de cuota específica
             setPaymentTotal(installment.amount);
             setPaymentInstallmentId(installment.id);
         } else {
-            // 🟩 Pago del saldo completo
+            // Pago del saldo completo
             const pending = calcPending(a.payment);
             setPaymentTotal(pending);
-            setPaymentInstallmentId(null); // 👈 importante: NO cuota específica
+            setPaymentInstallmentId(null);
         }
 
-        const email =
-            a.payment.payer?.email ||
-            localStorage.getItem("user_email") ||
-            "";
+        let email = null;
+
+        if (a.payment?.payer?.email) {
+            email = a.payment.payer.email;
+        }
+
+        if (!email) {
+            email = localStorage.getItem("user_email");
+        }
+
+        if (!email) {
+            const userData = JSON.parse(localStorage.getItem("user") || "{}");
+            email = userData.emailCustomer || userData.email || null;
+        }
+
+        if (!email) {
+            alert("No se encontró tu correo. Por favor vuelve a iniciar sesión.");
+            return;
+        }
 
         setPaymentEmail(email);
         setShowPaymentModal(true);
     };
-
 
     const closePaymentModal = () => {
         setShowPaymentModal(false);
         setPaymentBookingId(null);
         setPaymentTotal(null);
         setPaymentEmail("");
+        setPaymentInstallmentId(null);
     };
 
     const onPaymentSuccess = () => {
@@ -222,24 +321,95 @@ const Apointment: React.FC = () => {
         closeDetails();
     };
 
-    // ---------- RENDER DETALLE (modal) usando opción 3 ----------
+    // ---------- DESCARGA DE RECIBOS (axios + blob) ----------
+
+    const handleDownloadBookingReceipt = async (bookingId: number) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const res = await axios.get(
+                `${API_BASE}/api/bookings/${bookingId}/receipt`,
+                {
+                    headers: {
+                        Authorization: token ? `Bearer ${token}` : "",
+                        Accept: "application/pdf",
+                    },
+                    responseType: "blob",
+                }
+            );
+
+            const blob = new Blob([res.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `recibo-FL-${bookingId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error descargando recibo general:", err);
+            alert("No se pudo descargar el recibo.");
+        }
+    };
+
+    const handleDownloadInstallmentReceipt = async (
+        appointmentId: number,
+        installmentId: number
+    ) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const res = await axios.get(
+                `${API_BASE}/api/appointments/${appointmentId}/installments/${installmentId}/receipt`,
+                {
+                    headers: {
+                        Authorization: token ? `Bearer ${token}` : "",
+                        Accept: "application/pdf",
+                    },
+                    responseType: "blob",
+                }
+            );
+
+            const blob = new Blob([res.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `recibo-cuota-${installmentId}-FL-${appointmentId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error descargando recibo de cuota:", err);
+            alert("No se pudo descargar el recibo de esta cuota.");
+        }
+    };
+
+    // ---------- RENDER DETALLE (modal) ----------
     const renderDetailModal = () => {
         if (!showModal || !active) return null;
 
         const payment = active.payment;
         const pending = payment ? calcPending(payment) : 0;
-        const installmentsSummary =
-            payment && summarizeInstallments(payment.installments);
+        const isFullyPaid = !!payment && pending === 0;
 
         return (
-            <div className="custom-modal-overlay" role="dialog" aria-modal="true">
-                <div className="custom-modal bg-custom-2">
+            <div
+                className="custom-modal-overlay"
+                role="dialog"
+                aria-modal="true"
+                onClick={closeDetails}
+            >
+                <div
+                    className="custom-modal bg-custom-2"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="modal-header">
                         <div>
                             <h5 className="modal-title">
-                                Historial de Pagos y cuotas
+                                Historial de pagos y cuotas
                             </h5>
-                            {/* línea pequeña de contexto, opcional */}
                             <small className="text-muted">
                                 {formatDateTime(active.datetime)}
                                 {active.place ? ` · ${active.place}` : ""}
@@ -262,9 +432,9 @@ const Apointment: React.FC = () => {
                         ) : (
                             <>
                                 {/* Resumen de pago */}
-                                <div className="row g-2 mb-3">
+                                <div className="row g-2 mb-4 mt-1">
                                     <div className="col-12 col-md-4">
-                                        <div className="p-2 rounded bg-light h-100">
+                                        <div className="shadow p-2 rounded bg-light h-100">
                                             <small className="text-muted d-block">
                                                 Total del servicio
                                             </small>
@@ -272,7 +442,7 @@ const Apointment: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="col-12 col-md-4">
-                                        <div className="p-2 rounded bg-light h-100">
+                                        <div className="shadow p-2 rounded bg-light h-100">
                                             <small className="text-muted d-block">
                                                 Pagado
                                             </small>
@@ -280,7 +450,7 @@ const Apointment: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="col-12 col-md-4">
-                                        <div className="p-2 rounded bg-light h-100">
+                                        <div className="shadow p-2 rounded bg-light h-100">
                                             <small className="text-muted d-block">
                                                 Saldo pendiente
                                             </small>
@@ -289,26 +459,7 @@ const Apointment: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Resumen de cuotas */}
-                                {installmentsSummary && (
-                                    <p className="small text-muted mb-2">
-                                        {installmentsSummary.paidCount} de{" "}
-                                        {installmentsSummary.total} cuotas pagadas.
-                                        {installmentsSummary.pendingCount > 0 &&
-                                            installmentsSummary.nextDue && (
-                                                <>
-                                                    {" "}
-                                                    Próx. vencimiento:{" "}
-                                                    {new Date(
-                                                        installmentsSummary.nextDue
-                                                    ).toLocaleDateString()}
-                                                </>
-                                            )}
-                                    </p>
-                                )}
-
                                 {/* Tabla de cuotas */}
-                                <h6 className="mt-2">Detalle de cuotas</h6>
                                 {payment.installments.length === 0 ? (
                                     <p className="text-muted">
                                         Este pago no está dividido en cuotas.
@@ -322,78 +473,53 @@ const Apointment: React.FC = () => {
                                                     <th>Vencimiento</th>
                                                     <th>Monto</th>
                                                     <th>Estado</th>
-                                                    <th>Recibo</th>
-                                                    <th></th>
+                                                    <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {payment.installments.map((ins, index) => {
                                                     const isPaid = ins.paid;
-                                                    const isOverdue =
-                                                        !ins.paid &&
-                                                        new Date(ins.due_date) < new Date();
 
                                                     return (
                                                         <tr key={ins.id}>
                                                             <td>{index + 1}</td>
+
                                                             <td>
                                                                 {new Date(
                                                                     ins.due_date
-                                                                ).toLocaleDateString()}
+                                                                ).toLocaleDateString("es-CO", {
+                                                                    dateStyle: "medium",
+                                                                })}
                                                             </td>
+
                                                             <td>{formatCurrency(ins.amount)}</td>
+
+                                                            {/* Estado con color */}
+                                                            <td>{getInstallmentBadge(ins)}</td>
+
+                                                            {/* Acciones: Pagar o Ver recibo */}
                                                             <td>
                                                                 {isPaid ? (
-                                                                    <span className="badge bg-success">
-                                                                        Pagada
-                                                                    </span>
-                                                                ) : isOverdue ? (
-                                                                    <span className="badge bg-danger">
-                                                                        Vencida
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="badge bg-warning text-dark">
-                                                                        Pendiente
-                                                                    </span>
-                                                                )}
-                                                            </td>
-
-                                                            {/* Recibo por cuota (luego lo conectas a tu endpoint) */}
-                                                            <td>
-                                                                {ins.receipt_path ? (
-                                                                    <a
-                                                                        href={`${API_BASE}/api/appointments/${active.id}/installments/${ins.id}/receipt`}
-                                                                        className="btn btn-sm custom2-upload-btn"
-                                                                        target="_blank"
-                                                                        rel="noreferrer"
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-sm btn-outline-secondary"
+                                                                        onClick={() =>
+                                                                            handleDownloadInstallmentReceipt(
+                                                                                active.id,
+                                                                                ins.id
+                                                                            )
+                                                                        }
                                                                     >
-                                                                        Recibo
-                                                                    </a>
+                                                                        <i className="bi bi-receipt me-1" />
+                                                                        Ver recibo
+                                                                    </button>
                                                                 ) : (
-                                                                    <span className="text-muted small">No disponible</span>
-                                                                )}
-                                                            </td>
-                                                            {/* <td>
-                                                                <Button
-                                                                    className="btn btn-sm custom2-upload-btn"
-                                                                    onClick={() =>
-                                                                        alert(
-                                                                            "Aquí descargarías el recibo PDF de esta cuota (cuando tengas el endpoint listo)."
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Recibo
-                                                                </Button>
-                                                            </td> */}
-
-                                                            {/* Pagar esa cuota */}
-                                                            <td className="text-end">
-                                                                {!isPaid && (
                                                                     <Button
-                                                                        className="btn btn-sm btn-outline-primary"
-                                                                        onClick={() => openPaymentFor(active, ins)}   // 👈 le pasas la cuota
+                                                                        className="btn btn-sm custom-upload-btn"
+                                                                        onClick={() => openPaymentFor(active, ins)}
                                                                     >
-                                                                        Pagar cuota
+                                                                        <i className="bi bi-credit-card me-1" />
+                                                                        Pagar
                                                                     </Button>
                                                                 )}
                                                             </td>
@@ -404,284 +530,35 @@ const Apointment: React.FC = () => {
                                         </table>
                                     </div>
                                 )}
-
-                                {/* Recibo general (opcional) */}
-                                <div className="mt-3">
-                                    <Button
-                                        className="btn custom2-upload-btn"
-                                        onClick={() =>
-                                            alert(
-                                                "Aquí descargarías el recibo/factura general del servicio."
-                                            )
-                                        }
-                                    >
-                                        Descargar recibo general
-                                    </Button>
-                                </div>
                             </>
                         )}
                     </div>
 
                     <div className="modal-footer">
-                        <Button className="btn custom-upload-btn" onClick={closeDetails}>
+                        {/* Recibo general solo cuando está totalmente pagado */}
+                        {active.booking_id &&
+                            payment &&
+                            isFullyPaid && (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary me-auto"
+                                    onClick={() =>
+                                        handleDownloadBookingReceipt(active.booking_id)
+                                    }
+                                >
+                                    <i className="bi bi-receipt me-1" />
+                                    Recibo general
+                                </button>
+                            )}
+
+                        <Button className="btn custom2-upload-btn" onClick={closeDetails}>
                             Cerrar
                         </Button>
-                        {payment && pending > 0 && (
-                            <Button
-                                className="btn btn-primary"
-                                onClick={() => openPaymentFor(active)}
-                            >
-                                Pagar saldo pendiente
-                            </Button>
-                        )}
                     </div>
                 </div>
             </div>
         );
     };
-
-    // const renderDetailModal = () => {
-    //     if (!showModal || !active) return null;
-
-    //     const payment = active.payment;
-
-    //     const pending = payment ? calcPending(payment) : 0;
-    //     const installmentsSummary =
-    //         payment && summarizeInstallments(payment.installments);
-
-    //     return (
-    //         <div className="custom-modal-overlay" role="dialog" aria-modal="true">
-    //             <div className="custom-modal">
-    //                 <div className="modal-header">
-    //                     <h5 className="modal-title">
-    //                         Detalle cita — {active.event_type}
-    //                     </h5>
-    //                     <button
-    //                         type="button"
-    //                         className="btn-close"
-    //                         aria-label="Cerrar"
-    //                         onClick={closeDetails}
-    //                     />
-    //                 </div>
-
-    //                 <div className="modal-body">
-    //                     {/* Info general */}
-    //                     <section className="mb-3">
-    //                         <h6>Información de la reserva</h6>
-    //                         <p className="mb-1">
-    //                             <strong>Fecha y hora:</strong> {formatDateTime(active.datetime)}
-    //                         </p>
-    //                         <p className="mb-1">
-    //                             <strong>Lugar:</strong> {active.place || "—"}
-    //                         </p>
-    //                         <p className="mb-1">
-    //                             <strong>Estado de reserva:</strong> {active.reservation_status}
-    //                         </p>
-    //                         <p className="mb-0">
-    //                             <strong>Estado de pago:</strong>{" "}
-    //                             {getPaymentBadge(active.payment_status)}
-    //                         </p>
-    //                     </section>
-
-    //                     <hr />
-
-    //                     {/* Documentos */}
-    //                     <section className="mb-3">
-    //                         <h6>Documentos / Requisitos</h6>
-    //                         {active.document_types.length === 0 ? (
-    //                             <p className="text-muted">
-    //                                 No hay tipos de documento asociados a esta cita.
-    //                             </p>
-    //                         ) : (
-    //                             <ul className="mb-0">
-    //                                 {active.document_types.map((d) => (
-    //                                     <li key={d.id}>
-    //                                         {d.name}{" "}
-    //                                         {d.url && (
-    //                                             <a
-    //                                                 href={d.url}
-    //                                                 target="_blank"
-    //                                                 rel="noreferrer"
-    //                                                 className="ms-2"
-    //                                             >
-    //                                                 Ver
-    //                                             </a>
-    //                                         )}
-    //                                     </li>
-    //                                 ))}
-    //                             </ul>
-    //                         )}
-    //                     </section>
-
-    //                     <hr />
-
-    //                     {/* Pagos / cuotas / recibos */}
-    //                     <section>
-    //                         <h6>Pagos y cuotas</h6>
-
-    //                         {!payment ? (
-    //                             <p className="text-muted">No hay información de pago.</p>
-    //                         ) : (
-    //                             <>
-    //                                 {/* Resumen de pago */}
-    //                                 <div className="row g-2 mb-3">
-    //                                     <div className="col-12 col-md-4">
-    //                                         <div className="p-2 rounded bg-light h-100">
-    //                                             <small className="text-muted d-block">
-    //                                                 Total del servicio
-    //                                             </small>
-    //                                             <strong>{formatCurrency(payment.total)}</strong>
-    //                                         </div>
-    //                                     </div>
-    //                                     <div className="col-12 col-md-4">
-    //                                         <div className="p-2 rounded bg-light h-100">
-    //                                             <small className="text-muted d-block">Pagado</small>
-    //                                             <strong>{formatCurrency(payment.paid)}</strong>
-    //                                         </div>
-    //                                     </div>
-    //                                     <div className="col-12 col-md-4">
-    //                                         <div className="p-2 rounded bg-light h-100">
-    //                                             <small className="text-muted d-block">
-    //                                                 Saldo pendiente
-    //                                             </small>
-    //                                             <strong>{formatCurrency(pending)}</strong>
-    //                                         </div>
-    //                                     </div>
-    //                                 </div>
-
-    //                                 {/* Resumen de cuotas */}
-    //                                 {installmentsSummary && (
-    //                                     <p className="small text-muted mb-2">
-    //                                         {installmentsSummary.paidCount} de{" "}
-    //                                         {installmentsSummary.total} cuotas pagadas.
-    //                                         {installmentsSummary.pendingCount > 0 &&
-    //                                             installmentsSummary.nextDue && (
-    //                                                 <>
-    //                                                     {" "}
-    //                                                     Próx. vencimiento:{" "}
-    //                                                     {new Date(
-    //                                                         installmentsSummary.nextDue
-    //                                                     ).toLocaleDateString()}
-    //                                                 </>
-    //                                             )}
-    //                                     </p>
-    //                                 )}
-
-    //                                 {/* Tabla de cuotas */}
-    //                                 <h6 className="mt-2">Detalle de cuotas</h6>
-    //                                 {payment.installments.length === 0 ? (
-    //                                     <p className="text-muted">
-    //                                         Este pago no está dividido en cuotas.
-    //                                     </p>
-    //                                 ) : (
-    //                                     <div className="table-responsive">
-    //                                         <table className="table table-sm align-middle">
-    //                                             <thead>
-    //                                                 <tr>
-    //                                                     <th>#</th>
-    //                                                     <th>Vencimiento</th>
-    //                                                     <th>Monto</th>
-    //                                                     <th>Estado</th>
-    //                                                     <th>Recibo</th>
-    //                                                     <th></th>
-    //                                                 </tr>
-    //                                             </thead>
-    //                                             <tbody>
-    //                                                 {payment.installments.map((ins, index) => {
-    //                                                     const isPaid = ins.paid;
-    //                                                     const isOverdue =
-    //                                                         !ins.paid && new Date(ins.due_date) < new Date();
-
-    //                                                     return (
-    //                                                         <tr key={ins.id}>
-    //                                                             <td>{index + 1}</td>
-    //                                                             <td>
-    //                                                                 {new Date(
-    //                                                                     ins.due_date
-    //                                                                 ).toLocaleDateString()}
-    //                                                             </td>
-    //                                                             <td>{formatCurrency(ins.amount)}</td>
-    //                                                             <td>
-    //                                                                 {isPaid ? (
-    //                                                                     <span className="badge bg-success">
-    //                                                                         Pagada
-    //                                                                     </span>
-    //                                                                 ) : isOverdue ? (
-    //                                                                     <span className="badge bg-danger">
-    //                                                                         Vencida
-    //                                                                     </span>
-    //                                                                 ) : (
-    //                                                                     <span className="badge bg-warning text-dark">
-    //                                                                         Pendiente
-    //                                                                     </span>
-    //                                                                 )}
-    //                                                             </td>
-    //                                                             {/* Recibo por cuota (placeholder) */}
-    //                                                             <td>
-    //                                                                 <Button
-    //                                                                     className="btn btn-sm custom2-upload-btn"
-    //                                                                     onClick={() =>
-    //                                                                         alert(
-    //                                                                             "Aquí descargarías el recibo PDF de esta cuota (a implementar)."
-    //                                                                         )
-    //                                                                     }
-    //                                                                 >
-    //                                                                     Recibo
-    //                                                                 </Button>
-    //                                                             </td>
-    //                                                             <td className="text-end">
-    //                                                                 {!isPaid && (
-    //                                                                     <Button
-    //                                                                         className="btn btn-sm btn-outline-primary"
-    //                                                                         onClick={() => openPaymentFor(active)}
-    //                                                                     >
-    //                                                                         Pagar cuota
-    //                                                                     </Button>
-    //                                                                 )}
-    //                                                             </td>
-    //                                                         </tr>
-    //                                                     );
-    //                                                 })}
-    //                                             </tbody>
-    //                                         </table>
-    //                                     </div>
-    //                                 )}
-
-    //                                 {/* Recibo general de toda la reserva (placeholder) */}
-    //                                 <div className="mt-3">
-    //                                     <Button
-    //                                         className="btn custom2-upload-btn"
-    //                                         onClick={() =>
-    //                                             alert(
-    //                                                 "Aquí descargarías el recibo/factura general (todas las cuotas)."
-    //                                             )
-    //                                         }
-    //                                     >
-    //                                         Descargar recibo general
-    //                                     </Button>
-    //                                 </div>
-    //                             </>
-    //                         )}
-    //                     </section>
-    //                 </div>
-
-    //                 <div className="modal-footer">
-    //                     <Button className="btn custom-upload-btn" onClick={closeDetails}>
-    //                         Cerrar
-    //                     </Button>
-    //                     {payment && calcPending(payment) > 0 && (
-    //                         <Button
-    //                             className="btn btn-primary"
-    //                             onClick={() => openPaymentFor(active)}
-    //                         >
-    //                             Pagar saldo pendiente
-    //                         </Button>
-    //                     )}
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // };
 
     // ---------- RENDER PAGO (modal MP) ----------
     const renderPaymentModal = () => {
@@ -690,18 +567,26 @@ const Apointment: React.FC = () => {
         }
 
         return (
-            <div className="custom-modal-overlay" role="dialog" aria-modal="true">
-                <div className="custom-modal large-modal">
+            <div
+                className="custom-modal-overlay"
+                role="dialog"
+                aria-modal="true"
+                onClick={closePaymentModal}
+            >
+                <div
+                    className="custom-modal bg-custom-2 large-modal"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="modal-header">
-                        <h5 className="modal-title">Pagar cita / servicio</h5>
+                        <h5 className="modal-title">Pagar servicio</h5>
                         <button
                             type="button"
-                            className="btn-close"
+                            className="btn-close modal-close-x"
                             aria-label="Cerrar"
                             onClick={closePaymentModal}
                         />
                     </div>
-                    <div className="modal-body">
+                    <div className="modal-body  bg-custom-2">
                         <AppointmentFormStep4PaymentEmbedded
                             bookingId={paymentBookingId}
                             total={paymentTotal}
@@ -726,7 +611,7 @@ const Apointment: React.FC = () => {
                     {/* Header */}
                     <div className="col-12">
                         <div className="appointment-header text-center bg-custom-2 py-3 rounded-3 mb-3">
-                            <h1 className="h4 m-0">Mis Citas</h1>
+                            <h1 className="h4 m-0">Mis Reservas</h1>
                         </div>
                     </div>
 
@@ -764,11 +649,12 @@ const Apointment: React.FC = () => {
                                         </caption>
                                         <thead className="thead-light bg-custom-2 table-secondary">
                                             <tr>
-                                                <th scope="col">Evento</th>
+                                                <th scope="col">Reserva</th>
+                                                <th scope="col">Paquete</th>
                                                 <th scope="col">Fecha y Hora</th>
                                                 <th scope="col">Estado reserva</th>
                                                 <th scope="col">Pago</th>
-                                                <th scope="col">Saldo / Cuotas</th>
+                                                <th scope="col">Saldo</th>
                                                 <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
@@ -788,13 +674,19 @@ const Apointment: React.FC = () => {
                                             {appointments.map((c) => {
                                                 const payment = c.payment;
                                                 const pending = payment ? calcPending(payment) : 0;
-                                                const installmentsSummary =
-                                                    payment &&
-                                                    summarizeInstallments(payment.installments);
 
                                                 return (
                                                     <tr key={c.id}>
-                                                        <td data-label="Evento">{c.event_type}</td>
+                                                        <td data-label="Reserva">
+                                                            <div className="fw-semibold">
+                                                                {c.event_type}
+                                                            </div>
+                                                            <div className="small text-muted">
+                                                                #{c.id}
+                                                                {c.place ? ` · ${c.place}` : ""}
+                                                            </div>
+                                                        </td>
+                                                        <td data-label="Paquete">{c.package}</td>
                                                         <td data-label="Fecha y Hora">
                                                             {formatDateTime(c.datetime)}
                                                         </td>
@@ -804,21 +696,9 @@ const Apointment: React.FC = () => {
                                                         <td data-label="Pago">
                                                             {getPaymentBadge(c.payment_status)}
                                                         </td>
-                                                        <td data-label="Saldo / Cuotas">
+                                                        <td data-label="Saldo">
                                                             {payment ? (
-                                                                <>
-                                                                    <div>
-                                                                        <strong>Saldo:</strong>{" "}
-                                                                        {formatCurrency(pending)}
-                                                                    </div>
-                                                                    {installmentsSummary && (
-                                                                        <small className="text-muted">
-                                                                            {installmentsSummary.paidCount} de{" "}
-                                                                            {installmentsSummary.total} cuotas
-                                                                            pagadas
-                                                                        </small>
-                                                                    )}
-                                                                </>
+                                                                <>{formatCurrency(pending)}</>
                                                             ) : (
                                                                 <span className="text-muted">
                                                                     Sin información
@@ -834,16 +714,6 @@ const Apointment: React.FC = () => {
                                                                 >
                                                                     Ver detalle
                                                                 </Button>
-
-                                                                {payment && pending > 0 && (
-                                                                    <Button
-                                                                        value="Pagar"
-                                                                        className="btn btn-primary"
-                                                                        onClick={() => openPaymentFor(c)}
-                                                                    >
-                                                                        Pagar saldo
-                                                                    </Button>
-                                                                )}
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -926,10 +796,60 @@ const Apointment: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Paginación (si la usas) */}
+                    {/* Paginación */}
+                    {/* Paginación */}
                     <div className="col-12 d-flex justify-content-center mt-3">
-                        {/* paginación aquí */}
+                        {lastPage > 1 && (
+                            <nav
+                                className="admin-pagination"
+                                aria-label="Paginación de reservas"
+                            >
+                                {/* Anterior */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    &larr;
+                                </button>
+
+                                {/* Números de página con ellipsis */}
+                                {getPageNumbers(currentPage, lastPage, 1).map((item, index) => {
+                                    if (item === "left-ellipsis" || item === "right-ellipsis") {
+                                        return (
+                                            <button
+                                                key={`${item}-${index}`}
+                                                className="ellipsis"
+                                                disabled
+                                            >
+                                                …
+                                            </button>
+                                        );
+                                    }
+
+                                    const page = item as number;
+
+                                    return (
+                                        <button
+                                            key={page}
+                                            className={page === currentPage ? "active" : ""}
+                                            onClick={() => handlePageChange(page)}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+
+                                {/* Siguiente */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === lastPage}
+                                >
+                                    &rarr;
+                                </button>
+                            </nav>
+                        )}
                     </div>
+
                 </div>
             </section>
 
@@ -940,96 +860,3 @@ const Apointment: React.FC = () => {
 };
 
 export default Apointment;
-
-
-// import "../styles/appointment.css";
-// import Button from "../../../../components/Home/Button";
-
-// const Apointment = () => {
-//     return (
-//         <div className="container py-4">
-//             <section className="appointment-section">
-//                 <div className="row justify-content-center">
-
-//                     {/* Header */}
-//                     <div className="col-12">
-//                         <div className="appointment-header text-center bg-custom-2 py-3 rounded-3 mb-3">
-//                             <h1 className="h4 m-0">Mis Citas</h1>
-//                         </div>
-//                     </div>
-
-//                     {/* Contenido */}
-//                     <div className="col-12 bg-custom-9 p-3 rounded-3">
-
-//                         {/* Botón crear cita */}
-//                         <div className="d-flex justify-content-end mb-3">
-//                             <Button
-//                                 className="btn btn-perfil w-100 w-sm-auto"
-//                                 value="Nueva Cita"
-//                                 to="/nuevaCita"
-//                             >
-//                                 <i className="bi bi-plus-circle" /> Nueva Cita
-//                             </Button>
-//                         </div>
-
-//                         {/* Tabla / Tarjetas responsive */}
-//                         <div className="table-responsive-md" role="region" aria-label="Listado de citas">
-//                             <table className="table table-hover table-sm align-middle mb-0 rounded-3 overflow-hidden appointment-table">
-//                                 <caption className="visually-hidden">Listado de citas</caption>
-//                                 <thead className="thead-light bg-custom-2 table-secondary">
-//                                     <tr>
-//                                         <th scope="col">Tipo de Evento</th>
-//                                         <th scope="col">Fecha y Hora</th>
-//                                         <th scope="col" className="d-none d-md-table-cell">Lugar</th>
-//                                         <th scope="col">Estado reserva</th>
-//                                         <th scope="col">Estado de pago</th>
-//                                         <th scope="col">Acciones</th>
-//                                     </tr>
-//                                 </thead>
-
-//                                 <tbody className="bg-custom-2">
-//                                     {/* Fila de ejemplo / placeholder */}
-//                                     <tr>
-//                                         <td data-label="Tipo de Evento">—</td>
-//                                         <td data-label="Fecha y Hora">—</td>
-//                                         <td data-label="Lugar" className="d-none d-md-table-cell">—</td>
-//                                         <td data-label="Estado reserva">aaaa</td>
-//                                         <td data-label="Esrado de pago">aaaa</td>
-//                                         <td data-label="Acciones">
-//                                             <Button
-//                                                 value="Ver Detalles"
-//                                                 className="btn custom2-upload-btn"
-//                                             />
-//                                         </td>
-//                                     </tr>
-
-//                                     {/*
-//                     Aquí colocas tu loop real (React o Blade si renderizas server-side).
-//                     Asegúrate de añadir data-label a cada <td> para el modo “tarjeta”:
-//                     <td data-label="Tipo de Evento">{cita.tipoEvento}</td> etc.
-//                   */}
-
-//                                     {/* Si no hay citas */}
-//                                     {/*
-//                         <tr>
-//                             <td colSpan="6" className="text-center text-muted fst-italic">
-//                             No hay citas registradas.
-//                             </td>
-//                         </tr>
-//                   */}
-//                                 </tbody>
-//                             </table>
-//                         </div>
-//                     </div>
-
-//                     {/* Paginación */}
-//                     <div className="col-12 d-flex justify-content-center mt-3">
-//                         {/* {!! $citas->links() !!} */}
-//                     </div>
-//                 </div>
-//             </section>
-//         </div>
-//     );
-// };
-
-// export default Apointment;

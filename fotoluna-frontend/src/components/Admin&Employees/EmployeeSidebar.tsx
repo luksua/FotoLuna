@@ -1,8 +1,17 @@
 import "../../styles/EmployeeSidebar.css";
 import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const AdminSidebar: React.FC = () => {
     const location = useLocation();
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Escucha el botón hamburguesa
+    useEffect(() => {
+        const toggleHandler = () => setIsOpen(prev => !prev);
+        document.addEventListener("toggle-sidebar", toggleHandler);
+        return () => document.removeEventListener("toggle-sidebar", toggleHandler);
+    }, []);
 
     const menuItems = [
         { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/empleado" },
@@ -15,20 +24,26 @@ const AdminSidebar: React.FC = () => {
     ];
 
     return (
-        <aside className="sidebar">
-            <ul className="sidebar-menu">
-                {menuItems.map((item) => (
-                    <Link
-                        key={item.id}
-                        to={item.path}
-                        className={`menu-item ${location.pathname === item.path ? 'active' : ''}`}
-                    >
-                        <i className={item.icon}></i>
-                        <span className="menu-text">{item.text}</span>
-                    </Link>
-                ))}
-            </ul>
-        </aside>
+        <>
+            {/* Fondo oscuro cuando el sidebar está abierto en móvil */}
+            {isOpen && <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />}
+
+            <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
+                <ul className="sidebar-menu">
+                    {menuItems.map((item) => (
+                        <Link
+                            key={item.id}
+                            to={item.path}
+                            onClick={() => setIsOpen(false)}
+                            className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+                        >
+                            <i className={item.icon}></i>
+                            <span className="menu-text">{item.text}</span>
+                        </Link>
+                    ))}
+                </ul>
+            </aside>
+        </>
     );
 };
 

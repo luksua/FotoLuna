@@ -428,6 +428,10 @@ const Upload: React.FC = () => {
                     : `Las ${files.length} fotos se subieron correctamente a la nube.`
             );
 
+            // 🚨 SOLUCIÓN 2: Disparar un evento para notificar al PhotoAdmin
+            window.dispatchEvent(new CustomEvent('photosUploaded'));
+
+
             setFiles([]);
             setLinkedUsers([]);
 
@@ -554,9 +558,7 @@ const Upload: React.FC = () => {
                                     ))}
                                 </select>
                                 {errors.event && (
-                                    <p className="upload-error-text">
-                                        {errors.event}
-                                    </p>
+                                    <p className="upload-error-text">{errors.event}</p>
                                 )}
                             </div>
 
@@ -576,9 +578,7 @@ const Upload: React.FC = () => {
                                     }}
                                 />
                                 {errors.time && (
-                                    <p className="upload-error-text">
-                                        {errors.time}
-                                    </p>
+                                    <p className="upload-error-text">{errors.time}</p>
                                 )}
                             </div>
 
@@ -598,9 +598,7 @@ const Upload: React.FC = () => {
                                     }}
                                 />
                                 {errors.date && (
-                                    <p className="upload-error-text">
-                                        {errors.date}
-                                    </p>
+                                    <p className="upload-error-text">{errors.date}</p>
                                 )}
                             </div>
 
@@ -621,9 +619,7 @@ const Upload: React.FC = () => {
                                     placeholder="Ubicación del evento"
                                 />
                                 {errors.location && (
-                                    <p className="upload-error-text">
-                                        {errors.location}
-                                    </p>
+                                    <p className="upload-error-text">{errors.location}</p>
                                 )}
                             </div>
                         </div>

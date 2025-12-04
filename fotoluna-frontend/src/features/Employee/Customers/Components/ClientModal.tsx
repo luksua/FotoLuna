@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Modal, Button, Table, Tabs, Tab } from "react-bootstrap";
 import axios from "axios";
+import ClientGallery from "./ClientGallery";
 
 const API_URL = "http://localhost:8000/api";
 
@@ -280,6 +281,10 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
                             ) : (
                                 <p className="text-muted text-center">Sin pagos registrados.</p>
                             )}
+                        </Tab>
+                        {/* 📸 FOTOS NUEVA PESTAÑA */}
+                        <Tab eventKey="fotos" title="Fotos">
+                            <ClientGallery clientId={clientId} />
                         </Tab>
                     </Tabs>
                 </Modal.Body>

@@ -17,18 +17,17 @@
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(255, 125, 242, 0.15);
     overflow: hidden;
-    max-width: 420px;
-    margin: 0;
-    margin-top: 10px;
+    width: 420px;            /* en lugar de solo max-width */
     border: 1px solid var(--borde-claro);
     position: absolute;
-    right: 20px;
-    top: 70px;
+    top: 120%;
+    right: 0;
     z-index: 1000;
+    margin-top: 8px;
 
-
+    display: flex;           /* 👈 importante */
+    flex-direction: column;  /* header + tabs + lista + footer */
 }
-
 
 .notifications-header {
     display: flex;
@@ -140,6 +139,7 @@
 
 .notifications-list-container {
     max-height: 400px;
+    min-height: 200px; 
     overflow-y: auto;
     background: var(--fondo-claro);
 }

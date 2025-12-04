@@ -1,39 +1,39 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useState } from "react";
-import axios from "axios"; // 👈 NECESARIO PARA ENVIAR DATOS
 import "../styles/RegisterUsers.css";
 
 // Definición de la URL base (asumiendo que está en tu .env o similar)
-const API_BASE = "http://127.0.0.1:8000"; // Ajustar si usas VITE_API_URL
+// const API_BASE = "http://127.0.0.1:8000"; // Ajustar si usas VITE_API_URL
 
 // 🚨 Definición de un tipo para el estado del formulario (mejor práctica)
-interface RegisterForm {
-    firstNameEmployee: string;
-    lastNameEmployee: string;
-    phoneEmployee: string;
-    EPS: string;
-    documentType: string;
-    documentNumber: string;
-    emailEmployee: string;
-    address: string;
-    photoEmployee: File | null; // El tipo debe ser File
-    password: string;
-    employeeType: string;
-    role: string;
-    specialty: string;
-    isAvailable: boolean;
-    gender: string;
-    // Campo que Laravel espera para confirmar el password
-    password_confirmation: string;
-}
+// interface RegisterForm {
+//     firstNameEmployee: string;
+//     lastNameEmployee: string;
+//     phoneEmployee: string;
+//     EPS: string;
+//     documentType: string;
+//     documentNumber: string;
+//     emailEmployee: string;
+//     address: string;
+//     photoEmployee: File | null; // El tipo debe ser File
+//     password: string;
+//     employeeType: string;
+//     role: string;
+//     specialty: string;
+//     isAvailable: boolean;
+//     gender: string;
+//     // Campo que Laravel espera para confirmar el password
+//     password_confirmation: string;
+// }
 
 
 const Register = () => {
     // 🚨 CORRECCIÓN TS6133: 'setIsSubmitting' no estaba definido.
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    // const [isSubmitting, setIsSubmitting] = useState(false);
 
     // 🚨 Añadimos confirmación de contraseña al estado
-    const [form, setForm] = useState<RegisterForm>({
+    const [form, setForm] = useState({
         firstNameEmployee: "",
         lastNameEmployee: "",
         phoneEmployee: "",
@@ -44,17 +44,16 @@ const Register = () => {
         address: "",
         photoEmployee: null,
         password: "",
+        passwordConfirm: "",
         employeeType: "Employee",
-        role: "Photographer",
         specialty: "",
         isAvailable: true,
         gender: "Female",
-        password_confirmation: "" // Inicializar el campo de confirmación
     });
     const [message, setMessage] = useState("");
-    const [serverErrors, setServerErrors] = useState<string>(""); // Para mostrar errores del servidor
-
-    // 🚨 CORRECCIÓN TS6133: 'setActiveItem' no es necesario aquí, está en el Layout.
+    const [messageType, setMessageType] = useState<"success" | "error" | "">("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target as HTMLInputElement;
@@ -71,102 +70,116 @@ const Register = () => {
         setForm({ ...form, [name]: target.value });
     };
 
-    // 🚨 LÓGICA CORREGIDA PARA REGISTRO DE EMPLEADO
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setServerErrors("");
-        setMessage("");
 
-        // 🚨 Validación mínima del frontend
-        if (form.password !== form.password_confirmation) {
-            setServerErrors("Las contraseñas no coinciden.");
+        if (form.password !== form.passwordConfirm) {
+            setMessage('Las contraseñas no coinciden.');
+            setMessageType('error');
             return;
         }
 
-        setIsSubmitting(true);
+        if (form.password.length < 8) {
+            setMessage('La contraseña debe tener al menos 8 caracteres.');
+            setMessageType('error');
+            return;
+        }
 
         try {
-            // 1) Armar el FormData
             const formData = new FormData();
+            formData.append('firstNameEmployee', form.firstNameEmployee);
+            formData.append('lastNameEmployee', form.lastNameEmployee);
+            formData.append('phoneEmployee', form.phoneEmployee);
+            formData.append('EPS', form.EPS);
+            formData.append('documentType', form.documentType);
+            formData.append('documentNumber', form.documentNumber);
+            formData.append('emailEmployee', form.emailEmployee);
+            formData.append('address', form.address);
+            formData.append('password', form.password);
+            formData.append('password_confirmation', form.passwordConfirm);
+            formData.append('employeeType', form.employeeType);
+            formData.append('specialty', form.specialty);
+            formData.append('isAvailable', form.isAvailable ? '1' : '0');
+            formData.append('gender', form.gender);
 
-            // Añadir campos del formulario al FormData
-            // NOTA: Laravel espera 'email' y 'password' en la tabla users
-            formData.append("role", form.role.toLowerCase() === "administrador" ? "admin" : "empleado"); // Mapear a los roles de Laravel
-
-            // Campos de User
-            formData.append("name", `${form.firstNameEmployee} ${form.lastNameEmployee}`);
-            formData.append("email", form.emailEmployee);
-            formData.append("password", form.password);
-            formData.append("password_confirmation", form.password_confirmation);
-
-            // Campos de Employee
-            formData.append("firstNameEmployee", form.firstNameEmployee);
-            formData.append("lastNameEmployee", form.lastNameEmployee);
-            formData.append("phoneEmployee", form.phoneEmployee);
-            formData.append("EPS", form.EPS);
-            formData.append("documentType", form.documentType);
-            formData.append("documentNumber", form.documentNumber);
-            formData.append("address", form.address);
-            formData.append("employeeType", form.employeeType);
-            formData.append("gender", form.gender);
-
-            // Campos adicionales de Empleado
-            formData.append("specialty", form.specialty);
-            formData.append("isAvailable", String(form.isAvailable));
-
-            // Foto
             if (form.photoEmployee) {
-                formData.append("photoEmployee", form.photoEmployee);
+                formData.append('photoEmployee', form.photoEmployee as File);
             }
 
-            // 2) Hacer el POST al endpoint de registro
-            await axios.post(`${API_BASE}/api/register`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json',
-                }
+            const token = localStorage.getItem('token');
+            const headers: Record<string, string> = {
+                'Accept': 'application/json'
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch('/api/admin/employees', {
+                method: 'POST',
+                headers,
+                body: formData,
             });
 
-            // 3) Éxito
-            setMessage("¡Empleado/Administrador registrado exitosamente!");
-            setServerErrors(""); // Limpiar errores
-            // Puedes resetear el form aquí si lo deseas
-
-        } catch (error: any) {
-            console.error("Error al registrar empleado:", error);
-
-            if (error.response && error.response.status === 422) {
-                // Manejar error 422: Validar errores específicos de Laravel
-                const errors = error.response.data.errors;
-                let errorMsg = "Error de validación: ";
-
-                // Mapear errores de Laravel (ej. 'email' ya existe)
-                if (errors) {
-                    // Muestra el primer error de cada campo
-                    Object.keys(errors).forEach(key => {
-                        errorMsg += `${key}: ${errors[key][0]} `;
-                    });
-                }
-                setServerErrors(errorMsg.trim());
-            } else {
-                setServerErrors("Error de conexión o servidor interno.");
+            let data: any = null;
+            try {
+                data = await res.json();
+            } catch (err) {
+                console.log(Error, err);
+                const text = await res.text();
+                setMessage(`Respuesta inesperada del servidor: ${res.status} - ${text}`);
+                setMessageType('error');
+                return;
             }
-        } finally {
-            setIsSubmitting(false);
+
+            if (!res.ok) {
+                // Manejar errores de validación
+                if (data.errors) {
+                    const errorMessages = Object.values(data.errors)
+                        .map((msgs: any) => Array.isArray(msgs) ? msgs[0] : msgs)
+                        .join('\n');
+                    setMessage(errorMessages);
+                } else {
+                    setMessage(data.message || 'No se pudo registrar el usuario.');
+                }
+                setMessageType('error');
+                return;
+            }
+
+            if (data && data.success) {
+                setMessage('Usuario registrado correctamente');
+                setMessageType('success');
+                setForm({
+                    firstNameEmployee: '',
+                    lastNameEmployee: '',
+                    phoneEmployee: '',
+                    EPS: '',
+                    documentType: '',
+                    documentNumber: '',
+                    emailEmployee: '',
+                    address: '',
+                    photoEmployee: null,
+                    password: '',
+                    passwordConfirm: '',
+                    employeeType: 'Employee',
+                    specialty: '',
+                    isAvailable: true,
+                    gender: 'Female'
+                });
+            } else {
+                setMessage(data.message || 'No se pudo registrar el usuario');
+                setMessageType('error');
+            }
+        } catch (error: any) {
+            setMessage(error?.message || 'Error en la petición');
+            setMessageType('error');
         }
     };
 
 
     return (
         <HomeLayout>
-            <div className="admin-home-container" style={{ maxWidth: 700, margin: "0 auto", padding: 24, background: "#f5f5f8ff", borderRadius: 12 }}>
-
-                {/* 🚨 Cambiar handleSubmit para que acepte el evento */}
-                <form onSubmit={handleSubmit} style={{ display: "flex", flexWrap: "wrap", gap: 32 }}>
-
-                    {/* ... (Controles del formulario) ... */}
-
-                    <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="admin-home-container register-container">
+                <h1 className="register-title">Registrar Usuarios</h1>
+                <form onSubmit={handleSubmit} className="register-form">
+                    <div className="register-col">
 
                         <label>Nombre:</label>
                         <input type="text" name="firstNameEmployee" value={form.firstNameEmployee} onChange={handleChange} required className="register-input" />
@@ -190,9 +203,70 @@ const Register = () => {
                             <option value="PAS">Pasaporte</option>
                         </select>
 
+                        <label>Número de Documento:</label>
+                        <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required className="register-input" />
+
                         <label>Correo:</label>
                         {/* 🚨 CORRECCIÓN: Laravel espera 'email' para la tabla users, pero usaremos emailEmployee en el form */}
                         <input type="email" name="emailEmployee" value={form.emailEmployee} onChange={handleChange} required className="register-input" />
+
+                        <label>Contraseña:</label>
+                        <div className="password-field-wrapper">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                name="password" 
+                                value={form.password} 
+                                onChange={handleChange} 
+                                required 
+                                className="register-input"
+                                style={{ flex: 1, paddingRight: 40 }}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle-button"
+                                onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+
+                        <label>Confirmar Contraseña:</label>
+                        <div className="password-field-wrapper">
+                            <input 
+                                type={showPasswordConfirm ? "text" : "password"} 
+                                name="passwordConfirm" 
+                                value={form.passwordConfirm} 
+                                onChange={handleChange} 
+                                required 
+                                className="register-input"
+                                style={{ flex: 1, paddingRight: 40 }}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle-button"
+                                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}>
+                                {showPasswordConfirm ? (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
 
                         <label>Foto:</label>
 
@@ -202,36 +276,22 @@ const Register = () => {
                             {form.photoEmployee && <span style={{ marginLeft: 8 }}>{(form.photoEmployee as File).name}</span>}
                         </div>
                         {/* Campo de confirmación de contraseña AÑADIDO */}
-                        <label>Confirmar Contraseña:</label>
-                        <input type="password" name="password_confirmation" value={form.password_confirmation} onChange={handleChange} required className="register-input" />
+                        {/* <label>Confirmar Contraseña:</label>
+                        <input type="password" name="password_confirmation" value={form.password_confirmation} onChange={handleChange} required className="register-input" /> */}
 
 
                     </div>
-                    <div style={{ flex: 1, minWidth: 320, display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div className="register-col">
                         <label>EPS:</label>
                         <input type="text" name="EPS" value={form.EPS} onChange={handleChange} required className="register-input" />
-
-                        <label>Número de Documento:</label>
-                        <input type="text" name="documentNumber" value={form.documentNumber} onChange={handleChange} required className="register-input" />
-
-                        <label>Contraseña:</label>
-                        <input type="password" name="password" value={form.password} onChange={handleChange} required className="register-input" />
 
                         <label>Dirección:</label>
                         <input type="text" name="address" value={form.address} onChange={handleChange} required className="register-input" />
 
-                        <label>Tipo de empleado:</label>
+                        <label>Rol:</label>
                         <select name="employeeType" value={form.employeeType} onChange={handleChange} className="register-select">
                             <option value="Employee">Empleado</option>
                             <option value="Admin">Administrador</option>
-                        </select>
-
-                        <label>Rol:</label>
-                        <select name="role" value={form.role} onChange={handleChange} className="register-select">
-                            <option value="Photographer">Fotógrafo</option>
-                            <option value="Assistant">Asistente</option>
-                            <option value="Admin">Administrador</option>
-                            <option value="Other">Otro</option>
                         </select>
 
                         <label>Especialidad:</label>
@@ -250,20 +310,13 @@ const Register = () => {
 
                     </div>
 
-                    {serverErrors && (
-                        <p style={{ color: 'red', width: '100%', textAlign: 'center', marginTop: 12 }}>
-                            {serverErrors}
-                        </p>
-                    )}
-
                     <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 24 }}>
-                        <button type="submit" disabled={isSubmitting} style={{ padding: "12px 40px", fontSize: 18, background: "#d1a3e2", color: "#fff", border: "none", borderRadius: 24, fontWeight: "bold" }}>
-                            {isSubmitting ? 'Registrando...' : 'Aceptar'}
+                        <button type="submit" className="register-submit">
+                            Aceptar
                         </button>
                     </div>
                 </form>
-
-                {message && <p style={{ color: "#a36fc2", marginTop: 16, textAlign: "center" }}>{message}</p>}
+                {message && <p className={`register-message ${messageType}`}>{message}</p>}
             </div>
 
             <footer>

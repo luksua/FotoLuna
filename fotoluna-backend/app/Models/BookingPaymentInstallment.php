@@ -21,7 +21,7 @@ class BookingPaymentInstallment extends Model
     ];
 
     protected $casts = [
-        'due_date' => 'date',
+        'due_date' => 'datetime',
         'paid_at'  => 'datetime',
     ];
 

@@ -77,6 +77,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
     const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
     const [loading, setLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [visibleMonth, setVisibleMonth] = useState<Date>(new Date());
     const [selectedTime, setSelectedTime] = useState<string>("");
     const [events, setEvents] = useState<Event[]>([]); // Tipado Event[]
     const [eventOptions, setEventOptions] = useState<{ value: string; label: string }[]>([]);
@@ -180,6 +181,10 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
             const decided = first ?? today;
             setSelectedDate(decided);
             setValue("appointmentDate", format(decided, "yyyy-MM-dd"));
+
+            // el mes visible debe ser el mismo de la primera fecha
+            setVisibleMonth(decided);
+
             setInitialResolved(true);
         })();
     }, [setValue]);
@@ -204,25 +209,33 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
         })();
     }, [selectedDate, initialResolved]);
 
-    // Cargar días bloqueados del mes
+    // Cargar días bloqueados del mes según el mes visible en el calendario
     useEffect(() => {
+        if (!visibleMonth) return;
+
         (async () => {
             try {
-                const res = await axios.get<Record<string, { allBlocked: boolean }>>(`${API_BASE}/api/availability`, {
-                    params: {
-                        month: new Date().getMonth() + 1,
-                        year: new Date().getFullYear(),
-                    },
-                });
+                const res = await axios.get<Record<string, { allBlocked: boolean }>>(
+                    `${API_BASE}/api/availability`,
+                    {
+                        params: {
+                            month: visibleMonth.getMonth() + 1,
+                            year: visibleMonth.getFullYear(),
+                        },
+                    }
+                );
+
                 const blocked = Object.entries(res.data)
                     .filter(([_, info]) => info.allBlocked)
                     .map(([date]) => date);
+
                 setUnavailableDays(blocked);
             } catch (error) {
                 console.error("Error cargando días bloqueados:", error);
+                setUnavailableDays([]);
             }
         })();
-    }, []);
+    }, [visibleMonth]);
 
     // Envío del formulario
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
@@ -249,7 +262,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
             };
 
             const res = await axios.post(
-                `${API_BASE}/api/appointments`,
+                `${API_BASE}/api/appointmentsCustomer`,
                 payload, // Enviamos el payload completo
                 { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
             );
@@ -319,16 +332,27 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
                                         date={selectedDate!}
                                         onChange={(date: Date) => {
                                             const dateStr = format(date, "yyyy-MM-dd");
-                                            if (unavailableDays.includes(dateStr)) return;
+
+                                            const isUnavailable = unavailableDays.includes(dateStr);
+                                            if (isUnavailable) return; // no permitas seleccionar días bloqueados
+
                                             setSelectedDate(date);
                                             setValue("appointmentDate", dateStr);
+
+                                            // 👇 opcional pero útil: sincronizar mes visible cuando el usuario hace click
+                                            setVisibleMonth(date);
                                         }}
                                         locale={es}
                                         color="#DCABDF"
                                         minDate={new Date()}
+                                        shownDate={visibleMonth}                     // 👈 NUEVO
+                                        onShownDateChange={(date: Date) => {        // 👈 NUEVO
+                                            setVisibleMonth(date);
+                                        }}
                                         dayContentRenderer={(date) => {
                                             const dateStr = format(date, "yyyy-MM-dd");
                                             const isUnavailable = unavailableDays.includes(dateStr);
+
                                             return (
                                                 <div
                                                     style={{
@@ -349,6 +373,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
                                             );
                                         }}
                                     />
+
                                 )}
                             </div>
 

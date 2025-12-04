@@ -1,39 +1,66 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState, useRef } from "react";
 import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
-import EmployeeNotifications from "../../features/Employee/Notification/Pages/NotiFicationEmploye";
+import NotificationBell from '../NotificationBell';
 import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
 import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
 import ThemeToggle from "./LightDarkTheme";
-
-// 🚨 DEFINICIÓN FALTANTE DEL COMPONENTE DE NOTIFICACIONES (para que TS lo acepte aquí)
-interface EmployeeNotificationsProps {
-    onClose: () => void;
-}
-// 🚨 NOTA: Si EmployeeNotifications no exporta un FC, TypeScript puede necesitar ser forzado.
+import { useAuth } from "../../context/useAuth";
+import { useNavigate } from "react-router-dom";
+import { ConfirmModal } from "../../components/ConfirmModal";
 
 interface EmployeeNavbarProps {
     userName?: string;
-    notificationCount?: number;
 }
 
-const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
-    // userName = "Amalia",
-    notificationCount = 3
-}) => {
-    const [showNotifications, setShowNotifications] = useState(false);
-    const [showUserProfile, setShowUserProfile] = useState(false);
-    const [showSettings, setShowSettings] = useState(false); // Nuevo estado para settings
+const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
-    // Estado para el perfil del usuario
-    const [userProfile, setUserProfile] = useState<UserProfileData>({
-        id: 1,
-        name: "Amalia",
-        email: "amalia@example.com",
-        bio: "Fotógrafa apasionada por los paisajes y la naturaleza.",
-        avatar: null
+    const [showUserProfile, setShowUserProfile] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const mapUserToProfile = (u: any): UserProfileData => ({
+        id: u?.id ?? 0,
+        name: u?.displayName ?? u?.firstName ?? u?.name ?? "Usuario",
+        email: u?.email ?? "",
+        bio: "",
+        avatar: u?.avatar ?? null,
     });
+
+    const [userProfile, setUserProfile] = useState<UserProfileData>(mapUserToProfile(user));
+
+    useEffect(() => {
+        setUserProfile(mapUserToProfile(user));
+    }, [user]);
+
+    // Cerrar dropdown cuando se abre un modal
+    useEffect(() => {
+        if (showUserProfile || showSettings) {
+            setShowDropdown(false);
+        }
+    }, [showUserProfile, showSettings]);
+
+    // Cerrar dropdown cuando se hace click fuera
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowDropdown(false);
+            }
+        };
+
+        if (showDropdown) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showDropdown]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,26 +73,41 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
         console.log("Perfil actualizado:", updatedProfile);
     };
 
-    // Función para cerrar sesión
-    const handleLogout = () => {
-        // Aquí va tu lógica de logout
-        console.log('Cerrando sesión...');
-        // Ejemplo:
-        // localStorage.removeItem('token');
-        // localStorage.removeItem('user');
-        // window.location.href = '/login';
+    const handleLogout = async () => {
+        await logout();
+        navigate("/", { replace: true });
+    };
 
-        // Mostrar mensaje de confirmación
-        alert('Sesión cerrada correctamente');
+    const handleProfileClick = () => {
+        setShowUserProfile(true);
+    };
+
+    const handleSettingsClick = () => {
+        setShowSettings(true);
+    };
+
+    const handleLogoutClick = () => {
+        setShowLogoutConfirm(true);
     };
 
     return (
         <nav className="EmployeeNavbar">
             <div className="navbar-container">
+                {/* Botón hamburguesa para móvil */}
+                <button
+                    className="hamburger-btn d-lg-none"
+                    onClick={() => document.dispatchEvent(new CustomEvent("toggle-sidebar"))}
+                >
+                    <i className="bi bi-list"></i>
+                </button>
                 {/* Logo y marca */}
                 <div className="navbar-brand bg-custom-6">
                     <div className="logo-icon">
-                        <img src={logoFotoluna} alt="Logo" className="EmployeeNavbar-logo mb-1" />
+                        <img
+                            src={logoFotoluna}
+                            alt="Logo"
+                            className="EmployeeNavbar-logo mb-1"
+                        />
                     </div>
                     <h1 className="logo-text">FotoLuna</h1>
                 </div>
@@ -80,75 +122,74 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                             aria-label="Buscar"
                         />
 
-                        
                         <button type="submit" className="search-button">
                             <i className="bi bi-search"></i>
                         </button>
                     </form>
                 </div>
 
-
                 {/* Navegación y acciones */}
-
-
                 <div className="navbar-actions">
                     <nav className="navbar">
-
                         <ThemeToggle />
                     </nav>
 
+                    {/* 🔔 Campanita de notificaciones */}
+                    {user && <NotificationBell />}
 
-                    <button
-                        className="notification-btn"
-                        onClick={() => setShowNotifications(true)}
-                        aria-label="Notificaciones"
-                    >
-                        <i className="bi bi-bell-fill"></i>
-                        {notificationCount > 0 && (
-                            <span className="notification-badge">{notificationCount}</span>
-                        )}
-                    </button>
-
-                    {/* Botón de Configuración (Settings) */}
-                    <button
-                        className="settings-btn"
-                        aria-label="Configuración"
-                        onClick={() => setShowSettings(true)}
-                    >
-                        <i className="bi bi-gear-fill"></i>
-                    </button>
-
-                    {/* Área de Perfil de Usuario */}
-                    <div
-                        className="user-profile"
-                        onClick={() => setShowUserProfile(true)}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <div className="user-avatar">
-                            {userProfile.avatar ? (
-                                <img
-                                    src={userProfile.avatar}
-                                    alt="Avatar"
-                                    className="avatar-image-small"
-                                />
-                            ) : (
-                                userProfile.name.charAt(0).toUpperCase()
-                            )}
+                    {/* Área de Perfil de Usuario con Dropdown */}
+                    <div className="user-profile-container" ref={dropdownRef}>
+                        <div
+                            className="user-profile"
+                            onClick={() => setShowDropdown(!showDropdown)}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <div className="user-avatar">
+                                {userProfile.avatar ? (
+                                    <img
+                                        src={userProfile.avatar}
+                                        alt="Avatar"
+                                        className="avatar-image-small"
+                                    />
+                                ) : (
+                                    (userProfile.name && userProfile.name.charAt(0).toUpperCase()) || "U"
+                                )}
+                            </div>
+                            <span className="user-name">{userProfile.name}</span>
                         </div>
-                        <span className="user-name">{userProfile.name}</span>
+
+                        {/* Dropdown Menu */}
+                        {showDropdown && (
+                            <div className="user-dropdown-menu">
+                                <button
+                                    className="dropdown-item"
+                                    onClick={handleProfileClick}
+                                >
+                                    <i className="bi bi-person-circle me-2"></i>
+                                    Perfil
+                                </button>
+                                <button
+                                    className="dropdown-item"
+                                    onClick={handleSettingsClick}
+                                >
+                                    <i className="bi bi-gear-fill me-2"></i>
+                                    Ajustes
+                                </button>
+                                <hr className="dropdown-divider" />
+                                <button
+                                    className="dropdown-item dropdown-item-danger"
+                                    onClick={handleLogoutClick}
+                                >
+                                    <i className="bi bi-box-arrow-right me-2"></i>
+                                    Cerrar Sesión
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Modal de Notificaciones (Aplicando el fix de tipado) */}
-            {showNotifications && (
-                <EmployeeNotifications 
-                    // 🚨 Aplicar aserción si el componente no fue corregido internamente
-                    {...({ onClose: () => setShowNotifications(false) } as EmployeeNotificationsProps)} 
-                />
-            )}
-
-            {/* Modal de Perfil de Usuario */}
+            {/* Perfil de usuario modal */}
             <UserProfile
                 isOpen={showUserProfile}
                 onClose={() => setShowUserProfile(false)}
@@ -156,11 +197,19 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = ({
                 onProfileUpdate={handleProfileUpdate}
             />
 
-            {/* Modal de Configuración (Settings) */}
+            {/* Modal de Configuración */}
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
-                onLogout={handleLogout}
+            />
+
+            {/* Modal de confirmación de logout */}
+            <ConfirmModal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={handleLogout}
+                title="¿Está seguro de cerrar sesión?"
+                type="error"
             />
         </nav>
     );
