@@ -189,3 +189,53 @@
         text-align: center !important;
     }
 }
+.calendar-legend-dot--busy {
+  border: 2px solid #C792DF;
+  background-color: transparent;
+}
+.calendar-legend {
+  margin-top: 4px;
+}
+
+.calendar-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* mismo color que usas para el día bloqueado */
+.calendar-legend-dot--unavailable {
+  background-color: #C792DF;
+}
+
+/* Estilo normal: día con citas (no seleccionado) */
+.rdrDayNumber span.rdrDayNumber-custom-busy {
+  border-radius: 999px;
+  border: 1px solid #C792DF;
+  color: #6b21a8;
+}
+
+/* Cuando el día está seleccionado / en rango / borde de rango:
+   quitamos nuestro borde para que NO haya doble círculo */
+.rdrDay.rdrSelected .rdrDayNumber span.rdrDayNumber-custom-busy,
+.rdrDay.rdrInRange .rdrDayNumber span.rdrDayNumber-custom-busy,
+.rdrDay.rdrStartEdge .rdrDayNumber span.rdrDayNumber-custom-busy,
+.rdrDay.rdrEndEdge .rdrDayNumber span.rdrDayNumber-custom-busy {
+  border: none;
+}
+/* Estilo normal: día con citas (no seleccionado) */
+.rdrDayNumber span.rdrDayNumber-custom-busy {
+  border-radius: 999px;
+  border: 1px solid #C792DF;
+  color: #6b21a8;
+}
+
+/* Cuando el día está seleccionado / en rango / borde de rango:
+   quitamos nuestro borde para que NO haya doble círculo */
+.rdrDay.rdrSelected .rdrDayNumber span.rdrDayNumber-custom-busy,
+.rdrDay.rdrInRange .rdrDayNumber span.rdrDayNumber-custom-busy,
+.rdrDay.rdrStartEdge .rdrDayNumber span.rdrDayNumber-custom-busy,
+.rdrDay.rdrEndEdge .rdrDayNumber span.rdrDayNumber-custom-busy {
+  border: none;
+}

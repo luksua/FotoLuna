@@ -23,6 +23,8 @@ interface DocumentType {
     requiresPresence: boolean;
 }
 
+const DRAFT_KEY_DOCS = "appointmentStepDocumentsDraft";
+
 const AppointmentStep2Documents: React.FC<Step3Props> = ({
     appointmentId,
     onConfirm,
@@ -53,29 +55,77 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     const [localPlace, setLocalPlace] = useState(place ?? "");
     const [file, setFile] = useState<File | null>(null);
 
+    // ========= Cargar borrador desde localStorage =========
+    useEffect(() => {
+        const raw = localStorage.getItem(DRAFT_KEY_DOCS);
+        if (!raw) return;
+
+        try {
+            const parsed = JSON.parse(raw) as {
+                selectedDocId: number | null;
+                localPlace?: string;
+            };
+            if (parsed.selectedDocId) {
+                setSelectedDoc(parsed.selectedDocId);
+            }
+            if (parsed.localPlace !== undefined) {
+                setLocalPlace(parsed.localPlace);
+            }
+        } catch (e) {
+            console.warn("Error leyendo borrador de documentos:", e);
+        }
+        // solo al montar
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const selectedDocObj = documents.find((d) => d.id === selectedDoc);
     const requiresUpload = !!selectedDocObj?.requiresUpload;
     const requiresPresence = !!selectedDocObj?.requiresPresence;
     const needsPhotographerVisit =
         !!selectedDocObj && !requiresUpload && !requiresPresence;
 
-    // useEffect(() => {
-    //     api.get("/api/document-types").then(({ data }) => setDocuments(data));
-    // }, []);
+    // ========= Cargar tipos de documentos =========
     useEffect(() => {
         api.get("/api/document-types").then(({ data }) => {
             setDocuments(data);
 
-            // 👇 si viene un documentType preseleccionado, lo marcamos
-            if (preselectedDocumentTypeId) {
-                setSelectedDoc(preselectedDocumentTypeId);
-            } else if (data.length > 0) {
-                // opcional: seleccionar el primero por defecto
-                setSelectedDoc(data[0].id);
-            }
+            // Decidir qué documento marcar al cargar:
+            // 1) Si viene preselectedDocumentTypeId y existe en la lista → usar ese
+            // 2) Si hay borrador en localStorage y existe en la lista → se respeta (ya se asignó arriba)
+            // 3) Si no hay nada → opcionalmente marcamos el primero
+            setSelectedDoc((current) => {
+                // si ya hay uno (por el borrador), lo respetamos
+                if (current) {
+                    const exists = data.some((d: DocumentType) => d.id === current);
+                    if (exists) return current;
+                }
+
+                // si viene preseleccionado desde el padre y existe
+                if (preselectedDocumentTypeId) {
+                    const exists = data.some(
+                        (d: DocumentType) => d.id === preselectedDocumentTypeId
+                    );
+                    if (exists) return preselectedDocumentTypeId;
+                }
+
+                // si no hay nada, y hay docs, usar el primero (opcional)
+                if (data.length > 0) {
+                    return data[0].id;
+                }
+
+                return null;
+            });
         });
     }, [preselectedDocumentTypeId]);
 
+    // ========= Guardar selección + lugar en localStorage =========
+    useEffect(() => {
+        const payload = {
+            selectedDocId: selectedDoc,
+            localPlace,
+        };
+        localStorage.setItem(DRAFT_KEY_DOCS, JSON.stringify(payload));
+    }, [selectedDoc, localPlace]);
 
     // Duplicar para scroll infinito
     const items = documents.length > 0 ? [...documents, ...documents] : [];
@@ -127,7 +177,10 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
 
     // Confirmar selección
     const handleConfirm = async () => {
-        if (!selectedDoc) return alert("Selecciona un tipo de documento");
+        if (!selectedDoc) {
+            alert("Selecciona un tipo de documento");
+            return;
+        }
 
         const doc = documents.find((d) => d.id === selectedDoc);
         if (!doc) return;
@@ -176,7 +229,6 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
 
             console.log("Respuesta completa del backend:", data);
 
-            // 👇 Intentar todas las variantes razonables
             const bookingId =
                 data.bookingId ??
                 data.booking?.bookingId ??
@@ -198,105 +250,11 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
         }
     };
 
-    // const handleConfirm = async () => {
-    //     if (!selectedDoc) return alert("Selecciona un tipo de documento");
-
-    //     const doc = documents.find((d) => d.id === selectedDoc);
-    //     if (!doc) return;
-
-    //     // decidir el lugar según el tipo de documento
-    //     let resolvedPlace: string | null = place ?? null;
-
-    //     if (requiresPresence && !requiresUpload) {
-    //         // Se toma en estudio, no necesitamos lugar del cliente
-    //         resolvedPlace = "Estudio";
-    //     } else if (needsPhotographerVisit) {
-    //         // El fotógrafo va donde el cliente → necesitamos lugar
-    //         if (!localPlace.trim()) {
-    //             alert("Ingresa el lugar donde debe ir el fotógrafo.");
-    //             return;
-    //         }
-    //         resolvedPlace = localPlace.trim();
-    //     } else if (requiresUpload && !requiresPresence) {
-    //         // Todo online, podrías marcarlo como Online o dejar null
-    //         resolvedPlace = null; // o "Online"
-    //     }
-
-    //     // si requiere upload, obligamos archivo
-    //     if (requiresUpload && !file) {
-    //         alert("Por favor adjunta la foto para este documento.");
-    //         return;
-    //     }
-
-    //     // ---- construir FormData ----
-    //     const formData = new FormData();
-    //     formData.append("documentTypeId", String(selectedDoc));
-
-    //     if (resolvedPlace !== null) {
-    //         formData.append("place", resolvedPlace);
-    //     }
-
-    //     if (file) {
-    //         // usa el nombre de campo que espere tu backend, por ejemplo "photo"
-    //         formData.append("photo", file);
-    //     }
-
-    //     setLoading(true);
-    //     try {
-    //         const { data } = await api.post(
-    //             `/api/appointments/${appointmentId}/booking`,
-    //             formData,
-    //             {
-    //                 headers: {
-    //                     "Content-Type": "multipart/form-data",
-    //                 },
-    //             }
-    //         );
-    //         // onConfirm({ bookingId: data.id });
-    //         console.log("Respuesta completa del backend:", data);
-
-    //         const bookingId = data.bookingId ?? data.id; // por si acaso
-    //         if (!bookingId) {
-    //             console.error("No llegó bookingId en la respuesta:", data);
-    //             alert("No se pudo obtener el identificador de la reserva.");
-    //             return;
-    //         }
-
-    //         onConfirm({ bookingId });
-    //     } catch (err) {
-    //         console.error("Error al confirmar cita:", err);
-    //         alert("No se pudo confirmar la cita");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     const formatPrice = (value: string | number) => {
         const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
         if (Number.isNaN(n)) return String(value);
-        // sin decimales:
         return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        // si quieres decimales, usa:
-        // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
-
-    // const handleConfirm = async () => {
-    //     if (!selectedDoc) return alert("Selecciona un tipo de documento");
-
-    //     setLoading(true);
-    //     try {
-    //         const { data } = await api.post(`/api/appointments/${appointmentId}/booking`, {
-    //             documentTypeId: selectedDoc,
-    //             place,
-    //         });
-    //         onConfirm({ bookingId: data.id });
-    //     } catch (err) {
-    //         console.error("Error al confirmar cita:", err);
-    //         alert("No se pudo confirmar la cita");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     // 🔹 Render
     return (
@@ -365,8 +323,9 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                         {items.map((doc, i) => (
                             <div
                                 key={`${doc.id}-${i}`}
-                                className={`carousel-card document-card ${selectedDoc === doc.id ? "selected" : ""
-                                    }`}
+                                className={`carousel-card document-card ${
+                                    selectedDoc === doc.id ? "selected" : ""
+                                }`}
                                 onClick={() => handleCardClick(doc.id)}
                             >
                                 {doc.photoUrl ? (
@@ -400,8 +359,9 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                     {documents.map((doc) => (
                         <div key={doc.id} className="col-12 col-md-4">
                             <div
-                                className={`static-package-card ${selectedDoc === doc.id ? "selected" : ""
-                                    }`}
+                                className={`static-package-card ${
+                                    selectedDoc === doc.id ? "selected" : ""
+                                }`}
                                 onClick={() => setSelectedDoc(doc.id)}
                             >
                                 {doc.photoUrl ? (
@@ -417,7 +377,7 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                                 <div className="package-info">
                                     <h5 className="mb-1">{doc.name}</h5>
                                     <p className="text-muted mb-2">{doc.description}</p>
-                                    <p className="fw-bold">${doc.price.toLocaleString()}</p>
+                                    <p className="fw-bold">${formatPrice(doc.price)}</p>
                                     {!!doc.requiresUpload && <small>Requiere subir foto</small>}
                                     {!!doc.requiresPresence && <small>En estudio</small>}
                                 </div>
@@ -467,7 +427,6 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                     )}
                 </div>
             )}
-
 
             <div className="d-flex justify-content-between mt-4">
                 <Button value="Atrás" onClick={onBack} />

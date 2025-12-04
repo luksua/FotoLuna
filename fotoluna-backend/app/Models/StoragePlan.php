@@ -9,12 +9,13 @@ class StoragePlan extends Model
     protected $fillable = [
         'name',
         'description',
-        'max_photos',
-        'max_storage_mb',
         'duration_months',
         'price',
+        'max_photos',
+        'max_storage_mb',
         'is_active',
     ];
+public $timestamps = false;
 
     protected $casts = [
         'is_active' => 'boolean',

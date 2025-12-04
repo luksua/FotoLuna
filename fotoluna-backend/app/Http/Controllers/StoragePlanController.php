@@ -158,15 +158,19 @@ class StoragePlanController extends Controller
 
     public function update(Request $request, StoragePlan $storagePlan)
     {
-        $storagePlan->update($request->only([
-            'name',
-            'description',
-            'max_photos',
-            'max_storage_mb',
-            'duration_months',
-            'price',
-            'is_active',
-        ]));
+        \Log::info('DATA RECIBIDA:', $request->all());
+
+        $data = $request->validate([
+            'name'            => ['required', 'string', 'max:255'],
+            'description'     => ['nullable', 'string'],
+            'duration_months' => ['required', 'integer', 'min:1'],
+            'price'           => ['required', 'min:0'],
+            'max_photos'      => ['nullable', 'integer', 'min:1'],
+            'max_storage_mb'  => ['nullable', 'integer', 'min:1'],
+            'is_active'       => ['required', 'boolean'],
+        ]);
+
+        $storagePlan->update($data);
 
         return response()->json($storagePlan);
     }

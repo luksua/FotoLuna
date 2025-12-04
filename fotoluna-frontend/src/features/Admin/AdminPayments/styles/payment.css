@@ -267,3 +267,37 @@
     border-color: var(--admin-accent-dark);
     color: #fff;
 }
+.plan-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; /* por encima de bootstrap */
+}
+
+.plan-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+}
+
+.plan-modal-body label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.plan-modal-footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}

@@ -649,6 +649,127 @@ class AppointmentController extends Controller
     //     return response()->json($days);
     // }
 
+    // public function availability(Request $request)
+    // {
+    //     $baseSlotsWeekday = [
+    //         '08:00:00',
+    //         '09:00:00',
+    //         '10:00:00',
+    //         '11:00:00',
+    //         '12:00:00',
+    //         '13:00:00',
+    //         '14:00:00',
+    //         '15:00:00',
+    //         '16:00:00',
+    //         '17:00:00',
+    //         '18:00:00',
+    //         '19:00:00',
+    //     ];
+
+    //     $baseSlotsSunday = [
+    //         '09:00:00',
+    //         '10:00:00',
+    //         '11:00:00',
+    //         '14:00:00',
+    //         '15:00:00',
+    //         '16:00:00',
+    //     ];
+
+    //     $date = $request->query('date');
+    //     $month = $request->query('month');
+    //     $year = $request->query('year', now()->year);
+
+    //     /* ------------ DÍA ESPECÍFICO ------------ */
+    //     if ($date) {
+    //         $day = Carbon::parse($date);
+
+    //         // días pasados bloqueados
+    //         if ($day->isBefore(Carbon::today())) {
+    //             return response()->json([
+    //                 'available' => [],
+    //                 'blocked' => [],
+    //                 'allBlocked' => true,
+    //             ]);
+    //         }
+
+    //         $dayOfWeek = $day->dayOfWeek;
+    //         $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
+    //             ? $baseSlotsSunday
+    //             : $baseSlotsWeekday;
+
+    //         $appointments = Appointment::whereDate('appointmentDate', $date)
+    //             ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+    //             ->pluck('appointmentTime')
+    //             ->toArray();
+
+    //         $available = array_values(array_diff($baseSlots, $appointments));
+    //         $allBlocked = count($available) === 0;
+
+    //         return response()->json([
+    //             'available' => $available,
+    //             'blocked' => $appointments,
+    //             'allBlocked' => $allBlocked,
+    //         ]);
+    //     }
+
+    //     /* ------------ DISPONIBILIDAD MENSUAL ------------ */
+    //     if ($month) {
+    //         $today = Carbon::today();
+
+    //         // Traemos todas las citas del mes
+    //         $appointments = Appointment::whereMonth('appointmentDate', $month)
+    //             ->whereYear('appointmentDate', $year)
+    //             ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+    //             ->get(['appointmentDate', 'appointmentTime']);
+
+    //         // Agrupamos por fecha
+    //         $grouped = $appointments->groupBy(function ($a) {
+    //             return Carbon::parse($a->appointmentDate)->toDateString(); // Y-m-d
+    //         });
+
+    //         $days = [];
+
+    //         $current = Carbon::createFromDate($year, $month, 1)->startOfDay();
+    //         $end = (clone $current)->endOfMonth();
+
+    //         while ($current->lessThanOrEqualTo($end)) {
+    //             $dateStr = $current->toDateString();
+    //             $dayOfWeek = $current->dayOfWeek;
+
+    //             // Past days → bloqueados
+    //             if ($current->isBefore($today)) {
+    //                 $days[$dateStr] = [
+    //                     'allBlocked' => true,
+    //                     'hasAppointments' => false,
+    //                 ];
+    //                 $current->addDay();
+    //                 continue;
+    //             }
+
+    //             // slots según el día
+    //             $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+    //                 ? $baseSlotsSunday
+    //                 : $baseSlotsWeekday;
+
+    //             $taken = ($grouped[$dateStr] ?? collect())
+    //                 ->pluck('appointmentTime')
+    //                 ->toArray();
+
+    //             $available = array_diff($baseSlotsForDay, $taken);
+
+    //             $days[$dateStr] = [
+    //                 'allBlocked' => count($available) === 0,
+    //                 'hasAppointments' => count($taken) > 0,
+    //             ];
+
+    //             $current->addDay();
+    //         }
+
+    //         return response()->json($days);
+    //     }
+    //     return response()->json(['message' => 'Debe proporcionar date o month'], 400);
+    // }
+
     public function availability(Request $request)
     {
         $baseSlotsWeekday = [
@@ -697,8 +818,9 @@ class AppointmentController extends Controller
                 ? $baseSlotsSunday
                 : $baseSlotsWeekday;
 
+            // 🔹 Solo citas que tienen al menos un booking válido
             $appointments = Appointment::whereDate('appointmentDate', $date)
-                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation']) // 👈 sólo los que SI bloquean
                 ->pluck('appointmentTime')
                 ->toArray();
 
@@ -716,7 +838,7 @@ class AppointmentController extends Controller
         if ($month) {
             $today = Carbon::today();
 
-            // Traemos todas las citas del mes
+            // 🔹 Traemos solo citas que tengan al menos un booking válido
             $appointments = Appointment::whereMonth('appointmentDate', $month)
                 ->whereYear('appointmentDate', $year)
                 ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
@@ -738,22 +860,30 @@ class AppointmentController extends Controller
 
                 // Past days → bloqueados
                 if ($current->isBefore($today)) {
-                    $days[$dateStr] = ['allBlocked' => true];
+                    $days[$dateStr] = [
+                        'allBlocked' => true,
+                        'hasAppointments' => false,
+                    ];
                     $current->addDay();
                     continue;
                 }
 
-                // slots según día (mismo criterio que arriba)
+                // slots según el día
                 $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
                     ? $baseSlotsSunday
                     : $baseSlotsWeekday;
 
+                // 🔹 Solo turnos que tienen booking válido (ya filtrado arriba)
                 $taken = ($grouped[$dateStr] ?? collect())
                     ->pluck('appointmentTime')
                     ->toArray();
 
                 $available = array_diff($baseSlotsForDay, $taken);
-                $days[$dateStr] = ['allBlocked' => count($available) === 0];
+
+                $days[$dateStr] = [
+                    'allBlocked' => count($available) === 0,
+                    'hasAppointments' => count($taken) > 0,
+                ];
 
                 $current->addDay();
             }
@@ -763,6 +893,7 @@ class AppointmentController extends Controller
 
         return response()->json(['message' => 'Debe proporcionar date o month'], 400);
     }
+
 
 
 

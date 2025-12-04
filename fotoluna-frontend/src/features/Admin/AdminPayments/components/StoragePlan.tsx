@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "../../../../styles/buttons.css";
 
 interface StoragePlan {
     id: number;
@@ -12,6 +13,180 @@ interface StoragePlan {
     is_active: boolean;
 }
 
+interface EditPlanModalProps {
+    plan: StoragePlan;
+    saving: boolean;
+    onClose: () => void;
+    onSave: (plan: StoragePlan) => void;
+}
+
+const EditPlanModal: React.FC<EditPlanModalProps> = ({
+    plan,
+    saving,
+    onClose,
+    onSave,
+}) => {
+    const [localPlan, setLocalPlan] = useState<StoragePlan>(plan);
+
+    useEffect(() => {
+        setLocalPlan(plan);
+    }, [plan]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(localPlan);
+    };
+
+    return (
+        <div
+            className="plan-modal-backdrop"
+            onClick={onClose}
+        >
+            <div
+                className="plan-modal"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <h3>Editar plan</h3>
+
+                <form className="plan-modal-body" onSubmit={handleSubmit}>
+                    <label>
+                        Nombre
+                        <input
+                            className="filter-input"
+                            value={localPlan.name}
+                            onChange={(e) =>
+                                setLocalPlan({ ...localPlan, name: e.target.value })
+                            }
+                            required
+                        />
+                    </label>
+
+                    <label>
+                        Descripción
+                        <textarea
+                            className="filter-input"
+                            value={localPlan.description ?? ""}
+                            onChange={(e) =>
+                                setLocalPlan({
+                                    ...localPlan,
+                                    description: e.target.value || null,
+                                })
+                            }
+                        />
+                    </label>
+
+                    <label>
+                        Duración (meses)
+                        <input
+                            type="number"
+                            min={1}
+                            className="filter-input"
+                            value={localPlan.duration_months}
+                            onChange={(e) =>
+                                setLocalPlan({
+                                    ...localPlan,
+                                    duration_months: Number(e.target.value),
+                                })
+                            }
+                            required
+                        />
+                    </label>
+
+                    <label>
+                        Máx. fotos (0 = sin límite)
+                        <input
+                            type="number"
+                            min={0}
+                            className="filter-input"
+                            value={localPlan.max_photos ?? 0}
+                            onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setLocalPlan({
+                                    ...localPlan,
+                                    max_photos: val === 0 ? null : val,
+                                });
+                            }}
+                        />
+                    </label>
+
+                    <label>
+                        Máx. almacenamiento (MB, 0 = sin límite)
+                        <input
+                            type="number"
+                            min={0}
+                            className="filter-input"
+                            value={localPlan.max_storage_mb ?? 0}
+                            onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setLocalPlan({
+                                    ...localPlan,
+                                    max_storage_mb: val === 0 ? null : val,
+                                });
+                            }}
+                        />
+                    </label>
+
+                    <label>
+                        Precio (COP)
+                        <input
+                            type="number"
+                            min={0}
+                            className="filter-input"
+                            value={localPlan.price}
+                            onChange={(e) =>
+                                setLocalPlan({
+                                    ...localPlan,
+                                    price: Number(e.target.value),
+                                })
+                            }
+                            required
+                        />
+                    </label>
+
+                    <label
+                        style={{
+                            display: "flex",
+                            gap: 8,
+                            marginTop: 8,
+                            alignItems: "center",
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={localPlan.is_active}
+                            onChange={(e) =>
+                                setLocalPlan({
+                                    ...localPlan,
+                                    is_active: e.target.checked,
+                                })
+                            }
+                        />
+                        Activo
+                    </label>
+
+                    <div className="plan-modal-footer mx-auto">
+                        <button
+                            type="button"
+                            className="btn custom2-upload-btn"
+                            onClick={onClose}
+                            disabled={saving}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn custom-upload-btn"
+                            disabled={saving}
+                        >
+                            {saving ? "Guardando..." : "Guardar cambios"}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 type PlanFilterStatus = "all" | "active" | "inactive";
@@ -21,7 +196,6 @@ const StoragePlan: React.FC = () => {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<PlanFilterStatus>("all");
 
-    // edición
     const [editingPlan, setEditingPlan] = useState<StoragePlan | null>(null);
     const [saving, setSaving] = useState(false);
 
@@ -53,7 +227,6 @@ const StoragePlan: React.FC = () => {
         return `${gb.toFixed(1)} GB`;
     };
 
-    // 🔍 Filtro en memoria
     const filteredPlans = plans.filter((p) => {
         const matchesSearch =
             !search ||
@@ -68,31 +241,26 @@ const StoragePlan: React.FC = () => {
         return matchesSearch && matchesStatus;
     });
 
-    // guardar cambios
-    const handleSave = async () => {
-        if (!editingPlan) return;
+    const handleSave = async (planToSave: StoragePlan) => {
         setSaving(true);
 
         try {
             const payload = {
-                name: editingPlan.name,
-                description: editingPlan.description,
-                max_photos: editingPlan.max_photos,
-                max_storage_mb: editingPlan.max_storage_mb,
-                duration_months: editingPlan.duration_months,
-                price: editingPlan.price,
-                is_active: editingPlan.is_active,
+                name: planToSave.name,
+                description: planToSave.description,
+                max_photos: planToSave.max_photos,
+                max_storage_mb: planToSave.max_storage_mb,
+                duration_months: planToSave.duration_months,
+                price: planToSave.price,
+                is_active: planToSave.is_active,
             };
 
             const { data } = await axios.put<StoragePlan>(
-                `${API_BASE}/api/admin/storage-plans/${editingPlan.id}`,
+                `${API_BASE}/api/admin/storage-plans/${planToSave.id}`,
                 payload
             );
 
-            // actualizar en memoria
-            setPlans((prev) =>
-                prev.map((p) => (p.id === data.id ? data : p))
-            );
+            setPlans((prev) => prev.map((p) => (p.id === data.id ? data : p)));
             setEditingPlan(null);
         } catch (error) {
             console.error("Error actualizando plan", error);
@@ -190,7 +358,7 @@ const StoragePlan: React.FC = () => {
                                 <td>
                                     <button
                                         type="button"
-                                        className="btn-primary"
+                                        className="btn custom-upload-btn"
                                         onClick={() => setEditingPlan(p)}
                                     >
                                         Editar
@@ -202,142 +370,13 @@ const StoragePlan: React.FC = () => {
                 </table>
             </div>
 
-            {/* Modal simple de edición */}
             {editingPlan && (
-                <div className="modal-backdrop">
-                    <div className="modal">
-                        <h3>Editar plan</h3>
-
-                        <div className="modal-body">
-                            <label>
-                                Nombre
-                                <input
-                                    className="filter-input"
-                                    value={editingPlan.name}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            name: e.target.value,
-                                        })
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                Descripción
-                                <textarea
-                                    className="filter-input"
-                                    value={editingPlan.description ?? ""}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            description: e.target.value || null,
-                                        })
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                Duración (meses)
-                                <input
-                                    type="number"
-                                    className="filter-input"
-                                    value={editingPlan.duration_months}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            duration_months: Number(e.target.value),
-                                        })
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                Máx. fotos (0 = sin límite)
-                                <input
-                                    type="number"
-                                    className="filter-input"
-                                    value={editingPlan.max_photos ?? 0}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            max_photos:
-                                                Number(e.target.value) === 0
-                                                    ? null
-                                                    : Number(e.target.value),
-                                        })
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                Máx. almacenamiento (MB, 0 = sin límite)
-                                <input
-                                    type="number"
-                                    className="filter-input"
-                                    value={editingPlan.max_storage_mb ?? 0}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            max_storage_mb:
-                                                Number(e.target.value) === 0
-                                                    ? null
-                                                    : Number(e.target.value),
-                                        })
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                Precio (COP)
-                                <input
-                                    type="number"
-                                    className="filter-input"
-                                    value={editingPlan.price}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            price: Number(e.target.value),
-                                        })
-                                    }
-                                />
-                            </label>
-
-                            <label style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                                <input
-                                    type="checkbox"
-                                    checked={editingPlan.is_active}
-                                    onChange={(e) =>
-                                        setEditingPlan({
-                                            ...editingPlan,
-                                            is_active: e.target.checked,
-                                        })
-                                    }
-                                />
-                                Activo
-                            </label>
-                        </div>
-
-                        <div className="modal-footer">
-                            <button
-                                type="button"
-                                className="btn-secondary"
-                                onClick={() => setEditingPlan(null)}
-                                disabled={saving}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                className="btn-primary"
-                                onClick={handleSave}
-                                disabled={saving}
-                            >
-                                {saving ? "Guardando..." : "Guardar cambios"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <EditPlanModal
+                    plan={editingPlan}
+                    saving={saving}
+                    onClose={() => setEditingPlan(null)}
+                    onSave={handleSave}
+                />
             )}
         </div>
     );
