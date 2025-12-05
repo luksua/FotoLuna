@@ -102,13 +102,13 @@ const HomeNav: React.FC = () => {
                                 </Button>
                             </div>
                         </li>
-
-                        <li className="nav-item">
-                            <a className="nav-link" href="/contacto">
-                                Contacto
-                            </a>
-                        </li>
-
+                        {!user && (
+                            <li className="nav-item">
+                                <a className="nav-link" href="/contacto">
+                                    Contacto
+                                </a>
+                            </li>
+                        )}
                         <li className="nav-item dropdown">
                             <a
                                 className="nav-link portafolio-btn dropdown-toggle d-flex align-items-center justify-content-between"
@@ -183,47 +183,98 @@ const HomeNav: React.FC = () => {
                             </ul>
                         </li>
 
-                        <li className="nav-item">
-                            <a className="nav-link" href="/sobreMi">
-                                Sobre Nosotros
-                            </a>
-                        </li>
-                        <nav>
-                            {user && <span>Bienvenido, {user.name}</span>}
-                        </nav>
+                        {!user && (
+                            <li className="nav-item">
+                                <a className="nav-link" href="/sobreMi">
+                                    Sobre Nosotros
+                                </a>
+                            </li>
+                        )}
 
                         {user && <NotificationBell />}
 
-                        {/* Perfil / avatar: abre el offcanvas de perfil */}
-                        <li className="nav-item ms-3 d-none d-lg-block">
-                            <button
-                                className="btn p-0 border-0 bg-transparent"
-                                type="button"
-                                onClick={() => {
-                                    // Cerrar mobileMenu
-                                    const mobileEl = document.getElementById("mobileMenu");
-                                    if (mobileEl) {
-                                        const mobile = bootstrap.Offcanvas.getInstance(mobileEl) ?? new bootstrap.Offcanvas(mobileEl);
-                                        mobile.hide();
-                                    }
+                        {user && (
+                            <div className="badge-navbar d-flex align-items-center justify-content-center">
 
-                                    // Abrir perfilMenu
-                                    const perfilEl = document.getElementById("perfilMenu");
-                                    if (perfilEl) {
-                                        const perfil = bootstrap.Offcanvas.getInstance(perfilEl) ?? new bootstrap.Offcanvas(perfilEl);
-                                        perfil.show();
-                                    }
-                                }}
-                            >
-                                <img
-                                    src={avatarSrc}
-                                    className="perfil-img rounded-circle"
-                                    alt={avatarAlt}
-                                    style={{ width: 40, height: 40, objectFit: "cover" }}
-                                />
-                            </button>
-                        </li>
+                                <span className="me-2 ms-3">
+                                    Bienvenido/a, {user.displayName ?? user.name ?? "Usuario"}
+                                </span>
 
+                                {/* Avatar */}
+                                <button
+                                    className="btn p-0 border-0 bg-transparent nav-item d-none d-lg-block"
+                                    type="button"
+                                    onClick={() => {
+                                        // Cerrar mobileMenu
+                                        const mobileEl = document.getElementById("mobileMenu");
+                                        if (mobileEl) {
+                                            const mobile =
+                                                bootstrap.Offcanvas.getInstance(mobileEl) ??
+                                                new bootstrap.Offcanvas(mobileEl);
+                                            mobile.hide();
+                                        }
+
+                                        // Abrir perfilMenu
+                                        const perfilEl = document.getElementById("perfilMenu");
+                                        if (perfilEl) {
+                                            const perfil =
+                                                bootstrap.Offcanvas.getInstance(perfilEl) ??
+                                                new bootstrap.Offcanvas(perfilEl);
+                                            perfil.show();
+                                        }
+                                    }}
+                                >
+                                    <img
+                                        src={avatarSrc}
+                                        className="perfil-img rounded-circle"
+                                        alt={avatarAlt}
+                                        style={{ width: 40, height: 40, objectFit: "cover" }}
+                                    />
+                                </button>
+
+                            </div>
+                        )}
+
+                        {!user && (
+                            <div className="badge-navbar d-flex align-items-center justify-content-center">
+
+                                <span className=" ms-3">
+                                    Ingresa aquí <i className="bi bi-arrow-right-circle ms-2"></i>
+                                </span>
+                                <li className="nav-item ms-3 d-none d-lg-block">
+                                    <button
+                                        className="btn p-0 border-0 bg-transparent"
+                                        type="button"
+                                        onClick={() => {
+                                            // Cerrar mobileMenu
+                                            const mobileEl = document.getElementById("mobileMenu");
+                                            if (mobileEl) {
+                                                const mobile =
+                                                    bootstrap.Offcanvas.getInstance(mobileEl) ??
+                                                    new bootstrap.Offcanvas(mobileEl);
+                                                mobile.hide();
+                                            }
+
+                                            // Abrir perfilMenu
+                                            const perfilEl = document.getElementById("perfilMenu");
+                                            if (perfilEl) {
+                                                const perfil =
+                                                    bootstrap.Offcanvas.getInstance(perfilEl) ??
+                                                    new bootstrap.Offcanvas(perfilEl);
+                                                perfil.show();
+                                            }
+                                        }}
+                                    >
+                                        <img
+                                            src={avatarSrc}
+                                            className="perfil-img rounded-circle"
+                                            alt={avatarAlt}
+                                            style={{ width: 40, height: 40, objectFit: "cover" }}
+                                        />
+                                    </button>
+                                </li>
+                            </div>
+                        )}
                         {/* Si NO hay usuario, mostrar Crear Cuenta / Iniciar Sesión */}
                         {!user && !loading && (
                             <>

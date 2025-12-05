@@ -478,7 +478,7 @@ class AppointmentController extends Controller
                 'appointmentTime' => $request->appointmentTime,
                 'place' => $request->place ?? null,
                 'comment' => $request->comment,
-                'appointmentStatus' => 'Pending confirmation',
+                'appointmentStatus' => 'draft',
             ]);
 
             // ✅ Respuesta JSON limpia
