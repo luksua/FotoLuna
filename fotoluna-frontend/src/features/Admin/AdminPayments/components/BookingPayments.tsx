@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Box from "@mui/material/Box";
 
 import PaymentTable from "../../../Employee/Payment/Component/PaymentTable";
 import PaymentFilters from "../../../Employee/Payment/Component/PaymentFilters";
+import ExportButton from "../../../../components/ExportButton";
+import { exportPaymentsToExcel } from "../../../../services/exportService";
 import type {
     Payment,
     FilterType,
@@ -340,6 +343,64 @@ const BookingPayments: React.FC = () => {
         );
     };
 
+    const fetchAllPayments = async () => {
+        const token = localStorage.getItem('token');
+        const all: Payment[] = [];
+
+        let page = 1;
+        const per_page = 50; // fetch in larger batches to reduce requests
+        let lastPage = 1;
+
+        try {
+            do {
+                const params: any = {
+                    page,
+                    per_page,
+                    order,
+                };
+
+                if (filter !== 'all') params.status = filter;
+                if (searchTerm.trim() !== '') params.client = searchTerm.trim();
+
+                const response = await axios.get(`${API_URL}/api/admin/booking-payments`, {
+                    params,
+                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                });
+
+                const payload = response.data;
+                const data: Payment[] = payload.data ?? [];
+                const meta = payload.meta ?? null;
+
+                all.push(...data);
+
+                lastPage = meta?.last_page ?? payload.last_page ?? 1;
+                page += 1;
+            } while (page <= lastPage);
+        } catch (err) {
+            console.error('Error fetching all payments for export:', err);
+            throw err;
+        }
+
+        return all;
+    };
+
+    const handleExportToExcel = async () => {
+        // Fetch all payments across pagination, map to export shape, then export
+        const allPayments = await fetchAllPayments();
+
+        const dataToExport = allPayments.map((p) => ({
+            id: p.id,
+            customerName: p.clientName,
+            amount: p.totalAmount,
+            method: p.paymentMethod || 'Desconocido',
+            status: p.status,
+            date: p.date,
+            reference: p.transactionId || 'N/A',
+        }));
+
+        await exportPaymentsToExcel(dataToExport, 'Pagos_Reservas_Todos');
+    };
+
     const formatLoadingOrError = () => {
         if (loading) {
             return (
@@ -381,12 +442,19 @@ const BookingPayments: React.FC = () => {
         <div>
             {renderDetailModal()}
 
-            <h2
-                className="admin-title"
-                style={{ fontSize: 22, marginBottom: 16 }}
-            >
-                Pagos de reservas
-            </h2>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <h2
+                    className="admin-title"
+                    style={{ fontSize: 22, margin: 0 }}
+                >
+                    Pagos de reservas
+                </h2>
+                <ExportButton 
+                    onClick={handleExportToExcel}
+                    label="Descargar Excel"
+                    disabled={payments.length === 0}
+                />
+            </Box>
 
             <PaymentFilters
                 currentFilter={filter}
