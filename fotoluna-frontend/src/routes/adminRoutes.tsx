@@ -12,6 +12,7 @@ const AdminEvents = lazy(() => import("../features/Admin/AdminEvents/pages/Admin
 const AdminAppointments = lazy(() => import("../features/Admin/AdminApointments/pages/AdminAppointments"));
 import PaymentsAndSubscriptions from "../features/Admin/AdminPayments/pages/PaymentsAndSubscriptions";
 import SubscriptionsPage from "../features/Admin/AdminPayments/components/Subscriptions";
+const AdminPhotosPage = lazy(() => import("../features/Admin/AdminPhotos/pages"));
 
 const adminRoutes = [
     {
@@ -78,6 +79,14 @@ const adminRoutes = [
             </Suspense>
         ),
         
+    },
+    {
+        path: "/AdminPhotos",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AdminPhotosPage />
+            </Suspense>
+        ),
     },
     { path: "/adminPayments", element: <PaymentsAndSubscriptions /> },
     { path: "/storage-plan", element: <SubscriptionsPage /> },

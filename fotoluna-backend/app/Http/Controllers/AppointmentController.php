@@ -13,8 +13,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 use App\Models\Booking;
 use App\Models\Employee;
+use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB; // <-- NECESARIO PARA TRANSACCIONES
 
 class AppointmentController extends Controller
 {
@@ -429,8 +431,15 @@ class AppointmentController extends Controller
         //
     }
 
+
+
+    // ... (Sus otros métodos)
+
     /**
      * Store a newly created resource in storage.
+     * =======================================================
+     * 🟢 CREACIÓN DE CITA (Condicional Appointment & Booking)
+     * =======================================================
      */
     public function storeCustomer(Request $request)
     {
@@ -491,71 +500,191 @@ class AppointmentController extends Controller
     // STORE PARA EMPLOYEES
     public function store(Request $request)
     {
+        // Usaremos una transacción para garantizar que, si el empleado crea el booking,
+        // ambas operaciones sean atómicas.
+
         try {
             \Log::info('Datos recibidos en store appointment:', $request->all());
 
-            // 1. ✅ VALIDACIÓN
-            $validator = Validator::make($request->all(), [
+            // 1. OBTENER ID DEL EMPLEADO (Determina si es creación manual)
+            $user = $request->user();
+            $employeeCreatorId = $user && $user->employee ? $user->employee->employeeId : null;
+
+            // 2. VALIDACIÓN (AÑADIDOS packageIdFK y documentTypeIdFK)
+            $rules = [
                 'customerIdFK' => 'required|integer|exists:customers,customerId',
                 'eventIdFK' => 'required|exists:events,eventId',
                 'appointmentDate' => 'required|date|after_or_equal:today',
                 'appointmentTime' => 'required|date_format:H:i:s',
-
                 'appointmentDuration' => 'nullable|integer|min:1',
                 'appointmentTimeEnd' => 'nullable|date_format:H:i:s|after:appointmentTime',
-
                 'place' => 'nullable|string|max:100',
                 'comment' => 'nullable|string|max:255',
-            ]);
+
+                // 🔑 REQUISITOS DEL EMPLEADO: Paquete es obligatorio para creación manual
+                'packageIdFK' => 'required|integer|exists:packages,packageId',
+                // Document Type es opcional, depende del Paquete (se valida en frontend)
+                'documentTypeIdFK' => 'nullable|integer|exists:document_types,id',
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            // 2. 🔐 OBTENER LA ID DEL EMPLEADO CREADOR
-            $user = $request->user();
-            $employeeCreatorId = null;
+            $data = $validator->validated();
+            $booking = null;
 
-            // Asignamos la ID del empleado si el usuario autenticado tiene el perfil 'employee'
-            if ($user && $user->employee) {
-                // Asumiendo que employeeIdFK en appointments apunta a employees.employeeId
-                $employeeCreatorId = $user->employee->employeeId;
+            // Si es un empleado, se necesita el ID de Cliente. Si esta ruta también la usa el cliente, 
+            // su compañera debe asegurarse de que el cliente autenticado coincida con customerIdFK, o que 
+            // el cliente también envíe el packageIdFK.
+            if (is_null($employeeCreatorId) && $request->isJson()) {
+                // Si este es un flujo de cliente, el cliente también debe enviar el packageIdFK
+                // y no haremos la validación de $employeeCreatorId.
             }
+            // Si el empleado no está logueado, se asumirá el flujo de cliente (si existe)
 
-            $customerId = $request->customerIdFK; // ID del cliente seleccionado.
+            // --- INICIO DE TRANSACCIÓN ---
+            DB::beginTransaction();
 
-            // 3. ✅ CREAR LA CITA
+            // 3. CREAR APPOINTMENT
             $appointment = Appointment::create([
-                'customerIdFK' => $customerId,
-                'eventIdFK' => $request->eventIdFK,
-
-                // 🚨 CORRECCIÓN CLAVE: Guardar el ID del empleado que creó la cita
-                'employeeIdFK' => $employeeCreatorId,
-
-                'appointmentDate' => $request->appointmentDate,
-                'appointmentTime' => $request->appointmentTime,
-                'appointmentDuration' => $request->appointmentDuration ?? 60,
+                'customerIdFK' => $data['customerIdFK'],
+                'eventIdFK' => $data['eventIdFK'],
+                'employeeIdFK' => $employeeCreatorId, // Será NULL si es cliente
+                'appointmentDate' => $data['appointmentDate'],
+                'appointmentTime' => $data['appointmentTime'],
+                'appointmentDuration' => $data['appointmentDuration'] ?? 60,
                 'appointmentTimeEnd' => $request->appointmentTimeEnd ?? null,
-                'place' => $request->place ?? null,
-                'comment' => $request->comment ?? null,
+                'place' => $data['place'] ?? null,
+                'comment' => $data['comment'] ?? null,
                 'appointmentStatus' => 'Pending confirmation',
             ]);
 
-            // 4. ✅ RESPUESTA
-            return response()->json([
-                'message' => 'Cita creada correctamente',
+            // 4. LÓGICA CONDICIONAL: CREAR BOOKING SOLO SI FUE CREADO POR UN EMPLEADO
+            // O si el flujo de cliente exige la creación de Booking aquí
+            if (!is_null($employeeCreatorId)) {
+
+                // C. CREAR BOOKING ASOCIADO
+                $booking = Booking::create([
+                    'appointmentIdFK' => $appointment->appointmentId,
+                    'employeeIdFK' => $employeeCreatorId, // ID del empleado
+
+                    'customerIdFK' => $data['customerIdFK'],
+                    'eventIdFK' => $data['eventIdFK'],
+
+                    // 🟢 USAMOS LOS DATOS DE PAQUETE Y DOCUMENTO DEL FORMULARIO
+                    'packageIdFK' => $data['packageIdFK'],
+                    'documentTypeIdFK' => $data['documentTypeIdFK'] ?? null,
+
+                    'appointmentDuration' => $data['appointmentDuration'] ?? 60,
+                    'bookingStatus' => 'Pending',
+                    'pax' => $request->pax ?? 1,
+                ]);
+            }
+
+            // --- FIN DE TRANSACCIÓN ---
+            DB::commit();
+
+            // 5. RESPUESTA
+            $response = [
+                'message' => !is_null($booking) ? 'Cita y Booking creados correctamente' : 'Cita creada correctamente',
                 'appointmentId' => $appointment->appointmentId,
                 'status' => $appointment->appointmentStatus,
-            ], 201);
+            ];
+
+            if ($booking) {
+                $response['bookingId'] = $booking->bookingId;
+            }
+
+            return response()->json($response, 201);
 
         } catch (Throwable $e) {
-            \Log::error('Error al crear cita: ' . $e->getMessage());
+            DB::rollBack();
+            \Log::error('Error al crear cita/booking: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error interno del servidor',
                 'error' => $e->getMessage(),
             ], 500);
         }
+
     }
+
+    // metodo de los eventos y paquetes empleados
+    
+    
+    public function getEventsWithPackages(Request $request)
+{
+    try {
+        // ID DEL EVENTO 'DOCUMENTO' ES 6 (Basado en su tabla de Eventos)
+        $documentEventId = 6;
+
+        // 1. CARGA DE DATOS: Cargamos las dos posibles relaciones.
+        $events = Event::query()
+            ->with([
+                // Cargar PAQUETES normales (para eventos != 6)
+                'packages' => function ($query) {
+                    // ✅ CORRECCIÓN: Se eliminó 'documentTypeIdFK' de la selección
+                    // ya que no existe en la tabla `packages`.
+                    $query->select('packageId', 'packageName', 'eventIdFK');
+                },
+                // Cargar TIPOS DE DOCUMENTO (para evento = 6)
+                'documentTypes:id,name,eventIdFK' // Usa la nueva relación
+            ])
+            ->get(['eventId', 'eventType']);
+
+        // 2. TRANSFORMACIÓN: Unificamos Paquetes y Documentos en el array 'packages'
+        $data = $events->map(function ($event) use ($documentEventId) {
+
+            $packages = [];
+
+            if ($event->eventId === $documentEventId) {
+                // CASO ESPECIAL: Evento Documento (ID 6)
+                // Los "paquetes" son los Tipos de Documento
+                $packages = $event->documentTypes->map(function ($docType) {
+                    return [
+                        'id' => $docType->id,
+                        'name' => $docType->name,
+                        // 🔑 CLAVE: Usamos su propia ID para documentTypeIdFK
+                        'documentTypeIdFK' => $docType->id,
+                    ];
+                })->all();
+
+            } else {
+                // CASO ESTÁNDAR: Evento normal (Maternidad, Grados, etc.)
+                // Los "paquetes" son los Paquetes de Sesión
+                $packages = $event->packages->map(function ($package) {
+                    return [
+                        'id' => $package->packageId,
+                        'name' => $package->packageName,
+                        // Asignamos NULL aquí ya que packages no tiene FK a document_types
+                        // Si un paquete normal NECESITA un documento extra, esa lógica debe ser manejada
+                        // en la tabla `packages` (si decides agregar la FK) o en otro lugar. 
+                        'documentTypeIdFK' => null, 
+                    ];
+                })->all();
+            }
+
+            return [
+                'id' => $event->eventId,
+                'name' => $event->eventType,
+                'packages' => $packages, // Lista unificada
+            ];
+        });
+
+        return response()->json($data);
+
+    } catch (Throwable $e) {
+        \Log::error('AppointmentController@getEventsWithPackages error: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Error al listar eventos y paquetes.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+    // ... (Cierre de la clase)
+
 
     // public function getAvailability(Request $request)
     // {
@@ -574,7 +703,7 @@ class AppointmentController extends Controller
     //         '16:00:00',
     //         '17:00:00',
     //         '18:00:00',
-    //     ];
+    //     ];F
 
     //     $date = $request->date;
     //     $dayOfWeek = \Carbon\Carbon::parse($date)->dayOfWeek; // 0=Domingo, 6=Sábado

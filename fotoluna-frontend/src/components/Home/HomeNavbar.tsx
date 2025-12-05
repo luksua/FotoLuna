@@ -185,9 +185,12 @@ const HomeNav: React.FC = () => {
 
                         <li className="nav-item">
                             <a className="nav-link" href="/sobreMi">
-                                Sobre Mí
+                                Sobre Nosotros
                             </a>
                         </li>
+                        <nav>
+                            {user && <span>Bienvenido, {user.name}</span>}
+                        </nav>
 
                         {user && <NotificationBell />}
 

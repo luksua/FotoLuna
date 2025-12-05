@@ -1,5 +1,3 @@
-// src/components/admin/appointments/AdminAppointments.tsx
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
@@ -112,8 +110,8 @@ const AdminAppointments: React.FC = () => {
             setTotalPages(data.last_page);
             setTotalItems(data.total);
         } catch (error) {
-            console.error(error);
-            alert("Error cargando las citas del administrador.");
+            console.error("Error cargando las citas:", error);
+            // alert("Error cargando las citas del administrador."); // Reemplazado
         } finally {
             setLoading(false);
         }

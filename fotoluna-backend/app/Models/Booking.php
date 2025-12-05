@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Booking extends Model
 {
     use HasFactory;
@@ -39,12 +40,6 @@ class Booking extends Model
         return $this->belongsTo(Employee::class, 'employeeIdFK', 'employeeId');
     }
 
-    public function photographer()
-    {
-        // asumiendo que employeeIdFK apunta a employees.employeeId
-        return $this->belongsTo(Employee::class, 'employeeIdFK', 'employeeId');
-    }
-
     public function payments()
     {
         return $this->hasMany(Payment::class, 'bookingIdFK', 'bookingId');
@@ -56,25 +51,11 @@ class Booking extends Model
     }
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customerIdFK', 'customerId');
+        return $this->belongsTo(Customer::class, 'customerIdFK');
     }
 
-    public function event()
-    {
-        return $this->belongsTo(Event::class, 'eventIdFK', 'eventId');
-    }
-    public function photos()
-    {
-        // booking_photos.bookingIdFK → bookings.bookingId
-        return $this->hasMany(BookingPhoto::class, 'bookingIdFK', 'bookingId');
-    }
     public function cloudPhotos()
     {
         return $this->hasMany(CloudPhoto::class, 'bookingIdFK', 'bookingId');
     }
-    public function storageSubscriptions()
-    {
-        return $this->hasMany(StorageSubscription::class, 'bookingIdFK', 'bookingId');
-    }
-
 }

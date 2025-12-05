@@ -31,6 +31,7 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = React.memo(({
 }) => {
     const [expandedKey, setExpandedKey] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("Todas");
+    const DOCUMENT_EVENT_ID = 6;
 
     // Fecha del título
     const titleDate = useMemo(() => {
@@ -85,14 +86,13 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = React.memo(({
 
             {/* Filtros */}
             <div className="appointments-filters">
-                {(
-                    [
-                        "Todas",
-                        "Pendiente",
-                        "Confirmada",
-                        "Cancelada",
-                        "Completada",
-                    ] as StatusFilter[]
+                {([
+                    "Todas",
+                    "Pendiente",
+                    "Confirmada",
+                    "Cancelada",
+                    "Completada",
+                ] as StatusFilter[]
                 ).map((value) => (
                     <button
                         key={value}
@@ -116,6 +116,10 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = React.memo(({
 
                     const isSelected =
                         selectedCita?.appointmentId === cita.appointmentId;
+
+                    // 🔑 Lógica para el título del paquete/documento
+                    const packageNameLabel =
+                        cita.eventIdFK === DOCUMENT_EVENT_ID ? 'Tipo Documento' : 'Paquete';
 
                     return (
                         <div
@@ -159,8 +163,6 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = React.memo(({
                             {/* Expanded */}
                             {isExpanded && (
                                 <div className="appointment-card-body">
-                                    {/* Todo el contenido detallado va aquí dentro */}
-
                                     {cita.document && (
                                         <p className="appointment-card-body-meta">
                                             <strong>Documento:</strong>{" "}
@@ -187,9 +189,10 @@ const AppointmentDetails: React.FC<AppointmentDetailsProps> = React.memo(({
                                         </p>
                                     )}
 
+                                    {/* 🔑 USAR ETIQUETA DINÁMICA */}
                                     {cita.packageName && (
                                         <p className="appointment-card-body-meta">
-                                            <strong>Paquete:</strong>{" "}
+                                            <strong>{packageNameLabel}:</strong>{" "}
                                             {cita.packageName}
                                         </p>
                                     )}

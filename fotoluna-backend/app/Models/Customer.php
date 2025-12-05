@@ -81,4 +81,12 @@ class Customer extends Model
     {
         return $this->activeStorageSubscription() !== null;
     }
+        public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'customerIdFK');
+    }
+        public function cloudPhotos()
+    {
+        return $this->hasMany(CloudPhoto::class, 'customerIdFK', 'customerId');
+    }
 }

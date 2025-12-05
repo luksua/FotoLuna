@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Validation\Rule;
 
 use App\Models\Booking;
 use App\Models\User;
@@ -757,5 +758,92 @@ class BookingController extends Controller
     public function destroy(Booking $booking)
     {
         //
+    }
+    public function updateByEmployee(Request $request, $appointmentId)
+    {
+        // 1. INICIALIZACIÓN Y SEGURIDAD
+        $user = $request->user();
+
+        // Verificar que el usuario tenga empleado asociado
+        if (!$user || !$user->employee) {
+            return response()->json([
+                'message' => 'El usuario autenticado no tiene un empleado asociado'
+            ], 403);
+        }
+
+        $employee = $user->employee;
+        $employeeId = $employee->employeeId;
+        $appointment = Appointment::findOrFail($appointmentId);
+
+        // 2. BUSCAR BOOKING ASIGNADO (Si existe)
+        // Se busca un booking donde el empleado logueado esté asignado.
+        $booking = Booking::where('appointmentIdFK', $appointment->appointmentId)
+            ->where('employeeIdFK', $employeeId)
+            ->first();
+
+        $bookingExists = !is_null($booking);
+
+        // Verificar si el empleado es el creador de la cita (usando la nueva columna employeeIdFK en appointments)
+        $isCreator = $appointment->employeeIdFK === $employeeId;
+
+        // 3. VERIFICACIÓN DE PERMISOS
+        if (!$bookingExists && !$isCreator) {
+            // Rechazar si no es el creador Y no está asignado por booking
+            return response()->json([
+                'message' => 'Esta cita no está asignada a este empleado ni fue creada por él.'
+            ], 403);
+        }
+
+        // 4. VALIDACIÓN DE LOS DATOS DE ENTRADA
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'startTime' => ['required', 'date_format:H:i'],
+            'place' => ['nullable', 'string', 'max:255'],
+            'comment' => ['nullable', 'string', 'max:500'],
+            'status' => [
+                'required',
+                'string',
+                Rule::in([
+                    'Pending confirmation', // pendiente
+                    'Scheduled',            // confirmada
+                    'Cancelled',
+                    'Completed',
+                ]),
+            ],
+        ]);
+
+        // 5. ACTUALIZAR APPOINTMENT
+        $appointment->update([
+            'appointmentDate' => $data['date'],
+            'appointmentTime' => $data['startTime'],
+            'place' => $data['place'] ?? $appointment->place,
+            'comment' => $data['comment'] ?? $appointment->comment,
+            'appointmentStatus' => $data['status'], // Estado principal de la cita
+        ]);
+
+        // 6. ACTUALIZAR BOOKING (SOLO SI EXISTE)
+        if ($booking) {
+            // Mapeo: texto de la API → ENUM de la tabla bookings
+            // Usamos el match de PHP para el mapeo de estados, asegurando el default.
+            $bookingStatus = match ($data['status']) {
+                'Pending confirmation' => 'Pending',
+                'Scheduled' => 'Confirmed',
+                'Cancelled' => 'Cancelled',
+                'Completed' => 'Completed',
+                default => 'Pending', // Fallback si llega un estado inesperado
+            };
+
+            $booking->update([
+                'bookingStatus' => $bookingStatus,
+            ]);
+        }
+
+        // 7. RESPUESTA FINAL
+        return response()->json([
+            'message' => 'Cita actualizada correctamente',
+            'appointment' => $appointment->fresh(),
+            // Incluir booking si se actualizó
+            'booking' => $booking ? $booking->fresh() : null,
+        ], 200);
     }
 }

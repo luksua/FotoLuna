@@ -93,6 +93,13 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
     return (
         <nav className="EmployeeNavbar">
             <div className="navbar-container">
+                {/* Botón hamburguesa para móvil */}
+                <button
+                    className="hamburger-btn d-lg-none"
+                    onClick={() => document.dispatchEvent(new CustomEvent("toggle-sidebar"))}
+                >
+                    <i className="bi bi-list"></i>
+                </button>
                 {/* Logo y marca */}
                 <div className="navbar-brand bg-custom-6">
                     <div className="logo-icon">

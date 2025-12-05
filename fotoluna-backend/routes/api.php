@@ -27,6 +27,7 @@ use App\Http\Controllers\AdminAppointmentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CloudPhotoController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AdminPhotosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,9 @@ use App\Http\Controllers\ContactController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Reenvío de email de verificación (público)
+Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
@@ -51,9 +55,6 @@ Route::get('/employees/ratings', [EmployeeController::class, 'ratings']);
 
 // Planes de almacenamiento (listado público)
 Route::get('/storage-plans', [StoragePlanController::class, 'index']);
-
-// Reenvío de email de verificación (público)
-Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
 // Formulario de contacto
 Route::post('/contact', [ContactController::class, 'store']);
@@ -73,16 +74,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Perfil (cualquier usuario autenticado)
-    Route::post('/customer', [ProfileController::class, 'update']);
-    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
+    // Usuario autenticado actual (helper)
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
     // Notificaciones
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
-    // Recibo de una cuota (cualquier usuario autenticado que tenga permiso)
+    // Recibo de una cuota
     Route::get(
         '/appointments/{appointment}/installments/{installment}/receipt',
         [BookingActionsController::class, 'installmentReceipt']
@@ -90,21 +92,32 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pagos (MercadoPago / offline)
     Route::post('/mercadopago/checkout/pay', [PaymentController::class, 'pay']);
-    Route::post('/mercadopago/storage/pay', [PaymentController::class, 'payStoragePlan']);
     Route::post('/bookings/{booking}/payments/offline', [PaymentController::class, 'storeOffline']);
-
-    // Usuario autenticado actual (helper)
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
 
     // Pagos del empleado (panel empleado)
     Route::get('/employee/payments', [PaymentController::class, 'employeePayments']);
 
     // Gestión de clientes (panel empleado / admin)
     Route::get('/customers', [CustomerController::class, 'index']);
-    Route::get('/customers/search', [CustomerController::class, 'search']);
+    Route::get('/customers/search', [CustomerController::class, 'search']); // primero para evitar conflicto con {customer}
+    Route::get('/customers/{customer}/bookings', [CustomerController::class, 'bookings']);
     Route::get('/customers/{customer}', [CustomerController::class, 'show']);
+
+    // Eventos con paquetes (para panel empleado/admin)
+    Route::get('/events-with-packages', [AppointmentController::class, 'getEventsWithPackages']);
+
+    // Comentarios (crear / borrar)
+    Route::post('/comments', [CommentsController::class, 'store']);
+    Route::delete('/comments/{comment}', [CommentsController::class, 'destroy']);
+
+    // Galería global (Admin/Empleado)
+    Route::get('/cloud-photos', [CloudPhotoController::class, 'index']);
+
+    // Ver galería de un cliente específico (Empleado/Admin)
+    Route::get(
+        '/employee/customers/{customerId}/cloud-photos',
+        [CloudPhotoController::class, 'getCustomerCloudPhotos']
+    );
 });
 
 /*
@@ -114,6 +127,13 @@ Route::middleware('auth:sanctum')->group(function () {
 */
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
+
+    // Perfil
+    Route::post('/customer', [ProfileController::class, 'update']);
+    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
+
+    // Galería del cliente
+    Route::get('/client/my-cloud-photos', [CloudPhotoController::class, 'getMyCloudPhotos']);
 
     // Citas (cliente)
     Route::post('/appointments', [AppointmentController::class, 'store']);
@@ -127,20 +147,22 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     // Paquetes
     Route::get('/packages', [PackageController::class, 'index']);
 
-    // Reserva de una cita
+    // Reservas
     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
-
-    // Booking: detalle y acciones
+    Route::get('/bookings', [BookingController::class, 'index']); // listado de reservas del cliente
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
 
+    // Prefix bookings/{booking}
     Route::prefix('bookings/{booking}')->group(function () {
-        // Acciones sobre la reserva
-        Route::post('/send-confirmation', [BookingActionsController::class, 'sendConfirmation']);
-        Route::get('/calendar-link', [BookingActionsController::class, 'calendarLink']);
-        Route::get('/receipt', [BookingActionsController::class, 'receipt']);
-
         // Resumen de la reserva
         Route::get('/summary', [BookingController::class, 'summary']);
+
+        // Envío de confirmación
+        Route::post('/send-confirmation', [BookingController::class, 'sendConfirmation']);
+
+        // Acciones adicionales
+        Route::get('/calendar-link', [BookingActionsController::class, 'calendarLink']);
+        Route::get('/receipt', [BookingActionsController::class, 'receipt']);
     });
 
     // Planes de cuotas
@@ -161,6 +183,9 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);
     Route::post('/storage/cancel-subscription', [StoragePlanController::class, 'cancelSubscription']);
+
+    // Pagos de storage
+    Route::post('/mercadopago/storage/pay', [PaymentController::class, 'payStoragePlan']);
 
     // Documentos y empleados filtrables desde el frontend del cliente
     Route::get('/api/document-types', [DocumentTypeController::class, 'index']);
@@ -242,6 +267,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Planes de almacenamiento (admin)
     Route::get('/admin/storage-plans', [StoragePlanController::class, 'indexAdmin']);
     Route::put('/admin/storage-plans/{id}', [StoragePlanController::class, 'update']);
+
+    // Resumen de fotos en la nube (admin)
+    Route::get('/admin/cloud-photos/summary', [AdminPhotosController::class, 'summary']);
 });
 
 /*
@@ -260,6 +288,9 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // Todas las citas para el admin
     Route::get('/appointments', [AdminAppointmentController::class, 'index']);
 
+    // Próxima cita para el dashboard
+    Route::get('/appointments/next', [AdminAppointmentController::class, 'next']);
+
     // Candidatos para una cita
     Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
 
@@ -274,8 +305,6 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     // Pagos de bookings (panel admin)
     Route::get('/booking-payments', [PaymentController::class, 'bookingPayments']);
-
-    Route::get('/appointments/next', [AdminAppointmentController::class, 'next']);
 });
 
 /*
@@ -284,7 +313,5 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/comments', [CommentsController::class, 'store']);
-    Route::delete('/comments/{comment}', [CommentsController::class, 'destroy']);
-});
+// (Ya definidas en el grupo auth:sanctum común arriba)
+

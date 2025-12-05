@@ -7,6 +7,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
+use App\Models\Customer;
 use App\Notifications\EmployeeReceivedReview;
 
 class CommentsController extends Controller
@@ -236,4 +237,64 @@ class CommentsController extends Controller
             ], 500);
         }
     }
+    public function bookings(Request $request, Customer $customer)
+    {
+        $user = $request->user();
+        $eventId = $request->query('event_id');
+
+        // --- Lógica de Autorización para Empleados ---
+        if ($user && $user->employee) {
+            $employeeId = $user->employee->employeeId;
+            $isCreator = $customer->created_by_user_id === $user->id;
+
+            // Verificamos si el empleado tiene CUALQUIER reserva con este cliente.
+            $hasAnyBookings = $customer->appointments()
+                ->whereHas('bookings', function ($q) use ($employeeId) {
+                    $q->where('employeeIdFK', $employeeId);
+                })->exists();
+
+            // Si no es el creador y no tiene ninguna reserva, no está autorizado.
+            if (!$isCreator && !$hasAnyBookings) {
+                return response()->json(['message' => 'No está autorizado para ver las reservas de este cliente.'], 403);
+            }
+        }
+
+        // --- Obtención y Filtrado de Datos ---
+        $appointmentsQuery = $customer->appointments();
+
+        // Si se pasa un event_id, filtramos las citas por ese evento.
+        if ($eventId) {
+            $appointmentsQuery->where('eventIdFK', $eventId);
+        }
+
+        // Para empleados, nos aseguramos de traer solo sus bookings en la consulta.
+        if ($user && $user->employee) {
+            $employeeId = $user->employee->employeeId;
+            $appointmentsQuery->with([
+                'bookings' => function ($q) use ($employeeId) {
+                    $q->where('employeeIdFK', $employeeId);
+                }
+            ]);
+        } else {
+            // Para admin/otros, traemos todos los bookings.
+            $appointmentsQuery->with('bookings');
+        }
+
+        $appointments = $appointmentsQuery->get();
+
+        $filteredBookings = $appointments->flatMap(function ($appointment) {
+            return $appointment->bookings;
+        });
+
+        // --- Respuesta ---
+        // Si se filtró por evento y el resultado está vacío, devolvemos el mensaje específico.
+        if ($eventId && $filteredBookings->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron reservas de este cliente para el evento especificado.'], 404);
+        }
+
+        // Devolvemos la lista de reservas (puede estar vacía si no hay, y eso es correcto).
+        return response()->json($filteredBookings->values());
+    }
+
 }
+
