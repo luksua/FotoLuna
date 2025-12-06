@@ -2,13 +2,15 @@ import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import React from "react";
 import "../Styles/home.css";
 import { useAuth } from "../../../../context/useAuth";
+import { useWeather } from "../../../../hooks/useWeather";
 
 const EmployeeHome: React.FC = () => {
     const { user } = useAuth();
     const displayName = user?.displayName ?? user?.name ?? "Amalia";
+    const { weather, iconClass, description } = useWeather();
 
     return (
-        <EmployeeLayout >
+        <EmployeeLayout>
             <div className="employee-home">
                 <section className="welcome-section">
                     <div className="welcome-text">
@@ -17,15 +19,19 @@ const EmployeeHome: React.FC = () => {
                     </div>
                     <div className="weather-info">
                         <div className="weather-icon">
-                            <i className="bi bi-cloud-sun-fill"></i>
+                            <i className={`bi ${iconClass}`}></i>
                         </div>
                         <div className="weather-details">
-                            <p>Parcialmente nublado</p>
+                            <h3>{description}</h3>
+                            {weather && (
+                                <p>{weather.temp}°C</p>
+                            )}
                         </div>
                     </div>
                 </section>
 
                 <div className="dashboard">
+                    {/* Citas */}
                     <div className="card-employee citos">
                         <div className="card-header-employee">
                             <div className="card-icon">
@@ -49,8 +55,10 @@ const EmployeeHome: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="card subir">
-                        <div className="card-header">
+
+                    {/* Subir */}
+                    <div className="card-employee subir">
+                        <div className="card-header-employee">
                             <div className="card-icon">
                                 <i className="bi bi-upload"></i>
                             </div>
@@ -69,7 +77,8 @@ const EmployeeHome: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="card clientes">
+                    {/* Clientes */}
+                    <div className="card-employee clientes">
                         <div className="card-header-employee">
                             <div className="card-icon">
                                 <i className="bi bi-person-lines-fill"></i>
@@ -89,9 +98,10 @@ const EmployeeHome: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="card">
-                        <div className="card-header">
-                            <div className="card-icon" style={{ background: "var(--pastel-lilac)" }}>
+                    {/* Pagos / Rendimiento */}
+                    <div className="card-employee administrar">
+                        <div className="card-header-employee">
+                            <div className="card-icon">
                                 <i className="bi bi-graph-up"></i>
                             </div>
                             <h3>Pagos</h3>
@@ -130,7 +140,7 @@ const EmployeeHome: React.FC = () => {
                             <div className="activity-value">12h</div>
                             <div className="activity-label">Tiempo Activo</div>
                         </div>
-                        <div className="activity-item">
+                            <div className="activity-item">
                             <div className="activity-icon">
                                 <i className="fas fa-cloud-upload-alt"></i>
                             </div>
@@ -146,11 +156,11 @@ const EmployeeHome: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <footer>
-                <p>FotoLuna &copy;  </p>
-            </footer>
+                <footer>
+                    <p>FotoLuna &copy;</p>
+                </footer>
+            </div>
         </EmployeeLayout>
     );
 };

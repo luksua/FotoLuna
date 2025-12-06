@@ -505,7 +505,7 @@ const EmployeeAppointments: React.FC = () => {
             {isLoading && <Spinner />}
             <div className="container-fluid bg-light min-vh-100 appointments-page">
                 <div className="container py-4">
-                    <h3 className="fw-bold text-dark">Citas</h3>
+                    <h2 className="text-dark">Citas</h2>
                     <hr />
 
                     <div className="row g-4">

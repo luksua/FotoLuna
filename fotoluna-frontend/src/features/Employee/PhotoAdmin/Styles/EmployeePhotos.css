@@ -1,0 +1,111 @@
+/* ========== PAGE LAYOUT ========== */
+.emp-page {
+    padding: 2rem;
+    background-color: #f9fafb;
+}
+
+.emp-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
+}
+
+.emp-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.emp-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* ========== GRID OF CARDS ========== */
+.emp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ========== INDIVIDUAL CARD ========== */
+.emp-card {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s;
+}
+
+.emp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* cover image */
+.emp-card__cover {
+    height: 180px;
+    background: #e5e7eb;
+}
+
+.emp-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.emp-card__body {
+    padding: 1rem;
+}
+
+.emp-card__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.emp-card__meta {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.emp-card__actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* Buttons */
+.emp-btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+}
+
+.emp-btn--primary {
+    background-color: #4f46e5;
+    color: white;
+}
+.emp-btn--primary:hover { background-color: #4338ca; }
+
+.emp-btn--secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+.emp-btn--secondary:hover { background-color: #e5e7eb; }
+
+/* Recent photos preview inside card */
+.emp-recent-photos {
+    padding: 1rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}

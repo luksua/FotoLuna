@@ -25,6 +25,11 @@ class StoragePlanController extends Controller
         return $this->dashboard($request);
     }
 
+    public function indexAdmin()
+    {
+        return StoragePlan::orderBy('price')->get();
+    }
+
     public function dashboard(Request $request)
     {
         $user = $request->user();
@@ -93,7 +98,6 @@ class StoragePlanController extends Controller
         ]);
     }
 
-
     public function changePlan(Request $request)
     {
         $request->validate([
@@ -143,12 +147,31 @@ class StoragePlanController extends Controller
             ], 400);
         }
 
-        // ❌ No tocamos ends_at, sigue vigente hasta esa fecha
+        // No tocamos ends_at, sigue vigente hasta esa fecha
         $subscription->status = 'cancelled';
         $subscription->save();
 
         return response()->json([
             'message' => 'Tu suscripción ha sido cancelada. Seguirás teniendo acceso hasta la fecha de vencimiento.',
         ], 200);
+    }
+
+    public function update(Request $request, StoragePlan $storagePlan)
+    {
+        \Log::info('DATA RECIBIDA:', $request->all());
+
+        $data = $request->validate([
+            'name'            => ['required', 'string', 'max:255'],
+            'description'     => ['nullable', 'string'],
+            'duration_months' => ['required', 'integer', 'min:1'],
+            'price'           => ['required', 'min:0'],
+            'max_photos'      => ['nullable', 'integer', 'min:1'],
+            'max_storage_mb'  => ['nullable', 'integer', 'min:1'],
+            'is_active'       => ['required', 'boolean'],
+        ]);
+
+        $storagePlan->update($data);
+
+        return response()->json($storagePlan);
     }
 }

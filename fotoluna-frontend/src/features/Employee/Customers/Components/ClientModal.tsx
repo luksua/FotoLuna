@@ -64,6 +64,9 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
     name,
     image,
 }) => {
+    const modalBodyScrollStyle: React.CSSProperties = { maxHeight: "70vh", overflowY: "auto" };
+    const tableScrollStyle: React.CSSProperties = { maxHeight: "55vh", overflowY: "auto" };
+
     const [details, setDetails] = useState<ClientDetailsResponse | null>(null);
     const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
     const [bookings, setBookings] = useState<BookingRow[]>([]);
@@ -132,12 +135,12 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
 
     return (
         <>
-            <Modal show={show} onHide={onClose} centered size="lg">
+            <Modal show={show} onHide={onClose} centered size="lg" scrollable>
                 <Modal.Header closeButton>
                     <Modal.Title>Detalles del Cliente</Modal.Title>
                 </Modal.Header>
 
-                <Modal.Body>
+                <Modal.Body style={modalBodyScrollStyle}>
                     <Tabs defaultActiveKey="info" className="mb-3">
 
                         {/* INFORMACIÓN */}
@@ -177,36 +180,38 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
 
                             {!loading && !error && (
                                 appointments.length ? (
-                                    <Table striped bordered hover size="sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Fecha</th>
-                                                <th>Hora</th>
-                                                <th>Evento</th>
-                                                <th>Lugar</th>
-                                                <th>Estado</th>
-                                                <th>Comentarios</th>
-                                                <th>Paquete</th>
-                                                <th>Precio</th>
-                                                <th>Empleado</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {appointments.map((a) => (
-                                                <tr key={a.id}>
-                                                    <td>{a.date}</td>
-                                                    <td>{a.time}</td>
-                                                    <td>{a.eventType || "-"}</td>
-                                                    <td>{a.place || "-"}</td>
-                                                    <td>{a.status || "-"}</td>
-                                                    <td>{a.comment || "-"}</td>
-                                                    <td>{a.packageName || "-"}</td>
-                                                    <td>{a.packagePrice ? `$${a.packagePrice}` : "-"}</td>
-                                                    <td>{a.employeeName || "-"}</td>
+                                    <div className="table-responsive" style={tableScrollStyle}>
+                                        <Table striped bordered hover size="sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Hora</th>
+                                                    <th>Evento</th>
+                                                    <th>Lugar</th>
+                                                    <th>Estado</th>
+                                                    <th>Comentarios</th>
+                                                    <th>Paquete</th>
+                                                    <th>Precio</th>
+                                                    <th>Empleado</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
+                                            </thead>
+                                            <tbody>
+                                                {appointments.map((a) => (
+                                                    <tr key={a.id}>
+                                                        <td>{a.date}</td>
+                                                        <td>{a.time}</td>
+                                                        <td>{a.eventType || "-"}</td>
+                                                        <td>{a.place || "-"}</td>
+                                                        <td>{a.status || "-"}</td>
+                                                        <td>{a.comment || "-"}</td>
+                                                        <td>{a.packageName || "-"}</td>
+                                                        <td>{a.packagePrice ? `$${a.packagePrice}` : "-"}</td>
+                                                        <td>{a.employeeName || "-"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
                                 ) : (
                                     <p className="text-muted text-center">Sin citas registradas.</p>
                                 )
@@ -216,34 +221,36 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
                         {/* SESIONES */}
                         <Tab eventKey="sesiones" title="Sesiones">
                             {bookings.length ? (
-                                <Table striped bordered hover size="sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Hora</th>
-                                            <th>Evento</th>
-                                            <th>Paquete</th>
-                                            <th>Precio</th>
-                                            <th>Empleado</th>
-                                            <th>Estado</th>
-                                            <th>Pagado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {bookings.map((b) => (
-                                            <tr key={b.id}>
-                                                <td>{b.date}</td>
-                                                <td>{b.time}</td>
-                                                <td>{b.eventType || "-"}</td>
-                                                <td>{b.packageName || "-"}</td>
-                                                <td>{b.packagePrice ? `$${b.packagePrice}` : "-"}</td>
-                                                <td>{b.employee || "-"}</td>
-                                                <td>{b.status}</td>
-                                                <td>{b.totalPaid ? `$${b.totalPaid}` : "-"}</td>
+                                <div className="table-responsive" style={tableScrollStyle}>
+                                    <Table striped bordered hover size="sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Hora</th>
+                                                <th>Evento</th>
+                                                <th>Paquete</th>
+                                                <th>Precio</th>
+                                                <th>Empleado</th>
+                                                <th>Estado</th>
+                                                <th>Pagado</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
+                                        </thead>
+                                        <tbody>
+                                            {bookings.map((b) => (
+                                                <tr key={b.id}>
+                                                    <td>{b.date}</td>
+                                                    <td>{b.time}</td>
+                                                    <td>{b.eventType || "-"}</td>
+                                                    <td>{b.packageName || "-"}</td>
+                                                    <td>{b.packagePrice ? `$${b.packagePrice}` : "-"}</td>
+                                                    <td>{b.employee || "-"}</td>
+                                                    <td>{b.status}</td>
+                                                    <td>{b.totalPaid ? `$${b.totalPaid}` : "-"}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
                             ) : (
                                 <p className="text-muted text-center">Sin sesiones registradas.</p>
                             )}
@@ -252,32 +259,34 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
                         {/* PAGOS */}
                         <Tab eventKey="pagos" title="Pagos">
                             {payments.length ? (
-                                <Table striped bordered hover size="sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Booking</th>
-                                            <th>Monto</th>
-                                            <th>Método</th>
-                                            <th>Estado</th>
-                                            <th>Fecha</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {payments.map((p) => (
-                                            <tr key={p.id}>
-                                                <td>{p.bookingId}</td>
-                                                <td>${p.amount}</td>
-                                                <td>{p.method || "-"}</td>
-                                                <td>{p.status || "-"}</td>
-                                                <td>
-                                                    {p.paidAt
-                                                        ? new Date(p.paidAt).toLocaleString("es-ES")
-                                                        : "-"}
-                                                </td>
+                                <div className="table-responsive" style={tableScrollStyle}>
+                                    <Table striped bordered hover size="sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Booking</th>
+                                                <th>Monto</th>
+                                                <th>Método</th>
+                                                <th>Estado</th>
+                                                <th>Fecha</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
+                                        </thead>
+                                        <tbody>
+                                            {payments.map((p) => (
+                                                <tr key={p.id}>
+                                                    <td>{p.bookingId}</td>
+                                                    <td>${p.amount}</td>
+                                                    <td>{p.method || "-"}</td>
+                                                    <td>{p.status || "-"}</td>
+                                                    <td>
+                                                        {p.paidAt
+                                                            ? new Date(p.paidAt).toLocaleString("es-ES")
+                                                            : "-"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
                             ) : (
                                 <p className="text-muted text-center">Sin pagos registrados.</p>
                             )}

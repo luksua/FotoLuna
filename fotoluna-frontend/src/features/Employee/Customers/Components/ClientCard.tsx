@@ -51,8 +51,7 @@ const ClientCard: React.FC<ClientCardProps> = React.memo(({
           </div>
         )}
         <Button
-          variant="light"
-          className="px-3 py-1"
+          className="px-3 py-1 appointments-new-btn mx-auto"
           style={{
             backgroundColor: "#e2c5f5",
             color: "#5a2a7b",

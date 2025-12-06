@@ -1,6 +1,6 @@
 :root {
     --primary: #2A5F8D;
-    --primary-dark: #A880A0;
+    --primary-dark: #ffb3a7;
     --secondary: #e7c5a1;
     --secondary-dark: #e7c5a1;
     --text: #2B2D42;
@@ -168,8 +168,8 @@ html {
 /* Badge decorativo */
 .image-badge {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: -13px;
+    right: -20px;
     background: linear-gradient(135deg, #B05857 0%, #B05857 100%);
     color: white;
     padding: 8px 16px;

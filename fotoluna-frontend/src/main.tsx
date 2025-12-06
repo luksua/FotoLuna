@@ -8,6 +8,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./index.css";
 import "./styles/fonts.css";
+import "./styles/buttons.css";
 
 // Componentes principales
 import App from "./App";

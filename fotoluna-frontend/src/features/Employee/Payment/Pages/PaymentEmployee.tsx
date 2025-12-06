@@ -372,15 +372,13 @@ const Payments: React.FC = () => {
             <Container fluid className="app-container payments-page">
                 <Row className="justify-content-center">
                     {/* Antes: <Col lg={10} xl={8}> */}
-                    <Col xs={12} lg={11} xl={10}>
+                    <Col xs={12} lg={12} xl={12}>
                         {/* Header */}
                         <div className="app-header text-center mb-4">
-                            <h1 className="payments-title display-5 fw-bold">
-                                Mis Pagos y Cuotas
-                            </h1>
-                            <p className="lead app-header-subtitle">
+                            <h2 className="text-dark">Pagos y Cuotas</h2>
+                            {/* <p className="lead app-header-subtitle">
                                 Revisa tu historial de transacciones y gestiona tus cuotas pendientes
-                            </p>
+                            </p> */}
                         </div>
 
                         {/* Errores */}

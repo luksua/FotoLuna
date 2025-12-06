@@ -141,7 +141,6 @@
     text-decoration: none;
     color: var(--text-dark);
     padding: 8px 16px;
-    border-radius: 20px;
     transition: var(--transition);
     font-weight: 500;
 }

@@ -130,6 +130,79 @@ class AdminAppointmentController extends Controller
         // Devuelve paginator completo (data + meta)
         return response()->json($rows);
     }
+
+    public function next(Request $request)
+    {
+        // Usamos el helper now() de Laravel (no hace falta importar Carbon)
+        $today = now()->toDateString(); // 'YYYY-MM-DD'
+
+        $row = Booking::query()
+            ->join('appointments', 'appointments.appointmentId', '=', 'bookings.appointmentIdFK')
+            ->join('customers', 'customers.customerId', '=', 'appointments.customerIdFK')
+            ->leftJoin('events', 'events.eventId', '=', 'appointments.eventIdFK')
+            ->leftJoin('employees', 'employees.employeeId', '=', 'bookings.employeeIdFK')
+            ->selectRaw('
+            appointments.appointmentId        AS appointmentId,
+            bookings.bookingId               AS bookingId,
+            appointments.appointmentDate     AS date,
+            appointments.appointmentTime     AS time,
+            appointments.place               AS place,
+            appointments.comment             AS comment,
+            appointments.appointmentStatus   AS status,
+            
+            customers.firstNameCustomer      AS clientFirstName,
+            customers.lastNameCustomer       AS clientLastName,
+            customers.emailCustomer          AS clientEmail,
+            customers.documentNumber         AS clientDocument,
+
+            events.eventType                 AS eventName,
+
+            employees.employeeId             AS employeeId,
+            employees.firstNameEmployee      AS employeeFirstName,
+            employees.lastNameEmployee       AS employeeLastName
+        ')
+            // 👇 Solo citas desde hoy hacia adelante
+            ->whereDate('appointments.appointmentDate', '>=', $today)
+            // opcional: solo ciertos estados
+            // ->whereIn('appointments.appointmentStatus', ['Scheduled', 'Pending_assignment'])
+            ->orderBy('appointments.appointmentDate')
+            ->orderBy('appointments.appointmentTime')
+            ->first();
+
+        if (!$row) {
+            return response()->json([
+                'success' => true,
+                'data' => null,
+            ]);
+        }
+
+        $appointment = [
+            'appointmentId' => $row->appointmentId,
+            'bookingId' => $row->bookingId,
+            'date' => $row->date,
+            'time' => substr($row->time, 0, 5),
+            'place' => $row->place,
+            'comment' => $row->comment,
+            'status' => $row->status,
+
+            'clientName' => trim($row->clientFirstName . ' ' . $row->clientLastName),
+            'clientEmail' => $row->clientEmail,
+            'clientDocument' => $row->clientDocument,
+
+            'eventName' => $row->eventName,
+
+            'employeeId' => $row->employeeId,
+            'employeeName' => $row->employeeId
+                ? trim($row->employeeFirstName . ' ' . $row->employeeLastName)
+                : null,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointment,
+        ]);
+    }
+
     // public function index(Request $request)
     // {
     //     $rows = Booking::query()
@@ -234,6 +307,64 @@ class AdminAppointmentController extends Controller
         });
 
         return response()->json($data);
+    }
+
+    public function packagesCount()
+    {
+        $count = Booking::count();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total' => $count
+            ]
+        ]);
+    }
+
+    public function salesByMonth()
+    {
+        $currentYear = Carbon::now()->year;
+
+        // Obtener todas las reservas (bookings) del año actual con sus pagos
+        $bookingsByMonth = Booking::selectRaw('
+            MONTH(bookings.created_at) AS month,
+            COALESCE(SUM(payments.amount), 0) AS total_sales
+        ')
+            ->leftJoin('payments', 'payments.bookingIdFK', '=', 'bookings.bookingId')
+            ->whereYear('bookings.created_at', $currentYear)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Crear array con todos los meses
+        $monthNames = [
+            'Enero',
+            'Febrero',
+            'Marzo',
+            'Abril',
+            'Mayo',
+            'Junio',
+            'Julio',
+            'Agosto',
+            'Septiembre',
+            'Octubre',
+            'Noviembre',
+            'Diciembre'
+        ];
+
+        $salesData = [];
+        foreach (range(1, 12) as $month) {
+            $monthData = $bookingsByMonth->firstWhere('month', $month);
+            $salesData[] = [
+                'mes' => $monthNames[$month - 1],
+                'ventas' => $monthData ? (int) $monthData->total_sales : 0
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $salesData,
+            'year' => $currentYear
+        ]);
     }
 
     public function employeesAvailability(Request $request)

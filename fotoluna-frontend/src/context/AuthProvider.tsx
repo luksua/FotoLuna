@@ -21,23 +21,30 @@ const buildAvatarUrl = (photo?: string | null) => {
 // Normaliza el user que viene del servidor para siempre exponer
 // firstName, lastName, displayName y avatar
 const normalizeUser = (serverUser: any): User => {
-    const firstName =
+    // Intentar obtener firstName y lastName de campos específicos
+    let firstName =
         serverUser?.firstNameCustomer ??
         serverUser?.firstNameEmployee ??
         serverUser?.first_name ??
         serverUser?.firstName ??
-        (typeof serverUser?.name === "string" ? serverUser.name.split(" ")[0] : "") ??
         "";
 
-    const lastName =
+    let lastName =
         serverUser?.lastNameCustomer ??
         serverUser?.lastNameEmployee ??
         serverUser?.last_name ??
         serverUser?.lastName ??
-        (typeof serverUser?.name === "string" ? serverUser.name.split(" ").slice(1).join(" ") : "") ??
         "";
 
-    const displayName = `${firstName}${lastName ? " " + lastName : ""}`.trim();
+    // Si no tenemos firstName/lastName separados pero tenemos name, intentar dividir
+    if (!firstName && !lastName && typeof serverUser?.name === "string") {
+        const nameParts = serverUser.name.split(" ");
+        firstName = nameParts[0] ?? "";
+        lastName = nameParts.slice(1).join(" ") ?? "";
+    }
+
+    // displayName es la combinación de firstName y lastName
+    const displayName = `${firstName}${lastName ? " " + lastName : ""}`.trim() || serverUser?.name || "";
 
     const photo =
         serverUser?.photoCustomer ?? serverUser?.photoEmployee ?? serverUser?.photo ?? serverUser?.avatar ?? null;

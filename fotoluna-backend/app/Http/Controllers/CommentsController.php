@@ -7,7 +7,11 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
+<<<<<<< HEAD
 use App\Models\Customer;
+=======
+use App\Notifications\EmployeeReceivedReview;
+>>>>>>> origin/luna
 
 class CommentsController extends Controller
 {
@@ -112,6 +116,13 @@ class CommentsController extends Controller
 
             // Cargar relación del usuario y fotógrafo
             $comment->load(['user', 'user.employee', 'user.customer', 'photographer']);
+
+            // 🔔 NOTIFICACIÓN AL FOTÓGRAFO (si se especificó uno)
+            if ($comment->photographer) {
+                $comment->photographer->notify(
+                    new EmployeeReceivedReview($comment)
+                );
+            }
 
             // Buscar avatar en múltiples ubicaciones
             $userAvatar = null;

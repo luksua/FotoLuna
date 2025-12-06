@@ -20,7 +20,7 @@ export interface ProfileInfoProps {
 
 export interface AvatarUploadProps {
   avatar: string | null;
-  onAvatarChange: (avatar: string | null) => void;
+  onAvatarChange: (avatar: File | null) => void;
 }
 
 export interface UserProfileProps {

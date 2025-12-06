@@ -1,18 +1,23 @@
+import React, { useState } from "react";
 import "../../styles/EmployeeSidebar.css";
 import { Link, useLocation } from "react-router-dom";
 
 const AdminSidebar: React.FC = () => {
+    const [activeItem, setActiveItem] = useState("dashboard");
     const location = useLocation();
 
     const menuItems = [
-        { id: "inicio", icon: "bi bi-house-heart-fill", text: "Inicio", path: "/admin" },
         { id: "dashboard", icon: "bi bi-graph-up", text: "Dashboard", path: "/dashboard" },
         { id: "subir", icon: "bi bi-journal-plus", text: "Registro Usuarios", path: "/RegisterUsers" },
         { id: "administrar", icon: "bi bi-gear-wide-connected", text: "Administrar", path: "/AdminUsers" },
         { id: "clientes", icon: "bi bi-people-fill", text: "Empleados", path: "/AdminEmployee" },
         { id: "Events", icon: "bi bi-card-checklist", text: "Eventos", path: "/AdminEvents" },
         { id: "Citas", icon: "bi bi-calendar-event", text: "Citas", path: "/AdminAppointments" },
+<<<<<<< HEAD
         { id: "fotos", icon: "bi bi-camera-fill", text: "Fotos", path: "/AdminPhotos" },
+=======
+        { id: "pagos", icon: "bi bi-wallet", text: "Pagos", path: "/AdminPayments" }
+>>>>>>> origin/luna
     ];
 
     return (
@@ -34,5 +39,4 @@ const AdminSidebar: React.FC = () => {
 };
 
 export default AdminSidebar;
-
 

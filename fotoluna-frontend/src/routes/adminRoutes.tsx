@@ -1,3 +1,4 @@
+// import HomeAdmin from "../features/HomeEmployee/pages/HomeAdmin";
 import { lazy, Suspense } from "react";
 import Spinner from "../features/Employee/Appointment/Components/Spinner";
 
@@ -9,7 +10,12 @@ const AdminEmployee = lazy(() => import("../features/Admin/AdminEmployee/pages/A
 const NotificationsEmployee = lazy(() => import("../features/Admin/Notification/Pages/NotificationsEmployee"));
 const AdminEvents = lazy(() => import("../features/Admin/AdminEvents/pages/AdminEvents"));
 const AdminAppointments = lazy(() => import("../features/Admin/AdminApointments/pages/AdminAppointments"));
+<<<<<<< HEAD
 const AdminPhotosPage = lazy(() => import("../features/Admin/AdminPhotos/pages"));
+=======
+import PaymentsAndSubscriptions from "../features/Admin/AdminPayments/pages/PaymentsAndSubscriptions";
+import SubscriptionsPage from "../features/Admin/AdminPayments/components/Subscriptions";
+>>>>>>> origin/luna
 
 const adminRoutes = [
     {
@@ -75,7 +81,9 @@ const adminRoutes = [
                 <AdminAppointments />
             </Suspense>
         ),
+        
     },
+<<<<<<< HEAD
     {
         path: "/AdminPhotos",
         element: (
@@ -84,6 +92,10 @@ const adminRoutes = [
             </Suspense>
         ),
     },
+=======
+    { path: "/adminPayments", element: <PaymentsAndSubscriptions /> },
+    { path: "/storage-plan", element: <SubscriptionsPage /> },
+>>>>>>> origin/luna
 ];
 
 export { adminRoutes };

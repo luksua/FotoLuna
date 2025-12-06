@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PhotoGallery from '../Components/PhotoGallery';
+<<<<<<< HEAD
 import type { Photo, Stats as StatsType } from "../Components/types/Photo";
+=======
+import type { Photo, Stats as StatsType } from "../Components/types/Photo"; 
+>>>>>>> origin/luna
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../Styles/photo/PhotoAdmin.css';
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 
+<<<<<<< HEAD
 
 // ⚠ Ajusta este valor si tu backend no está en localhost:8000
 const API_BASE_URL = "http://localhost:8000/api";
@@ -19,15 +24,49 @@ const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+=======
+const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; 
+>>>>>>> origin/luna
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     const unitIndex = Math.min(i, sizes.length - 1);
 
     return parseFloat((bytes / Math.pow(k, unitIndex)).toFixed(2)) + ' ' + sizes[unitIndex];
 };
 
+<<<<<<< HEAD
 
 const EmployeeAdmin: React.FC = () => {
 
+=======
+const mockPhotos: any[] = [
+    {
+        id: 1,
+        name: 'vacaciones_playa.jpg',
+        path: '/mock/images/1.jpg',
+        size: 2457600,
+        uploaded_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+        id: 2,
+        name: 'cumpleaños_familia.png',
+        path: '/mock/images/2.png',
+        size: 1894321,
+        uploaded_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+        id: 3,
+        name: 'paisaje_montaña.gif',
+        path: '/mock/images/3.gif',
+        size: 3452189,
+        uploaded_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    }
+];
+
+const EmployeeAdmin: React.FC = () => {
+>>>>>>> origin/luna
     const [photos, setPhotos] = useState<Photo[]>([]);
     const [stats, setStats] = useState<StatsType>({
         total_photos: 0,
@@ -38,7 +77,10 @@ const EmployeeAdmin: React.FC = () => {
     const [fetchError, setFetchError] = useState<string | null>(null);
     const navigate = useNavigate();
 
+<<<<<<< HEAD
     // Calcula estadísticas basadas en las fotos
+=======
+>>>>>>> origin/luna
     const calculateStats = (photosArray: Photo[]): void => {
         const total_photos = photosArray.length;
         const total_size = photosArray.reduce((sum: number, photo: Photo) => sum + photo.size, 0);
@@ -47,8 +89,15 @@ const EmployeeAdmin: React.FC = () => {
             const uploadDate = new Date(photo.uploaded_at);
             const expirationDate = new Date(uploadDate);
             expirationDate.setDate(expirationDate.getDate() + 7);
+<<<<<<< HEAD
             const daysRemaining = Math.ceil((expirationDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
             return daysRemaining <= 2 && daysRemaining >= 0; // Solo si expira en <= 2 días y aún no ha expirado
+=======
+            const daysRemaining = Math.ceil(
+                (expirationDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+            );
+            return daysRemaining <= 2;
+>>>>>>> origin/luna
         }).length;
 
         setStats({
@@ -58,12 +107,18 @@ const EmployeeAdmin: React.FC = () => {
         });
     };
 
+<<<<<<< HEAD
     // =========================================================
     // 🚨 FUNCIÓN CLAVE: Cargar TODAS las fotos de la nube
     // =========================================================
     const fetchAllPhotos = async () => {
         setLoading(true);
         setFetchError(null);
+=======
+    useEffect(() => {
+        const savedPhotos = localStorage.getItem('uploadedPhotos');
+        const initialPhotos: Photo[] = savedPhotos ? JSON.parse(savedPhotos) : mockPhotos;
+>>>>>>> origin/luna
 
         const token = localStorage.getItem("token");
         if (!token) {
@@ -81,6 +136,7 @@ const EmployeeAdmin: React.FC = () => {
                 },
             });
 
+<<<<<<< HEAD
             const data = await response.json();
 
             if (!response.ok) {
@@ -131,6 +187,8 @@ const EmployeeAdmin: React.FC = () => {
     // La función de eliminar debe recargar la lista para reflejar el estado actual
     // Nota: Aunque el botón de eliminar fue removido de PhotoCard, esta lógica
     // se mantiene en EmployeeAdmin en caso de que se use en otro lugar.
+=======
+>>>>>>> origin/luna
     const handlePhotoDelete = async (photoId: number): Promise<void> => {
         setLoading(true);
 
@@ -160,33 +218,58 @@ const EmployeeAdmin: React.FC = () => {
         }
     };
 
-    // Navegar a la página de upload
     const handleNavigateToUpload = () => {
         navigate('/employee/upload');
     };
 
+<<<<<<< HEAD
+=======
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const savedPhotos = localStorage.getItem('uploadedPhotos');
+            if (savedPhotos) {
+                const parsedPhotos: Photo[] = JSON.parse(savedPhotos);
+                setPhotos(parsedPhotos);
+                calculateStats(parsedPhotos);
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+>>>>>>> origin/luna
 
     return (
         <EmployeeLayout>
-            <div className="container-fluid bg-light min-vh-100">
+            {/* Fondo pastel + tema citas */}
+            <div className="appointments-page min-vh-100">
                 <div className="container py-4">
                     {/* Header */}
+<<<<<<< HEAD
                     <div className="text-center mb-5">
                         <h1 className="display-5 fw-bold text-dark mb-3">
                             Administrador de Fotos (Historial Global)
                         </h1>
                         <p className="lead text-muted">
                             Gestiona el historial completo de fotos subidas por todos los empleados.
+=======
+                    <div className="text-center mb-4">
+                        <h2 className="fw-bold text-dark mb-1">
+                            Administrador de Fotos
+                        </h2>
+                        <p className="appointments-panel-subtitle">
+                            Gestiona tus fotos recientes · Máx. 100 · Se eliminan después de 7 días
+>>>>>>> origin/luna
                         </p>
                     </div>
 
                     {/* Botón para subir fotos */}
-                    <div className="row justify-content-center mb-5">
+                    <div className="row justify-content-center mb-4">
                         <div className="col-12 col-lg-8">
-                            <div className="card border-0 shadow-sm">
+                            <div className="card border-0">
                                 <div className="card-body text-center py-4">
                                     <button
-                                        className="btn btn-primary btn-lg"
+                                        className="appointments-new-btn mx-auto"
                                         onClick={handleNavigateToUpload}
                                     >
                                         <i className="bi bi-cloud-arrow-up me-2"></i>
@@ -203,37 +286,45 @@ const EmployeeAdmin: React.FC = () => {
                     {/* Estadísticas */}
                     <div className="row mb-4">
                         <div className="col-md-4 mb-3">
-                            <div className="stat-card card border-0 shadow-sm h-100">
+                            <div className="stat-card card h-100">
                                 <div className="card-body text-center p-4">
-                                    <i className="bi bi-images stat-icon text-primary"></i>
+                                    <i className="bi bi-images stat-icon"></i>
                                     <h3 className="stat-number fw-bold text-dark mt-3">
                                         {stats.total_photos}
                                     </h3>
+<<<<<<< HEAD
                                     <p className="stat-label text-muted mb-0">Total de Fotos</p>
+=======
+                                    <p className="stat-label mb-0">Fotos actuales</p>
+>>>>>>> origin/luna
                                 </div>
                             </div>
                         </div>
 
                         <div className="col-md-4 mb-3">
-                            <div className="stat-card card border-0 shadow-sm h-100">
+                            <div className="stat-card card h-100">
                                 <div className="card-body text-center p-4">
-                                    <i className="bi bi-clock stat-icon text-warning"></i>
+                                    <i className="bi bi-clock stat-icon"></i>
                                     <h3 className="stat-number fw-bold text-dark mt-3">
                                         {stats.expiring_soon}
                                     </h3>
+<<<<<<< HEAD
                                     <p className="stat-label text-muted mb-0">Próximas a Expirar (7 días)</p>
+=======
+                                    <p className="stat-label mb-0">Próximas a expirar</p>
+>>>>>>> origin/luna
                                 </div>
                             </div>
                         </div>
 
                         <div className="col-md-4 mb-3">
-                            <div className="stat-card card border-0 shadow-sm h-100">
+                            <div className="stat-card card h-100">
                                 <div className="card-body text-center p-4">
-                                    <i className="bi bi-hdd stat-icon text-info"></i>
+                                    <i className="bi bi-hdd stat-icon"></i>
                                     <h3 className="stat-number fw-bold text-dark mt-3">
                                         {formatFileSize(stats.total_size)}
                                     </h3>
-                                    <p className="stat-label text-muted mb-0">Espacio Utilizado</p>
+                                    <p className="stat-label mb-0">Espacio utilizado</p>
                                 </div>
                             </div>
                         </div>

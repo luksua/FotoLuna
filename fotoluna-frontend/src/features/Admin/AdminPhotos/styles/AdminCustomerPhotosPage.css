@@ -1,0 +1,453 @@
+/* ================================
+   LAYOUT GENERAL DE LA PÁGINA
+   ================================ */
+
+.acp-page {
+   padding-top: 90px;
+
+  /* margen para que no se esconda detrás del sidebar
+     ajusta 220px–260px según el ancho real de tu menú lateral */
+  padding-left: 240px;
+
+  padding-right: 40px;
+  padding-bottom: 40px;
+
+  width: 100%;
+  margin: 0;           /* importante: NO centrar con margin: 0 auto */
+  box-sizing: border-box;
+}
+
+/* En pantallas pequeñas (donde el sidebar seguramente se oculta o se hace overlay),
+   reducimos el padding-left para que no quede demasiado espacio en móviles */
+@media (max-width: 992px) {
+  .acp-page {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 80px;
+  }
+}
+.acp-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.acp-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2933;
+    margin: 0;
+}
+
+.acp-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Botón de volver a la vista principal de fotos */
+.acp-back-btn {
+    border: none;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    background: #f9f5ff;
+    color: #7c3aed;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.16);
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+
+.acp-back-btn:hover {
+    background: #ede9fe;
+    transform: translateY(-1px);
+}
+
+.acp-back-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.16);
+}
+
+/* ================================
+   TOOLBAR: FILTROS Y DESCARGA
+   ================================ */
+
+.acp-toolbar {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: rgba(250, 249, 255, 0.95);
+    box-shadow: 0 6px 26px rgba(148, 163, 184, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.acp-toolbar__group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.acp-label {
+    font-size: 0.8rem;
+    color: #4b5563;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 150px;
+}
+
+.acp-select {
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    outline: none;
+    background: #ffffff;
+    color: #111827;
+    box-shadow: 0 2px 6px rgba(148, 163, 184, 0.3);
+}
+
+.acp-select:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+}
+
+/* Botón “Descargar esta página” */
+.acp-download-btn {
+    border-radius: 999px;
+    padding: 0.55rem 1.35rem;
+    border: none;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    box-shadow: 0 10px 30px rgba(236, 72, 153, 0.35);
+    transition: all 0.18s ease;
+}
+
+.acp-download-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 36px rgba(168, 85, 247, 0.4);
+}
+
+.acp-download-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    box-shadow: none;
+}
+
+/* ================================
+   GRID DE CARDS (GALERÍA)
+   ================================ */
+
+.acp-grid {
+    margin-top: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.25rem;
+}
+
+.acp-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.16);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.acp-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(79, 70, 229, 0.35);
+}
+
+.acp-card__img-wrapper {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #e5e7eb;
+    overflow: hidden;
+}
+
+.acp-card__img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.acp-card__body {
+    padding: 0.6rem 0.85rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.acp-card__event {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6d28d9;
+    margin-bottom: 0.1rem;
+}
+
+.acp-card__date {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Botón Descargar dentro de cada card */
+.acp-card__download {
+    margin-top: 0.45rem;
+    align-self: flex-start;
+    border-radius: 999px;
+    border: none;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: #f5f3ff;
+    color: #7c3aed;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(129, 140, 248, 0.25);
+    transition: all 0.16s ease;
+}
+
+.acp-card__download:hover {
+    background: #ede9fe;
+    transform: translateY(-1px);
+}
+
+/* ================================
+   PAGINACIÓN
+   ================================ */
+
+.acp-pagination {
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.acp-page-btn {
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    padding: 0.38rem 0.85rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #374151;
+    box-shadow: 0 2px 8px rgba(148, 163, 184, 0.35);
+    transition: all 0.16s ease;
+}
+
+.acp-page-btn:hover:not(:disabled) {
+    background: #f3e8ff;
+    border-color: #d8b4fe;
+    transform: translateY(-1px);
+}
+
+.acp-page-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+    box-shadow: none;
+}
+
+.acp-page-info {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Mensaje de error */
+.acp-error {
+    margin-top: 1rem;
+    color: #b91c1c;
+    background: #fee2e2;
+    border-radius: 12px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+}
+
+/* ================================
+   MODAL “CUTE” (REUTILIZA ap-*)
+   ================================ */
+
+/* Fondo suave, no negro */
+.ap-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(148, 163, 184, 0.25);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1.25rem;
+}
+
+.ap-modal {
+    background: #ffffff;
+    border-radius: 22px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 22px 60px rgba(15, 23, 42, 0.35);
+    overflow: hidden;
+}
+
+.ap-modal--cute {
+    border: 2px solid rgba(192, 132, 252, 0.45);
+}
+
+/* Header */
+.ap-modal__header {
+    padding: 0.7rem 1rem 0.6rem;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: linear-gradient(135deg,
+            rgba(248, 250, 252, 0.95),
+            rgba(238, 242, 255, 0.95));
+}
+
+.ap-modal__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ap-modal__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    background: #f5f3ff;
+    color: #6d28d9;
+    max-width: 420px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ap-modal__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ap-modal__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.ap-modal__badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(232, 121, 249, 0.12);
+    color: #c026d3;
+    border: 1px solid rgba(216, 180, 254, 0.9);
+}
+
+/* Botón de cierre */
+.ap-modal__close {
+    border: none;
+    background: transparent;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #6b7280;
+    border-radius: 999px;
+    padding: 0.1rem 0.4rem;
+    transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+.ap-modal__close:hover {
+    background: #f3e8ff;
+    color: #7c3aed;
+    transform: translateY(-1px);
+}
+
+/* Cuerpo */
+.ap-modal__body {
+    padding: 0.75rem 0.75rem 0.4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ap-modal__body img {
+    max-width: 100%;
+    max-height: 65vh;
+    border-radius: 18px;
+    display: block;
+}
+
+/* Footer */
+.ap-modal__footer {
+    padding: 0.55rem 1rem 0.8rem;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.ap-pill {
+    font-size: 0.78rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+
+@media (max-width: 900px) {
+    .acp-page {
+        padding-inline: 1rem;
+    }
+
+    .acp-toolbar {
+        border-radius: 18px;
+    }
+
+    .acp-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .acp-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    .ap-modal {
+        max-width: 100%;
+    }
+}

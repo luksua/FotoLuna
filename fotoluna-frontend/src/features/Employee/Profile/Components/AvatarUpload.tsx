@@ -1,9 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import type { AvatarUploadProps } from './types/Profile';
 import '../Styles/perfil/AvatarUpload.css';
 
+interface AvatarUploadState {
+    preview: string | null;
+    file: File | null;
+}
+
 const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [avatarState, setAvatarState] = useState<AvatarUploadState>({
+        preview: avatar,
+        file: null,
+    });
 
     const handleAvatarClick = () => {
         fileInputRef.current?.click();
@@ -14,18 +23,21 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) =
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                onAvatarChange(event.target?.result as string);
+                const preview = event.target?.result as string;
+                setAvatarState({ preview, file });
+                // Pasar el archivo al componente padre
+                onAvatarChange(file);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleRemoveAvatar = () => {
-        onAvatarChange(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
+    // const handleRemoveAvatar = () => {
+    //     onAvatarChange(null);
+    //     if (fileInputRef.current) {
+    //         fileInputRef.current.value = '';
+    //     }
+    // };
 
     return (
         <div className="avatar-upload">
@@ -34,8 +46,8 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) =
                     className="avatar-preview"
                     onClick={handleAvatarClick}
                 >
-                    {avatar ? (
-                        <img src={avatar} alt="Avatar" className="avatar-image" />
+                    {avatarState.preview ? (
+                        <img src={avatarState.preview} alt="Avatar" className="avatar-image" />
                     ) : (
                         <div className="avatar-placeholder">
                             <i className="bi bi-person-fill"></i>
@@ -55,15 +67,15 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({ avatar, onAvatarChange }) =
                         <i className="bi bi-arrow-repeat me-1"></i>
                         Cambiar
                     </button>
-                    <button
+                    {/* <button
                         type="button"
                         className="btn btn-outline-danger btn-sm"
                         onClick={handleRemoveAvatar}
-                        disabled={!avatar}
+                        disabled={!avatarState.preview}
                     >
                         <i className="bi bi-trash me-1"></i>
                         Eliminar
-                    </button>
+                    </button> */}
                 </div>
             </div>
 

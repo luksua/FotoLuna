@@ -20,7 +20,7 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@mui/material": "^7.3.5",
-        "@mui/x-charts": "^8.19.0",
+        "@mui/x-charts": "^8.20.0",
         "cropperjs": "^2.1.0",
         "react-cropper": "^2.3.3"
     }

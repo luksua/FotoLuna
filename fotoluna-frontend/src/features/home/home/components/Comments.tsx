@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "../styles/comments.css";
 import { useState, useEffect } from "react";
 import imgperfil from "../../../../assets/Img/imgperfil.jpg";
@@ -63,6 +64,7 @@ const Comments = () => {
 
             setPhotographers([]);
         } catch (err) {
+            console.log(Error, err);
             setPhotographers([]);
         }
     };
@@ -159,6 +161,7 @@ const Comments = () => {
             try {
                 data = await res.json();
             } catch (err) {
+                console.log(Error, err);
                 const text = await res.text();
                 setMessage(`Error del servidor: ${res.status} - ${text}`);
                 setMessageType("error");

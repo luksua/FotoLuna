@@ -14,7 +14,6 @@ interface Package {
     packagePrice: string;
     packageDescription: string;
     photos?: Photo[];
-    // isGeneral?: boolean;
 }
 
 interface Step2Props {
@@ -27,6 +26,9 @@ interface Step2Props {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
+// 🔹 Clave para guardar el borrador de este paso
+const STEP2_DRAFT_KEY = "appointmentStep2Draft";
+
 const AppointmentStep2Packages: React.FC<Step2Props> = ({
     appointmentId,
     eventId,
@@ -34,10 +36,9 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     onConfirm,
     preselectedPackageId,
 }) => {
-    const [packages] = useState<Package[]>([]);
-    const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
     const [generalPackages, setGeneralPackages] = useState<Package[]>([]);
     const [specificPackages, setSpecificPackages] = useState<Package[]>([]);
+    const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +56,29 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     const speedRef = useRef(0.3);
     const clickGuardRef = useRef(false);
 
-    // Cargar paquetes del backend (general + específicos)
+    // ===============================
+    // 1) Cargar borrador de Step2
+    // ===============================
+    useEffect(() => {
+        const raw = localStorage.getItem(STEP2_DRAFT_KEY);
+        if (!raw) return;
+
+        try {
+            const parsed = JSON.parse(raw) as {
+                selectedPackageId: number | null;
+            };
+
+            if (parsed.selectedPackageId) {
+                setSelectedPackage(parsed.selectedPackageId);
+            }
+        } catch (e) {
+            console.warn("Error leyendo borrador de Step2:", e);
+        }
+    }, []);
+
+    // ===============================
+    // 2) Cargar paquetes del backend
+    // ===============================
     useEffect(() => {
         const fetchPackages = async () => {
             try {
@@ -81,22 +104,38 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         if (eventId) fetchPackages();
     }, [eventId]);
 
-    useEffect(() => {
-        if (preselectedPackageId && packages.length > 0) {
-            // Si el paquete existe en la lista, lo seleccionamos
-            const exists = packages.some((p) => p.id === preselectedPackageId);
-            if (exists) {
-                setSelectedPackage(preselectedPackageId);
-            }
-        }
-    }, [preselectedPackageId, packages]);
-
-
-    // Un solo arreglo combinado para mostrar en carrusel
+    // ===============================
+    // 3) Lista combinada para UI
+    // ===============================
     const combinedPackages: Package[] = [
         ...specificPackages,
         ...generalPackages,
     ];
+
+    // ===============================
+    // 4) Aplicar preselectedPackageId
+    //    (solo si existe en la lista)
+    // ===============================
+    useEffect(() => {
+        if (!preselectedPackageId || combinedPackages.length === 0) return;
+
+        const exists = combinedPackages.some(
+            (p) => p.id === preselectedPackageId
+        );
+        if (exists) {
+            setSelectedPackage(preselectedPackageId);
+        }
+    }, [preselectedPackageId, combinedPackages]);
+
+    // ===============================
+    // 5) Guardar selección en localStorage
+    // ===============================
+    useEffect(() => {
+        const payload = {
+            selectedPackageId: selectedPackage,
+        };
+        localStorage.setItem(STEP2_DRAFT_KEY, JSON.stringify(payload));
+    }, [selectedPackage]);
 
     // Duplicar paquetes para scroll infinito
     const items =
@@ -104,7 +143,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
             ? [...combinedPackages, ...combinedPackages]
             : [];
 
-    // 🔹 Medir el ancho del track
+    // Medir ancho del track
     useLayoutEffect(() => {
         const track = trackRef.current;
         if (!track) return;
@@ -113,7 +152,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         });
     }, [items.length]);
 
-    // Animación de auto-scroll + loop infinito
+    // Animación de auto-scroll
     useEffect(() => {
         if (combinedPackages.length <= 3) return;
 
@@ -172,6 +211,9 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
                 }
             );
             const bookingId = res?.data?.bookingId ?? res?.data?.id ?? 0;
+
+            // 👉 NO borramos el borrador aquí, para que si el usuario vuelve a este paso
+            // siga viendo el paquete seleccionado. Puedes borrarlo al terminar el wizard.
             onConfirm({ bookingId });
         } catch (err) {
             console.error("Error al confirmar cita:", err);
@@ -184,10 +226,10 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     const formatPrice = (value: string | number) => {
         const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
         if (Number.isNaN(n)) return String(value);
-        // sin decimales:
-        return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        // si quieres decimales, usa:
-        // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return n.toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
     };
 
     // Render
@@ -281,15 +323,13 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
                                     <h5 className="mb-1">{pkg.packageName}</h5>
                                     <p className="text-muted mb-2">{pkg.packageDescription}</p>
                                     <p className="fw-bold">${formatPrice(pkg.packagePrice)}</p>
-                                    {/* Opcional: si traes isGeneral del backend, puedes marcarlo */}
-                                    {/* {pkg.isGeneral && <span className="badge bg-secondary mt-1">General</span>} */}
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
             ) : (
-                // Fallback si hay 3 o menos paquetes en total
+                // Fallback si hay 3 o menos paquetes
                 <div className="row g-4">
                     {combinedPackages.map((pkg) => (
                         <div key={pkg.id} className="col-12 col-md-4">

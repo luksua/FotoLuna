@@ -35,20 +35,44 @@
 .weather-info {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 10px 20px;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 12px 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    min-width: 200px;
 }
 
 .weather-icon {
-    font-size: 2rem;
-    color: var(--pastel-lilac);
+    font-size: 2.5rem;
+    color: #dfb9df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+}
+
+.weather-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
 }
 
 .weather-details h3 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
+    font-size: 0.95rem;
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.weather-details p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 500;
 }
 
 .dashboard {
@@ -220,7 +244,6 @@
 /* Footer */
 footer {
     text-align: center;
-    padding: 20px;
     margin-top: 40px;
     color: var(--text-light);
     font-size: 0.9rem;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "../styles/quinces.css";
-import Carousel from "../components/Carousel";
+// import Carousel from "../components/Carousel";
 import Button from "../../../../../components/Home/Button";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
-// 👈 Cambia este valor por el eventId real de QUINCES en tu base de datos
 const QUINCES_EVENT_ID = 3;
 
 export default function Quinces() {
@@ -95,28 +94,28 @@ export default function Quinces() {
         });
     };
 
-    const instagramImages = [
-        {
-            id: 1,
-            url: "https://images.unsplash.com/photo-1579546929662-711aa81148cf",
-            alt: "Paisaje colorido",
-        },
-        {
-            id: 2,
-            url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
-            alt: "Montañas nevadas",
-        },
-        {
-            id: 3,
-            url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
-            alt: "Bosque encantado",
-        },
-        {
-            id: 4,
-            url: "https://images.unsplash.com/photo-1426604966848-d7adac402bff",
-            alt: "Atardecer en la playa",
-        },
-    ];
+    // const instagramImages = [
+    //     {
+    //         id: 1,
+    //         url: "https://images.unsplash.com/photo-1579546929662-711aa81148cf",
+    //         alt: "Paisaje colorido",
+    //     },
+    //     {
+    //         id: 2,
+    //         url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+    //         alt: "Montañas nevadas",
+    //     },
+    //     {
+    //         id: 3,
+    //         url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+    //         alt: "Bosque encantado",
+    //     },
+    //     {
+    //         id: 4,
+    //         url: "https://images.unsplash.com/photo-1426604966848-d7adac402bff",
+    //         alt: "Atardecer en la playa",
+    //     },
+    // ];
 
     const formatPrice = (value: string | number) => {
         const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
@@ -132,7 +131,7 @@ export default function Quinces() {
             <header className="promo-hero rounded-4">
                 <div className="container py-5">
                     <div className="row align-items-center ">
-                        <div className="col-lg-7">
+                        <div className="col-lg-12">
                             <div className="glass-card">
                                 <div className="camera-badge d-flex align-items-center gap-2">
                                     <i className="bi bi-camera-fill fs-4"></i>
@@ -243,7 +242,7 @@ export default function Quinces() {
                         </div>
 
                         {/* Carousel section */}
-                        <motion.div
+                        {/* <motion.div
                             className="col-lg-5 d-none d-lg-block position-relative"
                             initial={{ opacity: 0, scale: 0.8 }}
                             whileInView={{ opacity: 1, scale: 1 }}
@@ -268,7 +267,6 @@ export default function Quinces() {
                                                 <h6 className="bg-custom-2 fw-bold">danna</h6>
                                             </div>
                                         </motion.div>
-                                        {/* Carrusel */}
                                         <Carousel
                                             images={instagramImages}
                                             autoPlay={true}
@@ -277,7 +275,7 @@ export default function Quinces() {
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </motion.div> */}
                     </div>
                 </div>
             </header>

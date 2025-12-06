@@ -159,7 +159,7 @@ const Baptisms = () => {
                     <div className="col image-col">
                       <div className="image-wrapper">
                         <img
-                          src="img/primerac.jpg"
+                          src="img/bautizo.jpg"
                           alt="Niña vestida de primera comunión con vestido blanco y sonrisa radiante"
                           className="featured-image"
                         />
@@ -191,7 +191,7 @@ const Baptisms = () => {
                   {paquetes.map((paquete) => (
                     <div
                       key={paquete.id}
-                      className={`package-card ${paquete.destacado ? "featured" : ""}`}
+                      className={`package-card mx-auto ${paquete.destacado ? "featured" : ""}`}
                     >
                       {paquete.destacado && (
                         <div className="popular-badge">MÁS POPULAR</div>
@@ -213,14 +213,15 @@ const Baptisms = () => {
                           ))}
                         </ul>
                       </div>
-
-                      <Button
-                        className={`shiny-text-sacraments ${paquete.destacado ? "shiny-text-sacraments" : ""
-                          }`}
-                        onClick={() => handleReserve(paquete.id)}
-                      >
-                        Reservar Ahora
-                      </Button>
+                      <div className="">
+                        <Button
+                          className={`shiny-text-sacraments ${paquete.destacado ? "shiny-text-sacraments" : ""
+                            }`}
+                          onClick={() => handleReserve(paquete.id)}
+                        >
+                          Reservar Ahora
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
