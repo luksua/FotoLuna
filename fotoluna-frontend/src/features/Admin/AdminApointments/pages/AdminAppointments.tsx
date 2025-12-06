@@ -7,6 +7,8 @@ import AssignPhotographerModal from "../Components/AssignPhotographerModal";
 import type { AdminAppointment } from "../Components/Types/types";
 import type { AdminAppointmentsResponse } from "../Components/Types/types";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
+import ExportButton from "../../../../components/ExportButton";
+import { exportAppointmentsToExcel } from "../../../../services/exportAppointmentsService";
 import "../styles/adminAppointments.css";
 
 const API_BASE_URL = "http://127.0.0.1:8000/api"; // ajusta a tu entorno
@@ -149,10 +151,53 @@ const AdminAppointments: React.FC = () => {
 
     const pageItems = getPageItems(totalPages, currentPage);
 
+    const fetchAllAppointments = async () => {
+        let allAppointments: AdminAppointment[] = [];
+        let pageNum = 1;
+        let lastPageNum = 1;
+
+        try {
+            do {
+                const response = await axios.get<AdminAppointmentsResponse>(
+                    `${API_BASE_URL}/admin/appointments`,
+                    {
+                        headers: getAuthHeaders(),
+                        params: {
+                            page: pageNum,
+                            per_page: 100,
+                            search: filterText || undefined,
+                            status: filterStatus,
+                            assigned: filterAssigned,
+                            sort: sortOrder,
+                        },
+                    }
+                );
+
+                allAppointments = allAppointments.concat(response.data.data);
+                lastPageNum = response.data.last_page;
+                pageNum++;
+            } while (pageNum <= lastPageNum);
+        } catch (error) {
+            console.error('Error fetching all appointments for export:', error);
+        }
+
+        return allAppointments;
+    };
+
+    const handleExportToExcel = async () => {
+        const allAppointments = await fetchAllAppointments();
+        await exportAppointmentsToExcel(allAppointments, 'Citas_Todas');
+    };
+
     return (
         <HomeLayout>
             <div className="container mt-4">
                 <h2 className="mb-3">Citas</h2>
+
+                {/* Botón de exportar */}
+                <div style={{ marginBottom: 16 }}>
+                    <ExportButton onClick={handleExportToExcel} label="Descargar Excel" />
+                </div>
 
                 {/* Filtros */}
                 <div className="row g-3 mb-3">

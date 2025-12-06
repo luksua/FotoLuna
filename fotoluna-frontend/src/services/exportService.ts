@@ -91,13 +91,13 @@ export const exportPaymentsToExcel = async (payments: any[], fileName = 'Pagos')
     const worksheet = workbook.addWorksheet('Pagos');
 
     worksheet.columns = [
-        { header: 'ID', key: 'id', width: 12 },
-        { header: 'Cliente', key: 'customerName', width: 30 },
-        { header: 'Monto', key: 'amount', width: 16 },
-        { header: 'Método', key: 'method', width: 18 },
-        { header: 'Estado', key: 'status', width: 14 },
-        { header: 'Fecha', key: 'date', width: 16 },
-        { header: 'Referencia', key: 'reference', width: 24 },
+        { header: 'ID', key: 'id', width: 15 },
+        { header: 'Cliente', key: 'customerName', width: 35 },
+        { header: 'Monto', key: 'amount', width: 22 },
+        { header: 'Método', key: 'method', width: 22 },
+        { header: 'Estado', key: 'status', width: 18 },
+        { header: 'Fecha', key: 'date', width: 18 },
+        { header: 'Referencia', key: 'reference', width: 28 },
     ];
 
     worksheet.getRow(1).eachCell((cell) => {
@@ -105,16 +105,29 @@ export const exportPaymentsToExcel = async (payments: any[], fileName = 'Pagos')
     });
 
     payments.forEach((payment) => {
+        const rawId = payment.paymentId ?? payment.id ?? '';
+        const idNumber = Number(String(rawId).replace(/[^0-9-]+/g, '')) || 0;
+
         const parsedAmount = typeof payment.amount === 'string'
             ? Number(payment.amount.replace(/[^0-9.-]+/g, ''))
             : Number(payment.amount ?? 0);
+
+        const statusRaw = (payment.paymentStatus ?? payment.status ?? '').toString().toLowerCase();
+        const statusMap: Record<string, string> = {
+            paid: 'Pagado',
+            pending: 'Pendiente',
+            cancelled: 'Cancelado',
+            unpaid: 'No pagado',
+            refunded: 'Reembolsado',
+        };
+        const statusText = statusMap[statusRaw] ?? (statusRaw ? statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1) : '');
 
         const row = worksheet.addRow({
             id: Number(payment.paymentId ?? payment.id ?? ''),
             customerName: payment.customerName ?? payment.clientName ?? '',
             amount: parsedAmount,
             method: payment.paymentMethod ?? payment.method ?? 'Desconocido',
-            status: payment.paymentStatus ?? payment.status ?? '',
+            status: statusText,
             date: payment.paymentDate ?? payment.date ?? '',
             reference: payment.referenceNumber ?? payment.transactionId ?? payment.reference ?? '',
         });
@@ -129,10 +142,21 @@ export const exportPaymentsToExcel = async (payments: any[], fileName = 'Pagos')
         const amountColIndex = worksheet.columns.findIndex((c) => c && (c as any).key === 'amount');
         if (amountColIndex >= 0) {
             const col = worksheet.getColumn(amountColIndex + 1);
-            col.numFmt = '"$"#,##0.00';
+            col.numFmt = '$#,##0.00';
         }
     } catch (e) {
         // no interrumpir si hay fallo
+    }
+
+    // Aplicar formato numérico entero en columna 'id'
+    try {
+        const idColIndex = worksheet.columns.findIndex((c) => c && (c as any).key === 'id');
+        if (idColIndex >= 0) {
+            const col = worksheet.getColumn(idColIndex + 1);
+            col.numFmt = '0';
+        }
+    } catch (e) {
+        // ignore
     }
 
     autoAdjustColumns(worksheet);
@@ -186,14 +210,15 @@ export const exportEmployeesToExcel = async (employees: any[], fileName = 'Emple
     const worksheet = workbook.addWorksheet('Empleados');
 
     worksheet.columns = [
-        { header: 'ID', key: 'id', width: 10 },
-        { header: 'Nombre', key: 'firstName', width: 20 },
-        { header: 'Apellido', key: 'lastName', width: 20 },
-        { header: 'Email', key: 'email', width: 30 },
+        { header: 'ID', key: 'id', width: 12 },
+        { header: 'Nombre', key: 'firstName', width: 22 },
+        { header: 'Apellido', key: 'lastName', width: 22 },
         { header: 'Teléfono', key: 'phone', width: 18 },
-        { header: 'Especialidad', key: 'specialty', width: 20 },
-        { header: 'Disponible', key: 'available', width: 12 },
-        { header: 'Calificación', key: 'rating', width: 12 },
+        { header: 'Documento', key: 'document', width: 18 },
+        { header: 'Correo', key: 'email', width: 28 },
+        { header: 'Dirección', key: 'address', width: 28 },
+        { header: 'EPS', key: 'eps', width: 18 },
+        { header: 'Estado', key: 'status', width: 12 },
     ];
 
     worksheet.getRow(1).eachCell((cell) => {
@@ -201,15 +226,26 @@ export const exportEmployeesToExcel = async (employees: any[], fileName = 'Emple
     });
 
     employees.forEach((employee) => {
+        const numericId = typeof employee.id === 'string' ? Number(employee.id.replace(/[^0-9-]+/g, '')) || 0 : Number(employee.id ?? 0);
+        const fullName = (employee.nombre || employee.firstName || employee.name || '').toString();
+        let firstName = '';
+        let lastName = '';
+        if (fullName) {
+            const parts = fullName.split(' ');
+            firstName = parts.shift() || '';
+            lastName = parts.join(' ');
+        }
+
         const row = worksheet.addRow({
-            id: Number(employee.employeeId ?? employee.id ?? ''),
-            firstName: employee.firstNameEmployee ?? employee.firstName ?? '',
-            lastName: employee.lastNameEmployee ?? employee.lastName ?? '',
-            email: employee.emailEmployee ?? employee.email ?? '',
-            phone: employee.phoneEmployee ?? employee.phone ?? '',
-            specialty: employee.specialty ?? 'N/A',
-            available: employee.available ? 'Sí' : 'No',
-            rating: employee.averageRating ?? employee.rating ?? 'N/A',
+            id: numericId,
+            firstName,
+            lastName,
+            phone: employee.telefono ?? employee.phone ?? '',
+            document: employee.documento ?? employee.document ?? employee.documentNumber ?? '',
+            email: employee.correo ?? employee.email ?? '',
+            address: employee.address ?? '',
+            eps: employee.EPS ?? employee.eps ?? '',
+            status: (employee.estado === true || String(employee.estado).toLowerCase() === 'activo' || String(employee.estado).toLowerCase() === 'active') ? 'Activo' : 'Inactivo',
         });
 
         row.eachCell((cell) => {
@@ -217,7 +253,19 @@ export const exportEmployeesToExcel = async (employees: any[], fileName = 'Emple
         });
     });
 
-    autoAdjustColumns(worksheet);
+    // Ajuste automático de columnas para evitar '#####'
+    const minWidths: Record<string, number> = { id: 8, firstName: 12, lastName: 12, phone: 14, document: 12, email: 18, address: 18, eps: 12, status: 10 };
+    worksheet.columns.forEach((col: any) => {
+        let maxLength = 0;
+        col.eachCell?.({ includeEmpty: true }, (cell: any) => {
+            const text = (cell.text !== undefined && cell.text !== null) ? String(cell.text) : (cell.value !== undefined && cell.value !== null ? String(cell.value) : '');
+            const len = text.replace(/\r?\n/g, ' ').length;
+            if (len > maxLength) maxLength = len;
+        });
+        const calculated = Math.min(maxLength + 2, 50);
+        const minW = minWidths[col.key as string] ?? 10;
+        col.width = Math.max(minW, calculated);
+    });
 
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);

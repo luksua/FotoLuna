@@ -4,6 +4,8 @@ import '../styles/AdminEmployee.css';
 import { useEffect, useState } from "react";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import SuccessAlert from "../components/SuccessAlert";
+import ExportButton from "../../../../components/ExportButton";
+import { exportEmployeesToExcel } from '../../../../services/exportService';
 
 
 type Employee = {
@@ -240,11 +242,17 @@ const EmployeeCustomers = () => {
     return (
         <HomeLayout>
             <div className="employee-container">
-                <div className="search-box">
-                    <input type="text"
-                        placeholder="Buscar empleados..."
-                        value={searchQuery}
-                        onChange={(e) => handleSearchChange(e.target.value)}/>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div className="search-box" style={{ flex: 1 }}>
+                        <input type="text"
+                            placeholder="Buscar empleados..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)} />
+                    </div>
+
+                    <div>
+                        <ExportButton onClick={async () => { await exportEmployeesToExcel(employees, 'Empleados_Todos'); }} label="Descargar Excel" />
+                    </div>
                 </div>
 
                 {showSuccessAlert && (
