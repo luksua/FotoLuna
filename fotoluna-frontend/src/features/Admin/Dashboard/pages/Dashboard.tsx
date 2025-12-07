@@ -291,50 +291,50 @@ const Dashboard = () => {
                     />
                 </Box>
                 <Box
-  sx={{
-    flex: 1,
-    minWidth: 350,
-    maxWidth: 500,
-    height: 250,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f1f1f1ff',
-    borderRadius: 2,
-    boxShadow: 2,
-    p: 3,
-  }}
->
-  <Typography variant="h6" sx={{ mb: 1 }}>
-    Paquetes Más Vendidos
-  </Typography>
+                    sx={{
+                        flex: 1,
+                        minWidth: 350,
+                        maxWidth: 500,
+                        height: 250,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#f1f1f1ff',
+                        borderRadius: 2,
+                        boxShadow: 2,
+                        p: 3,
+                    }}
+                >
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                        Paquetes Más Vendidos
+                    </Typography>
 
-  <PieChart
-    series={[{
-      data: packagesStats.length > 0
-        ? packagesStats.map((p, idx) => ({
-            id: idx,
-            value: p.value,
-            label: p.name,
-            color: ['#d297e0ff', '#fdd1deff', '#9c97e0ff', '#c792dfff', '#efd6f9ff'][idx % 5],
-          }))
-        : [{ id: 0, value: 1, label: 'Sin datos', color: '#efe6ff' }],
-    }]}
-    width={150}
-    height={150}
-    // 👇 SEPARA el gráfico de la leyenda
-    margin={{ right: 60 }}
-    slotProps={{
-      legend: {
-        direction: 'column',
-        position: { vertical: 'middle', horizontal: 'right' },
-        padding: 8,   // espacio alrededor de toda la leyenda
-        itemGap: 6,   // espacio entre Premium / Deluxe / Básico
-      },
-    }}
-  />
-</Box>
+                    <PieChart
+                        series={[{
+                            data: packagesStats.length > 0
+                                ? packagesStats.map((p, idx) => ({
+                                    id: idx,
+                                    value: p.value,
+                                    label: p.name,
+                                    color: ['#d297e0ff', '#fdd1deff', '#9c97e0ff', '#c792dfff', '#efd6f9ff'][idx % 5],
+                                }))
+                                : [{ id: 0, value: 1, label: 'Sin datos', color: '#efe6ff' }],
+                        }]}
+                        width={320}
+                        height={200}
+                        margin={{ top: 10, right: 120, bottom: 10, left: 10 }}
+                        slotProps={{
+                            legend: {
+                                direction: 'column',
+                                position: { vertical: 'middle', horizontal: 'right' },
+                                padding: -30,
+                                itemGap: 19,
+                                labelStyle: { fontSize: 14, fontWeight: 500 },
+                            },
+                        }}
+                    />
+                </Box>
 
             </Box>
 
