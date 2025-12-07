@@ -16,7 +16,7 @@ export const exportStoragePaymentsToExcel = async (payments: any[], fileName = '
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF805fa6' } };
-        cell.alignment = { horizontal: 'center', vertical: 'center' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -50,7 +50,7 @@ export const exportStoragePaymentsToExcel = async (payments: any[], fileName = '
                 bottom: { style: 'thin' },
                 right: { style: 'thin' },
             };
-            cell.alignment = { vertical: 'center' };
+            cell.alignment = { vertical: 'middle' };
         });
     });
 
@@ -61,7 +61,7 @@ export const exportStoragePaymentsToExcel = async (payments: any[], fileName = '
         const totalRow = worksheet.addRow({ id: '', date: '', amount: totalAmount, status: 'Ingresos Totales' });
         totalRow.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
         totalRow.getCell('amount').numFmt = '[$$-es-CO]#,##0.00';
-        totalRow.getCell('status').alignment = { horizontal: 'center', vertical: 'center' };
+        totalRow.getCell('status').alignment = { horizontal: 'center', vertical: 'middle' };
     }
 
     // Formato de moneda para columna Monto

@@ -15,6 +15,7 @@ use App\Models\Booking;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentController extends Controller
 {
@@ -435,7 +436,7 @@ class AppointmentController extends Controller
     public function storeCustomer(Request $request)
     {
         try {
-            \Log::info('Datos recibidos en store appointment:', $request->all());
+            Log::info('Datos recibidos en store appointment:', $request->all());
 
             // ✅ Validar entrada
             $validator = Validator::make($request->all(), [
@@ -451,7 +452,7 @@ class AppointmentController extends Controller
             }
 
             // ✅ Obtener el cliente del usuario autenticado
-            $user = auth()->user();
+            $user = $request->user();
 
             if (!$user || !$user->customer) {
                 return response()->json([
@@ -479,7 +480,7 @@ class AppointmentController extends Controller
                 'status' => $appointment->appointmentStatus,
             ], 201);
         } catch (Throwable $e) {
-            \Log::error('Error al crear cita: ' . $e->getMessage());
+            Log::error('Error al crear cita: ' . $e->getMessage());
 
             return response()->json([
                 'message' => 'Error interno del servidor',
@@ -492,7 +493,7 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         try {
-            \Log::info('Datos recibidos en store appointment:', $request->all());
+            Log::info('Datos recibidos en store appointment:', $request->all());
 
             // 1. ✅ VALIDACIÓN
             $validator = Validator::make($request->all(), [
@@ -549,7 +550,7 @@ class AppointmentController extends Controller
             ], 201);
 
         } catch (Throwable $e) {
-            \Log::error('Error al crear cita: ' . $e->getMessage());
+            Log::error('Error al crear cita: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error interno del servidor',
                 'error' => $e->getMessage(),
@@ -1123,13 +1124,13 @@ class AppointmentController extends Controller
      */
     public function pendingByUserId(Request $request, $userId)
     {
-        \Log::info("PendingByUserId called with userId: {$userId}");
+        Log::info("PendingByUserId called with userId: {$userId}");
 
         try {
             // Obtener el customer asociado al user_id
             $customer = Customer::where('user_id', $userId)->first();
 
-            \Log::info("Customer found: " . ($customer ? "Yes (id: {$customer->customerId})" : "No"));
+            Log::info("Customer found: " . ($customer ? "Yes (id: {$customer->customerId})" : "No"));
 
             if (!$customer) {
                 return response()->json([
@@ -1154,7 +1155,7 @@ class AppointmentController extends Controller
                 ->orderBy('appointmentTime', 'asc')
                 ->paginate($perPage);
 
-            \Log::info("Found {$appointments->total()} pending appointments for customer {$customer->customerId}");
+            Log::info("Found {$appointments->total()} pending appointments for customer {$customer->customerId}");
 
             // Transformar datos de la colección
             $data = $appointments->getCollection()->map(function ($apt) {
@@ -1184,7 +1185,7 @@ class AppointmentController extends Controller
                 ],
             ], 200);
         } catch (\Exception $e) {
-            \Log::error("pendingByUserId error: " . $e->getMessage());
+            Log::error("pendingByUserId error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -1250,7 +1251,7 @@ class AppointmentController extends Controller
                 ],
             ], 200);
         } catch (\Exception $e) {
-            \Log::error("completedByUserId error: " . $e->getMessage());
+            Log::error("completedByUserId error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -1271,7 +1272,7 @@ class AppointmentController extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
-            \Log::error("getPendingCount error: " . $e->getMessage());
+            Log::error("getPendingCount error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => $e->getMessage(),

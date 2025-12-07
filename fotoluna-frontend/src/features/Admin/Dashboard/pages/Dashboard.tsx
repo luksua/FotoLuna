@@ -4,7 +4,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import EventIcon from "@mui/icons-material/Event";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import { red, teal } from '@mui/material/colors';
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -226,7 +226,7 @@ const Dashboard = () => {
 
                 {/* Tarjeta de Paquetes Vendidos */}
                 <Box sx={{ flex: '1 1 250px', maxWidth: 350, minWidth: 220, display: 'flex', alignItems: 'center', bgcolor: '#f5f5f5', borderRadius: 2, p: 2, boxShadow: 2 }}>
-                    <AttachMoneyIcon color="success" sx={{ fontSize: 35, mr: 2 }} />
+                    <LocalOfferIcon color="success" sx={{ fontSize: 35, mr: 2 }} />
                     <Box sx={{ ml: 2 }}>
                         <Typography variant="subtitle1" color="text.secondary">Paquetes Vendidos en total</Typography>
                         <Typography variant="h5" color="primary">
@@ -249,12 +249,12 @@ const Dashboard = () => {
 
             {/* Gráfica de ventas*/}
             <BarChart
-                dataset={chartData}
+                dataset={chartData as any}
                 xAxis={[{ dataKey: 'mes', tickPlacement: 'middle', tickLabelPlacement: 'middle' }]}
-                yAxis={[{ label: 'Ventas', width: 60 }]}
+                yAxis={[{ label: 'Ventas' }]}
                 series={[{ dataKey: 'ventas', label: 'Ventas por mes al año', color: '#805fa6' }]}
                 height={300}
-                margin={{ left: 0 }}
+                margin={{ left: 60 }}
             />
 
             {/* Gauge y PieChart lado a lado, igual tamaño y alineados */}
@@ -275,7 +275,7 @@ const Dashboard = () => {
                                 fill: '#ab64fcff',
                             },
                         }}
-                        text={({ value, valueMax }) => `${(averageRating).toFixed(1)} / 5`}
+                        text={`${(averageRating).toFixed(1)} / 5`}
                         width={200}
                         height={200}
                     />
