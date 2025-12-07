@@ -1,14 +1,144 @@
-.carousel-item img {
-    height: 300px;
-    object-fit: cover;
+/* ===== FOOTER GENERAL ===== */
+.home-footer {
+    margin-top: 0;
 }
 
-/*boton de guasap*/
+/* Simula el fondo claro de la página encima del footer */
+.home-footer__wave-container {
+    background-color: #ffffff;
+    /* gris clarito tipo Clouding */
+}
+
+/* SVG de la onda */
+.home-footer__wave-svg {
+    display: block;
+    width: 100%;
+    height: 140px;
+    /* puedes subir/bajar para hacer la onda más grande */
+}
+
+/* ===== FONDO MORADO DEL FOOTER ===== */
+.home-footer__bg {
+    background: linear-gradient(180deg, #7c52a1 0%, #593176 100%);
+    color: #ffffff;
+    margin-top: -1px;
+    /* elimina la línea entre onda y fondo */
+}
+
+/* ===== CTA SUPERIOR ===== */
+.home-footer__cta {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    padding: 24px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.home-footer__cta-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f9fafb;
+}
+
+.home-footer__cta-text {
+    color: #e5e7eb;
+    max-width: 540px;
+}
+
+.home-footer__cta-btn {
+    background-color: #c084d4;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+}
+
+.home-footer__cta-btn:hover {
+    background-color: #a855f7;
+    color: #111827;
+}
+
+/* ===== LOGO Y DESCRIPCIÓN ===== */
+.home-footer__logo-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #c7b7cc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #111827;
+}
+
+.home-footer__logo-text {
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.home-footer__description {
+    color: #e5e7eb;
+}
+
+/* ===== TITULOS DE COLUMNA ===== */
+.home-footer__column-title {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    color: #c7a7e4;
+    font-weight: 600;
+}
+
+/* ===== LINKS Y TEXTO ===== */
+.home-footer__link {
+    text-decoration: none;
+    color: #e5e7eb;
+    font-size: 0.95rem;
+}
+
+.home-footer__link:hover {
+    color: #ffffff;
+}
+
+.home-footer__text {
+    color: #e5e7eb;
+    font-size: 0.95rem;
+}
+
+/* Lista de contacto */
+.home-footer__contact-list i {
+    font-size: 1rem;
+    margin-top: 3px;
+    color: #d1d5db;
+}
+
+/* ===== REDES SOCIALES ===== */
+.home-footer__social-link {
+    font-size: 1.3rem;
+    color: #c7a7e4;
+    text-decoration: none;
+}
+
+.home-footer__social-link:hover {
+    color: #ffffff;
+}
+
+/* ===== PARTE INFERIOR ===== */
+.home-footer__bottom {
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
+    margin-top: 16px;
+}
+
+.home-footer__bottom p {
+    color: #e5e7eb !important;
+}
+
+/* ===== BOTÓN WHATSAPP FLOTANTE ===== */
 .whatsapp-btn {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color:#DCABDF;
+    background-color: #25d366;
     border: none;
     border-radius: 50%;
     width: 60px;
@@ -19,15 +149,33 @@
     color: white;
     font-size: 28px;
     z-index: 1000;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-
-.footer {
-    background-color: #f8f9fa;
-    padding: 20px 0;
+.whatsapp-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.2);
 }
 
-.image {
-    width: 800px;
-}
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .home-footer__cta {
+        text-align: center;
+    }
 
+    .home-footer__cta-title {
+        font-size: 1.5rem;
+    }
+
+    .home-footer__cta-text {
+        margin-bottom: 1rem;
+    }
+
+    .home-footer__cta-btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+    }
+}

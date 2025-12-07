@@ -19,8 +19,16 @@ import Register from "../../auth/components/SignUpForm";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
-// 🔹 Clave para el borrador del paso 1
+// Borrador paso 1
 const APPOINTMENT_DRAFT_KEY = "appointmentDraftStep1";
+
+const parseLocalDate = (value: string): Date => {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day); // 👈 sin lío de UTC
+};
+
+const serializeDate = (d: Date | null) =>
+    d ? format(d, "yyyy-MM-dd") : null;
 
 type Event = {
     id: number;
@@ -34,13 +42,21 @@ type FormValues = {
     appointmentTime: string;
     place: string;
     comment?: string;
-    customerIdFK?: number | string;
 };
 
 interface AppointmentStep1Props {
     onNext?: (data: { appointmentId: number; event: Event; place: string }) => void;
     initialEventId?: number | null;
+    existingAppointmentId?: number | null;
 }
+
+// 🆕 tipo para lo que guardamos en localStorage
+type DraftStorage = {
+    appointmentId?: number | null;
+    formValues?: Partial<FormValues>;
+    selectedDate?: string | null;
+    visibleMonth?: string | null;
+};
 
 // Conversión de formato de hora
 function convertTo24Hour(timeStr: string): string {
@@ -74,12 +90,12 @@ async function findFirstAvailableDate(start: Date, maxDays = 60): Promise<Date |
 const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
     onNext,
     initialEventId,
+    existingAppointmentId,
 }) => {
     const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
     const [loading, setLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [visibleMonth, setVisibleMonth] = useState<Date>(new Date());
-    const [selectedTime, setSelectedTime] = useState<string>("");
 
     const [events, setEvents] = useState<Event[]>([]);
     const [eventOptions, setEventOptions] = useState<{ value: string; label: string }[]>([]);
@@ -100,6 +116,9 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
 
     // Mensaje de feedback (login/register ok)
     const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+    // 🆕 estado local para manejar el appointmentId del borrador
+    const [appointmentId, setAppointmentId] = useState<number | null>(existingAppointmentId ?? null);
 
     type LocalStorageUser = {
         id: number;
@@ -128,6 +147,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
         register,
         watch,
         reset,
+        setError,
     } = useForm<FormValues>({
         defaultValues: {
             eventIdFK: "",
@@ -139,6 +159,14 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
     });
 
     const watchedEventId = watch("eventIdFK");
+    const watchedTime = watch("appointmentTime");
+
+    // 🔁 Si cambia el existingAppointmentId (por props), sincronizamos
+    useEffect(() => {
+        if (existingAppointmentId) {
+            setAppointmentId(existingAppointmentId);
+        }
+    }, [existingAppointmentId]);
 
     // 🔁 Recalcular isDocumentEvent cuando haya eventos + eventIdFK
     useEffect(() => {
@@ -156,7 +184,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
         setIsDocumentEvent(!!isDoc);
 
         if (isDoc) {
-            // aseguramos que el lugar no se use para documentos
             setValue("place", "");
         }
     }, [events, watchedEventId, setValue]);
@@ -169,55 +196,50 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
         if (!raw) return;
 
         try {
-            const parsed = JSON.parse(raw) as {
-                formValues?: Partial<FormValues>;
-                selectedDate?: string | null;
-                selectedTime?: string | null;
-                visibleMonth?: string | null;
-            };
+            const parsed = JSON.parse(raw) as DraftStorage;
+
+            // 🆕 si teníamos guardado un appointmentId en el borrador y NO vino uno por props, lo usamos
+            if (parsed.appointmentId && !existingAppointmentId) {
+                setAppointmentId(parsed.appointmentId);
+            }
 
             if (parsed.formValues) {
                 reset(parsed.formValues as FormValues);
             }
 
             if (parsed.selectedDate) {
-                const d = new Date(parsed.selectedDate);
+                const d = parseLocalDate(parsed.selectedDate);
                 setSelectedDate(d);
                 setValue("appointmentDate", format(d, "yyyy-MM-dd"));
                 setVisibleMonth(d);
             }
 
-            if (parsed.selectedTime) {
-                setSelectedTime(parsed.selectedTime);
-                setValue("appointmentTime", parsed.selectedTime);
-            }
-
             if (parsed.visibleMonth) {
-                setVisibleMonth(new Date(parsed.visibleMonth));
+                setVisibleMonth(parseLocalDate(parsed.visibleMonth));
             }
 
             setInitialResolved(true);
         } catch (e) {
             console.warn("Error leyendo borrador de la cita:", e);
         }
-    }, [reset, setValue]);
+    }, [reset, setValue, existingAppointmentId]);
 
     // ================================
     // 2) Guardar borrador en localStorage
     // ================================
     useEffect(() => {
         const subscription = watch((values) => {
-            const payload = {
+            const payload: DraftStorage = {
+                appointmentId,                          // 🆕 guardamos también el ID del appointment
                 formValues: values,
-                selectedDate: selectedDate ? format(selectedDate, "yyyy-MM-dd") : null,
-                selectedTime: selectedTime || null,
-                visibleMonth: visibleMonth ? format(visibleMonth, "yyyy-MM-dd") : null,
+                selectedDate: serializeDate(selectedDate),
+                visibleMonth: serializeDate(visibleMonth),
             };
             localStorage.setItem(APPOINTMENT_DRAFT_KEY, JSON.stringify(payload));
         });
 
         return () => subscription.unsubscribe();
-    }, [watch, selectedDate, selectedTime, visibleMonth]);
+    }, [watch, selectedDate, visibleMonth, appointmentId]);
 
     // ================================
     // 3) Cargar eventos
@@ -269,7 +291,12 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
     // 4) Fecha inicial si no había borrador
     // ================================
     useEffect(() => {
-        if (initialResolved && selectedDate) return;
+        // Si ya hay fecha (por borrador o porque el usuario eligió), no hacer nada
+        if (selectedDate) return;
+
+        // Si hay borrador guardado, dejamos que el otro useEffect se encargue
+        const raw = localStorage.getItem(APPOINTMENT_DRAFT_KEY);
+        if (raw) return;
 
         (async () => {
             const today = new Date();
@@ -348,6 +375,15 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         setServerErrors({});
 
+        // 🔐 Validación de hora extra por si acaso
+        if (!data.appointmentTime) {
+            setError("appointmentTime", {
+                type: "manual",
+                message: "Seleccione una hora",
+            });
+            return;
+        }
+
         const token = localStorage.getItem("token");
         const customerId = getCustomerId();
 
@@ -361,51 +397,55 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
         try {
             const formattedTime = convertTo24Hour(data.appointmentTime);
 
-            // const payload = {
-            //     ...data,
-            //     appointmentTime: formattedTime,
-            //     appointmentStatus: "Pending confirmation",
-            //     customerIdFK: customerId,
-            // };
             const payload = {
                 ...data,
                 appointmentTime: formattedTime,
-                appointmentStatus: "draft", // 👈 NUEVO
-                customerIdFK: customerId,
             };
 
-            const res = await axios.post(
-                `${API_BASE}/api/appointmentsCustomer`,
-                payload,
-                { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
-            );
+            let res;
+            // 🆕 priorizamos el appointmentId del estado (borrador) y luego el prop
+            const effectiveAppointmentId = appointmentId ?? existingAppointmentId ?? null;
 
-            const selectedEvent = events.find((e) => e.id === parseInt(data.eventIdFK));
+            if (effectiveAppointmentId) {
+                // 👈 actualizamos la cita existente (borrador)
+                res = await axios.put(
+                    `${API_BASE}/api/appointmentsCustomer/${effectiveAppointmentId}`,
+                    payload,
+                    { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
+                );
+                // aseguramos que el estado quede alineado
+                setAppointmentId(effectiveAppointmentId);
+            } else {
+                // 👈 creamos una nueva cita borrador
+                res = await axios.post(
+                    `${API_BASE}/api/appointmentsCustomer`,
+                    payload,
+                    { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
+                );
 
-            // ✅ Limpiar borrador al completar cita
-            localStorage.removeItem(APPOINTMENT_DRAFT_KEY);
+                // 🆕 guardamos el appointmentId que devuelve el backend
+                if (res.data?.appointmentId) {
+                    setAppointmentId(res.data.appointmentId);
+                }
+            }
 
-            if (onNext && selectedEvent) {
+            const selectedEvent = events.find((e) => e.id === parseInt(data.eventIdFK, 10));
+
+            const finalAppointmentId: number | undefined =
+                res.data?.appointmentId ?? effectiveAppointmentId ?? undefined;
+
+            if (onNext && selectedEvent && finalAppointmentId) {
                 onNext({
-                    appointmentId: res.data.appointmentId,
+                    appointmentId: finalAppointmentId,
                     event: selectedEvent,
                     place: data.place,
                 });
             }
         } catch (err: any) {
-            console.error("❌ Error completo:", err.response?.data || err);
+            console.error("Error completo:", err.response?.data || err);
             if (err.response) {
                 if (err.response.status === 422) {
-                    if (err.response.data.errors?.customerIdFK) {
-                        setServerErrors({
-                            general: [
-                                "Error: Faltó el ID de cliente en la solicitud. Asegúrate de iniciar sesión.",
-                                ...err.response.data.errors.customerIdFK,
-                            ],
-                        });
-                    } else {
-                        setServerErrors(err.response.data.errors || {});
-                    }
+                    setServerErrors(err.response.data.errors || {});
                 } else {
                     setServerErrors({ general: [err.response.data.message || "Error del servidor"] });
                 }
@@ -492,6 +532,10 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
 
                                             setSelectedDate(date);
                                             setValue("appointmentDate", dateStr);
+
+                                            // 🔹 Muy importante: limpiar hora al cambiar de día
+                                            setValue("appointmentTime", "", { shouldValidate: true });
+
                                             setVisibleMonth(date);
                                         }}
                                         locale={es}
@@ -560,7 +604,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
                                         <button
                                             key={slot}
                                             type="button"
-                                            className={`btn time-btn ${selectedTime === slot
+                                            className={`btn time-btn ${watchedTime === slot
                                                 ? "btn-primary"
                                                 : blockedTimes.includes(slot)
                                                     ? "btn-secondary disabled"
@@ -568,7 +612,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
                                                 }`}
                                             onClick={() => {
                                                 if (!blockedTimes.includes(slot)) {
-                                                    setSelectedTime(slot);
                                                     setValue("appointmentTime", slot, { shouldValidate: true });
                                                 }
                                             }}
@@ -628,8 +671,43 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
                                 control={control}
                                 rules={{
                                     validate: (value) => {
-                                        if (isDocumentEvent) return true;
-                                        return value?.trim() ? true : "El lugar es obligatorio";
+                                        if (isDocumentEvent) return true; // si es evento de documentos, no exigimos lugar
+
+                                        const trimmed = value?.trim() || "";
+                                        if (!trimmed) return "El lugar es obligatorio";
+
+                                        // 1) Debe tener tipo de vía
+                                        const hasStreetType = /\b(calle|cll|carrera|cra|kra|kr|avenida|av)\b/i.test(trimmed);
+                                        if (!hasStreetType) {
+                                            return "Incluye el tipo de vía (Calle, Carrera, Avenida, etc.)";
+                                        }
+
+                                        // 2) Debe tener algún número (de vía o de casa)
+                                        const hasNumber = /\d{1,4}/.test(trimmed);
+                                        if (!hasNumber) {
+                                            return "Incluye el número de la dirección";
+                                        }
+
+                                        // 3) Barrio / sector
+
+                                        // 3.1 "Barrio X" o "br X"
+                                        const hasBarrioWord = /\b(barrio|br)\s+\S+/i.test(trimmed);
+
+                                        // 3.2 Algo después de una coma: "..., Gaitán"
+                                        const parts = trimmed.split(",");
+                                        const hasPartAfterComma = parts.length > 1 && parts[1].trim().length > 2;
+
+                                        // 3.3 Última palabra tipo barrio: "cra 9A #37-20 gaitan"
+                                        const tokens = trimmed.split(/\s+/);
+                                        const lastToken = tokens[tokens.length - 1] || "";
+                                        const hasPlainNeighborhood =
+                                            /^[a-záéíóúñ]+$/i.test(lastToken) && lastToken.length >= 3;
+
+                                        if (!hasBarrioWord && !hasPartAfterComma && !hasPlainNeighborhood) {
+                                            return "Incluye el barrio o sector al final (ej. 'gaitán', 'Barrio Gaitán' o ', Gaitán')";
+                                        }
+
+                                        return true;
                                     },
                                 }}
                                 render={({ field }) => (
@@ -755,12 +833,6 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
                                         onSuccess={() => handleAuthSuccess("register")}
                                         onCancel={() => setShowAuthModal(false)}
                                     />
-                                    <button
-                                        className="btn custom-upload-btn w-100 mt-2"
-                                        onClick={() => setAuthMode("choose")}
-                                    >
-                                        Volver
-                                    </button>
                                     <p className="auth-modal-switch text-center mt-3">
                                         ¿Ya tienes cuenta?{" "}
                                         <button

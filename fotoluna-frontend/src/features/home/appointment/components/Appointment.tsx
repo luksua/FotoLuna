@@ -4,6 +4,7 @@ import "../styles/appointment.css";
 import Button from "../../../../components/Home/Button";
 import axios from "axios";
 import AppointmentFormStep4PaymentEmbedded from "./AppointmentFormStep4Payment";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
@@ -34,8 +35,8 @@ type Payment = {
 };
 
 type Appointment = {
-    id: number;            // appointmentId
-    booking_id: number;    // bookingId
+    id: number;                 // appointmentId
+    booking_id: number | null;  // bookingId
     event_type: string;
     package: string;
     datetime: string;
@@ -44,9 +45,13 @@ type Appointment = {
     payment_status: string;
     document_types: DocumentType[];
     payment?: Payment | null;
+    created_at?: string | null;
+    appointment_status?: string | null;
 };
 
 const Apointment: React.FC = () => {
+    const navigate = useNavigate();
+
     // paginación
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [lastPage, setLastPage] = useState<number>(1);
@@ -66,7 +71,6 @@ const Apointment: React.FC = () => {
     const [paymentEmail, setPaymentEmail] = useState<string>("");
     const [paymentInstallmentId, setPaymentInstallmentId] = useState<number | null>(null);
 
-    // Helper token
     const getAuthHeaders = () => {
         const token = localStorage.getItem("token");
         return token
@@ -79,7 +83,6 @@ const Apointment: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Devuelve algo como: [1, '...', 4, 5, 6, '...', 10]
     const getPageNumbers = (current: number, last: number, delta = 1): (number | string)[] => {
         const pages: (number | string)[] = [];
 
@@ -88,25 +91,20 @@ const Apointment: React.FC = () => {
         const left = Math.max(2, current - delta);
         const right = Math.min(last - 1, current + delta);
 
-        // Siempre la primera
         pages.push(1);
 
-        // Puntos suspensivos a la izquierda
         if (left > 2) {
             pages.push("left-ellipsis");
         }
 
-        // Rango alrededor de la página actual
         for (let i = left; i <= right; i++) {
             pages.push(i);
         }
 
-        // Puntos suspensivos a la derecha
         if (right < last - 1) {
             pages.push("right-ellipsis");
         }
 
-        // Siempre la última
         if (last > 1) {
             pages.push(last);
         }
@@ -120,14 +118,10 @@ const Apointment: React.FC = () => {
         try {
             const res = await axios.get(`${API_BASE}/api/appointments-customer`, {
                 headers: getAuthHeaders(),
-                params: {
-                    page, // 👈 esto hace que Laravel devuelva la página correcta
-                },
+                params: { page },
             });
 
             const payload = res.data;
-
-            // Laravel paginator: { data: [...], current_page, last_page, ... }
             const items = Array.isArray(payload) ? payload : payload.data ?? [];
 
             setAppointments(items);
@@ -174,6 +168,36 @@ const Apointment: React.FC = () => {
             timeStyle: "short",
         });
     };
+
+    // 🔸 Cita incompleta para el wizard
+    // Regla: cualquier cita en estado "draft" / "borrador" creada en las últimas 24h
+    // (sin importar si ya tiene booking o no).
+    const isWizardIncomplete = (a: Appointment) => {
+        const statusLower = (
+            a.appointment_status ??
+            a.reservation_status ??
+            ""
+        ).toLowerCase();
+
+        const isDraftLike =
+            statusLower === "draft" ||
+            statusLower === "borrador";
+
+        if (!isDraftLike) return false;
+
+        // Si no hay created_at o es raro, la consideramos reciente para no perder el banner
+        if (!a.created_at) return true;
+        const createdMs = new Date(a.created_at).getTime();
+        if (Number.isNaN(createdMs)) return true;
+
+        const diffMs = Date.now() - createdMs;
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        return diffMs < oneDayMs;
+    };
+
+    const getFirstIncompleteAppointment = (): Appointment | null =>
+        appointments.find(isWizardIncomplete) ?? null;
 
     const formatCurrency = (value: number) =>
         value.toLocaleString("es-CO", {
@@ -245,7 +269,6 @@ const Apointment: React.FC = () => {
         );
     };
 
-    // Resumen de cuotas (para mobile)
     const summarizeInstallments = (installments: Installment[]) => {
         const total = installments.length;
         const paidCount = installments.filter((i) => i.paid).length;
@@ -262,28 +285,24 @@ const Apointment: React.FC = () => {
         return { total, paidCount, pendingCount, nextDue };
     };
 
-    // Abre el modal de pago (brick MP)
     const openPaymentFor = (a: Appointment, installment?: Installment) => {
         if (!a.payment) {
             alert("No hay información de pago asociada a esta cita.");
             return;
         }
 
-        // ID de la reserva (bookingId), no el appointmentId
         setPaymentBookingId(a.booking_id);
 
         if (installment) {
-            // Pago de cuota específica
             setPaymentTotal(installment.amount);
             setPaymentInstallmentId(installment.id);
         } else {
-            // Pago del saldo completo
             const pending = calcPending(a.payment);
             setPaymentTotal(pending);
             setPaymentInstallmentId(null);
         }
 
-        let email = null;
+        let email: string | null = null;
 
         if (a.payment?.payer?.email) {
             email = a.payment.payer.email;
@@ -320,8 +339,6 @@ const Apointment: React.FC = () => {
         closePaymentModal();
         closeDetails();
     };
-
-    // ---------- DESCARGA DE RECIBOS (axios + blob) ----------
 
     const handleDownloadBookingReceipt = async (bookingId: number) => {
         try {
@@ -386,7 +403,6 @@ const Apointment: React.FC = () => {
         }
     };
 
-    // ---------- RENDER DETALLE (modal) ----------
     const renderDetailModal = () => {
         if (!showModal || !active) return null;
 
@@ -431,7 +447,6 @@ const Apointment: React.FC = () => {
                             </p>
                         ) : (
                             <>
-                                {/* Resumen de pago */}
                                 <div className="row g-2 mb-4 mt-1">
                                     <div className="col-12 col-md-4">
                                         <div className="shadow p-2 rounded bg-light h-100">
@@ -459,7 +474,6 @@ const Apointment: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Tabla de cuotas */}
                                 {payment.installments.length === 0 ? (
                                     <p className="text-muted">
                                         Este pago no está dividido en cuotas.
@@ -494,10 +508,8 @@ const Apointment: React.FC = () => {
 
                                                             <td>{formatCurrency(ins.amount)}</td>
 
-                                                            {/* Estado con color */}
                                                             <td>{getInstallmentBadge(ins)}</td>
 
-                                                            {/* Acciones: Pagar o Ver recibo */}
                                                             <td>
                                                                 {isPaid ? (
                                                                     <button
@@ -535,16 +547,13 @@ const Apointment: React.FC = () => {
                     </div>
 
                     <div className="modal-footer">
-                        {/* Recibo general solo cuando está totalmente pagado */}
                         {active.booking_id &&
                             payment &&
                             isFullyPaid && (
                                 <button
                                     type="button"
                                     className="btn btn-outline-secondary me-auto"
-                                    onClick={() =>
-                                        handleDownloadBookingReceipt(active.booking_id)
-                                    }
+                                    onClick={() => handleDownloadBookingReceipt(active.booking_id!)}
                                 >
                                     <i className="bi bi-receipt me-1" />
                                     Recibo general
@@ -560,7 +569,6 @@ const Apointment: React.FC = () => {
         );
     };
 
-    // ---------- RENDER PAGO (modal MP) ----------
     const renderPaymentModal = () => {
         if (!showPaymentModal || paymentBookingId == null || paymentTotal == null) {
             return null;
@@ -603,21 +611,19 @@ const Apointment: React.FC = () => {
         );
     };
 
-    // ---------- RENDER PRINCIPAL ----------
+    const incompleteAppointment = getFirstIncompleteAppointment();
+
     return (
         <div className="container py-4">
             <section className="appointment-section">
                 <div className="row justify-content-center">
-                    {/* Header */}
                     <div className="col-12">
                         <div className="appointment-header text-center bg-custom-2 py-3 rounded-3 mb-3">
                             <h1 className="h4 m-0">Mis Reservas</h1>
                         </div>
                     </div>
 
-                    {/* Contenido */}
                     <div className="col-12 bg-custom-9 p-3 rounded-3">
-                        {/* Botón crear cita */}
                         <div className="d-flex justify-content-end mb-3">
                             <Button
                                 className="btn btn-perfil w-100 w-sm-auto"
@@ -628,16 +634,33 @@ const Apointment: React.FC = () => {
                             </Button>
                         </div>
 
-                        {/* Mensajes */}
-                        {loading && (
-                            <div className="text-center py-3">Cargando citas…</div>
-                        )}
+                        {loading && <div className="text-center py-3">Cargando citas…</div>}
                         {error && <div className="alert alert-danger mb-3">{error}</div>}
 
-                        {/* Tabla / tarjetas */}
+                        {!loading && !error && incompleteAppointment && (
+                            <div className="alert alert-warning d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+                                <div>
+                                    <strong>Tienes una reserva sin completar.</strong>
+                                    <br />
+                                    Recuerda que tienes hasta <strong>24 horas</strong> para completar el pago
+                                    y asegurar tu cupo. Si no lo haces, la fecha y hora podrían liberarse.
+                                </div>
+                                <div className="mt-2 mt-md-0">
+                                    <Button
+                                        className="btn btn-sm btn-perfil"
+                                        value="Continuar reserva"
+                                        onClick={() =>
+                                            navigate("/nuevaCita", {
+                                                state: { appointmentId: incompleteAppointment.id },
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         {!loading && !error && (
                             <>
-                                {/* DESKTOP / TABLET */}
                                 <div
                                     className="table-responsive-md d-none d-md-block"
                                     role="region"
@@ -658,14 +681,10 @@ const Apointment: React.FC = () => {
                                                 <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
-
                                         <tbody className="bg-custom-2">
                                             {appointments.length === 0 && (
                                                 <tr>
-                                                    <td
-                                                        colSpan={7}
-                                                        className="text-center text-muted fst-italic"
-                                                    >
+                                                    <td colSpan={7} className="text-center text-muted fst-italic">
                                                         No hay citas registradas.
                                                     </td>
                                                 </tr>
@@ -674,6 +693,7 @@ const Apointment: React.FC = () => {
                                             {appointments.map((c) => {
                                                 const payment = c.payment;
                                                 const pending = payment ? calcPending(payment) : 0;
+                                                const incomplete = isWizardIncomplete(c);
 
                                                 return (
                                                     <tr key={c.id}>
@@ -690,8 +710,27 @@ const Apointment: React.FC = () => {
                                                         <td data-label="Fecha y Hora">
                                                             {formatDateTime(c.datetime)}
                                                         </td>
-                                                        <td data-label="Estado reserva">
-                                                            {c.reservation_status}
+                                                        <td
+                                                            data-label="Estado reserva"
+                                                            className={
+                                                                incomplete
+                                                                    ? "estado-reserva estado-reserva--incomplete"
+                                                                    : "estado-reserva"
+                                                            }
+                                                        >
+                                                            <span className="estado-reserva__label">
+                                                                {c.reservation_status}
+                                                            </span>
+
+                                                            {incomplete && (
+                                                                <span
+                                                                    className="estado-reserva__badge"
+                                                                    title="Tienes hasta 24 horas para completar el pago y asegurar tu cupo."
+                                                                >
+                                                                    <i className="bi bi-exclamation-triangle-fill me-1" />
+                                                                    Completar en &lt; 24h
+                                                                </span>
+                                                            )}
                                                         </td>
                                                         <td data-label="Pago">
                                                             {getPaymentBadge(c.payment_status)}
@@ -707,13 +746,27 @@ const Apointment: React.FC = () => {
                                                         </td>
                                                         <td data-label="Acciones">
                                                             <div className="d-flex flex-column gap-1">
-                                                                <Button
-                                                                    value="Ver detalle"
-                                                                    className="btn custom2-upload-btn"
-                                                                    onClick={() => openDetails(c)}
-                                                                >
-                                                                    Ver detalle
-                                                                </Button>
+                                                                {incomplete ? (
+                                                                    <Button
+                                                                        value="Continuar"
+                                                                        className="btn custom-upload-btn"
+                                                                        onClick={() =>
+                                                                            navigate("/nuevaCita", {
+                                                                                state: { appointmentId: c.id },
+                                                                            })
+                                                                        }
+                                                                    >
+                                                                        Continuar
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button
+                                                                        value="Ver detalle"
+                                                                        className="btn custom2-upload-btn"
+                                                                        onClick={() => openDetails(c)}
+                                                                    >
+                                                                        Ver detalle
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -723,14 +776,14 @@ const Apointment: React.FC = () => {
                                     </table>
                                 </div>
 
-                                {/* MOBILE: tarjetas */}
                                 <div className="d-md-none mt-3">
                                     {appointments.map((c) => {
                                         const payment = c.payment;
                                         const pending = payment ? calcPending(payment) : 0;
                                         const installmentsSummary =
-                                            payment &&
-                                            summarizeInstallments(payment.installments);
+                                            payment && summarizeInstallments(payment.installments);
+
+                                        const incomplete = isWizardIncomplete(c);
 
                                         return (
                                             <article
@@ -752,6 +805,12 @@ const Apointment: React.FC = () => {
                                                         <strong>Lugar:</strong> {c.place || "—"}
                                                     </p>
 
+                                                    {incomplete && (
+                                                        <p className="card-text mb-1 small text-warning">
+                                                            Tienes 24 horas para completar el pago y asegurar tu cupo.
+                                                        </p>
+                                                    )}
+
                                                     {payment && (
                                                         <p className="card-text mb-1 small">
                                                             <strong>Saldo:</strong>{" "}
@@ -761,8 +820,7 @@ const Apointment: React.FC = () => {
                                                                     <br />
                                                                     <span className="text-muted">
                                                                         {installmentsSummary.paidCount} de{" "}
-                                                                        {installmentsSummary.total} cuotas
-                                                                        pagadas
+                                                                        {installmentsSummary.total} cuotas pagadas
                                                                     </span>
                                                                 </>
                                                             )}
@@ -770,15 +828,28 @@ const Apointment: React.FC = () => {
                                                     )}
 
                                                     <div className="d-flex gap-2 mt-2">
-                                                        <button
-                                                            type="button"
-                                                            className="btn custom2-upload-btn"
-                                                            onClick={() => openDetails(c)}
-                                                        >
-                                                            Ver detalle
-                                                        </button>
+                                                        {incomplete ? (
+                                                            <Button
+                                                                className="btn custom-upload-btn"
+                                                                onClick={() =>
+                                                                    navigate("/nuevaCita", {
+                                                                        state: { appointmentId: c.id },
+                                                                    })
+                                                                }
+                                                            >
+                                                                Continuar
+                                                            </Button>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                className="btn custom2-upload-btn"
+                                                                onClick={() => openDetails(c)}
+                                                            >
+                                                                Ver detalle
+                                                            </button>
+                                                        )}
 
-                                                        {payment && pending > 0 && (
+                                                        {payment && pending > 0 && !incomplete && (
                                                             <Button
                                                                 className="btn btn-sm custom-upload-btn"
                                                                 onClick={() => openPaymentFor(c)}
@@ -796,15 +867,12 @@ const Apointment: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Paginación */}
-                    {/* Paginación */}
                     <div className="col-12 d-flex justify-content-center mt-3">
                         {lastPage > 1 && (
                             <nav
                                 className="admin-pagination"
                                 aria-label="Paginación de reservas"
                             >
-                                {/* Anterior */}
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
@@ -812,7 +880,6 @@ const Apointment: React.FC = () => {
                                     &larr;
                                 </button>
 
-                                {/* Números de página con ellipsis */}
                                 {getPageNumbers(currentPage, lastPage, 1).map((item, index) => {
                                     if (item === "left-ellipsis" || item === "right-ellipsis") {
                                         return (
@@ -839,7 +906,6 @@ const Apointment: React.FC = () => {
                                     );
                                 })}
 
-                                {/* Siguiente */}
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === lastPage}
@@ -849,7 +915,6 @@ const Apointment: React.FC = () => {
                             </nav>
                         )}
                     </div>
-
                 </div>
             </section>
 

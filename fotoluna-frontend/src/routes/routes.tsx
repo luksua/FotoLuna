@@ -49,7 +49,7 @@ const routes = [
         ),
     },
     {
-        path: "/sobreMi",
+        path: "/sobreNosotros",
         element: (
             <Suspense fallback={<Spinner />}>
                 <AboutMe />

@@ -64,6 +64,7 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::post('/appointments/{appointmentId}/booking', [BookingController::class, 'store']);
     Route::patch('/api/appointments/{id}', [AppointmentController::class, 'update']);
     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
+    Route::put('/appointmentsCustomer/{appointment}', [AppointmentController::class, 'updateCustomer']);
 
     Route::post('/bookings/{booking}/installments-plan', [BookingInstallmentController::class, 'createInstallmentsPlan']);
     Route::put('/appointments/{id}', [AppointmentController::class, 'update']);

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../styles/appointmentPlan.css"
+import "../styles/appointmentPlan.css";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+const STORAGE_PLAN_DRAFT_KEY = "appointmentStep4StoragePlan";
 
 interface StoragePlansSelectorProps {
     selectedPlan: StoragePlan | null;
@@ -29,7 +30,7 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
     const [plans, setPlans] = useState<StoragePlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     useEffect(() => {
         const fetchPlans = async () => {
             try {
@@ -49,12 +50,35 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
 
                 const payload = res.data;
 
-                // 👇 soporta ambas formas: [ ... ] o { plans: [ ... ] }
-                const fetchedPlans = Array.isArray(payload)
+                // Soportar ambas formas: [ ... ] o { plans: [ ... ] }
+                const fetchedPlans: StoragePlan[] = Array.isArray(payload)
                     ? payload
                     : payload.plans ?? [];
 
-                setPlans(fetchedPlans);
+                // (Opcional) filtrar solo activos si lo usas así en backend
+                const normalized = fetchedPlans.map((p) => ({
+                    ...p,
+                    id: Number(p.id),
+                }));
+
+                setPlans(normalized);
+
+                // 🔹 Intentar restaurar selección desde localStorage
+                const raw = localStorage.getItem(STORAGE_PLAN_DRAFT_KEY);
+                if (raw && !selectedPlan) {
+                    try {
+                        const parsed = JSON.parse(raw) as { planId: number | string | null };
+                        if (parsed.planId != null) {
+                            const savedId = Number(parsed.planId);
+                            const found = normalized.find((pl) => pl.id === savedId);
+                            if (found) {
+                                onSelect(found);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Error leyendo borrador de plan de almacenamiento:", e);
+                    }
+                }
             } catch (err) {
                 console.error("Error cargando planes de almacenamiento:", err);
                 setError("No se pudieron cargar los planes de almacenamiento.");
@@ -64,34 +88,17 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
         };
 
         fetchPlans();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // solo una vez al montar
 
-    // useEffect(() => {
-    //     const fetchPlans = async () => {
-    //         try {
-    //             setLoading(true);
-    //             setError(null);
-
-    //             const token = localStorage.getItem("token");
-
-    //             const res = await axios.get(`${API_BASE}/api/storage-plans-customer`, {
-    //                 headers: {
-    //                     Accept: "application/json",
-    //                     Authorization: `Bearer ${token}`,
-    //                 },
-    //             });
-
-    //             setPlans(res.data.plans || []);
-    //         } catch (err) {
-    //             console.error("Error cargando planes de almacenamiento:", err);
-    //             setError("No se pudieron cargar los planes de almacenamiento.");
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     fetchPlans();
-    // }, []);
+    // 🔹 Guardar la selección en localStorage cuando cambie
+    useEffect(() => {
+        const planId = selectedPlan ? selectedPlan.id : null;
+        localStorage.setItem(
+            STORAGE_PLAN_DRAFT_KEY,
+            JSON.stringify({ planId })
+        );
+    }, [selectedPlan]);
 
     const handleSelect = (plan: StoragePlan) => {
         // si ya está seleccionado, al hacer click otra vez se deselecciona
@@ -140,8 +147,7 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
                         <div key={plan.id} className="col-md-4 bg-custom-2">
                             <button
                                 type="button"
-                                className={`storage-plan-card w-100 ${isSelected ? "selected" : ""
-                                    }`}
+                                className={`storage-plan-card w-100 ${isSelected ? "selected" : ""}`}
                                 onClick={() => handleSelect(plan)}
                             >
                                 <div className="storage-plan-header mb-2">
@@ -164,12 +170,6 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
                                         <strong>Capacidad:</strong> {capacityLabel}
                                     </li>
                                 </ul>
-
-                                {/* <div className="storage-plan-footer mt-3">
-                                    <span className="badge bg-light text-dark">
-                                        {isSelected ? "Seleccionado" : "Seleccionar plan"}
-                                    </span>
-                                </div> */}
                             </button>
                         </div>
                     );
@@ -180,4 +180,3 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
 };
 
 export default StoragePlansSelector;
-

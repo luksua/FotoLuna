@@ -136,7 +136,7 @@ const Birthday = () => {
                             sonrisa, cada gesto y cada vela apagada con amor.
                         </motion.p>
 
-                        <div className="packages card-grid mt-4">
+                        <div className="packages card-grid card-grid-birhtday mt-4">
                             {loading && (
                                 <p className="text-muted">Cargando paquetes...</p>
                             )}
@@ -155,7 +155,7 @@ const Birthday = () => {
                                         transition={{ duration: 0.8, delay: i * 0.2 }}
                                         viewport={{ once: true }}
                                     >
-                                        <Card className="package-card mb-3 bg-custom-2">
+                                        <Card className="package-card package-card-birhtday mb-3 bg-custom-2">
                                             <Card.Body>
                                                 <Card.Title className="fw-bold text-blue">
                                                     {pkg.title}

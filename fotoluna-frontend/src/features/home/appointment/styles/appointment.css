@@ -299,6 +299,50 @@
   padding-bottom: 30px;
 }
 
+.appointment-table td.estado-reserva {
+  max-width: 220px;
+  /* evita que la columna se expanda demasiado */
+  white-space: nowrap;
+  /* que no se rompa en mil líneas */
+}
+
+.estado-reserva__label {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.estado-reserva__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  margin-top: 0.15rem;
+  border-radius: 999px;
+
+  /* Nuevo amarillo personalizado */
+  background-color: #ffe5f9;
+  /* fondo amarillo suave */
+  color: #c376ac;
+  /* texto ámbar oscuro */
+  border: 1px solid #de92c0;
+}
+
+/* ====== Alert warning global ====== */
+
+.alert-warning {
+  background-color: #ffe5f9;
+  /* mismo tono que el badge */
+  border-color: #de92c0;
+  color: #c376ac;
+}
+
+/* Para textos “warning” (como el de mobile) */
+.text-warning,
+.draft-warning-text {
+  color: #c376ac !important;
+}
+
 .appointment-section {
   width: 100%;
   height: auto;
@@ -1192,44 +1236,45 @@
     /* permite que los botones bajen a otra fila */
   }
 }
+
 /* ================================
    Estilizar botón del Brick de MP
 ================================ */
 button.linear-1LoS9f.svelte-11b9rht,
 button.svelte-11b9rht {
-    background: linear-gradient(90deg, #C792DF 0%, #DCABDF 100%) !important;
-    background-size: 200% !important;
-    background-position: 0% !important;
-    border: none !important;
-    width: 100% !important;
-    padding: 14px !important;
-    border-radius: 12px !important;
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 1rem !important;
-    transition: background-position 1s ease-out, transform .15s ease !important;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, .15) !important;
+  background: linear-gradient(90deg, #C792DF 0%, #DCABDF 100%) !important;
+  background-size: 200% !important;
+  background-position: 0% !important;
+  border: none !important;
+  width: 100% !important;
+  padding: 14px !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  transition: background-position 1s ease-out, transform .15s ease !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .15) !important;
 }
 
 /* Hover */
 button.linear-1LoS9f.svelte-11b9rht:hover,
 button.svelte-11b9rht:hover {
-    background-position: 100% !important;
-    transform: translateY(-2px) !important;
+  background-position: 100% !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Active */
 button.linear-1LoS9f.svelte-11b9rht:active,
 button.svelte-11b9rht:active {
-    transform: translateY(0) !important;
+  transform: translateY(0) !important;
 }
 
 /* Disabled */
 button.linear-1LoS9f.svelte-11b9rht:disabled,
 button.svelte-11b9rht:disabled {
-    opacity: .45 !important;
-    cursor: not-allowed !important;
-    transform: none !important;
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 /* ============================
@@ -1240,14 +1285,16 @@ button.svelte-11b9rht:disabled {
   /* Más espacio interno y evitar recortes */
   .custom-modal.large-modal {
     max-width: 95vw;
-    max-height: calc(100vh - 40px); /* margen arriba y abajo */
+    max-height: calc(100vh - 40px);
+    /* margen arriba y abajo */
     padding-bottom: 16px;
   }
 
   .custom-modal .modal-body {
     padding: 16px !important;
     overflow-y: auto;
-    max-height: calc(100vh - 140px); /* evita cortar inputs */
+    max-height: calc(100vh - 140px);
+    /* evita cortar inputs */
   }
 
   /* Contenedor del brick (Mercado Pago) */
@@ -1259,6 +1306,7 @@ button.svelte-11b9rht:disabled {
     overflow: visible !important;
   }
 }
+
 /* ================================
    FIX MP BRICK EN 320px
 ================================ */
@@ -1291,7 +1339,8 @@ button.svelte-11b9rht:disabled {
   .payment-page {
     margin-top: 12px;
     padding: 4px 4px;
-    grid-template-columns: 1fr; /* por si acaso */
+    grid-template-columns: 1fr;
+    /* por si acaso */
   }
 
   /* 🔑 Contenedor del brick de Mercado Pago:
@@ -1313,6 +1362,7 @@ button.svelte-11b9rht:disabled {
     margin: 0 auto !important;
   }
 }
+
 /* ================================
    ARREGLO FORM BRICK MERCADO PAGO
    EVITAR QUE SE DESPLACE A LA DERECHA
@@ -1348,7 +1398,8 @@ button.svelte-11b9rht:disabled {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding: 8px 10px !important;   /* menos padding horizontal */
+    padding: 8px 10px !important;
+    /* menos padding horizontal */
     margin: 0 auto !important;
     border-radius: 8px;
   }
@@ -1362,6 +1413,7 @@ button.svelte-11b9rht:disabled {
     margin: 0 auto !important;
   }
 }
+
 /* ===================================
    MP BRICK EN TELÉFONOS PEQUEÑOS
    (sin scroll horizontal, sin scale)
@@ -1385,7 +1437,8 @@ button.svelte-11b9rht:disabled {
 
   .custom-modal .modal-body {
     padding: 10px 8px;
-    overflow-x: hidden;   /* ✅ nada se puede ir fuera a la derecha */
+    overflow-x: hidden;
+    /* ✅ nada se puede ir fuera a la derecha */
     overflow-y: auto;
   }
 
@@ -1414,9 +1467,12 @@ button.svelte-11b9rht:disabled {
   .payment-brick-container form[class*="visible-"][class*="svelte-"] {
     width: 100% !important;
     max-width: 100% !important;
-    min-width: 0 !important;          /* 💥 clave: permite que encoja */
-    padding: 8px 6px !important;      /* menos padding horizontal */
-    border: none !important;          /* el borde sumaba ancho */
+    min-width: 0 !important;
+    /* 💥 clave: permite que encoja */
+    padding: 8px 6px !important;
+    /* menos padding horizontal */
+    border: none !important;
+    /* el borde sumaba ancho */
     box-sizing: border-box !important;
     margin: 0 !important;
   }

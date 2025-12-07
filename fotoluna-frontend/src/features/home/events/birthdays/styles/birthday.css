@@ -27,15 +27,29 @@
     flex-wrap: wrap;
     max-width: 900px;
     margin: 0 auto;
+    align-items: stretch;
+    /* iguala alturas */
 }
 
-.package-card {
+.package-card-birhtday {
     border: 2px solid #5f6397;
     border-radius: 15px;
     transition: all 0.3s ease;
+    width: 260px;
+    /* ancho fijo */
+    height: 280px;
+    /* alto fijo */
+    display: flex;
+    /* para que el body pueda estirarse */
+    flex: 1;
 }
 
-.package-card:hover {
+.package-card-birhtday .card-body-birhtday {
+    display: flex;
+    flex-direction: column;
+}
+
+.package-card-birhtday:hover {
     box-shadow: 0 0 35px rgba(72, 4, 37, 0.3);
     transform: translateY(-5px);
 }
@@ -43,6 +57,17 @@
 .price-birthday {
     color: #5a95c8;
     font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.package-card-birhtday .card-text {
+    flex: 1;
+    margin-bottom: 0.5rem;
+
+    /* 👇 Esto limita las líneas de texto para que no cambie el alto */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .text-blue {
@@ -63,7 +88,8 @@
     background-color: #3b2662;
     padding: 10px;
     border-radius: 20px;
-    box-shadow: 0 0 25px rgba(65, 51, 58, 0.4);;
+    box-shadow: 0 0 25px rgba(65, 51, 58, 0.4);
+    ;
 }
 
 .gallery-item {
@@ -114,6 +140,7 @@
     animation: shine 3s linear infinite;
     font-weight: 600;
     transition: all 0.3s ease;
+    margin-top: auto;
 }
 
 .shiny-text-birthday:hover {
@@ -125,7 +152,7 @@
     background-size: 200% 100%;
     transform: translateY(-2px);
     text-shadow: 0 0 8px rgb(39, 31, 96);
-    border-color:#0a4c7e;
+    border-color: #0a4c7e;
     box-shadow: 0 0 12px rgba(90, 136, 200, 0.4);
     cursor: pointer;
 }

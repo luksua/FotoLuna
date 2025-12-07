@@ -23,6 +23,7 @@ interface Step3Props {
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+const STEP3_DRAFT_KEY = "appointmentStep3Photographer";
 
 const AppointmentStep3Photographer: React.FC<Step3Props> = ({
     bookingId,
@@ -38,7 +39,36 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Cargar fotógrafos disponibles
+    // 1) Cargar selección desde localStorage (solo una vez)
+    useEffect(() => {
+        const raw = localStorage.getItem(STEP3_DRAFT_KEY);
+        if (!raw) return;
+
+        try {
+            const parsed = JSON.parse(raw) as {
+                selectedEmployeeId: number | string | null;
+            };
+
+            if (parsed.selectedEmployeeId !== null && parsed.selectedEmployeeId !== undefined) {
+                const n = Number(parsed.selectedEmployeeId);
+                if (!Number.isNaN(n)) {
+                    setSelectedEmployee(n);
+                }
+            }
+        } catch (e) {
+            console.warn("Error leyendo borrador Step3:", e);
+        }
+    }, []);
+
+    // 2) Guardar selección en localStorage cuando cambie
+    useEffect(() => {
+        const payload = {
+            selectedEmployeeId: selectedEmployee,
+        };
+        localStorage.setItem(STEP3_DRAFT_KEY, JSON.stringify(payload));
+    }, [selectedEmployee]);
+
+    // 3) Cargar fotógrafos disponibles
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
@@ -60,7 +90,21 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
                     params,
                 });
 
-                setEmployees(res.data);
+                // Normalizamos ids a number
+                const list: Employee[] = (res.data ?? []).map((emp: any) => ({
+                    ...emp,
+                    id: Number(emp.id),
+                }));
+
+                setEmployees(list);
+
+                // Si el id guardado ya no existe en la lista, limpiamos selección
+                if (
+                    selectedEmployee !== null &&
+                    !list.some((e) => e.id === selectedEmployee)
+                ) {
+                    setSelectedEmployee(null);
+                }
             } catch (err) {
                 console.error("Error al cargar empleados:", err);
                 setError("No se pudieron cargar los fotógrafos disponibles.");
@@ -70,53 +114,11 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
         if (
             appointmentDate &&
             appointmentTime &&
-            (packageIdFK || documentTypeId) // 👈 ahora sirve para ambos flujos
+            (packageIdFK || documentTypeId)
         ) {
             fetchEmployees();
         }
-    }, [appointmentDate, appointmentTime, packageIdFK, documentTypeId]);
-
-    // useEffect(() => {
-    //     const fetchEmployees = async () => {
-    //         try {
-    //             const token = localStorage.getItem("token");
-    //             const res = await axios.get(`${API_BASE}/api/employees/available`, {
-    //                 headers: { Authorization: `Bearer ${token}` },
-    //             });
-    //             setEmployees(res.data);
-    //         } catch (err) {
-    //             console.error("Error al cargar empleados:", err);
-    //             setError("No se pudieron cargar los fotógrafos disponibles.");
-    //         }
-    //     };
-
-    //     fetchEmployees();
-    // }, []);
-    // useEffect(() => {
-    //     const fetchEmployees = async () => {
-    //         try {
-    //             const token = localStorage.getItem("token");
-
-    //             const res = await axios.get(`${API_BASE}/api/employees/available`, {
-    //                 headers: { Authorization: `Bearer ${token}` },
-    //                 params: {
-    //                     appointmentDate,
-    //                     appointmentTime,
-    //                     packageIdFK,
-    //                 },
-    //             });
-
-    //             setEmployees(res.data);
-    //         } catch (err) {
-    //             console.error("Error al cargar empleados:", err);
-    //             setError("No se pudieron cargar los fotógrafos disponibles.");
-    //         }
-    //     };
-
-    //     if (appointmentDate && appointmentTime && packageIdFK) {
-    //         fetchEmployees();
-    //     }
-    // }, [appointmentDate, appointmentTime, packageIdFK]);
+    }, [appointmentDate, appointmentTime, packageIdFK, documentTypeId, selectedEmployee]);
 
     // Confirmar selección
     const handleContinue = async () => {
@@ -128,8 +130,8 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
             await axios.put(
                 `${API_BASE}/api/bookings/${bookingId}`,
                 {
-                    employeeIdFK: selectedEmployee,
-                    bookingStatus: "Confirmed",
+                    employeeIdFK: selectedEmployee, // puede ser null (sin preferencia)
+                    // bookingStatus: "Confirmed", // 👈 ya no tocamos el status aquí
                 },
                 {
                     headers: {
@@ -161,9 +163,10 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
                 {employees.map((emp) => (
                     <div
                         key={emp.id}
-                        className={`photographer-card d-flex align-items-center justify-content-between p-3 rounded border ${selectedEmployee === emp.id ? "selected" : ""
-                            }`}
-                        onClick={() => setSelectedEmployee(emp.id)}
+                        className={`photographer-card d-flex align-items-center justify-content-between p-3 rounded border ${
+                            Number(selectedEmployee) === Number(emp.id) ? "selected" : ""
+                        }`}
+                        onClick={() => setSelectedEmployee(Number(emp.id))}
                     >
                         <div className="d-flex align-items-center gap-3">
                             <img
@@ -190,7 +193,7 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
                         <input
                             className="form-check-input"
                             type="radio"
-                            checked={selectedEmployee === emp.id}
+                            checked={Number(selectedEmployee) === Number(emp.id)}
                             readOnly
                         />
                     </div>
@@ -198,8 +201,9 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
 
                 {/* Opción sin preferencia */}
                 <div
-                    className={`photographer-card d-flex align-items-center justify-content-between p-3 rounded border ${selectedEmployee === null ? "selected" : ""
-                        }`}
+                    className={`photographer-card d-flex align-items-center justify-content-between p-3 rounded border ${
+                        selectedEmployee === null ? "selected" : ""
+                    }`}
                     onClick={() => setSelectedEmployee(null)}
                 >
                     <div className="bg-custom-2">

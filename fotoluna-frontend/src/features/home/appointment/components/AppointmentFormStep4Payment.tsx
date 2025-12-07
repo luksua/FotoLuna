@@ -174,6 +174,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       raw_form: formData,
                       client_payment_method: paymentMethod, // "Card" o "PSE"
                       installment_id: installmentIdRef.current ?? null,
+                      storage_plan_id: storagePlanId ?? null,
                     };
                   }
 

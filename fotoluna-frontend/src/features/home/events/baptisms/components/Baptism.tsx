@@ -213,7 +213,7 @@ const Baptisms = () => {
                           ))}
                         </ul>
                       </div>
-                      <div className="">
+                      <div className="d-flex justify-content-center mt-3">
                         <Button
                           className={`shiny-text-sacraments ${paquete.destacado ? "shiny-text-sacraments" : ""
                             }`}
@@ -222,6 +222,7 @@ const Baptisms = () => {
                           Reservar Ahora
                         </Button>
                       </div>
+
                     </div>
                   ))}
                 </div>
