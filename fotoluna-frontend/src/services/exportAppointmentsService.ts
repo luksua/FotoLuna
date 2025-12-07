@@ -19,7 +19,7 @@ export const exportAppointmentsToExcel = async (appointments: any[], fileName = 
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF805fa6' } };
-        cell.alignment = { horizontal: 'center', vertical: 'center' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -64,7 +64,7 @@ export const exportAppointmentsToExcel = async (appointments: any[], fileName = 
                 bottom: { style: 'thin' },
                 right: { style: 'thin' },
             };
-            cell.alignment = { vertical: 'center', wrapText: true };
+            cell.alignment = { vertical: 'middle', wrapText: true };
         });
     });
 

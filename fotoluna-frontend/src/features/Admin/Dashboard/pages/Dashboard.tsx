@@ -250,21 +250,21 @@ const Dashboard = () => {
 
             {/* Gráfica de ventas*/}
             <BarChart
-                dataset={chartData}
+                dataset={chartData as any}
                 xAxis={[{
                     dataKey: 'mes',
                     scaleType: 'band',              // 👈 ESTO ES LO QUE FALTABA
                     tickPlacement: 'middle',
                     tickLabelPlacement: 'middle',
                 }]}
-                yAxis={[{ label: 'Ventas', width: 60 }]}
+                yAxis={[{ label: 'Ventas' }]}
                 series={[{
                     dataKey: 'ventas',
                     label: 'Ventas por mes al año',
                     color: '#805fa6',
                 }]}
                 height={300}
-                margin={{ left: 0 }}
+                margin={{ left: 60 }}
             />
 
             {/* Gauge y PieChart lado a lado, igual tamaño y alineados */}
@@ -285,7 +285,7 @@ const Dashboard = () => {
                                 fill: '#ab64fcff',
                             },
                         }}
-                        text={({ value, valueMax }) => `${(averageRating).toFixed(1)} / 5`}
+                        text={`${(averageRating).toFixed(1)} / 5`}
                         width={200}
                         height={200}
                     />
