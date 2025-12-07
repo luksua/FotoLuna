@@ -13,6 +13,7 @@ export interface Installment {
 }
 
 export interface Payment {
+  [x: string]: string;
   id: number;
   booking_id: number;
   appointment_id?: number;

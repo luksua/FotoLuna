@@ -267,7 +267,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Planes de almacenamiento (admin)
     Route::get('/admin/storage-plans', [StoragePlanController::class, 'indexAdmin']);
-    Route::put('/admin/storage-plans/{id}', [StoragePlanController::class, 'update']);
+    Route::put('/admin/storage-plans/{storagePlan}', [StoragePlanController::class, 'update']);
 
     // Resumen de fotos en la nube (admin)
     Route::get('/admin/cloud-photos/summary', [AdminPhotosController::class, 'summary']);
@@ -330,7 +330,7 @@ Route::get('admin/payments', [PaymentController::class, 'index']);
 Route::get('admin/payments/summary', [PaymentController::class, 'summary']);
 
 Route::get('admin/storage-plans', [StoragePlanController::class, 'indexAdmin']);
-Route::put('admin/storage-plans/{id}', [StoragePlanController::class, 'update']);
+Route::put('/admin/storage-plans/{storagePlan}', [StoragePlanController::class, 'update']);
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin')
     ->group(function () {
@@ -344,4 +344,3 @@ Route::middleware(['auth:sanctum', 'role:admin'])
 */
 
 // (Ya definidas en el grupo auth:sanctum común arriba)
-

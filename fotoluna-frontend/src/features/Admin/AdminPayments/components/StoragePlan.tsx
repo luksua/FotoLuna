@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../../../../styles/buttons.css";
+import SuccessAlert from "../../AdminEmployee/components/SuccessAlert";
 
 interface StoragePlan {
     id: number;
@@ -198,6 +199,8 @@ const StoragePlan: React.FC = () => {
 
     const [editingPlan, setEditingPlan] = useState<StoragePlan | null>(null);
     const [saving, setSaving] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const fetchPlans = async () => {
         try {
@@ -262,6 +265,8 @@ const StoragePlan: React.FC = () => {
 
             setPlans((prev) => prev.map((p) => (p.id === data.id ? data : p)));
             setEditingPlan(null);
+            setSuccessMessage("Plan actualizado correctamente");
+            setShowSuccessAlert(true);
         } catch (error) {
             console.error("Error actualizando plan", error);
             alert("No se pudo actualizar el plan.");
@@ -275,6 +280,12 @@ const StoragePlan: React.FC = () => {
             <h2 className="admin-title" style={{ fontSize: 22, marginBottom: 16 }}>
                 Planes de almacenamiento
             </h2>
+
+            <SuccessAlert
+                message={successMessage}
+                visible={showSuccessAlert}
+                onClose={() => setShowSuccessAlert(false)}
+            />
 
             {/* Filtros */}
             <div className="filter-box" style={{ marginBottom: 12 }}>
