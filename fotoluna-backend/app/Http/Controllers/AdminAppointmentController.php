@@ -161,7 +161,7 @@ class AdminAppointmentController extends Controller
             employees.firstNameEmployee      AS employeeFirstName,
             employees.lastNameEmployee       AS employeeLastName
         ')
-            // 👇 Solo citas desde hoy hacia adelante
+            // Solo citas desde hoy hacia adelante
             ->whereDate('appointments.appointmentDate', '>=', $today)
             // opcional: solo ciertos estados
             // ->whereIn('appointments.appointmentStatus', ['Scheduled', 'Pending_assignment'])

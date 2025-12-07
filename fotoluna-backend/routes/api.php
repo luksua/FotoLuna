@@ -265,6 +265,8 @@ Route::get('/admin/packages/sales/monthly', [AdminPackagesController::class, 'mo
 
 // Citas pendientes de un usuario
 Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class, 'pendingByUserId']);
+// Citas completadas de un usuario (historial)
+Route::get('/admin/appointments/completed/{userId}', [AppointmentController::class, 'completedByUserId']);
 
 // Contar citas pendientes totales
 Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);

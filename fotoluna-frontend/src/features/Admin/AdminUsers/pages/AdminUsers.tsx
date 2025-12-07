@@ -45,6 +45,10 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
     const [loadingAppointments, setLoadingAppointments] = useState(false);
     const [appointmentsError, setAppointmentsError] = useState<string | null>(null);
     const [appointmentsMeta, setAppointmentsMeta] = useState<AppointmentMeta | null>(null);
+    const [historyAppointments, setHistoryAppointments] = useState<Appointment[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [historyError, setHistoryError] = useState<string | null>(null);
+    const [historyMeta, setHistoryMeta] = useState<AppointmentMeta | null>(null);
     const perPage = 5;
 
     // Cargar citas cuando se abre la pestaña de reservas
@@ -52,6 +56,9 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
         setActiveTab(tab);
         if (tab === 'reservas' && appointments.length === 0 && !loadingAppointments) {
             fetchAppointments(1);
+        }
+        if (tab === 'historial' && historyAppointments.length === 0 && !loadingHistory) {
+            fetchCompletedAppointments(1);
         }
     };
 
@@ -95,6 +102,44 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
             setAppointmentsError(err.message || 'Error al obtener las citas');
         } finally {
             setLoadingAppointments(false);
+        }
+    };
+
+    const fetchCompletedAppointments = async (page = 1) => {
+        setLoadingHistory(true);
+        setHistoryError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const userIdToUse = user.userId || user.id;
+
+            const response = await fetch(
+                `/api/admin/appointments/completed/${userIdToUse}?page=${page}&per_page=${perPage}`,
+                {
+                    headers
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+                setHistoryAppointments(data.data || []);
+                if (data.meta) {
+                    setHistoryMeta(data.meta);
+                }
+            } else {
+                setHistoryError('No se pudo cargar el historial');
+            }
+        } catch (err: any) {
+            setHistoryError(err.message || 'Error al obtener historial');
+        } finally {
+            setLoadingHistory(false);
         }
     };
 
@@ -152,20 +197,20 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
                                             backgroundColor: '#f9f9f9'
                                         }}>
                                             <div style={{ marginBottom: '8px' }}>
-                                                <strong>📅 Fecha:</strong> {apt.date} a las {apt.time}
+                                                <strong>Fecha:</strong> {apt.date} a las {apt.time}
                                             </div>
                                             <div style={{ marginBottom: '8px' }}>
-                                                <strong>📍 Lugar:</strong> {apt.place}
+                                                <strong>Lugar:</strong> {apt.place}
                                             </div>
                                             <div style={{ marginBottom: '8px' }}>
-                                                <strong>🎉 Evento:</strong> {apt.eventType}
+                                                <strong>Evento:</strong> {apt.eventType}
                                             </div>
                                             <div style={{ marginBottom: '8px' }}>
-                                                <strong>📦 Paquete:</strong> {apt.packageName}
+                                                <strong>Paquete:</strong> {apt.packageName}
                                             </div>
                                             {apt.comment && (
                                                 <div style={{ marginBottom: '8px' }}>
-                                                    <strong>💬 Comentario:</strong> {apt.comment}
+                                                    <strong>Comentario:</strong> {apt.comment}
                                                 </div>
                                             )}
                                             <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #ddd' }}>
@@ -211,7 +256,74 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
                     {activeTab === 'historial' && (
                         <div className="historial-content">
                             <h3>Historial de Servicios</h3>
-                            <p>No hay historial disponible</p>
+                            {loadingHistory ? (
+                                <p>Cargando historial...</p>
+                            ) : historyError ? (
+                                <p style={{ color: 'red' }}>Error: {historyError}</p>
+                            ) : historyAppointments.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {historyAppointments.map((apt) => (
+                                        <div key={apt.appointmentId} style={{
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: '8px',
+                                            padding: '12px',
+                                            backgroundColor: '#f9f9f9'
+                                        }}>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>Fecha:</strong> {apt.date} a las {apt.time}
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>Lugar:</strong> {apt.place}
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>Evento:</strong> {apt.eventType}
+                                            </div>
+                                            <div style={{ marginBottom: '8px' }}>
+                                                <strong>Paquete:</strong> {apt.packageName}
+                                            </div>
+                                            {apt.comment && (
+                                                <div style={{ marginBottom: '8px' }}>
+                                                    <strong>Comentario:</strong> {apt.comment}
+                                                </div>
+                                            )}
+                                            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #ddd' }}>
+                                                <span style={{
+                                                    display: 'inline-block',
+                                                    backgroundColor: '#d1a3e2',
+                                                    color: '#fff',
+                                                    padding: '4px 12px',
+                                                    borderRadius: '16px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    {apt.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {historyMeta && historyMeta.last_page > 1 && (
+                                        <div className="admin-pagination" style={{ marginTop: '12px' }}>
+                                            <button
+                                                disabled={historyMeta.current_page <= 1}
+                                                onClick={() => fetchCompletedAppointments(historyMeta.current_page - 1)}
+                                            >
+                                                Anterior
+                                            </button>
+                                            <span style={{ minWidth: 140, textAlign: 'center' }}>
+                                                Página {historyMeta.current_page} de {historyMeta.last_page}
+                                            </span>
+                                            <button
+                                                disabled={historyMeta.current_page >= historyMeta.last_page}
+                                                onClick={() => fetchCompletedAppointments(historyMeta.current_page + 1)}
+                                            >
+                                                Siguiente
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <p>No hay historial disponible</p>
+                            )}
                         </div>
                     )}
                 </div>

@@ -1193,6 +1193,72 @@ class AppointmentController extends Controller
         }
     }
 
+    /**
+     * Obtener citas completadas de un cliente por su user_id (historial)
+     */
+    public function completedByUserId(Request $request, $userId)
+    {
+        try {
+            // Obtener el customer asociado al user_id
+            $customer = Customer::where('user_id', $userId)->first();
+
+            if (!$customer) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                    'meta' => [
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => (int) $request->query('per_page', 5),
+                        'total' => 0,
+                    ],
+                ], 200);
+            }
+
+            $perPage = (int) $request->query('per_page', 5);
+            $perPage = max(1, min(50, $perPage));
+
+            $appointments = Appointment::where('customerIdFK', $customer->customerId)
+                ->whereIn('appointmentStatus', ['Completed', 'Completada'])
+                ->with(['event', 'bookings.package'])
+                ->orderByDesc('appointmentDate')
+                ->orderByDesc('appointmentTime')
+                ->paginate($perPage);
+
+            // Transformar datos de la colección
+            $data = $appointments->getCollection()->map(function ($apt) {
+                return [
+                    'appointmentId' => (int) $apt->appointmentId,
+                    'date' => (string) ($apt->appointmentDate ?? ''),
+                    'time' => (string) ($apt->appointmentTime ?? ''),
+                    'place' => (string) ($apt->place ?? ''),
+                    'eventType' => (string) (optional($apt->event)->eventType ?? 'Sin evento'),
+                    'packageName' => (string) (optional(optional($apt->bookings->first())->package)->packageName ?? 'Sin paquete'),
+                    'comment' => (string) ($apt->comment ?? ''),
+                    'status' => (string) ($apt->appointmentStatus ?? ''),
+                ];
+            })->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data->all(),
+                'meta' => [
+                    'current_page' => $appointments->currentPage(),
+                    'last_page' => $appointments->lastPage(),
+                    'per_page' => $appointments->perPage(),
+                    'total' => $appointments->total(),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error("completedByUserId error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'data' => [],
+            ], 500);
+        }
+    }
+
     public function getPendingCount(): JsonResponse
     {
         try {
