@@ -16,6 +16,7 @@ use App\Models\Employee;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB; // <-- NECESARIO PARA TRANSACCIONES
 
 class AppointmentController extends Controller
@@ -254,6 +255,11 @@ class AppointmentController extends Controller
                     'payment_status' => 'Sin información',
                     'document_types' => [],
                     'appointment_status' => $a->appointmentStatus,
+                    'created_at' => $a->created_at
+                        ? ($a->created_at instanceof Carbon
+                            ? $a->created_at->toIso8601String()
+                            : Carbon::parse($a->created_at)->toIso8601String())
+                        : null,
                     'payment' => null,
                 ];
             }
@@ -337,6 +343,17 @@ class AppointmentController extends Controller
 
                 'document_types' => $documentTypes,
                 'appointment_status' => $a->appointmentStatus,
+
+                // (la “reserva” como tal) para el límite de 24h
+                'created_at' => $booking->created_at
+                    ? ($booking->created_at instanceof Carbon
+                        ? $booking->created_at->toIso8601String()
+                        : Carbon::parse($booking->created_at)->toIso8601String())
+                    : ($a->created_at
+                        ? ($a->created_at instanceof Carbon
+                            ? $a->created_at->toIso8601String()
+                            : Carbon::parse($a->created_at)->toIso8601String())
+                        : null),
 
                 'payment' => $installments->isEmpty() ? null : [
                     'total' => $total,
@@ -448,11 +465,11 @@ class AppointmentController extends Controller
 
             // ✅ Validar entrada
             $validator = Validator::make($request->all(), [
-                'eventIdFK' => 'required|exists:events,eventId',
-                'appointmentDate' => 'required|date|after_or_equal:today',
-                'appointmentTime' => 'required|string',
-                'place' => 'nullable|string|max:100',
-                'comment' => 'nullable|string|max:255',
+                'eventIdFK'        => 'required|exists:events,eventId',
+                'appointmentDate'  => 'required|date|after_or_equal:today',
+                'appointmentTime'  => 'required|string',
+                'place'            => 'nullable|string|max:100',
+                'comment'          => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {
@@ -470,31 +487,76 @@ class AppointmentController extends Controller
 
             $customerId = $user->customer->customerId;
 
-            // ✅ Crear la cita
+            // ✅ Crear la cita como borrador
             $appointment = Appointment::create([
-                'customerIdFK' => $customerId,
-                'eventIdFK' => $request->eventIdFK,
-                'appointmentDate' => $request->appointmentDate,
-                'appointmentTime' => $request->appointmentTime,
-                'place' => $request->place ?? null,
-                'comment' => $request->comment,
+                'customerIdFK'      => $customerId,
+                'eventIdFK'         => $request->eventIdFK,
+                'appointmentDate'   => $request->appointmentDate,
+                'appointmentTime'   => $request->appointmentTime,
+                'place'             => $request->place ?? null,
+                'comment'           => $request->comment,
                 'appointmentStatus' => 'draft',
             ]);
 
-            // ✅ Respuesta JSON limpia
+            // ✅ Respuesta JSON limpia y consistente
             return response()->json([
-                'message' => 'Cita creada correctamente',
-                'appointmentId' => $appointment->appointmentId,
-                'status' => $appointment->appointmentStatus,
+                'message'        => 'Cita creada correctamente (borrador)',
+                'appointmentId'  => $appointment->appointmentId,
+                'status'         => $appointment->appointmentStatus,
             ], 201);
         } catch (Throwable $e) {
             \Log::error('Error al crear cita: ' . $e->getMessage());
 
             return response()->json([
                 'message' => 'Error interno del servidor',
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function updateCustomer(Request $request, $appointmentId)
+    {
+        $user = $request->user();
+        $customer = $user?->customer;
+
+        if (!$customer) {
+            return response()->json(['message' => 'No se encontró cliente asociado.'], 422);
+        }
+
+        $validated = $request->validate([
+            'eventIdFK'        => 'required|exists:events,eventId',
+            'appointmentDate'  => 'required|date',
+            'appointmentTime'  => 'required|date_format:H:i:s',
+            'place'            => 'nullable|string|max:255',
+            'comment'          => 'nullable|string|max:1000',
+        ]);
+
+        // ✅ Solo permitimos actualizar citas del propio cliente
+        $appointment = Appointment::where('appointmentId', $appointmentId)
+            ->where('customerIdFK', $customer->customerId)
+            ->firstOrFail();
+
+        $appointment->eventIdFK       = $validated['eventIdFK'];
+        $appointment->appointmentDate = $validated['appointmentDate'];
+        $appointment->appointmentTime = $validated['appointmentTime'];
+        $appointment->place           = $validated['place'] ?? null;
+        $appointment->comment         = $validated['comment'] ?? null;
+
+        // 🔸 Importante: la mantenemos como draft mientras no termine el wizard
+        if ($appointment->appointmentStatus === 'draft') {
+            $appointment->appointmentStatus = 'draft';
+        }
+
+        $appointment->save();
+
+        return response()->json([
+            'message'       => 'Cita actualizada correctamente (borrador)',
+            'appointmentId' => $appointment->appointmentId,
+            // para el paso siguiente realmente no usas esto, pero lo dejo por claridad
+            'status'        => $appointment->appointmentStatus,
+            'event'         => $appointment->event,
+            'place'         => $appointment->place,
+        ], 200);
     }
 
     // STORE PARA EMPLOYEES
@@ -612,77 +674,77 @@ class AppointmentController extends Controller
     }
 
     // metodo de los eventos y paquetes empleados
-    
-    
+
+
     public function getEventsWithPackages(Request $request)
-{
-    try {
-        // ID DEL EVENTO 'DOCUMENTO' ES 6 (Basado en su tabla de Eventos)
-        $documentEventId = 6;
+    {
+        try {
+            // ID DEL EVENTO 'DOCUMENTO' ES 6 (Basado en su tabla de Eventos)
+            $documentEventId = 6;
 
-        // 1. CARGA DE DATOS: Cargamos las dos posibles relaciones.
-        $events = Event::query()
-            ->with([
-                // Cargar PAQUETES normales (para eventos != 6)
-                'packages' => function ($query) {
-                    // ✅ CORRECCIÓN: Se eliminó 'documentTypeIdFK' de la selección
-                    // ya que no existe en la tabla `packages`.
-                    $query->select('packageId', 'packageName', 'eventIdFK');
-                },
-                // Cargar TIPOS DE DOCUMENTO (para evento = 6)
-                'documentTypes:id,name,eventIdFK' // Usa la nueva relación
-            ])
-            ->get(['eventId', 'eventType']);
+            // 1. CARGA DE DATOS: Cargamos las dos posibles relaciones.
+            $events = Event::query()
+                ->with([
+                    // Cargar PAQUETES normales (para eventos != 6)
+                    'packages' => function ($query) {
+                        // ✅ CORRECCIÓN: Se eliminó 'documentTypeIdFK' de la selección
+                        // ya que no existe en la tabla `packages`.
+                        $query->select('packageId', 'packageName', 'eventIdFK');
+                    },
+                    // Cargar TIPOS DE DOCUMENTO (para evento = 6)
+                    'documentTypes:id,name,eventIdFK' // Usa la nueva relación
+                ])
+                ->get(['eventId', 'eventType']);
 
-        // 2. TRANSFORMACIÓN: Unificamos Paquetes y Documentos en el array 'packages'
-        $data = $events->map(function ($event) use ($documentEventId) {
+            // 2. TRANSFORMACIÓN: Unificamos Paquetes y Documentos en el array 'packages'
+            $data = $events->map(function ($event) use ($documentEventId) {
 
-            $packages = [];
+                $packages = [];
 
-            if ($event->eventId === $documentEventId) {
-                // CASO ESPECIAL: Evento Documento (ID 6)
-                // Los "paquetes" son los Tipos de Documento
-                $packages = $event->documentTypes->map(function ($docType) {
-                    return [
-                        'id' => $docType->id,
-                        'name' => $docType->name,
-                        // 🔑 CLAVE: Usamos su propia ID para documentTypeIdFK
-                        'documentTypeIdFK' => $docType->id,
-                    ];
-                })->all();
+                if ($event->eventId === $documentEventId) {
+                    // CASO ESPECIAL: Evento Documento (ID 6)
+                    // Los "paquetes" son los Tipos de Documento
+                    $packages = $event->documentTypes->map(function ($docType) {
+                        return [
+                            'id' => $docType->id,
+                            'name' => $docType->name,
+                            // 🔑 CLAVE: Usamos su propia ID para documentTypeIdFK
+                            'documentTypeIdFK' => $docType->id,
+                        ];
+                    })->all();
 
-            } else {
-                // CASO ESTÁNDAR: Evento normal (Maternidad, Grados, etc.)
-                // Los "paquetes" son los Paquetes de Sesión
-                $packages = $event->packages->map(function ($package) {
-                    return [
-                        'id' => $package->packageId,
-                        'name' => $package->packageName,
-                        // Asignamos NULL aquí ya que packages no tiene FK a document_types
-                        // Si un paquete normal NECESITA un documento extra, esa lógica debe ser manejada
-                        // en la tabla `packages` (si decides agregar la FK) o en otro lugar. 
-                        'documentTypeIdFK' => null, 
-                    ];
-                })->all();
-            }
+                } else {
+                    // CASO ESTÁNDAR: Evento normal (Maternidad, Grados, etc.)
+                    // Los "paquetes" son los Paquetes de Sesión
+                    $packages = $event->packages->map(function ($package) {
+                        return [
+                            'id' => $package->packageId,
+                            'name' => $package->packageName,
+                            // Asignamos NULL aquí ya que packages no tiene FK a document_types
+                            // Si un paquete normal NECESITA un documento extra, esa lógica debe ser manejada
+                            // en la tabla `packages` (si decides agregar la FK) o en otro lugar. 
+                            'documentTypeIdFK' => null,
+                        ];
+                    })->all();
+                }
 
-            return [
-                'id' => $event->eventId,
-                'name' => $event->eventType,
-                'packages' => $packages, // Lista unificada
-            ];
-        });
+                return [
+                    'id' => $event->eventId,
+                    'name' => $event->eventType,
+                    'packages' => $packages, // Lista unificada
+                ];
+            });
 
-        return response()->json($data);
+            return response()->json($data);
 
-    } catch (Throwable $e) {
-        \Log::error('AppointmentController@getEventsWithPackages error: ' . $e->getMessage());
-        return response()->json([
-            'message' => 'Error al listar eventos y paquetes.',
-            'error' => $e->getMessage()
-        ], 500);
+        } catch (Throwable $e) {
+            \Log::error('AppointmentController@getEventsWithPackages error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al listar eventos y paquetes.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
     // ... (Cierre de la clase)
 
 
@@ -899,6 +961,130 @@ class AppointmentController extends Controller
     //     return response()->json(['message' => 'Debe proporcionar date o month'], 400);
     // }
 
+    // public function availability(Request $request)
+    // {
+    //     $baseSlotsWeekday = [
+    //         '08:00:00',
+    //         '09:00:00',
+    //         '10:00:00',
+    //         '11:00:00',
+    //         '12:00:00',
+    //         '13:00:00',
+    //         '14:00:00',
+    //         '15:00:00',
+    //         '16:00:00',
+    //         '17:00:00',
+    //         '18:00:00',
+    //         '19:00:00',
+    //     ];
+
+    //     $baseSlotsSunday = [
+    //         '09:00:00',
+    //         '10:00:00',
+    //         '11:00:00',
+    //         '14:00:00',
+    //         '15:00:00',
+    //         '16:00:00',
+    //     ];
+
+    //     $date = $request->query('date');
+    //     $month = $request->query('month');
+    //     $year = $request->query('year', now()->year);
+
+    //     /* ------------ DÍA ESPECÍFICO ------------ */
+    //     if ($date) {
+    //         $day = Carbon::parse($date);
+
+    //         // días pasados bloqueados
+    //         if ($day->isBefore(Carbon::today())) {
+    //             return response()->json([
+    //                 'available' => [],
+    //                 'blocked' => [],
+    //                 'allBlocked' => true,
+    //             ]);
+    //         }
+
+    //         $dayOfWeek = $day->dayOfWeek;
+    //         $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
+    //             ? $baseSlotsSunday
+    //             : $baseSlotsWeekday;
+
+    //         // 🔹 Solo citas que tienen al menos un booking válido
+    //         $appointments = Appointment::whereDate('appointmentDate', $date)
+    //             ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation']) // 👈 sólo los que SI bloquean
+    //             ->pluck('appointmentTime')
+    //             ->toArray();
+
+    //         $available = array_values(array_diff($baseSlots, $appointments));
+    //         $allBlocked = count($available) === 0;
+
+    //         return response()->json([
+    //             'available' => $available,
+    //             'blocked' => $appointments,
+    //             'allBlocked' => $allBlocked,
+    //         ]);
+    //     }
+
+    //     /* ------------ DISPONIBILIDAD MENSUAL ------------ */
+    //     if ($month) {
+    //         $today = Carbon::today();
+
+    //         // 🔹 Traemos solo citas que tengan al menos un booking válido
+    //         $appointments = Appointment::whereMonth('appointmentDate', $month)
+    //             ->whereYear('appointmentDate', $year)
+    //             ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+    //             ->get(['appointmentDate', 'appointmentTime']);
+
+    //         // Agrupamos por fecha
+    //         $grouped = $appointments->groupBy(function ($a) {
+    //             return Carbon::parse($a->appointmentDate)->toDateString(); // Y-m-d
+    //         });
+
+    //         $days = [];
+
+    //         $current = Carbon::createFromDate($year, $month, 1)->startOfDay();
+    //         $end = (clone $current)->endOfMonth();
+
+    //         while ($current->lessThanOrEqualTo($end)) {
+    //             $dateStr = $current->toDateString();
+    //             $dayOfWeek = $current->dayOfWeek;
+
+    //             // Past days → bloqueados
+    //             if ($current->isBefore($today)) {
+    //                 $days[$dateStr] = [
+    //                     'allBlocked' => true,
+    //                     'hasAppointments' => false,
+    //                 ];
+    //                 $current->addDay();
+    //                 continue;
+    //             }
+
+    //             // slots según el día
+    //             $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+    //                 ? $baseSlotsSunday
+    //                 : $baseSlotsWeekday;
+
+    //             // 🔹 Solo turnos que tienen booking válido (ya filtrado arriba)
+    //             $taken = ($grouped[$dateStr] ?? collect())
+    //                 ->pluck('appointmentTime')
+    //                 ->toArray();
+
+    //             $available = array_diff($baseSlotsForDay, $taken);
+
+    //             $days[$dateStr] = [
+    //                 'allBlocked' => count($available) === 0,
+    //                 'hasAppointments' => count($taken) > 0,
+    //             ];
+
+    //             $current->addDay();
+    //         }
+
+    //         return response()->json($days);
+    //     }
+
+    //     return response()->json(['message' => 'Debe proporcionar date o month'], 400);
+    // }
+
     public function availability(Request $request)
     {
         $baseSlotsWeekday = [
@@ -925,6 +1111,9 @@ class AppointmentController extends Controller
             '16:00:00',
         ];
 
+        // 👇 Estados que SÍ bloquean (draft queda fuera)
+        $blockingStatuses = ['pending_payment', 'Pending confirmation', 'Scheduled'];
+
         $date = $request->query('date');
         $month = $request->query('month');
         $year = $request->query('year', now()->year);
@@ -933,7 +1122,7 @@ class AppointmentController extends Controller
         if ($date) {
             $day = Carbon::parse($date);
 
-            // días pasados bloqueados
+            // días pasados bloqueados completamente
             if ($day->isBefore(Carbon::today())) {
                 return response()->json([
                     'available' => [],
@@ -943,13 +1132,15 @@ class AppointmentController extends Controller
             }
 
             $dayOfWeek = $day->dayOfWeek;
-            $baseSlots = ($dayOfWeek === Carbon::SUNDAY)
+            $baseSlots = ($dayOfWeek === CarbonInterface::SUNDAY)
                 ? $baseSlotsSunday
                 : $baseSlotsWeekday;
 
-            // 🔹 Solo citas que tienen al menos un booking válido
+            // 🔹 Citas que bloquean: NO draft, SÍ las de estados "reales"
+            //    y, si quieres, solo las que tengan al menos un booking
             $appointments = Appointment::whereDate('appointmentDate', $date)
-                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation']) // 👈 sólo los que SI bloquean
+                ->whereIn('appointmentStatus', $blockingStatuses)
+                ->whereHas('bookings') // <-- comenta esta línea si NO quieres exigir booking
                 ->pluck('appointmentTime')
                 ->toArray();
 
@@ -967,10 +1158,11 @@ class AppointmentController extends Controller
         if ($month) {
             $today = Carbon::today();
 
-            // 🔹 Traemos solo citas que tengan al menos un booking válido
+            // 🔹 Traemos solo citas que bloquean (sin draft)
             $appointments = Appointment::whereMonth('appointmentDate', $month)
                 ->whereYear('appointmentDate', $year)
-                ->whereIn('appointmentStatus', ['Scheduled', 'Pending confirmation'])
+                ->whereIn('appointmentStatus', $blockingStatuses)
+                ->whereHas('bookings') // <-- igual, solo si quieres exigir booking
                 ->get(['appointmentDate', 'appointmentTime']);
 
             // Agrupamos por fecha
@@ -998,11 +1190,11 @@ class AppointmentController extends Controller
                 }
 
                 // slots según el día
-                $baseSlotsForDay = ($dayOfWeek === Carbon::SUNDAY)
+                $baseSlotsForDay = ($dayOfWeek === CarbonInterface::SUNDAY)
                     ? $baseSlotsSunday
                     : $baseSlotsWeekday;
 
-                // 🔹 Solo turnos que tienen booking válido (ya filtrado arriba)
+                // Turnos tomados (ya filtrados por estado arriba)
                 $taken = ($grouped[$dateStr] ?? collect())
                     ->pluck('appointmentTime')
                     ->toArray();
@@ -1022,10 +1214,6 @@ class AppointmentController extends Controller
 
         return response()->json(['message' => 'Debe proporcionar date o month'], 400);
     }
-
-
-
-
 
     /**
      * Display the specified resource.

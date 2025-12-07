@@ -351,11 +351,11 @@ const NotificationBell: React.FC = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="notifications-footer">
+                        {/* <div className="notifications-footer">
                             <button className="btn-view-all">
                                 Ver todas las notificaciones
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             </div>

@@ -5,11 +5,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Si usas Vite:
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
-// 👇 Ajusta este ID al id real del evento de graduación en tu tabla `events`
-const GRADUATION_EVENT_ID = 6;
+const GRADUATION_EVENT_ID = 7;
 
 interface Package {
     id: number;
@@ -20,16 +17,25 @@ interface Package {
     features: string[];
     popular?: boolean;
     image: string;
-    category: "basic" | "standard" | "premium" | "deluxe";
+    category: "basic" | "standard" | "premium" | "deluxe" | string;
     duration: string;
     photos: string;
 }
+
+// rutas de imagen definidas a mano
+const LOCAL_IMAGES: string[] = [
+    "/img/grado.jpg",
+    "/img/grado2.jpg",
+    "/img/grado3.jpg",
+    "/img/grado4.jpg",
+    "/img/grado5.jpg",
+    "/img/graduacion-6.jpg",
+];
 
 const GraduationPhotography: React.FC = () => {
     const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [selectedImage, setSelectedImage] = useState<string>("");
-    const [activeCategory, setActiveCategory] = useState<string>("all");
 
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(false);
@@ -37,14 +43,6 @@ const GraduationPhotography: React.FC = () => {
 
     const navigate = useNavigate();
 
-    const categories = [
-        { id: "all", name: "Todos" },
-        { id: "basic", name: "Básico" },
-        { id: "standard", name: "Estándar" },
-        { id: "premium", name: "Premium" },
-    ];
-
-    // 🔹 Traer paquetes desde el backend
     useEffect(() => {
         const fetchPackages = async () => {
             setLoading(true);
@@ -62,11 +60,11 @@ const GraduationPhotography: React.FC = () => {
                     }
                 );
 
-                // 👉 Caso 1: backend devuelve { general: [...], specific: [...] }
                 const general = res.data.general ?? [];
                 const specific = res.data.specific ?? [];
-
                 const combinedRaw = [...specific, ...general];
+
+                console.log("Paquetes desde el backend:", combinedRaw); // 👈 para verificar que están los 2 extra
 
                 const mapped: Package[] = combinedRaw.map((pkg: any, index: number) => ({
                     id: pkg.id,
@@ -74,45 +72,21 @@ const GraduationPhotography: React.FC = () => {
                     price: pkg.packagePrice,
                     originalPrice: pkg.originalPrice ?? undefined,
                     description: pkg.packageDescription,
-                    // si tu backend tiene un array de features, úsalo; si no, pon uno básico
                     features:
-                        pkg.features ??
-                        [
+                        pkg.features ?? [
                             "Sesión fotográfica profesional",
                             "Edición básica de fotos",
                             "Entrega digital",
                         ],
-                    popular: index === 0, // por ejemplo el primero como "popular"
-                    image: pkg.photos?.[0]?.url ?? "/img/grado.jpg", // fallback
-                    // si en el backend tienes un campo category, úsalo; si no, default:
+                    popular: index === 0,
+                    // imagen tomada del arreglo LOCAL_IMAGES
+                    image: LOCAL_IMAGES[index] ?? "/img/graduacion-default.jpg",
                     category: (pkg.category as Package["category"]) ?? "standard",
                     duration: pkg.duration ?? "1 hora",
-                    photos: pkg.photosCount
-                        ? `${pkg.photosCount} fotos`
-                        : "Fotos digitales",
+                    photos: pkg.photosCount ? `${pkg.photosCount} fotos` : "Fotos digitales",
                 }));
 
                 setPackages(mapped);
-
-                // 👉 Si tu backend devuelve solo un array plano, sin general/specific:
-                //
-                // const mapped: Package[] = res.data.map((pkg: any, index: number) => ({
-                //   id: pkg.id,
-                //   name: pkg.packageName,
-                //   price: pkg.packagePrice,
-                //   originalPrice: pkg.originalPrice ?? undefined,
-                //   description: pkg.packageDescription,
-                //   features: pkg.features ?? ["Sesión fotográfica", "Entrega digital"],
-                //   popular: index === 1,
-                //   image: pkg.photos?.[0]?.url ?? "/img/bautizo.jpg",
-                //   category: (pkg.category as Package["category"]) ?? "standard",
-                //   duration: pkg.duration ?? "1 hora",
-                //   photos: pkg.photosCount
-                //     ? `${pkg.photosCount} fotos`
-                //     : "Fotos digitales",
-                // }));
-                // setPackages(mapped);
-
             } catch (err) {
                 console.error("Error cargando paquetes de graduación:", err);
                 setError("No se pudieron cargar los paquetes en este momento.");
@@ -124,13 +98,6 @@ const GraduationPhotography: React.FC = () => {
         fetchPackages();
     }, []);
 
-    // 🔹 Filtrado por categoría
-    const filteredPackages =
-        activeCategory === "all"
-            ? packages
-            : packages.filter((pkg) => pkg.category === activeCategory);
-
-    // 🔹 Abrir modal de imagen
     const handleImageClick = (image: string) => {
         setSelectedImage(image);
         setShowModal(true);
@@ -141,7 +108,6 @@ const GraduationPhotography: React.FC = () => {
         setSelectedImage("");
     };
 
-    // 🔹 Reservar → ir al wizard con eventId + packageId
     const handleReserve = (packageId: number) => {
         navigate("/nuevaCita", {
             state: {
@@ -154,10 +120,10 @@ const GraduationPhotography: React.FC = () => {
     const formatPrice = (value: string | number) => {
         const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
         if (Number.isNaN(n)) return String(value);
-        // sin decimales:
-        return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        // si quieres decimales, usa:
-        // return n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return n.toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
     };
 
     return (
@@ -189,33 +155,14 @@ const GraduationPhotography: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Filtros */}
-                    <div className="compact-categories mb-4 text-center">
-                        <div className="compact-filter-container d-inline-flex gap-2">
-                            {categories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    className={`compact-filter-btn ${activeCategory === category.id ? "active" : ""
-                                        }`}
-                                    onClick={() => setActiveCategory(category.id)}
-                                >
-                                    {category.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
                     {loading && (
                         <p className="text-center text-muted">Cargando paquetes...</p>
                     )}
-                    {error && (
-                        <p className="text-center text-danger">{error}</p>
-                    )}
+                    {error && <p className="text-center text-danger">{error}</p>}
 
-                    {/* Grid animado */}
                     {!loading && !error && (
                         <div className="row g-4 justify-content-center">
-                            {filteredPackages.map((pkg, index) => (
+                            {packages.map((pkg, index) => (
                                 <motion.div
                                     key={pkg.id}
                                     className="col-xl-3 col-lg-4 col-md-6 col-sm-6"
@@ -231,13 +178,11 @@ const GraduationPhotography: React.FC = () => {
                                 >
                                     <div
                                         className={`compact-package-card ${pkg.popular ? "featured" : ""
-                                            } ${selectedPackage === pkg.id ? "card-hover" : ""
-                                            }`}
+                                            } ${selectedPackage === pkg.id ? "card-hover" : ""}`}
                                         onMouseEnter={() => setSelectedPackage(pkg.id)}
                                         onMouseLeave={() => setSelectedPackage(null)}
                                     >
                                         <div className="compact-card-content">
-                                            {/* Header */}
                                             <div className="compact-card-header">
                                                 <div className={`compact-category-badge ${pkg.category}`}>
                                                     {pkg.category}
@@ -248,7 +193,7 @@ const GraduationPhotography: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Imagen */}
+                                            {/* Imagen más larga */}
                                             <div
                                                 className="compact-image-container"
                                                 onClick={() => handleImageClick(pkg.image)}
@@ -258,10 +203,9 @@ const GraduationPhotography: React.FC = () => {
                                                     alt={pkg.name}
                                                     className="compact-image"
                                                 />
-                                                <div className="compact-image-overlay"></div>
+                                                <div className="compact-image-overlay">Ver grande</div>
                                             </div>
 
-                                            {/* Info */}
                                             <div className="compact-info">
                                                 <h3 className="compact-package-name">{pkg.name}</h3>
                                                 <p className="compact-package-desc">
@@ -276,10 +220,7 @@ const GraduationPhotography: React.FC = () => {
 
                                                 <div className="compact-features">
                                                     {pkg.features.slice(0, 3).map((feature, index2) => (
-                                                        <div
-                                                            key={index2}
-                                                            className="compact-feature"
-                                                        >
+                                                        <div key={index2} className="compact-feature">
                                                             <span className="feature-dot">•</span>
                                                             <span className="feature-text">{feature}</span>
                                                         </div>
@@ -309,17 +250,13 @@ const GraduationPhotography: React.FC = () => {
                 </div>
             </section>
 
-            {/* Modal */}
             {showModal && (
                 <div className="compact-modal" onClick={closeModal}>
                     <div
                         className="compact-modal-content"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <button
-                            className="compact-modal-close"
-                            onClick={closeModal}
-                        >
+                        <button className="compact-modal-close" onClick={closeModal}>
                             ×
                         </button>
                         <img

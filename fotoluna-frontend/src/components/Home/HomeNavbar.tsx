@@ -102,6 +102,7 @@ const HomeNav: React.FC = () => {
                                 </Button>
                             </div>
                         </li>
+
                         {!user && (
                             <li className="nav-item">
                                 <a className="nav-link" href="/contacto">
@@ -109,6 +110,7 @@ const HomeNav: React.FC = () => {
                                 </a>
                             </li>
                         )}
+
                         <li className="nav-item dropdown">
                             <a
                                 className="nav-link portafolio-btn dropdown-toggle d-flex align-items-center justify-content-between"
@@ -185,7 +187,7 @@ const HomeNav: React.FC = () => {
 
                         {!user && (
                             <li className="nav-item">
-                                <a className="nav-link" href="/sobreMi">
+                                <a className="nav-link" href="/sobreNosotros">
                                     Sobre Nosotros
                                 </a>
                             </li>

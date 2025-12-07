@@ -139,6 +139,7 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::post('/appointmentsCustomer', [AppointmentController::class, 'storeCustomer']); // si se usa
     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
+    Route::put('/appointmentsCustomer/{appointment}', [AppointmentController::class, 'updateCustomer']);
 
     // Actualización de cita (cliente)
     Route::patch('/api/appointments/{id}', [AppointmentController::class, 'update']);

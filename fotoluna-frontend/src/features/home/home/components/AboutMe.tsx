@@ -6,7 +6,7 @@ const AboutMe = () => {
             <div className="aboutme-overlay">
                 <div className="aboutme-content container">
                     <h2>
-                        Sobre <span className="highlight">Mí</span>
+                        Sobre <span className="highlight">Nosotros</span>
                     </h2>
                     <div className="text">
                         <p>

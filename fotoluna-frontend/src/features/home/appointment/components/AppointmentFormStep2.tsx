@@ -60,6 +60,9 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     // 1) Cargar borrador de Step2
     // ===============================
     useEffect(() => {
+        // 👇 Si vengo con preselectedPackageId, NO quiero mezclar el borrador anterior
+        if (preselectedPackageId) return;
+
         const raw = localStorage.getItem(STEP2_DRAFT_KEY);
         if (!raw) return;
 
@@ -74,7 +77,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         } catch (e) {
             console.warn("Error leyendo borrador de Step2:", e);
         }
-    }, []);
+    }, [preselectedPackageId]);
 
     // ===============================
     // 2) Cargar paquetes del backend

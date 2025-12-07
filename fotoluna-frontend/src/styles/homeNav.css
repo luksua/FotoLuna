@@ -260,7 +260,8 @@ body {
 }
 
 .badge-navbar {
-    background-color: #f2dff6;
+    background-color: #fdf0ff;
+    border: 2px solid #f2dff6;
     color: rgb(0, 0, 0);
     border-radius: 25px;
     font-weight: 500;

@@ -110,6 +110,12 @@
     flex: 0 0 30%;
     display: flex;
     flex-direction: column;
+    height: 100%;
+}
+
+.reference-image-container.horizontal-image {
+    flex: 1;
+    min-height: 0;
 }
 
 .pricing-section.image-pricing {
@@ -609,4 +615,11 @@
     .right-column {
         padding: 1.2rem;
     }
+}
+
+/* solo escritorio (pantallas grandes) */
+@media (min-width: 993px) {
+  .professional-promotion-card.horizontal-layout {
+    height: 380px; /* solo aquí */
+  }
 }

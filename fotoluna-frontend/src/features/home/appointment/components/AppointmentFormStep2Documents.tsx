@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import Button from "../../../../components/Home/Button";
+import InputLabel from "../../../../components/Home/InputLabel";
 import "../styles/appointment.css";
 import api from "../../../../lib/api";
 
@@ -21,6 +23,10 @@ interface DocumentType {
     photoUrl?: string | null;
     requiresUpload: boolean;
     requiresPresence: boolean;
+}
+
+interface FormValues {
+    place: string;
 }
 
 const DRAFT_KEY_DOCS = "appointmentStepDocumentsDraft";
@@ -55,6 +61,19 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     const [localPlace, setLocalPlace] = useState(place ?? "");
     const [file, setFile] = useState<File | null>(null);
 
+    // react-hook-form solo para el campo place
+    const {
+        control,
+        formState: { errors },
+        setValue,
+        trigger,
+        getValues,
+    } = useForm<FormValues>({
+        defaultValues: {
+            place: place ?? "",
+        },
+    });
+
     // ========= Cargar borrador desde localStorage =========
     useEffect(() => {
         const raw = localStorage.getItem(DRAFT_KEY_DOCS);
@@ -70,6 +89,7 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
             }
             if (parsed.localPlace !== undefined) {
                 setLocalPlace(parsed.localPlace);
+                setValue("place", parsed.localPlace || "");
             }
         } catch (e) {
             console.warn("Error leyendo borrador de documentos:", e);
@@ -190,11 +210,14 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
         if (requiresPresence && !requiresUpload) {
             resolvedPlace = "Estudio";
         } else if (needsPhotographerVisit) {
-            if (!localPlace.trim()) {
-                alert("Ingresa el lugar donde debe ir el fotógrafo.");
+            // Validamos el campo "place" con react-hook-form
+            const valid = await trigger("place");
+            if (!valid) {
+                // hay errores, no seguimos
                 return;
             }
-            resolvedPlace = localPlace.trim();
+            const value = getValues("place")?.trim() || "";
+            resolvedPlace = value;
         } else if (requiresUpload && !requiresPresence) {
             resolvedPlace = null; // o "Online"
         }
@@ -253,13 +276,18 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
     const formatPrice = (value: string | number) => {
         const n = Number(String(value).replace(/[^0-9.-]+/g, ""));
         if (Number.isNaN(n)) return String(value);
-        return n.toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        return n.toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
     };
 
     // 🔹 Render
     return (
         <div className="container py-4 appointment-step2 bg-custom-2">
-            <h3 className="mb-4 fw-semibold text-center">Selecciona el tipo de documento</h3>
+            <h3 className="mb-4 fw-semibold text-center">
+                Selecciona el tipo de documento
+            </h3>
 
             {documents.length > 3 ? (
                 <div
@@ -293,23 +321,30 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                     }}
                     onPointerUp={(e) => {
                         const vp = viewportRef.current;
-                        if (vp && vp.hasPointerCapture(e.pointerId)) vp.releasePointerCapture(e.pointerId);
+                        if (vp && vp.hasPointerCapture(e.pointerId))
+                            vp.releasePointerCapture(e.pointerId);
                         if (!isDraggingRef.current) return;
 
                         isDraggingRef.current = false;
                         vp?.classList.remove("dragging");
 
                         const waitInertia = () => {
-                            if (Math.abs(velocityRef.current) > 0.4) requestAnimationFrame(waitInertia);
+                            if (Math.abs(velocityRef.current) > 0.4)
+                                requestAnimationFrame(waitInertia);
                             else setTimeout(() => (autoRef.current = true), 900);
                         };
                         requestAnimationFrame(waitInertia);
 
                         if (!clickGuardRef.current) {
-                            const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-                            el?.closest(".carousel-card")?.dispatchEvent(
-                                new MouseEvent("click", { bubbles: true })
-                            );
+                            const el = document.elementFromPoint(
+                                e.clientX,
+                                e.clientY
+                            ) as HTMLElement | null;
+                            el
+                                ?.closest(".carousel-card")
+                                ?.dispatchEvent(
+                                    new MouseEvent("click", { bubbles: true })
+                                );
                         }
                     }}
                     onPointerCancel={() => {
@@ -336,18 +371,34 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                                         draggable={false}
                                     />
                                 ) : (
-                                    <div className="package-image placeholder">Sin imagen</div>
+                                    <div className="package-image placeholder">
+                                        Sin imagen
+                                    </div>
                                 )}
                                 <div className="package-info">
                                     <h5 className="mb-1">{doc.name}</h5>
-                                    <p className="text-muted mb-2">{doc.description}</p>
-                                    <p className="fw-bold">${formatPrice(doc.price)}</p>
-                                    <p className="">Fotos a entregar: {doc.number_photos}</p>
-                                    {!!doc.requiresUpload && <small>Requiere subir foto</small>}
-                                    {!!doc.requiresPresence && <small> Se toma en el estudio</small>}
-                                    {!doc.requiresUpload && !doc.requiresPresence && (
-                                        <small>Un fotógrafo irá a tu ubicación</small>
+                                    <p className="text-muted mb-2">
+                                        {doc.description}
+                                    </p>
+                                    <p className="fw-bold">
+                                        ${formatPrice(doc.price)}
+                                    </p>
+                                    <p className="">
+                                        Fotos a entregar: {doc.number_photos}
+                                    </p>
+                                    {!!doc.requiresUpload && (
+                                        <small>Requiere subir foto</small>
                                     )}
+                                    {!!doc.requiresPresence && (
+                                        <small> Se toma en el estudio</small>
+                                    )}
+                                    {!doc.requiresUpload &&
+                                        !doc.requiresPresence && (
+                                            <small>
+                                                Un fotógrafo irá a tu
+                                                ubicación
+                                            </small>
+                                        )}
                                 </div>
                             </div>
                         ))}
@@ -372,14 +423,24 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                                         draggable={false}
                                     />
                                 ) : (
-                                    <div className="static-package-image placeholder">Sin imagen</div>
+                                    <div className="static-package-image placeholder">
+                                        Sin imagen
+                                    </div>
                                 )}
                                 <div className="package-info">
                                     <h5 className="mb-1">{doc.name}</h5>
-                                    <p className="text-muted mb-2">{doc.description}</p>
-                                    <p className="fw-bold">${formatPrice(doc.price)}</p>
-                                    {!!doc.requiresUpload && <small>Requiere subir foto</small>}
-                                    {!!doc.requiresPresence && <small>En estudio</small>}
+                                    <p className="text-muted mb-2">
+                                        {doc.description}
+                                    </p>
+                                    <p className="fw-bold">
+                                        ${formatPrice(doc.price)}
+                                    </p>
+                                    {!!doc.requiresUpload && (
+                                        <small>Requiere subir foto</small>
+                                    )}
+                                    {!!doc.requiresPresence && (
+                                        <small>En estudio</small>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -391,12 +452,16 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
                 <div className="mt-4">
                     {requiresUpload && (
                         <div className="mb-3">
-                            <label className="form-label">Adjunta tu foto</label>
+                            <label className="form-label">
+                                Adjunta tu foto
+                            </label>
                             <input
                                 type="file"
                                 accept="image/*"
                                 className="form-control"
-                                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                                onChange={(e) =>
+                                    setFile(e.target.files?.[0] ?? null)
+                                }
                             />
                             <small className="text-muted">
                                 Podrás adjuntar tu foto desde casa.
@@ -406,16 +471,90 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
 
                     {needsPhotographerVisit && (
                         <div className="mb-3">
-                            <label className="form-label">Lugar donde se tomará la foto</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={localPlace}
-                                onChange={(e) => setLocalPlace(e.target.value)}
-                                placeholder="Ej. Tu dirección o lugar de trabajo"
+                            <Controller
+                                name="place"
+                                control={control}
+                                rules={{
+                                    validate: (value) => {
+                                        const trimmed =
+                                            value?.trim() || "";
+                                        if (!trimmed)
+                                            return "El lugar es obligatorio";
+
+                                        // 1) Debe tener tipo de vía
+                                        const hasStreetType =
+                                            /\b(calle|cll|carrera|cra|kra|kr|avenida|av)\b/i.test(
+                                                trimmed
+                                            );
+                                        if (!hasStreetType) {
+                                            return "Incluye el tipo de vía (Calle, Carrera, Avenida, etc.)";
+                                        }
+
+                                        // 2) Debe tener algún número (de vía o de casa)
+                                        const hasNumber =
+                                            /\d{1,4}/.test(trimmed);
+                                        if (!hasNumber) {
+                                            return "Incluye el número de la dirección";
+                                        }
+
+                                        // 3) Barrio / sector
+
+                                        // 3.1 "Barrio X" o "br X"
+                                        const hasBarrioWord =
+                                            /\b(barrio|br)\s+\S+/i.test(
+                                                trimmed
+                                            );
+
+                                        // 3.2 Algo después de una coma: "..., Gaitán"
+                                        const parts =
+                                            trimmed.split(",");
+                                        const hasPartAfterComma =
+                                            parts.length > 1 &&
+                                            parts[1].trim().length > 2;
+
+                                        // 3.3 Última palabra tipo barrio: "cra 9A #37-20 gaitan"
+                                        const tokens =
+                                            trimmed.split(/\s+/);
+                                        const lastToken =
+                                            tokens[
+                                                tokens.length - 1
+                                            ] || "";
+                                        const hasPlainNeighborhood =
+                                            /^[a-záéíóúñ]+$/i.test(
+                                                lastToken
+                                            ) &&
+                                            lastToken.length >= 3;
+
+                                        if (
+                                            !hasBarrioWord &&
+                                            !hasPartAfterComma &&
+                                            !hasPlainNeighborhood
+                                        ) {
+                                            return "Incluye el barrio o sector al final (ej. 'gaitán', 'Barrio Gaitán' o ', Gaitán')";
+                                        }
+
+                                        return true;
+                                    },
+                                }}
+                                render={({ field }) => (
+                                    <InputLabel
+                                        id="place"
+                                        label="Lugar donde se tomará la foto"
+                                        type="text"
+                                        value={field.value || ""}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const value =
+                                                e.target.value;
+                                            field.onChange(value);
+                                            setLocalPlace(value);
+                                        }}
+                                        error={errors.place?.message}
+                                    />
+                                )}
                             />
                             <small className="text-muted">
-                                Un fotógrafo irá a este lugar para tomar la foto.
+                                Un fotógrafo irá a este lugar para tomar la
+                                foto.
                             </small>
                         </div>
                     )}
@@ -430,10 +569,14 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
 
             <div className="d-flex justify-content-between mt-4">
                 <Button value="Atrás" onClick={onBack} />
-                <Button value={loading ? "Cargando..." : "Siguiente"} onClick={handleConfirm} />
+                <Button
+                    value={loading ? "Cargando..." : "Siguiente"}
+                    onClick={handleConfirm}
+                />
             </div>
         </div>
     );
 };
 
 export default AppointmentStep2Documents;
+1

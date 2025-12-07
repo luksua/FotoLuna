@@ -327,6 +327,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess, onCancel, variant = 
                         if (watch("password") !== value) {
                             return "Las contraseñas no coinciden";
                         }
+                        return true; // ← necesario
                     },
                 }}
                 render={({ field }) => (
@@ -374,6 +375,87 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess, onCancel, variant = 
         return (
             <div className="w-100">
                 <h3 className="mb-3">Crea tu cuenta</h3>
+
+                {/* Bloque foto también en modal */}
+                <div className="d-flex flex-column align-items-center mb-3">
+                    <img
+                        src={cropData ? cropData : profileImage}
+                        alt="Foto Perfil Recortada"
+                        className="profile-img mt-2"
+                    />
+
+                    {showModal && (
+                        <>
+                            <div className="modal fade show" style={{ display: "block" }}>
+                                <div className="modal-dialog modal-dialog-centered">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Recortar Imagen</h5>
+                                            <button
+                                                type="button"
+                                                className="btn-close"
+                                                onClick={() => setShowModal(false)}
+                                            ></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <Cropper
+                                                src={profileImage}
+                                                style={{ height: 300, width: "100%" }}
+                                                initialAspectRatio={1}
+                                                aspectRatio={1}
+                                                guides={true}
+                                                cropBoxResizable={false}
+                                                viewMode={1}
+                                                ref={cropperRef}
+                                                minCropBoxHeight={10}
+                                                minCropBoxWidth={10}
+                                                background={false}
+                                                responsive={true}
+                                                checkOrientation={false}
+                                            />
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => setShowModal(false)}
+                                            >
+                                                Cancelar
+                                            </button>
+                                            <button
+                                                className="btn custom-upload-btn"
+                                                onClick={() => {
+                                                    getCropData();
+                                                    setShowModal(false);
+                                                }}
+                                            >
+                                                Recortar Imagen
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-backdrop fade show"></div>
+                        </>
+                    )}
+
+                    <label
+                        htmlFor="profileImageModal"
+                        className="btn custom-upload-btn custom-file-upload mt-2"
+                        onClick={() => setShowModal(true)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <i className="bi bi-camera"></i>
+                    </label>
+                    <input
+                        type="file"
+                        id="profileImageModal"
+                        className="form-control"
+                        onChange={(e) => handleImageChange(e.target.files)}
+                        accept="image/*"
+                        hidden
+                    />
+                </div>
+
                 {formBody}
             </div>
         );

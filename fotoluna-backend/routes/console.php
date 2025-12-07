@@ -27,5 +27,7 @@ Schedule::command('appointments:employee-checkin')
 Schedule::command('installments:notify-overdue-admin')
     ->dailyAt('08:00');
 
-    Schedule::command('photos:check-sla')
+Schedule::command('photos:check-sla')
     ->dailyAt('09:00');
+Schedule::command('appointments:cleanup')
+    ->hourly();

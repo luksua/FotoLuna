@@ -42,6 +42,7 @@ class Appointment extends Model
     // Si solo hay una reserva por cita, puedes usar hasOne también:
     public function booking()
     {
-        return $this->hasOne(Booking::class, 'appointmentIdFK', 'appointmentId');
+        return $this->hasOne(Booking::class, 'appointmentIdFK', 'appointmentId')
+            ->orderByDesc('bookingId');
     }
 }
