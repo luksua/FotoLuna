@@ -297,16 +297,45 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
     // Asignar fotógrafo a una cita
     Route::post('/appointments/{appointment}/assign', [AdminAppointmentController::class, 'assign']);
-
-    // Estadísticas de paquetes asociados a citas
-    Route::get('/packages/count-booked', [AdminAppointmentController::class, 'packagesCount']);
+    Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
 
     // Ventas por mes
-    Route::get('/sales/by-month', [AdminAppointmentController::class, 'salesByMonth']);
+Route::get('/sales/by-month', [AdminAppointmentController::class, 'salesByMonth']);
+// Estadísticas de paquetes asociados a citas
+Route::get('/packages/count-booked', [AdminAppointmentController::class, 'packagesCount']);
 
-    // Pagos de bookings (panel admin)
-    Route::get('/booking-payments', [PaymentController::class, 'bookingPayments']);
 });
+
+Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
+
+// Estadísticas de paquetes vendidos
+Route::get('/admin/packages/stats', [AdminPackagesController::class, 'stats']);
+
+// Ventas del mes actual
+Route::get('/admin/packages/sales/monthly', [AdminPackagesController::class, 'monthlySales']);
+
+// Citas pendientes de un usuario
+Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class, 'pendingByUserId']);
+
+// Contar citas pendientes totales
+Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
+// Citas completadas de un usuario (historial)
+Route::get('/admin/appointments/completed/{userId}', [AppointmentController::class, 'completedByUserId']);
+
+
+
+
+
+Route::get('admin/payments', [PaymentController::class, 'index']);
+Route::get('admin/payments/summary', [PaymentController::class, 'summary']);
+
+Route::get('admin/storage-plans', [StoragePlanController::class, 'indexAdmin']);
+Route::put('admin/storage-plans/{id}', [StoragePlanController::class, 'update']);
+Route::middleware(['auth:sanctum', 'role:admin'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/booking-payments', [PaymentController::class, 'bookingPayments']);
+    });
 
 /*
 |--------------------------------------------------------------------------

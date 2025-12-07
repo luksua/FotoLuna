@@ -4,6 +4,8 @@ import '../styles/AdminEmployee.css';
 import { useEffect, useState } from "react";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import SuccessAlert from "../components/SuccessAlert";
+import ExportButton from "../../../../components/ExportButton";
+import { exportEmployeesToExcel } from '../../../../services/exportService';
 
 
 type Employee = {
@@ -33,7 +35,7 @@ const EmployeeCustomers = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [specialtyFilter, setSpecialtyFilter] = useState("");
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [ratings, setRatings] = useState<{[key: number]: number}>({});
+    const [ratings, setRatings] = useState<{ [key: number]: number }>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -50,7 +52,7 @@ const EmployeeCustomers = () => {
     });
     const [savingEdit, setSavingEdit] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-    
+
     const itemsPerPage = 10;
 
     const getAuthHeaders = () => {
@@ -114,7 +116,7 @@ const EmployeeCustomers = () => {
                 if (!mounted) return;
                 if (data && data.success && Array.isArray(data.data)) {
                     // Crear mapa de employeeId -> averageRating
-                    const ratingsMap: {[key: number]: number} = {};
+                    const ratingsMap: { [key: number]: number } = {};
                     data.data.forEach((item: any) => {
                         ratingsMap[item.employeeId] = item.averageRating || 0;
                     });
@@ -127,16 +129,12 @@ const EmployeeCustomers = () => {
     }, []);
 
     //////////////////// Filtro 
-    const filteredEmployees = employees.filter(emp => {
-        const matchesSearch = Object.values(emp)
+    const filteredEmployees = employees.filter(emp =>
+        Object.values(emp)
             .join(" ")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-        
-        const matchesSpecialty = !specialtyFilter || emp.specialty === specialtyFilter;
-        
-        return matchesSearch && matchesSpecialty;
-    });
+            .includes(searchQuery.toLowerCase())
+    );
 
     //////////////////// Paginación
     const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
@@ -216,17 +214,25 @@ const EmployeeCustomers = () => {
         try {
             const res = await fetch(`/api/admin/employees/${selectedEmployee.id}`, {
                 method: 'PATCH',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(editForm)
+                headers: {
+                    ...getAuthHeaders(),
+                    Accept: 'application/json',   // 👈 añade esto
+                },
+                body: JSON.stringify(editForm),
             });
 
-            if (!res.ok) throw new Error('No se pudo guardar los cambios');
+            const raw = await res.text();
+            console.log('STATUS PATCH /api/admin/employees/:id =>', res.status);
+            console.log('RAW RESPONSE =>', raw);
 
-            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(`No se pudo guardar los cambios (status ${res.status})`);
+            }
+
+            const data = JSON.parse(raw);
             if (data && data.success) {
-                //////// Actualizar la lista con los nuevos datos
-                setEmployees(prev => prev.map(emp => 
-                    emp.id === selectedEmployee.id 
+                setEmployees(prev => prev.map(emp =>
+                    emp.id === selectedEmployee.id
                         ? {
                             ...emp,
                             nombre: editForm.firstNameEmployee + ' ' + editForm.lastNameEmployee,
@@ -241,12 +247,11 @@ const EmployeeCustomers = () => {
                 ));
                 setError(null);
                 closeEditModal();
-                // Mostrar alerta de éxito
                 setShowSuccessAlert(true);
-                // Autoocultar después de 5 segundos
                 setTimeout(() => setShowSuccessAlert(false), 5000);
             }
         } catch (err: any) {
+            console.error('ERROR saveEditChanges =>', err);
             setError(err.message || 'Error guardando cambios');
         } finally {
             setSavingEdit(false);
@@ -256,29 +261,21 @@ const EmployeeCustomers = () => {
     return (
         <HomeLayout>
             <div className="employee-container">
-                <div className="search-box">
-                    <input type="text"
-                        placeholder="Buscar empleados..."
-                        value={searchQuery}
-                        onChange={(e) => handleSearchChange(e.target.value)}/>
-                    
-                    <select 
-                        value={specialtyFilter}
-                        onChange={(e) => handleSpecialtyFilter(e.target.value)}
-                        className="search-box select"
-                    >
-                        <option value="">Todas las especialidades</option>
-                        <option value="Social">Social</option>
-                        <option value="Familia">Familia</option>
-                        <option value="Retratos">Retratos</option>
-                        <option value="Infantil">Infantil</option>
-                        <option value="Parejas">Parejas</option>
-                        <option value="Exteriores">Exteriores</option>
-                    </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div className="search-box" style={{ flex: 1 }}>
+                        <input type="text"
+                            placeholder="Buscar empleados..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)} />
+                    </div>
+
+                    <div>
+                        <ExportButton onClick={async () => { await exportEmployeesToExcel(employees, 'Empleados_Todos'); }} label="Descargar Excel" />
+                    </div>
                 </div>
 
                 {showSuccessAlert && (
-                    <SuccessAlert 
+                    <SuccessAlert
                         message="¡Empleado Editado Exitosamente!"
                         visible={showSuccessAlert}
                         onClose={() => setShowSuccessAlert(false)}
@@ -351,23 +348,23 @@ const EmployeeCustomers = () => {
                             )}
                         </tbody>
                     </table>
-                    
+
                     {/* Controles de paginación */}
                     {totalPages > 1 && (
                         <div className="pagination-controls">
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                 disabled={currentPage === 1}
                                 className="pagination-btn"
                             >
                                 ← Anterior
                             </button>
-                            
+
                             <div className="pagination-info">
                                 Página {currentPage} de {totalPages}
                             </div>
-                            
-                            <button 
+
+                            <button
                                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                 disabled={currentPage === totalPages}
                                 className="pagination-btn"
@@ -456,23 +453,6 @@ const EmployeeCustomers = () => {
                             />
                         </div>
 
-                        <div className="modal-row">
-                            <label>Especialidad:</label>
-                            <select
-                                value={editForm.specialty}
-                                onChange={(e) => handleEditFormChange('specialty', e.target.value)}
-                                className="modal-input"
-                            >
-                                <option value="">Seleccione una especialidad</option>
-                                <option value="Social">Social</option>
-                                <option value="Familia">Familia</option>
-                                <option value="Retratos">Retratos</option>
-                                <option value="Infantil">Infantil</option>
-                                <option value="Parejas">Parejas</option>
-                                <option value="Exteriores">Exteriores</option>
-                            </select>
-                        </div>
-
                         <div className="modal-actions">
                             <button className="modal-btn modal-btn-secondary" onClick={closeEditModal} type="button">Cancelar</button>
                             <button className="modal-btn modal-btn-primary" onClick={saveEditChanges} disabled={savingEdit} type="button">
@@ -486,7 +466,7 @@ const EmployeeCustomers = () => {
             <footer>
                 <p>FotoLuna &copy;  </p>
             </footer>
-            
+
         </HomeLayout>
     );
 };

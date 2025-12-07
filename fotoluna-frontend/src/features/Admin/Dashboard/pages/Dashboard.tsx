@@ -81,6 +81,7 @@ const Dashboard = () => {
             try {
                 const res = await api.get('/api/admin/packages/stats');
                 if (res.data && res.data.success) {
+                    console.log('packages stats del backend:', res.data.data);
                     setPackagesStats(res.data.data || []);
                 }
             } catch (err) {
@@ -250,9 +251,18 @@ const Dashboard = () => {
             {/* Gráfica de ventas*/}
             <BarChart
                 dataset={chartData}
-                xAxis={[{ dataKey: 'mes', tickPlacement: 'middle', tickLabelPlacement: 'middle' }]}
+                xAxis={[{
+                    dataKey: 'mes',
+                    scaleType: 'band',              // 👈 ESTO ES LO QUE FALTABA
+                    tickPlacement: 'middle',
+                    tickLabelPlacement: 'middle',
+                }]}
                 yAxis={[{ label: 'Ventas', width: 60 }]}
-                series={[{ dataKey: 'ventas', label: 'Ventas por mes al año', color: '#805fa6' }]}
+                series={[{
+                    dataKey: 'ventas',
+                    label: 'Ventas por mes al año',
+                    color: '#805fa6',
+                }]}
                 height={300}
                 margin={{ left: 0 }}
             />
@@ -280,23 +290,52 @@ const Dashboard = () => {
                         height={200}
                     />
                 </Box>
-                <Box sx={{ flex: 1, minWidth: 350, maxWidth: 500, height: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f1f1ff', borderRadius: 2, boxShadow: 2, p: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 1 }}>Paquetes Más Vendidos</Typography>
-                    <PieChart
-                        series={[{
-                            data: packagesStats.length > 0 ? packagesStats.map((p, idx) => ({
-                                id: idx,
-                                value: p.value,
-                                label: p.name,
-                                color: ['#d297e0ff', '#fdd1deff', '#9c97e0ff', '#c792dfff', '#efd6f9ff'][idx % 5]
-                            })) : [
-                                { id: 0, value: 1, label: 'Sin datos', color: '#efe6ff' }
-                            ],
-                        }]}
-                        width={150}
-                        height={150}
-                    />
-                </Box>
+                <Box
+  sx={{
+    flex: 1,
+    minWidth: 350,
+    maxWidth: 500,
+    height: 250,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f1f1ff',
+    borderRadius: 2,
+    boxShadow: 2,
+    p: 3,
+  }}
+>
+  <Typography variant="h6" sx={{ mb: 1 }}>
+    Paquetes Más Vendidos
+  </Typography>
+
+  <PieChart
+    series={[{
+      data: packagesStats.length > 0
+        ? packagesStats.map((p, idx) => ({
+            id: idx,
+            value: p.value,
+            label: p.name,
+            color: ['#d297e0ff', '#fdd1deff', '#9c97e0ff', '#c792dfff', '#efd6f9ff'][idx % 5],
+          }))
+        : [{ id: 0, value: 1, label: 'Sin datos', color: '#efe6ff' }],
+    }]}
+    width={150}
+    height={150}
+    // 👇 SEPARA el gráfico de la leyenda
+    margin={{ right: 60 }}
+    slotProps={{
+      legend: {
+        direction: 'column',
+        position: { vertical: 'middle', horizontal: 'right' },
+        padding: 8,   // espacio alrededor de toda la leyenda
+        itemGap: 6,   // espacio entre Premium / Deluxe / Básico
+      },
+    }}
+  />
+</Box>
+
             </Box>
 
             {/* Gráfica de puntuación */}

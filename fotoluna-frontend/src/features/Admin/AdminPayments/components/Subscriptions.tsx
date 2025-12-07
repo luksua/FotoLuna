@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ExportButton from "../../../../components/ExportButton";
+import { exportStoragePaymentsToExcel } from "../../../../services/exportStoragePaymentsService";
 
 export type PaymentStatus = "approved" | "rejected" | "pending";
 
@@ -31,6 +34,40 @@ const Subscriptions: React.FC = () => {
 
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
+
+    // Fetch all storage payments across all pages
+    const fetchAllStoragePayments = async () => {
+        let all: Payment[] = [];
+        let pageNum = 1;
+        let lastPageNum = 1;
+        try {
+            do {
+                const { data } = await axios.get(`${API_BASE}/api/admin/payments`, {
+                    params: {
+                        search: search || undefined,
+                        status: status || undefined,
+                        from: fromDate || undefined,
+                        to: toDate || undefined,
+                        page: pageNum,
+                        per_page: 50,
+                    },
+                });
+                all = all.concat(data.data);
+                lastPageNum = data.last_page;
+                pageNum++;
+            } while (pageNum <= lastPageNum);
+        } catch (err) {
+            console.error('Error fetching all storage payments for export:', err);
+        }
+        return all;
+    };
+
+    const handleExportToExcel = async () => {
+        const allPayments = await fetchAllStoragePayments();
+        // Usar el resumen si está disponible para mostrar ingresos totales
+        const totalAmount = summary?.totalApprovedAmount ?? undefined;
+        await exportStoragePaymentsToExcel(allPayments, 'Pagos_Almacenamiento_Todos', totalAmount);
+    };
 
     const fetchSummary = async () => {
         try {
@@ -189,6 +226,10 @@ const Subscriptions: React.FC = () => {
                 </div>
             </form>
 
+            {/* Botón de exportar */}
+            <div style={{ marginBottom: 16 }}>
+                <ExportButton onClick={handleExportToExcel} label="Descargar Excel" />
+            </div>
             {/* Tabla de pagos */}
             <div className="table-wrapper">
                 <table className="table">

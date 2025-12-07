@@ -40,7 +40,7 @@ class AdminUsersController extends Controller
     public function toggleAvailability(Request $request, $id): JsonResponse
     {
         $employee = Employee::where('employeeId', $id)->first();
-        if (! $employee) {
+        if (!$employee) {
             return response()->json(['success' => false, 'message' => 'Empleado no encontrado'], 404);
         }
 
@@ -48,7 +48,7 @@ class AdminUsersController extends Controller
             $val = $request->input('isAvailable');
             $employee->isAvailable = filter_var($val, FILTER_VALIDATE_BOOLEAN);
         } else {
-            $employee->isAvailable = ! (bool) $employee->isAvailable;
+            $employee->isAvailable = !(bool) $employee->isAvailable;
         }
 
         $employee->save();
@@ -58,8 +58,14 @@ class AdminUsersController extends Controller
 
     public function update(Request $request, $id): JsonResponse
     {
+        \Log::info('UPDATE EMPLOYEE', [
+            'id_param' => $id,
+            'all_request' => $request->all(),
+        ]);
+
+
         $employee = Employee::where('employeeId', $id)->first();
-        if (! $employee) {
+        if (!$employee) {
             return response()->json(['success' => false, 'message' => 'Empleado no encontrado'], 404);
         }
 
@@ -67,8 +73,8 @@ class AdminUsersController extends Controller
             'firstNameEmployee' => 'nullable|string|max:255',
             'lastNameEmployee' => 'nullable|string|max:255',
             'phoneEmployee' => 'nullable|string|max:255',
-            'emailEmployee' => 'nullable|email|max:255|unique:employees,emailEmployee,'.$employee->employeeId.',employeeId',
-            'documentNumber' => 'nullable|string|max:255|unique:employees,documentNumber,'.$employee->employeeId.',employeeId',
+            'emailEmployee' => 'nullable|email|max:255|unique:employees,emailEmployee,' . $employee->employeeId . ',employeeId',
+            'documentNumber' => 'nullable|string|max:255|unique:employees,documentNumber,' . $employee->employeeId . ',employeeId',
             'address' => 'nullable|string|max:255',
             'EPS' => 'nullable|string|max:255',
             'specialty' => 'nullable|in:Social,Familia,Retratos,Infantil,Parejas,Exteriores',
@@ -109,7 +115,7 @@ class AdminUsersController extends Controller
     public function getCustomersCount(): JsonResponse
     {
         $count = Customer::count();
-        
+
         return response()->json([
             'success' => true,
             'data' => [
