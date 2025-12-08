@@ -34,7 +34,8 @@ class EmployeePhotoController extends Controller
     public function summary(Request $request)
     {
         $user = $request->user();
-        // 1. Mapeo user_id -> employeeId (Obtener el ID que realmente se guarda en la DB)
+
+        // 🔑 CORRECCIÓN DEL MAEPADO: Obtener el employeeId real desde la tabla Employee
         $employeeRecord = Employee::where('user_id', $user->id)->first();
         $employeeId = $employeeRecord ? $employeeRecord->employeeId : null;
 
@@ -45,13 +46,13 @@ class EmployeePhotoController extends Controller
         $dateLimit = Carbon::now()->subDays(15);
         $disk = $this->getDisk();
 
-        // 2. Consulta de agregación: Total de fotos y última subida por cliente en el rango de 15 días
+        // 2. Consulta de agregación: Total de fotos y última subida por cliente
         $summaryData = CloudPhoto::select([
             'customerIdFK',
             DB::raw('COUNT(*) as totalPhotos'),
             DB::raw('MAX(created_at) as lastUploadAt'),
         ])
-            // 🚨 CORRECCIÓN CRÍTICA: FILTRAR POR LA COLUMNA QUE ACABAS DE POBLAR
+            // ✅ FILTRO CLAVE: Usa la columna directa 'uploaded_by_employee_id'
             ->where('uploaded_by_employee_id', $employeeId)
             ->where('created_at', '>=', $dateLimit)
             ->groupBy('customerIdFK')
@@ -75,7 +76,6 @@ class EmployeePhotoController extends Controller
 
             // 4. Obtener las últimas 9 fotos subidas
             $recentPhotos = CloudPhoto::select('cloud_photos.*')
-                // 🚨 FILTRO CLAVE: Usamos la columna directa
                 ->where('uploaded_by_employee_id', $employeeId)
                 ->where('customerIdFK', $item->customerIdFK)
                 ->where('created_at', '>=', $dateLimit)
@@ -83,7 +83,6 @@ class EmployeePhotoController extends Controller
                 ->take(9)
                 ->get();
 
-            // Lógica de mapeo de recentPhotos y retorno
             return [
                 'customerId' => $item->customerIdFK,
                 'customerName' => trim($customer->firstNameCustomer . ' ' . $customer->lastNameCustomer),
@@ -112,12 +111,12 @@ class EmployeePhotoController extends Controller
 
     /**
      * GET /api/employee/customers/{customerId}/photos/recent
-     * Devuelve todas las fotos de un cliente subidas por el empleado autenticado en los últimos 15 días (vista detalle).
      */
     public function recentPhotosByCustomer(Request $request, $customerId)
     {
         $user = $request->user();
-        // 1. Mapeo user_id -> employeeId
+
+        // 🔑 CORRECCIÓN DEL MAEPADO: Obtener el employeeId real desde la tabla Employee
         $employeeRecord = Employee::where('user_id', $user->id)->first();
         $employeeId = $employeeRecord ? $employeeRecord->employeeId : null;
 
@@ -139,7 +138,7 @@ class EmployeePhotoController extends Controller
         $photos = CloudPhoto::select('cloud_photos.*', 'events.eventType as event_name')
             ->leftJoin('bookings', 'cloud_photos.bookingIdFK', '=', 'bookings.bookingId')
             ->leftJoin('events', 'bookings.packageIdFK', '=', 'events.eventid')
-            // 🚨 FILTRO CLAVE: Usamos la columna directa
+            // ✅ FILTRO CLAVE: Usamos la columna directa
             ->where('cloud_photos.uploaded_by_employee_id', $employeeId)
             ->where('cloud_photos.customerIdFK', $customerId)
             ->where('cloud_photos.created_at', '>=', $dateLimit)

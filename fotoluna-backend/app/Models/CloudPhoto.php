@@ -12,8 +12,9 @@ class CloudPhoto extends Model
         'customerIdFK',
         'bookingIdFK',
         'storage_subscription_id',
+        'uploaded_by_employee_id',
         'path',
-        'thumbnail_path',
+        'thumbnail_path',   
         'original_name',
         'size',
     ];

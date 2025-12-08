@@ -1,5 +1,3 @@
-<!-- // Contenido para app/Models/EmployeeAction.php -->
-
 <?php
 
 namespace App\Models;

@@ -7,7 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 interface RecentSummaryCardProps {
     customer: CustomerRecentSummary;
-    onViewPhotos: (customerId: number) => void;
+    onViewRecent: (customerId: number) => void;
 }
 
 // Función auxiliar para formatear la fecha/hora
@@ -40,14 +40,14 @@ const PhotoGrid: React.FC<{ photos: PhotoThumbnail[] }> = ({ photos }) => (
 
 export const RecentSummaryCard: React.FC<RecentSummaryCardProps> = ({
     customer,
-    onViewPhotos,
+    onViewRecent,
 }) => {
     const total = customer.totalRecentPhotos;
     const lastUpload = formatDateTime(customer.lastUploadAt);
     const coverPhotoUrl = customer.recentPhotos[0]?.url || 'https://placehold.co/400x200/BDB7D3/ffffff?text=FOTO+LUNA';
 
     return (
-        <article className="card shadow-sm h-100 border-0 overflow-hidden" style={{ maxWidth: '350px' }}>
+        <article className="card shadow-sm h-100 border-0 overflow-hidden card-jd" style={{ maxWidth: '350px' }}>
             {/* Portada */}
             <div className="position-relative" style={{ height: '200px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
                 <img
@@ -63,7 +63,7 @@ export const RecentSummaryCard: React.FC<RecentSummaryCardProps> = ({
             </div>
 
             <div className="card-body">
-                <h3 className="card-title text-purple-700 fw-bold">{customer.customerName}</h3>
+                <h3 className="card-title text-purple-700 fw-bold tt">{customer.customerName}</h3>
                 <p className="card-text text-muted mb-3">
                     <i className="bi bi-calendar me-1"></i>
                     Última subida: {lastUpload}
@@ -79,10 +79,10 @@ export const RecentSummaryCard: React.FC<RecentSummaryCardProps> = ({
                     <button
                         type="button"
                         className="btn btn-primary"
-                        onClick={() => onViewPhotos(customer.customerId)}
+                        onClick={() => onViewRecent(customer.customerId)}
                         style={{ backgroundColor: '#8c2db0', borderColor: '#8c2db0' }}
                     >
-                        Ver {total} fotos
+                        Ver {total} fotos recientes
                     </button>
                 </div>
             </div>

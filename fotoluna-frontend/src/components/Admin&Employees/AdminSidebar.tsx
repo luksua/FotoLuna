@@ -13,11 +13,8 @@ const AdminSidebar: React.FC = () => {
         { id: "clientes", icon: "bi bi-people-fill", text: "Empleados", path: "/AdminEmployee" },
         { id: "Events", icon: "bi bi-card-checklist", text: "Eventos", path: "/AdminEvents" },
         { id: "Citas", icon: "bi bi-calendar-event", text: "Citas", path: "/AdminAppointments" },
-<<<<<<< HEAD
         { id: "fotos", icon: "bi bi-camera-fill", text: "Fotos", path: "/AdminPhotos" },
-=======
         { id: "pagos", icon: "bi bi-wallet", text: "Pagos", path: "/AdminPayments" }
->>>>>>> origin/luna
     ];
 
     return (
@@ -39,4 +36,3 @@ const AdminSidebar: React.FC = () => {
 };
 
 export default AdminSidebar;
-

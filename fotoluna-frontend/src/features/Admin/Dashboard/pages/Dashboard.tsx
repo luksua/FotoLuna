@@ -250,7 +250,7 @@ const Dashboard = () => {
             {/* Gráfica de ventas*/}
             <BarChart
                 dataset={chartData}
-                xAxis={[{ dataKey: 'mes', tickPlacement: 'middle', tickLabelPlacement: 'middle' }]}
+                xAxis={[{ scaleType: 'band', dataKey: 'mes', tickPlacement: 'middle', tickLabelPlacement: 'middle' }]}
                 yAxis={[{ label: 'Ventas', width: 60 }]}
                 series={[{ dataKey: 'ventas', label: 'Ventas por mes al año', color: '#805fa6' }]}
                 height={300}

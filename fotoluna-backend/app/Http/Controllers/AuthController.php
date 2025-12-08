@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
+use App\Events\CustomerCreated;
 
 class AuthController extends Controller
 {
@@ -59,7 +60,7 @@ class AuthController extends Controller
 
                 \Log::info('Valor de employee_id recibido por Laravel: ' . var_export($creatorId, true));
 
-                Customer::create([
+                $customer = Customer::create([
                     'user_id' => $user->id,
                     'firstNameCustomer' => $data['firstNameCustomer'] ?? ($data['name'] ?? ''),
                     'lastNameCustomer' => $data['lastNameCustomer'] ?? '',
@@ -73,6 +74,13 @@ class AuthController extends Controller
                     // 👇 Si no hay employee_id → se guarda null
                     'created_by_user_id' => $creatorId ?: null,
                 ]);
+
+                if ($creatorId) {
+                    $employee = Employee::where('user_id', $creatorId)->first();
+                    if ($employee) {
+                        event(new CustomerCreated($employee, $customer));
+                    }
+                }
             }
 
             if ($role === 'empleado') {

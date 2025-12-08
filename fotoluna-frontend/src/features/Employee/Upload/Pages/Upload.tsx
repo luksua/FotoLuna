@@ -368,6 +368,7 @@ const Upload: React.FC = () => {
             formData.append("time", time);
             formData.append("location", location.trim());
             formData.append("employee_id", String(user.id)); // Enviar el ID del empleado
+            formData.append("uploaded_by_employee_id", String(user.id)); // Enviar el ID del empleado
             formData.append("linked_users", JSON.stringify(linkedUserIds)); // linkedUserIds debe ser accesible
 
 
@@ -403,6 +404,8 @@ const Upload: React.FC = () => {
                 }
             );
 
+            console.log("datos enviados:", formData);
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 console.error("Error al subir las fotos:", errorData);
@@ -436,7 +439,7 @@ const Upload: React.FC = () => {
             setLinkedUsers([]);
 
             setTimeout(() => {
-                navigate("/employee/admin");
+                navigate("/employee/photos");
             }, 1200);
         } catch (err) {
             console.error(err);
@@ -449,7 +452,7 @@ const Upload: React.FC = () => {
 
 
     const handleCancel = () => {
-        navigate("/employee/admin");
+        navigate("/employee/photos");
     };
 
     /* -------- Render -------- */
@@ -459,7 +462,7 @@ const Upload: React.FC = () => {
             <div className="upload-container">
                 <div className="upload-box">
                     <div className="upload-header">
-                        <h2 className="text-dark">Subir Fotos</h2>
+                        <h3 className="upload-title">Subir Fotos</h3>
                     </div>
                     <hr />
 

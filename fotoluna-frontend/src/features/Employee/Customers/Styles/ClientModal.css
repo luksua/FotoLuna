@@ -1,0 +1,660 @@
+/* ClientModal.css */
+
+/* Estilo general del Modal */
+.client-modal .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    padding: 20px;
+}
+
+.client-modal .modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.client-modal .modal-header .btn-close {
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    opacity: 1;
+    font-size: 0.8rem;
+}
+
+.client-modal .modal-body {
+    padding-top: 0;
+}
+
+/* Header del Perfil (Foto y Datos) */
+.profile-header-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.client-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f3e5f5;
+    /* Borde lila suave */
+}
+
+.client-info h4 {
+    margin: 0;
+    font-weight: 700;
+    color: #333;
+}
+
+.client-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 5px;
+    flex-wrap: wrap;
+}
+
+.client-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Pestañas (Tabs) personalizadas */
+.custom-tabs {
+    border-bottom: none !important;
+    margin-bottom: 20px;
+}
+
+.custom-tabs .nav-link {
+    border: none !important;
+    color: #999;
+    font-weight: 600;
+    padding: 10px 15px;
+    background: transparent !important;
+    transition: all 0.3s ease;
+}
+
+.custom-tabs .nav-link:hover {
+    color: #b47bd3;
+}
+
+.custom-tabs .nav-link.active {
+    color: #b47bd3 !important;
+    border-bottom: 3px solid #b47bd3 !important;
+    /* Línea inferior morada */
+}
+
+/* Tarjetas de Información (Grid 2x2) */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+        /* Una columna en celular */
+    }
+}
+
+.info-card {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.card-subtext {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-confirmed {
+    background-color: #e0f7fa;
+    color: #00acc1;
+}
+
+.status-completed {
+    background-color: #e8eaf6;
+    color: #3f51b5;
+}
+
+.total-balance {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #e67e22;
+    /* Naranja como en la imagen */
+}
+
+/* Footer Botones */
+.client-modal .modal-footer {
+    border-top: none;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+
+.btn-custom-secondary {
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-weight: 600;
+}
+
+.btn-custom-primary {
+    background-color: #b47bd3;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-weight: 600;
+    color: white;
+    box-shadow: 0 4px 10px rgba(180, 123, 211, 0.4);
+}
+
+.btn-custom-primary:hover {
+    background-color: #a06ec0;
+}
+/* ClientModal.css */
+
+/* ... (Mantén tus estilos generales del modal, header y tabs igual) ... */
+
+/* =======================================================
+   ESTILOS NUEVOS: LISTA DE CITAS (TIPO DASHBOARD)
+======================================================= */
+
+/* 1. EL CONTENEDOR DE FONDO (El secreto para que resalten) */
+.appointments-bg-wrapper {
+    background-color: #f3f5f9; /* Gris azulado muy suave */
+    border-radius: 15px;
+    padding: 20px; /* Espacio alrededor de las tarjetas */
+    min-height: 200px;
+}
+
+/* 2. LA TARJETA (CARD) */
+.appointment-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); /* Sombra muy sutil */
+    border: none; /* Sin bordes grises */
+    display: flex;
+    align-items: stretch; /* Estira la caja de fecha al alto total */
+    overflow: hidden; /* Para que la caja de fecha respete el redondeado */
+    margin-bottom: 15px;
+    transition: all 0.2s ease-in-out;
+}
+
+.appointment-card:hover {
+    transform: translateY(-3px); /* Se levanta un poco */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* =======================================================
+   TEMAS DE COLOR (Paleta FotoLuna)
+======================================================= */
+
+/* TEMA MORADO/LILA (Confirmado) - Basado en tu banner */
+.appointment-card.theme-purple .date-box {
+    background-color: #f3e5f5; /* Fondo lila muy claro */
+    color: #8e24aa; /* Texto morado */
+}
+.appointment-card.theme-purple .status-badge {
+    background-color: #e1bee7;
+    color: #7b1fa2;
+}
+
+/* TEMA NARANJA (Pendiente) - Basado en tu icono de Citas */
+.appointment-card.theme-orange .date-box {
+    background-color: #fff3e0; /* Fondo naranja muy claro */
+    color: #ef6c00; /* Texto naranja fuerte */
+}
+.appointment-card.theme-orange .status-badge {
+    background-color: #ffe0b2;
+    color: #f57c00;
+}
+
+/* TEMA GRIS (Completado/Otros) */
+.appointment-card.theme-gray .date-box {
+    background-color: #eceff1;
+    color: #546e7a;
+}
+.appointment-card.theme-gray .status-badge {
+    background-color: #cfd8dc;
+    color: #455a64;
+}
+
+/* =======================================================
+   ELEMENTOS INTERNOS
+======================================================= */
+
+/* Caja de la fecha (Izquierda) */
+.date-box {
+    width: 95px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    text-align: center;
+    flex-shrink: 0;
+    /* El borde derecho sutil ayuda a separar */
+    border-right: 1px solid rgba(0,0,0,0.03); 
+}
+
+.date-day {
+    font-size: 2rem; /* Número grande */
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.date-month {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.date-year {
+    font-size: 0.6rem;
+    opacity: 0.8;
+}
+
+/* Detalles (Centro) */
+.details-box {
+    padding: 15px 20px;
+}
+
+.card-label-small {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #a0aec0; /* Gris suave para etiquetas */
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.card-value-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+/* Badge de Estado */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 30px; /* Completamente redondo */
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    letter-spacing: 0.3px;
+}
+
+/* Scrollbar invisible pero funcional (Estético) */
+.appointments-bg-wrapper::-webkit-scrollbar {
+    width: 0px; 
+    background: transparent; 
+}
+
+
+/* ClientModal.css */
+
+/* ... (Mantén los estilos anteriores del modal, header y tabs) ... */
+
+/* =======================================================
+   ESTILOS NUEVOS: LISTA DE CITAS COMPACTA Y ROSA
+======================================================= */
+
+/* 1. EL CONTENEDOR DE FONDO */
+.appointments-bg-wrapper {
+    background-color: #f3f5f9;
+    border-radius: 12px;
+    padding: 15px; /* Menos padding */
+    min-height: 150px;
+}
+
+/* 2. LA TARJETA (CARD) - MÁS PEQUEÑA */
+.appointment-card {
+    background-color: #ffffff;
+    border-radius: 12px; /* Radio más pequeño */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    border: none;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    margin-bottom: 10px; /* Menos separación entre tarjetas */
+    transition: all 0.2s ease-in-out;
+    min-height: 70px; /* Altura mínima reducida */
+}
+
+.appointment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* =======================================================
+   TEMAS DE COLOR (Paleta FotoLuna - Ahora con ROSA)
+======================================================= */
+
+/* TEMA MORADO/LILA (Confirmado) */
+.appointment-card.theme-purple .date-box {
+    background-color: #f3e5f5;
+    color: #8e24aa;
+}
+.appointment-card.theme-purple .status-badge {
+    background-color: #e1bee7;
+    color: #7b1fa2;
+}
+
+/* TEMA ROSA (NUEVO - Para Pendiente/Scheduled) */
+.appointment-card.theme-pink .date-box {
+    background-color: #fce4ec; /* Rosa muy claro */
+    color: #d81b60; /* Rosa oscuro */
+}
+.appointment-card.theme-pink .status-badge {
+    background-color: #f8bbd0; /* Rosa medio */
+    color: #880e4f; /* Rosa muy oscuro */
+}
+
+/* TEMA GRIS (Completado/Otros) */
+.appointment-card.theme-gray .date-box {
+    background-color: #eceff1;
+    color: #546e7a;
+}
+.appointment-card.theme-gray .status-badge {
+    background-color: #cfd8dc;
+    color: #455a64;
+}
+
+/* =======================================================
+   ELEMENTOS INTERNOS - MÁS PEQUEÑOS
+======================================================= */
+
+/* Caja de la fecha (Izquierda) */
+.date-box {
+    width: 75px; /* Más estrecha */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px; /* Menos padding */
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.date-day {
+    font-size: 1.4rem; /* Fuente más pequeña */
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.date-month {
+    font-size: 0.65rem; /* Fuente más pequeña */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.date-year {
+    font-size: 0.55rem; /* Fuente más pequeña */
+    opacity: 0.8;
+}
+
+/* Detalles (Centro) */
+.details-box {
+    padding: 10px 15px; /* Menos padding */
+}
+
+.card-label-small {
+    font-size: 0.6rem; /* Fuente más pequeña */
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #a0aec0;
+    letter-spacing: 0.3px;
+    margin-bottom: 3px; /* Menos margen */
+}
+
+.card-value-text {
+    font-size: 0.95rem; /* Fuente más pequeña */
+    font-weight: 700;
+    color: #2d3748;
+}
+
+/* Badge de Estado */
+.status-badge {
+    padding: 4px 10px; /* Menos padding */
+    border-radius: 20px;
+    font-size: 0.65rem; /* Fuente más pequeña */
+    font-weight: 700;
+    display: inline-block;
+    letter-spacing: 0.2px;
+}
+
+/* Scrollbar invisible */
+.appointments-bg-wrapper::-webkit-scrollbar {
+    width: 0px; 
+    background: transparent; 
+}
+
+/* Estilos específicos para la tarjeta de Sesión */
+.price-tag {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #2d3748;
+}
+
+.paid-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #38a169; /* Verde para pagado */
+}
+
+.pending-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e53e3e; /* Rojo para pendiente */
+}
+
+/* Ajuste para que el nombre del paquete se vea destacado */
+.package-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4a5568;
+    margin-bottom: 2px;
+}
+/* ... (Tus estilos anteriores) ... */
+
+/* ESTILOS ESPECÍFICOS PARA PAGOS */
+
+/* El monto grande y verde */
+.amount-highlight {
+    font-size: 1.3rem; /* Un poco más grande para destacar */
+    font-weight: 800;
+    color: #38a169; /* Verde esmeralda (Dinero) */
+    letter-spacing: -0.5px;
+}
+
+/* Badge para el método (Tarjeta, Efectivo) */
+.payment-method-badge {
+    background-color: #f7fafc;
+    border: 1px solid #edf2f7;
+    color: #4a5568;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ref-text {
+    font-size: 0.7rem;
+    color: #a0aec0;
+    font-family: monospace; /* Para que parezca un código */
+}
+
+/* ... (Tus estilos anteriores) ... */
+
+/* =======================================================
+   ESTILOS PARA LA GALERÍA DE FOTOS (Pestaña Fotos)
+======================================================= */
+
+/* Contenedor principal dentro de la pestaña */
+.client-gallery-container {
+    padding: 5px;
+}
+
+/* Controles de filtrado y ordenamiento (parte superior) */
+.gallery-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 15px 20px;
+    background-color: #f8f9fa; /* Fondo gris suave */
+    border-radius: 12px;
+    align-items: center;
+    border: 1px solid #edf2f7;
+}
+
+.gallery-control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gallery-control-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4a5568;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.gallery-select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #2d3748;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.gallery-select:hover, .gallery-select:focus {
+    border-color: #b47bd3; /* Color de acento al enfocar */
+    box-shadow: 0 0 0 3px rgba(180, 123, 211, 0.1);
+    outline: none;
+}
+
+/* Grid de fotos */
+.photo-grid {
+    display: grid;
+    /* Crea columnas automáticas con un ancho mínimo de 160px */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+}
+
+/* Tarjeta de foto individual */
+.photo-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid #f1f3f5;
+    cursor: pointer;
+    position: relative;
+    top: 0;
+}
+
+.photo-card:hover {
+    top: -5px; /* Efecto de elevación */
+    box-shadow: 0 10px 25px rgba(180, 123, 211, 0.2); /* Sombra morada suave */
+    border-color: #e1bee7;
+}
+
+/* Contenedor de la imagen para mantener aspecto cuadrado */
+.photo-img-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* Aspect ratio 1:1 (cuadrado) */
+    background-color: #f0f2f5; /* Color de fondo mientras carga */
+    overflow: hidden;
+}
+
+.photo-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* La imagen cubre todo el espacio sin deformarse */
+    transition: transform 0.5s ease;
+}
+
+.photo-card:hover .photo-img {
+    transform: scale(1.08); /* Pequeño zoom lento en la imagen al hacer hover */
+}
+
+/* Detalles debajo de la foto */
+.photo-details {
+    padding: 12px 10px;
+    text-align: center;
+    background-color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.photo-event {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Puntos suspensivos si el texto es muy largo */
+}
+
+.photo-date {
+    font-size: 0.75rem;
+    color: #718096;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}

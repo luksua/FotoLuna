@@ -3,6 +3,7 @@ import { useLocation, useRoutes } from "react-router-dom";
 import { routes } from "./routes/routes";
 import { employeeRoutes } from "./routes/employeesRoutes";
 import { adminRoutes } from "./routes/adminRoutes";
+import "./App.css";
 
 const App = memo(() => {
   const location = useLocation();

@@ -2,12 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-// 🛑 CORRECCIÓN: Se eliminó 'Button' (no se usa) y se mantuvo solo lo necesario.
-// El modal usa Dropdown, Form, Pagination, Spinner.
-import { Dropdown, Form, Pagination, Spinner } from "react-bootstrap";
-
-// ✅ CORRECCIÓN 1: 'Client' es solo un tipo, se usa 'import type' (Error 1484)
-
+// Quitamos Dropdown y Form porque usaremos estilos personalizados más limpios
+import { Pagination, Spinner } from "react-bootstrap";
 
 const API_URL = "http://localhost:8000/api";
 
@@ -29,13 +25,9 @@ const ClientGallery: React.FC<ClientGalleryProps> = ({ clientId }) => {
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [orderBy, setOrderBy] = useState("created_at"); // 'created_at' o 'event_name'
+    const [orderBy, setOrderBy] = useState("created_at");
     const [eventFilter, setEventFilter] = useState("Todos");
-    const photosPerPage = 20; // Tamaño fijo para la paginación
-
-    // Nota: El backend de la app cliente usa /client/my-cloud-photos, que no acepta ID.
-    // Esto asume que el token del cliente está activo y que el cliente puede
-    // ver todas sus fotos si tiene suscripción.
+    const photosPerPage = 20;
 
     const fetchPhotos = useCallback(async () => {
         if (!clientId) return;
@@ -45,15 +37,6 @@ const ClientGallery: React.FC<ClientGalleryProps> = ({ clientId }) => {
 
         try {
             const token = localStorage.getItem("token");
-
-            // 🚨 NOTA IMPORTANTE: La ruta del cliente '/api/client/my-cloud-photos'
-            // solo funciona si el usuario *autenticado* es el cliente.
-            // Para el panel de empleado, necesitarías un nuevo endpoint
-            // como: '/api/employee/customers/{id}/cloud-photos'
-            // que acepte el 'clientId' y aplique las reglas de visibilidad.
-
-            // Por ahora, usaremos la ruta del cliente y asumiremos que el empleado
-            // puede simular el acceso (o que se creará la ruta de empleado).
 
             const response = await axios.get(`${API_URL}/employee/customers/${clientId}/cloud-photos`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -65,19 +48,19 @@ const ClientGallery: React.FC<ClientGalleryProps> = ({ clientId }) => {
                 },
             });
 
-            // Asumo que la respuesta tendría una estructura de paginación:
-            // response.data.photos.data, response.data.photos.last_page, etc.
+            // Ajusta esto según la estructura real de tu respuesta API (ej: response.data.photos.data)
+            const photosData = response.data.photos.data || response.data.photos || [];
+            const lastPage = response.data.photos.last_page || response.data.last_page || 1;
 
-            setPhotos(response.data.photos || []); // Ajustar según la API real
-            setTotalPages(response.data.last_page || 1); // Ajustar según la API real
+            setPhotos(photosData);
+            setTotalPages(lastPage);
 
         } catch (err: any) {
             console.error("Error cargando fotos del cliente", err);
-            // El backend retorna 403 si no hay suscripción activa.
             if (err.response && err.response.status === 403) {
-                setError("El plan de almacenamiento del cliente no está activo. Acceso denegado.");
+                setError("El plan de almacenamiento del cliente no está activo.");
             } else {
-                setError("No se pudieron cargar las fotos del cliente.");
+                setError("No se pudieron cargar las fotos.");
             }
             setPhotos([]);
         } finally {
@@ -89,78 +72,118 @@ const ClientGallery: React.FC<ClientGalleryProps> = ({ clientId }) => {
         fetchPhotos();
     }, [fetchPhotos]);
 
-    // Opciones de eventos únicas para el filtro
+    // Opciones de eventos únicas
     const eventOptions = [...new Set(photos.map(p => p.event_name))];
 
+    if (loading && photos.length === 0) return (
+        <div className="text-center p-5">
+            <Spinner animation="border" variant="secondary" />
+            <p className="mt-3 text-muted">Cargando galería...</p>
+        </div>
+    );
 
-    if (loading) return <div className="text-center p-5"><Spinner animation="border" variant="secondary" /> <p>Cargando galería...</p></div>;
+    if (error) return (
+        <div className="text-center p-5">
+            <i className="bi bi-exclamation-circle text-danger display-4"></i>
+            <p className="text-danger mt-3">{error}</p>
+        </div>
+    );
 
-    if (error) return <p className="text-danger text-center p-5">{error}</p>;
-
-    if (photos.length === 0) return <p className="text-muted text-center p-5">No hay fotos disponibles para este cliente o su suscripción no está activa.</p>;
+    if (photos.length === 0 && !loading) return (
+        <div className="text-center p-5 text-muted opacity-50">
+            <i className="bi bi-images display-4"></i>
+            <p className="mt-3">No hay fotos disponibles para este cliente.</p>
+        </div>
+    );
 
     return (
-        <div className="p-3">
-            {/* Controles de Filtro y Ordenación */}
-            <div className="d-flex justify-content-start align-items-center mb-4 gap-3">
-                <p className="mb-0 fw-bold">Ordenar por:</p>
-                <Dropdown>
-                    <Dropdown.Toggle variant="outline-secondary" size="sm" id="dropdown-basic-order">
-                        {orderBy === "created_at" ? "Más Recientes" : "Evento"}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <Dropdown.Item onClick={() => setOrderBy("created_at")}>Más Recientes</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setOrderBy("event_name")}>Evento</Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+        <div className="client-gallery-container">
+            {/* --- CONTROLES DE FILTRADO (Estilo Dashboard) --- */}
+            <div className="gallery-controls">
 
-                <p className="mb-0 fw-bold">Filtrar por Evento:</p>
-                <Form.Select
-                    size="sm"
-                    value={eventFilter}
-                    onChange={(e) => setEventFilter(e.target.value)}
-                    style={{ minWidth: "150px" }}
-                >
-                    <option>Todos</option>
-                    {eventOptions.map(e => <option key={e} value={e}>{e}</option>)}
-                </Form.Select>
+                {/* Grupo Ordenar */}
+                <div className="gallery-control-group">
+                    <label className="gallery-control-label">Ordenar por:</label>
+                    <select
+                        className="gallery-select"
+                        value={orderBy}
+                        onChange={(e) => setOrderBy(e.target.value)}
+                    >
+                        <option value="created_at">Más Recientes</option>
+                        <option value="event_name">Evento (A-Z)</option>
+                    </select>
+                </div>
+
+                {/* Grupo Filtrar */}
+                <div className="gallery-control-group">
+                    <label className="gallery-control-label">Filtrar por Evento:</label>
+                    <select
+                        className="gallery-select"
+                        value={eventFilter}
+                        onChange={(e) => setEventFilter(e.target.value)}
+                    >
+                        <option value="Todos">Todos</option>
+                        {eventOptions.map(e => <option key={e} value={e}>{e}</option>)}
+                    </select>
+                </div>
             </div>
 
-
-            {/* Galería de Miniaturas */}
-            <div className="d-flex flex-wrap justify-content-start gap-3">
+            {/* --- GRID DE FOTOS MODERNAS --- */}
+            <div className="photo-grid">
                 {photos.map((photo) => (
-                    <div key={photo.id} className="text-center" style={{ width: "150px" }}>
-                        <img
-                            src={photo.url}
-                            alt={photo.original_name}
-                            style={{
-                                width: "100%",
-                                height: "150px",
-                                objectFit: "cover",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                border: "2px solid #b47bd3",
-                            }}
-                            onClick={() => window.open(photo.url, "_blank")}
-                        />
-                        <small className="d-block text-muted mt-1 text-truncate">{photo.event_name}</small>
-                        <small className="d-block text-muted">{photo.created_at}</small>
+                    <div
+                        key={photo.id}
+                        className="photo-card"
+                        onClick={() => window.open(photo.url, "_blank")}
+                        title="Clic para ver en tamaño completo"
+                    >
+                        {/* Wrapper para mantener aspecto cuadrado 1:1 y efecto zoom */}
+                        <div className="photo-img-wrapper">
+                            <img
+                                src={photo.url}
+                                alt={photo.original_name}
+                                className="photo-img"
+                                loading="lazy" // Carga diferida para mejor rendimiento
+                            />
+                        </div>
+
+                        {/* Detalles inferiores */}
+                        <div className="photo-details">
+                            <div className="photo-event">
+                                {photo.event_name || "Sin evento"}
+                            </div>
+                            <div className="photo-date">
+                                {new Date(photo.created_at).toLocaleDateString('es-ES', {
+                                    year: 'numeric', month: 'short', day: 'numeric'
+                                })}
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>
 
-            {/* Paginación */}
+            {/* --- PAGINACIÓN --- */}
             {totalPages > 1 && (
                 <div className="d-flex justify-content-center mt-4">
                     <Pagination size="sm">
-                        <Pagination.Prev onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} />
+                        <Pagination.Prev
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                        />
+                        {/* Lógica simple de paginación (muestra todos los números) */}
                         {Array.from({ length: totalPages }, (_, i) => (
-                            <Pagination.Item key={i + 1} active={i + 1 === page} onClick={() => setPage(i + 1)}>
+                            <Pagination.Item
+                                key={i + 1}
+                                active={i + 1 === page}
+                                onClick={() => setPage(i + 1)}
+                            >
                                 {i + 1}
                             </Pagination.Item>
                         ))}
-                        <Pagination.Next onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} />
+                        <Pagination.Next
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page === totalPages}
+                        />
                     </Pagination>
                 </div>
             )}

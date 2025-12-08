@@ -7,11 +7,8 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
-<<<<<<< HEAD
 use App\Models\Customer;
-=======
 use App\Notifications\EmployeeReceivedReview;
->>>>>>> origin/luna
 
 class CommentsController extends Controller
 {
@@ -300,4 +297,3 @@ class CommentsController extends Controller
     }
 
 }
-

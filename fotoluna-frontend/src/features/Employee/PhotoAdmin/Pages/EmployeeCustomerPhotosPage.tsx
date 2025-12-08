@@ -132,10 +132,19 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
     const handleDownloadSingle = async (e: React.MouseEvent, photo: PhotoItem) => {
         e.stopPropagation();
         try {
-            const res = await fetch(photo.url);
-            if (!res.ok) throw new Error('No se pudo obtener la imagen.');
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("No hay token de autenticación.");
+            }
+            const res = await fetch(`${API_SERVER_URL}/api/cloud-photos/${photo.id}/download`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error(`No se pudo obtener la imagen. Estado: ${res.status}`);
             saveAs(await res.blob(), photo.original_name || `foto-${photo.id}.jpg`);
-        } catch (error) { alert("Error al descargar la foto."); }
+        } catch (error) {
+            console.error("Error al descargar la foto:", error);
+            alert("Error al descargar la foto.");
+        }
     };
     const handleDownloadSelected = async () => {
         if (selectedPhotos.size === 0 || isDownloadingZip) return;
@@ -143,13 +152,26 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
         const zip = new JSZip();
         const photosToDownload = photos.filter(p => selectedPhotos.has(p.id));
         try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("No hay token de autenticación.");
+            }
             await Promise.all(photosToDownload.map(async photo => {
-                const res = await fetch(photo.url);
-                if (res.ok) zip.file(photo.original_name || `photo-${photo.id}.jpg`, await res.blob());
+                const res = await fetch(`${API_SERVER_URL}/api/cloud-photos/${photo.id}/download`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    zip.file(photo.original_name || `photo-${photo.id}.jpg`, await res.blob());
+                } else {
+                    console.error(`Error descargando ${photo.original_name || photo.id}: ${res.statusText}`);
+                }
             }));
             const customerNameFile = customerName ? customerName.replace(/\s+/g, '_') : `cliente_${customerId}`;
             saveAs(await zip.generateAsync({ type: "blob" }), `Fotoluna_${customerNameFile}.zip`);
-        } catch (error) { alert("Ocurrió un error al crear el archivo ZIP."); }
+        } catch (error) {
+            console.error("Error creando el ZIP:", error);
+            alert("Ocurrió un error al crear el archivo ZIP.");
+        }
         finally { setIsDownloadingZip(false); setSelectedPhotos(new Set()); }
     };
 
@@ -185,7 +207,7 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
                     <div><h1 className="acp-title">{pageTitle}</h1><p className="acp-subtitle">{total} fotos · Página {currentPage}/{lastPage}</p></div>
                 </div>
 
-                <div className="acp-toolbar">
+                <div className="acp-toolbar" style={{ display: modalPhoto ? 'none' : 'block' }}>
                     <div className="acp-toolbar__group">
                         <label className="acp-label">Ordenar:<select name="orderBy" className="acp-select" value={filters.orderBy} onChange={handleFilterChange}>
                             <option value="recent">Recientes</option><option value="event">Evento</option><option value="name">Nombre</option><option value="size">Tamaño</option></select></label>
@@ -252,7 +274,7 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
                     </>
                 )}
                 {modalPhoto && (
-                    <div className="ap-modal-backdrop" onClick={() => setModalPhoto(null)}>
+                    <div className="ap-modal-backdrop" onClick={() => setModalPhoto(null)} style={{ zIndex: 1050 }}>
                         <div className="ap-modal ap-modal--cute" onClick={e => e.stopPropagation()}>
                             <header className="ap-modal__header"><h2 className="ap-modal__title">{modalPhoto.original_name}</h2><button className="ap-modal__close" onClick={() => setModalPhoto(null)}>×</button></header>
                             <div className="ap-modal__body"><img src={modalPhoto.url} alt={modalPhoto.original_name} /></div>
@@ -260,6 +282,7 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
                                 <span className="ap-pill">📅 {new Date(modalPhoto.created_at).toLocaleString()}</span>
                                 <span className="ap-pill">📦 {formatSize(modalPhoto.size)}</span>
                                 <span className="ap-pill">🎉 {modalPhoto.event_name}</span>
+                                <button className="ap-pill" onClick={(e) => handleDownloadSingle(e, modalPhoto)}><i className="bi bi-download"></i> Descargar</button>
                             </footer>
                         </div>
                     </div>

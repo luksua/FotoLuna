@@ -53,16 +53,16 @@ const EmployeePhotosPage: React.FC = () => {
     }, []);
 
     // Función de navegación para el botón "Ver fotos recientes"
-    const handleViewPhotos = (customerId: number) => {
-        // Redirección a la ruta detallada: /employee/customers/{customerId}/photos
-        navigate(`/employee/customers/${customerId}/photos`);
+    const handleViewRecent = (customerId: number) => {
+        // Redirección a la ruta detallada: /employee/customers/{customerId}/photos/recent
+        navigate(`/employee/customers/${customerId}/photos/recent`);
     };
 
     return (
         <EmployeeLayout>
             <div className="container py-4">
                 <header className="mb-5 border-bottom pb-3">
-                    <h1 className="h3 fw-bold text-dark">Historial de Subidas Recientes</h1>
+                    <h1 className="h3 fw-bold text-dark tt">Historial de Subidas Recientes</h1>
                     <p className="text-muted">
                         Fotos que has subido a la nube para tus clientes en los últimos 15 días.
                     </p>
@@ -81,7 +81,7 @@ const EmployeePhotosPage: React.FC = () => {
                             <div key={customer.customerId} className="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-3">
                                 <RecentSummaryCard
                                     customer={customer}
-                                    onViewPhotos={handleViewPhotos}
+                                    onViewRecent={handleViewRecent}
                                 />
                             </div>
                         ))}

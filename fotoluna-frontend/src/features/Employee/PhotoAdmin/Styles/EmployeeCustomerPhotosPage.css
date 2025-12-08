@@ -49,6 +49,8 @@
     border-radius: 0.75rem;
     margin-bottom: 1.5rem;
     border: 1px solid #e5e7eb;
+    position: relative; /* Add this */
+    z-index: 1;         /* Add this */
 }
 .acp-toolbar__group {
     display: flex;

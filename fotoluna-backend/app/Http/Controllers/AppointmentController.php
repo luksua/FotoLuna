@@ -17,6 +17,7 @@ use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB; // <-- NECESARIO PARA TRANSACCIONES
+use App\Events\AppointmentUpdatedByEmployee;
 
 class AppointmentController extends Controller
 {
@@ -1235,6 +1236,8 @@ class AppointmentController extends Controller
                 'bookingStatus' => $bookingStatus,
             ]);
         }
+
+        event(new AppointmentUpdatedByEmployee($employee, $appointment));
 
         // 6. RESPUESTA FINAL
         return response()->json([

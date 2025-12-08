@@ -89,6 +89,7 @@ export const AdminPhotosPage: React.FC = () => {
   return (
     <HomeLayout>
       <div className="ap-page">
+
         <header className="ap-page__header">
           <div>
             <h1>Fotos en la nube · Admin</h1>
@@ -102,7 +103,8 @@ export const AdminPhotosPage: React.FC = () => {
         {error && <p className="ap-error">{error}</p>}
 
         {!loading && !error && (
-          <section className="ap-grid">
+          <section className="ap-grid row justify-content-center g-4">
+
             {customers.map((customer) => (
               <CustomerPhotoCard
                 key={customer.customerId}
