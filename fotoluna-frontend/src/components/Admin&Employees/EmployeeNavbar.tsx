@@ -109,7 +109,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                             className="EmployeeNavbar-logo mb-1"
                         />
                     </div>
-                    <h1 className="logo-text">FotoLuna</h1>
+                    <h1 className="logo-text-employee">FotoLuna</h1>
                 </div>
 
                 {/* Barra de búsqueda */}

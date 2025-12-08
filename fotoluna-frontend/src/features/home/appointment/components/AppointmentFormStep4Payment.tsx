@@ -204,7 +204,7 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                   }
                 } catch (err: any) {
                   console.error("ERROR PAGO MP =>", err);
-
+                  console.log("RESPUESTA BACK =>", err?.response?.data);
                   const backendMessage =
                     err.response?.data?.message ||
                     err.response?.data?.error ||

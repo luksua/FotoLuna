@@ -28,6 +28,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CloudPhotoController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdminPhotosController;
+use App\Http\Controllers\EmployeePhotoController; // 🆕 NUEVO
 
 /*
 |--------------------------------------------------------------------------
@@ -85,10 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
     // Recibo de una cuota
-    Route::get(
-        '/appointments/{appointment}/installments/{installment}/receipt',
-        [BookingActionsController::class, 'installmentReceipt']
-    );
+    Route::get('/appointments/{appointment}/installments/{installment}/receipt',[BookingActionsController::class, 'installmentReceipt']);
 
     // Pagos (MercadoPago / offline)
     Route::post('/mercadopago/checkout/pay', [PaymentController::class, 'pay']);
@@ -112,12 +110,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Galería global (Admin/Empleado)
     Route::get('/cloud-photos', [CloudPhotoController::class, 'index']);
+    Route::get('/cloud-photos/{photo}/download', [CloudPhotoController::class, 'download']); // NUEVO DOWNLOAD
 
     // Ver galería de un cliente específico (Empleado/Admin)
     Route::get(
         '/employee/customers/{customerId}/cloud-photos',
         [CloudPhotoController::class, 'getCustomerCloudPhotos']
     );
+
+    Route::post('/appointments', [AppointmentController::class, 'store']);
+
+    Route::get('/bookings/{booking}/receipt', [BookingActionsController::class, 'receipt']);
+
+
 });
 
 /*
@@ -136,7 +141,6 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     Route::get('/client/my-cloud-photos', [CloudPhotoController::class, 'getMyCloudPhotos']);
 
     // Citas (cliente)
-    Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::post('/appointmentsCustomer', [AppointmentController::class, 'storeCustomer']); // si se usa
     Route::get('/appointments-customer', [AppointmentController::class, 'index']);
     Route::put('/appointmentsCustomer/{appointment}', [AppointmentController::class, 'updateCustomer']);
@@ -163,7 +167,7 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 
         // Acciones adicionales
         Route::get('/calendar-link', [BookingActionsController::class, 'calendarLink']);
-        Route::get('/receipt', [BookingActionsController::class, 'receipt']);
+        // Route::get('/receipt', [BookingActionsController::class, 'receipt']);
     });
 
     // Planes de cuotas
@@ -175,8 +179,6 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
     // Actualizar booking
     Route::put('/bookings/{bookingId}', [BookingController::class, 'update']);
 
-    // Recibos de pago
-    Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt']);
 
     // Storage (cliente)
     Route::get('/storage-plans-customer', [StoragePlanController::class, 'indexCustomer']);
@@ -217,6 +219,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Subir fotos al cloud desde panel empleado
     Route::post('/employee/cloud-photos', [CloudPhotoController::class, 'store']);
+
+    // Rutas adicionales de fotos para empleado (EmployeePhotoController)
+    Route::prefix('employee')->group(function () {
+        // Objetivo: Resumen agrupado por cliente, filtrado 15 días, por empleado
+        Route::get('photos/summary', [EmployeePhotoController::class, 'summary']);
+
+        // Objetivo: Galería detallada de fotos recientes para un cliente
+        Route::get('customers/{customerId}/photos/recent', [EmployeePhotoController::class, 'recentPhotosByCustomer']);
+    });
 });
 
 /*
@@ -300,10 +311,13 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::get('/appointments/{appointment}/candidates', [AdminAppointmentController::class, 'candidates']);
 
     // Ventas por mes
-Route::get('/sales/by-month', [AdminAppointmentController::class, 'salesByMonth']);
-// Estadísticas de paquetes asociados a citas
-Route::get('/packages/count-booked', [AdminAppointmentController::class, 'packagesCount']);
+    Route::get('/sales/by-month', [AdminAppointmentController::class, 'salesByMonth']);
 
+    // Estadísticas de paquetes asociados a citas
+    Route::get('/packages/count-booked', [AdminAppointmentController::class, 'packagesCount']);
+
+    // Ruta adicional desde la otra versión
+    Route::get('/appointments/count-booked', [AdminAppointmentController::class, 'packagesCount']);
 });
 
 Route::get('/admin/packages', [AdminPackagesController::class, 'index']);
@@ -319,18 +333,16 @@ Route::get('/admin/appointments/pending/{userId}', [AppointmentController::class
 
 // Contar citas pendientes totales
 Route::get('/admin/appointments/pending-count', [AppointmentController::class, 'getPendingCount']);
+
 // Citas completadas de un usuario (historial)
 Route::get('/admin/appointments/completed/{userId}', [AppointmentController::class, 'completedByUserId']);
-
-
-
-
 
 Route::get('admin/payments', [PaymentController::class, 'index']);
 Route::get('admin/payments/summary', [PaymentController::class, 'summary']);
 
 Route::get('admin/storage-plans', [StoragePlanController::class, 'indexAdmin']);
 Route::put('/admin/storage-plans/{storagePlan}', [StoragePlanController::class, 'update']);
+
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin')
     ->group(function () {

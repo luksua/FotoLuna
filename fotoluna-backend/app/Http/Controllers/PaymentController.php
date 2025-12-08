@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Log; 
 use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\StorageSubscription;
@@ -206,10 +206,20 @@ class PaymentController extends Controller
             });
 
         } catch (MPApiException $e) {
-            return response()->json([
-                'message' => 'Error al procesar el pago con Mercado Pago.',
-                'error' => $e->getMessage(),
-            ], 500);
+        // 👇 NUEVO: logueamos y devolvemos el body real que manda MP
+        $apiResponse = $e->getApiResponse();
+        $apiBody = $apiResponse ? $apiResponse->getContent() : null;
+
+        Log::error('MercadoPago MPApiException en pay()', [
+            'msg' => $e->getMessage(),
+            'api_body' => $apiBody,
+        ]);
+
+        return response()->json([
+            'message' => 'Error al procesar el pago con Mercado Pago.',
+            'error'   => $e->getMessage(),
+            'mp_body' => $apiBody,   // 👈 AQUÍ VA EL DETALLE REAL
+        ], 500);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error interno al registrar el pago.',

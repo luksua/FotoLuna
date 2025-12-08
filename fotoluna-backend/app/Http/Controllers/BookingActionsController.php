@@ -157,34 +157,38 @@ class BookingActionsController extends Controller
 
     public function installmentReceipt($appointmentId, $installmentId)
     {
-        // 1) Buscar la reserva ligada a esa cita
         $booking = Booking::whereHas('appointment', function ($q) use ($appointmentId) {
             $q->where('appointmentId', $appointmentId);
         })
             ->with(['appointment.customer', 'installments'])
-            ->first(); // 👈 OJO: sin OrFail
+            ->first();
 
         if (!$booking) {
-            dd([
-                'error' => 'No se encontró booking para esa appointment',
+            Log::warning('No se encontró booking para esa appointment', [
                 'appointmentId_param' => $appointmentId,
             ]);
+
+            return response()->json([
+                'message' => 'No se encontró la reserva para esta cita',
+            ], Response::HTTP_NOT_FOUND);
         }
 
-        // 2) Ver qué cuotas tiene ese booking
         $availableInstallments = $booking->installments->pluck('id');
 
         $installment = $booking->installments
             ->where('id', $installmentId)
-            ->first(); // 👈 sin OrFail
+            ->first();
 
         if (!$installment) {
-            dd([
-                'error' => 'No se encontró installment para ese booking',
+            Log::warning('No se encontró installment para ese booking', [
                 'bookingId' => $booking->bookingId ?? $booking->id,
                 'requested_installment_id' => $installmentId,
                 'available_installments' => $availableInstallments,
             ]);
+
+            return response()->json([
+                'message' => 'No se encontró la cuota para esta reserva',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         $customer = $booking->appointment->customer ?? null;

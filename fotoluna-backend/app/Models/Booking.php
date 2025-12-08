@@ -58,4 +58,8 @@ class Booking extends Model
     {
         return $this->hasMany(CloudPhoto::class, 'bookingIdFK', 'bookingId');
     }
+    public function photographer()
+    {
+        return $this->belongsTo(Employee::class, 'employeeId', 'employeeId');
+    }
 }
