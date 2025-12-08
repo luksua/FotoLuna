@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\EmployeeUpdated;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
+use App\Events\EmployeeAvailabilityUpdated;
 
 class AdminUsersController extends Controller
 {
@@ -53,6 +55,8 @@ class AdminUsersController extends Controller
 
         $employee->save();
 
+        event(new EmployeeAvailabilityUpdated($employee));
+
         return response()->json(['success' => true, 'isAvailable' => (bool) $employee->isAvailable], 200);
     }
 
@@ -81,6 +85,8 @@ class AdminUsersController extends Controller
         ]);
 
         $employee->update($validated);
+
+        event(new EmployeeUpdated($employee));
 
         return response()->json(['success' => true, 'employee' => $employee], 200);
     }

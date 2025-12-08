@@ -1,0 +1,32 @@
+.details-modal .modal-dialog {
+    max-width: 80%;
+}
+
+.details-modal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.details-modal .modal-title {
+    color: #343a40;
+}
+
+.details-modal .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.details-modal .table thead th {
+    background-color: #e9ecef;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.details-modal .sortable-header {
+    cursor: pointer;
+}
+
+.details-modal .sortable-header:hover {
+    background-color: #dcdcdc;
+}

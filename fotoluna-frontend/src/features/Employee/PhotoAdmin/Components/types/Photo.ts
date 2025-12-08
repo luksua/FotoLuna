@@ -1,35 +1,31 @@
-// src/Components/types/Photo.ts (Asegúrate de que este archivo refleje la realidad de tu API)
+// src/features/Employee/Photos/components/types.ts
 
-export interface Photo {
-  id: number;
-  // 🚨 Nueva URL firmada de la nube (Contiene la firma y expira en 7 días)
-  url: string;
-  // 🚨 El nombre que viene del backend (Evento, Plan, o 'Foto Individual')
-  name: string;
-  // 🚨 Se utiliza la fecha de subida del backend
-  uploaded_at: string;
-  // Tamaño en bytes
-  size: number;
-  // Opcional: ID del cliente
-  customerIdFK?: number;
-  // Opcional: Nombre del Evento (si lo quieres como campo separado)
-  event_name: string;
+// Tipo para la foto resumida (miniatura en la tarjeta)
+export interface PhotoThumbnail {
+    id: number;
+    url: string;
+    thumbnailUrl: string; // Se usa la misma URL firmada para la miniatura
+    uploadedAt: string;
+    bookingId: number | null;
 }
 
-export interface Stats {
-  total_photos: number;
-  expiring_soon: number;
-  total_size: number;
+// Tipo para el resumen del cliente (respuesta de GET /employee/photos/summary)
+export interface CustomerRecentSummary {
+    customerId: number;
+    customerName: string; // Nombre completo
+    totalRecentPhotos: number;
+    lastUploadAt: string; // Fecha y hora de la última subida (en los últimos 15 días)
+    recentPhotos: PhotoThumbnail[]; // Las miniaturas
 }
 
-export interface PhotoCardProps {
-  photo: Photo;
-  onDelete?: (photoId: number) => void;
-}
-
-export interface PhotoGalleryProps {
-  photos: Photo[];
-  onPhotoDelete: (photoId: number) => Promise<void>;
-  loading: boolean;
-  onNavigateToUpload: () => void;
+// Tipo para la foto detallada (respuesta de GET /employee/customers/{id}/photos/recent)
+// Coincide con la interfaz 'Photo' usada en PhotoCard.tsx (asumiendo que tiene estos campos)
+export interface DetailedPhoto {
+    id: number;
+    url: string;
+    name: string; // original_name en el backend
+    uploaded_at: string; // created_at en el backend
+    size: number;
+    customerIdFK: number;
+    event_name: string;
 }

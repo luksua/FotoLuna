@@ -15,6 +15,7 @@ import api from "../../../../lib/api";
 import type { ExtendedCitaFormData, CustomerOption, EventOption, DocumentTypeOption } from "../Components/Types/types";
 import type { Cita, CitaStatus } from "../Components/Types/types";
 import { useAuth } from "../../../../context/useAuth";
+import AddCustomerForm from "../../Customers/Components/AddCustomerForm";
 
 
 
@@ -69,6 +70,19 @@ const mapStatus = (status: any): CitaStatus => {
     return STATUS_BACK_TO_FRONT[key] ?? "Pendiente";
 }
 
+const parseDateTime = (raw: any): Date | null => {
+    if (!raw) return null;
+    if (raw instanceof Date) {
+        return Number.isNaN(raw.getTime()) ? null : raw;
+    }
+    if (typeof raw === "string") {
+        const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
+        const d = new Date(normalized);
+        return Number.isNaN(d.getTime()) ? null : d;
+    }
+    return null;
+};
+
 const mapBackendAppointments = (data: any[]): Cita[] =>
     data.map((row: any) => {
         const parsedDate = parseBackendDate(row.date);
@@ -76,9 +90,34 @@ const mapBackendAppointments = (data: any[]): Cita[] =>
         const startTime =
             typeof rawTime === "string" ? rawTime.slice(0, 5) : "09:00";
 
+        const createdAtRaw =
+            row.createdAt ||
+            row.created_at ||
+            row.appointmentCreatedAt ||
+            row.appointment_created_at ||
+            row.created_at_appointment ||
+            row.appointmentCreated ||
+            row.created_at_booking ||
+            row.bookingCreatedAt ||
+            row.booking_created_at ||
+            row.created ||
+            null;
+
+        const combinedDateTime = row.date
+            ? `${row.date} ${row.startTime || row.appointmentTime || "00:00"}`
+            : null;
+
+        const createdAt =
+            parseDateTime(createdAtRaw) ??
+            parseDateTime(row.created_at) ??
+            parseDateTime(row.updated_at) ??
+            parseDateTime(combinedDateTime) ??
+            null;
+
         const cita: Cita = {
             id: String(row.appointmentId ?? row.bookingId ?? createId()),
             appointmentId: Number(row.appointmentId),
+            createdAt,
             customerIdFK: row.customerId,
             eventIdFK: row.eventId,
             appointmentDuration: row.duration,
@@ -123,6 +162,32 @@ const EmployeeAppointments: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
+    const allowedStatuses = useMemo<CitaStatus[]>(() => {
+        if (!selectedCita) return ["Pendiente", "Confirmada", "Cancelada", "Completada"];
+
+        switch (selectedCita.status) {
+            case "Pendiente":
+                return ["Pendiente", "Confirmada", "Cancelada", "Completada"];
+            case "Confirmada":
+                return ["Confirmada", "Cancelada", "Completada"];
+            case "Cancelada":
+                return ["Cancelada"];
+            case "Completada":
+                return ["Completada"];
+            default:
+                return ["Pendiente", "Confirmada", "Cancelada", "Completada"];
+        }
+    }, [selectedCita]);
+    const canEditDateTime = useMemo(() => {
+        if (!isEditing || !selectedCita) return true;
+        if (!selectedCita.createdAt || Number.isNaN(selectedCita.createdAt.getTime())) {
+            // Si no tenemos createdAt, permitimos editar (no bloqueamos antes de tiempo)
+            return true;
+        }
+        const diffMs = Date.now() - selectedCita.createdAt.getTime();
+        return diffMs <= 24 * 60 * 60 * 1000;
+    }, [isEditing, selectedCita]);
 
     const initialForm: ExtendedCitaFormData = useMemo(() => ({
         date: new Date().toISOString().split("T")[0],
@@ -297,6 +362,8 @@ const EmployeeAppointments: React.FC = () => {
     const handleEditClick = useCallback((cita: Cita) => {
         setIsEditing(true);
         setSelectedCita(cita);
+        setErrors({});
+        setSuccess("");
 
         // 🔑 Al editar, NO cargar las FKs de Paquete/Documento
         setForm({
@@ -319,6 +386,8 @@ const EmployeeAppointments: React.FC = () => {
 
     const handleNewClick = useCallback(() => {
         setIsEditing(false);
+        setErrors({});
+        setSuccess("");
         // 🔑 Limpieza explícita de FKs al crear nueva cita
         setForm({ ...initialForm, eventIdFK: null, packageIdFK: null, documentTypeIdFK: null });
         setCustomerOptions([]);
@@ -362,6 +431,22 @@ const EmployeeAppointments: React.FC = () => {
         setCustomerOptions([]);
         setForm(f => ({ ...f, customerIdFK: id, client: name }));
         setErrors(er => ({ ...er, client: "" }));
+    }, []);
+
+    const handleOpenAddCustomer = useCallback(() => {
+        setShowAddCustomerForm(true);
+    }, []);
+
+    const handleCloseAddCustomer = useCallback(() => {
+        setShowAddCustomerForm(false);
+    }, []);
+
+    const handleCustomerCreatedInline = useCallback(() => {
+        setShowAddCustomerForm(false);
+        setErrors(er => ({
+            ...er,
+            client: "Cliente creado. Busquelo por nombre o documento y seleccionelo.",
+        }));
     }, []);
 
     // ... (Lógica de Carga y Envío)
@@ -417,6 +502,11 @@ const EmployeeAppointments: React.FC = () => {
         const v = validate(isEditing);
         if (Object.keys(v).length) return setErrors(v);
 
+        if (isEditing && !allowedStatuses.includes(form.status)) {
+            setErrors({ status: "No puedes cambiar a ese estado desde el estado actual." });
+            return;
+        }
+
         setIsLoading(true);
         const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -449,10 +539,14 @@ const EmployeeAppointments: React.FC = () => {
         if (isEditing && selectedCita) {
             // ... (Lógica PUT - No se envían FKs de paquete/documento)
             try {
+                const lockedDate = selectedCita.date.toISOString().split("T")[0];
+                const lockedStart = selectedCita.startTime;
+                const lockedLocation = selectedCita.location;
+
                 const updatePayload = {
-                    date: form.date,
-                    startTime: form.startTime,
-                    place: form.location || null,
+                    date: (!canEditDateTime ? lockedDate : form.date),
+                    startTime: (!canEditDateTime ? lockedStart : form.startTime),
+                    place: (!canEditDateTime ? lockedLocation : form.location) || null,
                     comment: form.notes || null,
                     status: STATUS_FRONT_TO_BACK[form.status],
                 };
@@ -464,6 +558,11 @@ const EmployeeAppointments: React.FC = () => {
                 );
 
                 setSuccess("Cita actualizada exitosamente.");
+                setTimeout(() => {
+                    setShowModal(false);
+                    setSuccess("");
+                    setErrors({});
+                }, 800);
                 refreshAppointments();
 
             } catch (err) {
@@ -487,8 +586,10 @@ const EmployeeAppointments: React.FC = () => {
             setSuccess("Cita creada exitosamente. Recargando citas...");
             setTimeout(() => {
                 setShowModal(false);
+                setSuccess("");
+                setErrors({});
                 refreshAppointments();
-            }, 1000);
+            }, 800);
 
         } catch (err: any) {
             console.error("Error al crear cita:", err.response?.data?.errors ?? err);
@@ -497,7 +598,7 @@ const EmployeeAppointments: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [validate, token, form, isEditing, selectedCita, refreshAppointments, DOCUMENT_EVENT_ID]);
+    }, [validate, token, form, isEditing, selectedCita, refreshAppointments, DOCUMENT_EVENT_ID, allowedStatuses, canEditDateTime]);
 
 
     return (
@@ -505,7 +606,7 @@ const EmployeeAppointments: React.FC = () => {
             {isLoading && <Spinner />}
             <div className="container-fluid bg-light min-vh-100 appointments-page">
                 <div className="container py-4">
-                    <h2 className="text-dark">Citas</h2>
+                    <h2 className="text-dark tt">Citas</h2>
                     <hr />
 
                     <div className="row g-4">
@@ -535,28 +636,41 @@ const EmployeeAppointments: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
                     <AppointmentModal
                         show={showModal}
                         isEditing={isEditing}
                         form={form}
                         errors={errors}
                         success={success}
+                        allowedStatuses={allowedStatuses}
+                        canEditDateTime={canEditDateTime}
 
                         customers={customerOptions}
                         events={events}
-                        packages={packagesForSelectedEvent} // 🔑 Lista unificada
-                        documentTypes={documentTypes} // 🟢 Lista global de Document Types
+                        packages={packagesForSelectedEvent}
+                        documentTypes={documentTypes}
                         onClientSelect={handleClientSelect}
                         onSearchClient={handleSearchClient}
+                        onAddCustomerClick={handleOpenAddCustomer}
 
                         onChange={handleChange}
                         onSubmit={handleSubmit}
                         onClose={() => {
                             setShowModal(false);
                             setSuccess("");
+                            setErrors({});
                         }}
                     />
+                    {showAddCustomerForm && (
+                        <div className="modal-cita-backdrop" onClick={handleCloseAddCustomer}>
+                            <div className="modal-cita" style={{ maxWidth: "900px" }} onClick={(e) => e.stopPropagation()}>
+                                <AddCustomerForm
+                                    onSuccess={handleCustomerCreatedInline}
+                                    onCancel={handleCloseAddCustomer}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </EmployeeLayout>

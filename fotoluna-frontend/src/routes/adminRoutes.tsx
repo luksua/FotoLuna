@@ -10,9 +10,12 @@ const AdminEmployee = lazy(() => import("../features/Admin/AdminEmployee/pages/A
 const NotificationsEmployee = lazy(() => import("../features/Admin/Notification/Pages/NotificationsEmployee"));
 const AdminEvents = lazy(() => import("../features/Admin/AdminEvents/pages/AdminEvents"));
 const AdminAppointments = lazy(() => import("../features/Admin/AdminApointments/pages/AdminAppointments"));
-import PaymentsAndSubscriptions from "../features/Admin/AdminPayments/pages/PaymentsAndSubscriptions";
-import SubscriptionsPage from "../features/Admin/AdminPayments/components/Subscriptions";
-const AdminPhotosPage = lazy(() => import("../features/Admin/AdminPhotos/pages"));
+
+const AdminPhotosPage = lazy(() => import("../features/Admin/AdminPhotos/pages/AdminPhotosPage"));
+const AdminCustomerPhotosPage = lazy(() => import("../features/Admin/AdminPhotos/pages/AdminCustomerPhotosPage"));
+
+const PaymentsAndSubscriptions = lazy(() => import("../features/Admin/AdminPayments/pages/PaymentsAndSubscriptions"));
+const SubscriptionsPage = lazy(() => import("../features/Admin/AdminPayments/components/Subscriptions"));
 
 const adminRoutes = [
     {
@@ -78,7 +81,7 @@ const adminRoutes = [
                 <AdminAppointments />
             </Suspense>
         ),
-        
+
     },
     {
         path: "/AdminPhotos",
@@ -88,8 +91,31 @@ const adminRoutes = [
             </Suspense>
         ),
     },
-    { path: "/adminPayments", element: <PaymentsAndSubscriptions /> },
-    { path: "/storage-plan", element: <SubscriptionsPage /> },
+    // 🚨 RUTA AGREGADA PARA LA GALERÍA COMPLETA DEL CLIENTE
+    {
+        path: "/admin/customers/:customerId/photos",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <AdminCustomerPhotosPage />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/adminPayments",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <PaymentsAndSubscriptions />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/storage-plan",
+        element: (
+            <Suspense fallback={<Spinner />}>
+                <SubscriptionsPage />
+            </Suspense>
+        ),
+    },
 ];
 
 export { adminRoutes };

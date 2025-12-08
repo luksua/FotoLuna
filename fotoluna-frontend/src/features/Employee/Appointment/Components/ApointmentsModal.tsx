@@ -1,11 +1,10 @@
 import React, { useRef, useCallback, useMemo } from "react";
 import type { ExtendedCitaFormData } from "../Components/Types/types";
 
-// Asumimos que CustomerOption, EventOption, PackageOption y DocumentTypeOption están definidos en types.ts
 interface CustomerOption { id: number; name: string; }
 interface EventOption { id: number; name: string; }
-interface PackageOption { id: number; name: string; documentTypeIdFK: number | null; } // Puede tener null si es un paquete normal
-interface DocumentTypeOption { id: number; name: string; } // Lista completa de la BD
+interface PackageOption { id: number; name: string; documentTypeIdFK: number | null; }
+interface DocumentTypeOption { id: number; name: string; }
 
 interface AppointmentModalProps {
     show: boolean;
@@ -13,14 +12,17 @@ interface AppointmentModalProps {
     form: ExtendedCitaFormData;
     errors: Record<string, string>;
     success: string;
+    allowedStatuses?: string[];
+    canEditDateTime?: boolean;
 
     customers: CustomerOption[];
     events: EventOption[];
-    packages: PackageOption[]; // Lista de Paquetes/Documentos filtrada por Evento
-    documentTypes: DocumentTypeOption[]; // Lista global de Tipos de Documento (solo si se necesita)
+    packages: PackageOption[];
+    documentTypes: DocumentTypeOption[];
 
     onClientSelect: (id: number, name: string) => void;
     onSearchClient: (query: string) => void;
+    onAddCustomerClick: () => void;
 
     onChange: (
         e: React.ChangeEvent<
@@ -37,46 +39,35 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
     form,
     errors,
     success,
+    allowedStatuses = [],
+    canEditDateTime = true,
     onChange,
     onSubmit,
     onClose,
     customers,
     events,
     packages,
-    documentTypes, // 🟢 USAR ESTA PROP
+    documentTypes,
     onClientSelect,
     onSearchClient,
+    onAddCustomerClick,
 }) => {
     if (!show) return null;
 
     const searchTimeout = useRef<NodeJS.Timeout | null>(null);
     const DOCUMENT_EVENT_ID = 6;
 
-    // Lógica para determinar si el campo Tipo Documento debe mostrarse
     const selectedPackageNeedsDocumentField = useMemo(() => {
         if (!form.packageIdFK) return false;
-
-        // Si el Evento es "Documento" (ID 6), el campo Tipo Documento NO SE MUESTRA, 
-        // porque el select de Paquetes ya es la lista de Tipos de Documento.
-        if (form.eventIdFK === DOCUMENT_EVENT_ID) {
-            return false;
-        }
-
-        // Si es un Evento normal, verificamos si el paquete seleccionado tiene documentTypeIdFK no nulo.
+        if (form.eventIdFK === DOCUMENT_EVENT_ID) return false;
         const pkg = packages.find(p => p.id === form.packageIdFK);
         return pkg?.documentTypeIdFK !== null;
-    }, [form.packageIdFK, packages, form.eventIdFK, DOCUMENT_EVENT_ID]);
+    }, [form.packageIdFK, packages, form.eventIdFK]);
 
-
-    // 1. Handler con Debounce para la Búsqueda de Cliente
     const handleClientChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const query = e.target.value;
         onChange(e);
-
-        if (searchTimeout.current) {
-            clearTimeout(searchTimeout.current);
-        }
-
+        if (searchTimeout.current) clearTimeout(searchTimeout.current);
         if (query.length > 2) {
             searchTimeout.current = setTimeout(() => {
                 onSearchClient(query);
@@ -86,40 +77,42 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
         }
     }, [onChange, onSearchClient]);
 
-    // 2. Handler al seleccionar un cliente de la lista
     const handleSelectCustomer = useCallback((id: number, name: string) => {
         onClientSelect(id, name);
     }, [onClientSelect]);
-
 
     return (
         <div className="modal-cita-backdrop" onClick={onClose}>
             <div className="modal-cita" onClick={(e) => e.stopPropagation()}>
                 <h2 className="mb-3">
-                    <i
-                        className={`fas ${isEditing ? "fa-edit" : "fa-calendar-plus"} me-2`}
-                    />
+                    <i className={`fas ${isEditing ? "fa-edit" : "fa-calendar-plus"} me-2`} />
                     {isEditing ? "Editar Cita" : "Registrar Nueva Cita"}
                 </h2>
 
-                <form
-                    className="row g-3 needs-validation appointment-form"
-                    onSubmit={onSubmit}
-                >
-                    {/* 1. CLIENTE (AUTOCOMPLETADO) */}
+                <form className="row g-3 needs-validation appointment-form" onSubmit={onSubmit}>
                     <div className="col-mb-4 position-relative">
                         <label className="form-label col-lg-3">Cliente:</label>
-                        <input
-                            type="text"
-                            className="col-lg-9 form-control-s"
-                            name="client"
-                            value={form.client}
-                            onChange={handleClientChange}
-                            disabled={isEditing && form.customerIdFK !== null}
-                            autoComplete="off"
-                            placeholder="Nombre o Documento del Cliente"
-                            required={!isEditing}
-                        />
+                        <div className="d-flex gap-2 align-items-start">
+                            <input
+                                type="text"
+                                className="col-lg-9 form-control-s"
+                                name="client"
+                                value={form.client}
+                                onChange={handleClientChange}
+                                disabled={isEditing && form.customerIdFK !== null}
+                                autoComplete="off"
+                                placeholder="Nombre o Documento del Cliente"
+                                required={!isEditing}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={onAddCustomerClick}
+                            >
+                                <i className="fas fa-user-plus me-1" />
+                                Agregar
+                            </button>
+                        </div>
 
                         <input type="hidden" name="customerIdFK" value={form.customerIdFK ?? ''} />
                         {errors.client && (<div className="text-danger small">{errors.client}</div>)}
@@ -139,15 +132,13 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                         )}
                         {form.customerIdFK && (
                             <div className="text-success small mt-1">
-                                Cliente ID: **{form.customerIdFK}** seleccionado.
+                                Cliente ID: <strong>{form.customerIdFK}</strong> seleccionado.
                             </div>
                         )}
                     </div>
 
-                    {/* 2. EVENTO (eventIdFK) - SELECT */}
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">Evento:</label>
-
                         <select
                             name="eventIdFK"
                             className="col-lg-9 form-select-s"
@@ -156,22 +147,16 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                             required={!isEditing}
                             disabled={isEditing}
                         >
-                            <option key="select-event-placeholder" value="">
-                                Seleccione un evento...
-                            </option>
-
+                            <option value="">Seleccione un evento...</option>
                             {events.map((event) => (
                                 <option key={event.id} value={event.id}>
                                     {event.name}
                                 </option>
                             ))}
                         </select>
-                        {errors.eventIdFK && (
-                            <div className="text-danger small">{errors.eventIdFK}</div>
-                        )}
+                        {errors.eventIdFK && (<div className="text-danger small">{errors.eventIdFK}</div>)}
                     </div>
 
-                    {/* 🟢 3. PAQUETE / TIPO DE DOCUMENTO PRINCIPAL (packageIdFK) - SELECT */}
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">
                             {form.eventIdFK === DOCUMENT_EVENT_ID ? 'Tipo Doc. Principal:' : 'Paquete:'}
@@ -196,8 +181,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                         {errors.packageIdFK && (<div className="text-danger small">{errors.packageIdFK}</div>)}
                     </div>
 
-                    {/* 🟢 4. TIPO DE DOCUMENTO SECUNDARIO (documentTypeIdFK) - SELECT */}
-                    {/* Solo se muestra si NO es el Evento Documento Y si el paquete seleccionado lo exige */}
                     {!isEditing && selectedPackageNeedsDocumentField && (
                         <div className="col-mb-4">
                             <label className="form-label col-lg-3">Tipo Doc. Requerido:</label>
@@ -206,11 +189,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                                 className="col-lg-9 form-select-s"
                                 value={form.documentTypeIdFK ?? ''}
                                 onChange={onChange}
-                                required={!isEditing} // Si se muestra, es requerido
+                                required={!isEditing}
                                 disabled={isEditing}
                             >
                                 <option value="">Seleccione tipo de documento...</option>
-                                {/* USAMOS LA LISTA GLOBAL documentTypes */}
                                 {documentTypes.map((docType) => (
                                     <option key={docType.id} value={docType.id}>
                                         {docType.name}
@@ -220,8 +202,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                             {errors.documentTypeIdFK && (<div className="text-danger small">{errors.documentTypeIdFK}</div>)}
                         </div>
                     )}
-
-                    {/* ... (Duración, Fecha, Hora, Estado, Localización, Notas) ... */}
 
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">Duración (min):</label>
@@ -241,7 +221,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                         )}
                     </div>
 
-                    {/* FECHA */}
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">Fecha:</label>
                         <input
@@ -251,11 +230,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                             value={form.date}
                             onChange={onChange}
                             required
+                            disabled={isEditing && !canEditDateTime}
                         />
                         {errors.date && (<div className="text-danger small">{errors.date}</div>)}
+                        {isEditing && !canEditDateTime && (
+                            <div className="text-muted small">La fecha no puede modificarse pasadas 24h de la creación.</div>
+                        )}
                     </div>
 
-                    {/* HORA DE INICIO */}
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">Hora de Inicio:</label>
                         <input
@@ -265,11 +247,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                             value={form.startTime}
                             onChange={onChange}
                             required
+                            disabled={isEditing && !canEditDateTime}
                         />
                         {errors.startTime && (<div className="text-danger small">{errors.startTime}</div>)}
+                        {isEditing && !canEditDateTime && (
+                            <div className="text-muted small">La hora no puede modificarse pasadas 24h de la creación.</div>
+                        )}
                     </div>
 
-                    {/* ESTADO (SOLO AL EDITAR) */}
                     {isEditing && (
                         <div className="col-mb-4">
                             <label className="form-label col-lg-3">Estado:</label>
@@ -278,16 +263,26 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                                 className="col-lg-9 form-select-s"
                                 value={form.status}
                                 onChange={onChange}
+                                disabled={allowedStatuses.length <= 1}
                             >
-                                <option key="status-pending" value="Pendiente">Pendiente</option>
-                                <option key="status-scheduled" value="Confirmada">Confirmada</option>
-                                <option key="status-cancelled" value="Cancelada">Cancelada</option>
-                                <option key="status-completed" value="Completada">Completada</option>
+                                {allowedStatuses.length > 0 ? (
+                                    allowedStatuses.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <>
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="Confirmada">Confirmada</option>
+                                        <option value="Cancelada">Cancelada</option>
+                                        <option value="Completada">Completada</option>
+                                    </>
+                                )}
                             </select>
                         </div>
                     )}
 
-                    {/* LOCALIZACIÓN */}
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">Localización:</label>
                         <input
@@ -297,11 +292,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                             onChange={onChange}
                             placeholder="Localización"
                             required
+                            disabled={isEditing && !canEditDateTime}
                         />
                         {errors.location && (<div className="text-danger small">{errors.location}</div>)}
+                        {isEditing && !canEditDateTime && (
+                            <div className="text-muted small">La localización no puede modificarse pasadas 24h de la creación.</div>
+                        )}
                     </div>
 
-                    {/* NOTAS */}
                     <div className="col-mb-4">
                         <label className="form-label col-lg-3">Notas:</label>
                         <textarea
@@ -314,7 +312,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                         />
                     </div>
 
-                    {/* BOTONES */}
                     <div className="appointment-form-buttons">
                         <button type="submit" className="accept-btn">
                             <i className="fas fa-save me-1" />

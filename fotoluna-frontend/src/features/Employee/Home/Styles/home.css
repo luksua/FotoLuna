@@ -105,6 +105,11 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
+.employee-home .card-employee.clickable {
+    cursor: pointer;
+}
+
+
 .employee-home .card-header-employee {
     display: flex;
     align-items: center;

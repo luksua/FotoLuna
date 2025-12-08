@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Package;
 use App\Models\Comment;
+use App\Models\EmployeeAction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +36,56 @@ class EmployeeController extends Controller
         
         return response()->json(['success' => true, 'data' => $data], 200);
     }
+
+    /**
+     * Devuelve el log de actividad para el empleado autenticado, con filtros.
+     */
+    public function activityReport(Request $request)
+    {
+        $user = $request->user();
+        if (!$user || !$user->employee) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $employeeId = $user->employee->employeeId;
+
+        // 1. Validar filtros
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'action_type' => 'nullable|string|in:PHOTO_UPLOAD,APPOINTMENT_UPDATE,CUSTOMER_CREATED',
+        ]);
+
+        // 2. Construir la consulta
+        $query = EmployeeAction::where('employee_id', $employeeId);
+
+        if (!empty($validated['start_date'])) {
+            $query->where('created_at', '>=', Carbon::parse($validated['start_date'])->startOfDay());
+        }
+
+        if (!empty($validated['end_date'])) {
+            $query->where('created_at', '<=', Carbon::parse($validated['end_date'])->endOfDay());
+        }
+
+        if (!empty($validated['action_type'])) {
+            $query->where('action_type', $validated['action_type']);
+        }
+
+        // 3. Obtener y formatear resultados
+        $logs = $query->orderBy('created_at', 'desc')->paginate(50); // Paginado para no sobrecargar
+
+        // Aquí podrías añadir lógica para exportar a Excel/PDF si se solicita.
+        // Por ahora, devolvemos JSON para que el frontend lo muestre.
+        // if ($request->query('format') === 'excel') {
+        //     // Lógica de exportación con un paquete como Laravel Excel
+        // }
+
+        return response()->json($logs);
+    }
+
+
+
+
 
     /**
      * Devuelve todos los empleados para el selector de fotógrafo (público)

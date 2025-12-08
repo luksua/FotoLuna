@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Events\EmployeeCreated;
 
 class RegisterEmployeeController extends Controller
 {
@@ -85,6 +86,8 @@ class RegisterEmployeeController extends Controller
             $employee = Employee::create($data);
 
             DB::commit();
+
+            event(new EmployeeCreated($employee));
 
             return response()->json([
                 'success' => true,

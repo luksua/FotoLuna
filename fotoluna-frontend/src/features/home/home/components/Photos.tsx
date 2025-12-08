@@ -1,235 +1,322 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-// ⚠️ IMPORTAR useAuth: Ajusta esta ruta según la ubicación real de tu contexto de autenticación
+// IMPORTAR LIBRERÍAS PARA ZIP
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+// IMPORTAR useAuth
 import { useAuth } from "../../../../context/useAuth";
 
-// 1. Define la estructura de datos que esperamos de tu backend
-type TCloudPhoto = {
-    id: number;
-    url: string; // URL pública de Contabo S3
-    event_name: string; // Título del evento
-    created_at: string; // Fecha de subida (en formato 'YYYY-MM-DD' o similar)
-};
-
-// ⚠️ Ajusta la URL base de tu API
+// Ajusta la URL base de tu API
 const API_BASE_URL = "http://localhost:8000/api";
 
+type TCloudPhoto = {
+    id: number;
+    url: string;
+    event_name: string;
+    created_at: string;
+    original_name?: string;
+    size?: number;
+};
+
 export default function Photos() {
-    const { user } = useAuth(); // Obtener el usuario autenticado
+    const { user } = useAuth();
 
     // --- ESTADOS DE DATOS Y API ---
     const [photos, setPhotos] = useState<TCloudPhoto[]>([]);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // --- ESTADOS DE UI (Filtros) ---
+    // --- ESTADOS DE UI (Filtros y Selección) ---
     const [filtro, setFiltro] = useState("Evento");
     const [orden, setOrden] = useState("Más recientes");
+    const [filterYear, setFilterYear] = useState("Todos");
+    const [filterMonth, setFilterMonth] = useState("0");
+    const [selectedPhotos, setSelectedPhotos] = useState<Set<number>>(new Set());
+    const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [photosPerPage] = useState(12); // Puedes ajustar este valor
 
-    // ---------------------------------------------------
-    // 2. Lógica de Carga de Fotos desde la API (useEffect)
-    // ---------------------------------------------------
+
+    // --- Lógica de Carga de Fotos ---
     useEffect(() => {
         const fetchMyPhotos = async () => {
             const token = localStorage.getItem("token");
-
-            // Verificación inicial de sesión
             if (!token || !user) {
                 setErrorMessage("Debes iniciar sesión para ver tus fotos.");
                 setLoading(false);
                 return;
             }
-
             setLoading(true);
             setErrorMessage(null);
-
             try {
-                // Llamada al endpoint protegido del cliente
-                const response = await fetch(
-                    `${API_BASE_URL}/client/my-cloud-photos`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Accept": "application/json",
-                        },
-                    }
-                );
-
+                const response = await fetch(`${API_BASE_URL}/client/my-cloud-photos`, {
+                    headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" },
+                });
                 const data = await response.json();
-
                 if (response.ok) {
-                    setPhotos(data.photos || []);
-                } else if (response.status === 403) {
-                    // ⚠️ Error 403: Suscripción Expirada/Inválida (Tu lógica de negocio)
-                    setErrorMessage(data.message || "Acceso denegado. Revisa el estado de tu suscripción.");
+                    setPhotos(data.photos.map((p: any) => ({ ...p })));
                 } else {
-                    // Otros errores
-                    setErrorMessage(data.message || "Ocurrió un error al cargar tus fotos.");
+                    setErrorMessage(data.message || "Ocurrió un error.");
                 }
-
             } catch (err) {
-                console.error("Error de conexión:", err);
                 setErrorMessage("No se pudo conectar con el servidor.");
             } finally {
                 setLoading(false);
             }
         };
-
         fetchMyPhotos();
     }, [user]);
 
-    // ---------------------------------------------------
-    // 3. Lógica de Filtrado y Ordenamiento
-    // ---------------------------------------------------
+    // --- Lógica de Filtrado y Ordenamiento ---
+    const availableYears = useMemo(() => {
+        const years = new Set(photos.map(p => new Date(p.created_at).getFullYear().toString()));
+        return ["Todos", ...Array.from(years).sort((a, b) => b.localeCompare(a))];
+    }, [photos]);
 
-    // 3a. Aplicar ordenamiento
-    const fotosOrdenadas = [...photos].sort((a, b) => {
-        // Ordena por fecha
-        if (orden === "Más recientes") {
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        }
-        if (orden === "Más antiguas") {
-            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        }
-        // Ordena por nombre de evento
-        if (orden === "Evento") {
-            return a.event_name.localeCompare(b.event_name);
-        }
-        return 0;
-    });
+    const months = [
+        "Todos", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
 
-    // 3b. Aplicar filtrado
-    const fotosFiltradas = fotosOrdenadas.filter(f =>
-        // 'Evento' significa no filtrar, solo ordenar
-        filtro === "Evento" ? true : f.event_name === filtro
-    );
+    const fotosFiltradas = useMemo(() => {
+        return photos
+            .slice() // Crear una copia para no mutar el original
+            .sort((a, b) => {
+                if (orden === "Más recientes") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                if (orden === "Más antiguas") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                if (orden === "Evento") return a.event_name.localeCompare(b.event_name);
+                return 0;
+            })
+            .filter(f => {
+                const photoDate = new Date(f.created_at);
+                const yearMatch = filterYear === "Todos" || photoDate.getFullYear().toString() === filterYear;
+                const monthMatch = filterMonth === "0" || (photoDate.getMonth() + 1).toString() === filterMonth;
+                const eventMatch = filtro === "Evento" || f.event_name === filtro;
+                return yearMatch && monthMatch && eventMatch;
+            });
+    }, [photos, orden, filtro, filterYear, filterMonth]);
 
-    // ---------------------------------------------------
-    // 4. Lógica de Descarga
-    // ---------------------------------------------------
+    useEffect(() => {
+        setCurrentPage(1); // Reset to first page when filters change
+    }, [orden, filtro, filterYear, filterMonth]);
 
-    const handleDescargar = (url: string): void => {
-        // Lógica de descarga real: crea un enlace temporal y simula el clic
-        const link = document.createElement('a');
-        link.href = url;
-        // Obliga al navegador a descargar el archivo en lugar de navegar a él
-        link.setAttribute('download', '');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        // Opcional: mostrar un mensaje o spinner de descarga
+
+    // --- Lógica de Paginación ---
+    const totalPages = Math.ceil(fotosFiltradas.length / photosPerPage);
+    const indexOfLastPhoto = currentPage * photosPerPage;
+    const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
+    const currentPhotos = useMemo(() => fotosFiltradas.slice(indexOfFirstPhoto, indexOfLastPhoto), [fotosFiltradas, indexOfFirstPhoto, indexOfLastPhoto]);
+
+    // --- Lógica de Selección ---
+    const handleSelectPhoto = (photoId: number) => {
+        setSelectedPhotos(prevSelected => {
+            const newSelected = new Set(prevSelected);
+            if (newSelected.has(photoId)) {
+                newSelected.delete(photoId);
+            } else {
+                newSelected.add(photoId);
+            }
+            return newSelected;
+        });
     };
 
+    const handleSelectAllVisible = () => {
+        if (selectedPhotos.size === currentPhotos.length) {
+            setSelectedPhotos(new Set()); // Deseleccionar todos
+        } else {
+            const allVisibleIds = new Set(currentPhotos.map(p => p.id));
+            setSelectedPhotos(allVisibleIds); // Seleccionar todos los visibles
+        }
+    };
 
-    // ---------------------------------------------------
-    // 5. Renderizado
-    // ---------------------------------------------------
+    // --- Lógica de Descarga ---
+    const handleDownloadIndividualPhoto = async (photo: TCloudPhoto) => {
+        try {
+            const response = await fetch(photo.url);
+            if (!response.ok) throw new Error(`Failed to fetch ${photo.original_name}`);
+            const blob = await response.blob();
+            saveAs(blob, photo.original_name || `photo-${photo.id}.jpg`);
+        } catch (error) {
+            console.error(`No se pudo descargar la foto: ${photo.original_name}`, error);
+            alert("Ocurrió un error al descargar la foto. Por favor, inténtalo de nuevo.");
+        }
+    };
+
+    const handleDownloadSelected = async () => {
+        if (selectedPhotos.size === 0 || isDownloadingZip) return;
+    
+        setIsDownloadingZip(true);
+        const zip = new JSZip();
+        const photosToDownload = photos.filter(p => selectedPhotos.has(p.id));
+    
+        try {
+            const photoPromises = photosToDownload.map(async (photo) => {
+                try {
+                    const response = await fetch(photo.url);
+                    if (!response.ok) throw new Error(`Failed to fetch ${photo.original_name}`);
+                    const blob = await response.blob();
+                    // Añadir al zip con un nombre de archivo único o el original
+                    zip.file(photo.original_name || `photo-${photo.id}.jpg`, blob);
+                } catch (error) {
+                    console.error(`No se pudo descargar la foto: ${photo.original_name}`, error);
+                    // Opcional: podrías notificar al usuario sobre las fotos que fallaron
+                }
+            });
+    
+            await Promise.all(photoPromises);
+    
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            saveAs(zipBlob, `Fotoluna-Fotos-${new Date().toISOString().split('T')[0]}.zip`);
+    
+        } catch (error) {
+            console.error("Error al crear el archivo ZIP", error);
+            alert("Ocurrió un error al preparar la descarga. Por favor, inténtalo de nuevo.");
+        } finally {
+            setIsDownloadingZip(false);
+            setSelectedPhotos(new Set()); // Limpiar selección después de descargar
+        }
+    };
+
+    // --- Renderizado ---
     return (
         <div className="container py-5">
-
-            {/* Título y Controles */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className=" bg-custom-2">Mis fotos</h2>
-
-                <div className="d-flex align-items-center gap-3">
-                    {/* Select de Ordenar */}
-                    <div>
-                        <label className="form-label me-2">Ordenar por:</label>
-                        <select
-                            className="form-select form-select-sm rounded-pill"
-                            value={orden}
-                            onChange={(e) => setOrden(e.target.value)}
-                            style={{ backgroundColor: "#e8d9f4", color: "#333", border: "none" }}
-                        >
+            <h2 className="bg-custom-2 mb-4">Mis fotos</h2>
+            <div className="row">
+                {/* Columna de Filtros (Izquierda) */}
+                <div className="col-md-3">
+                    <div className="d-flex flex-column gap-3 mb-4 sticky-top" style={{ top: '100px' }}> {/* sticky-top for filters */}
+                        <h5>Filtros</h5>
+                        {/* Controles de Orden y Filtro */}
+                        <select className="form-select rounded-pill" value={orden} onChange={(e) => setOrden(e.target.value)}>
                             <option>Más recientes</option>
                             <option>Más antiguas</option>
                             <option>Evento</option>
                         </select>
-                    </div>
-
-                    {/* Select de Filtrar */}
-                    <div>
-                        <label className="form-label me-2">Filtrar:</label>
-                        <select
-                            className="form-select form-select-sm rounded-pill"
-                            value={filtro}
-                            onChange={(e) => setFiltro(e.target.value)}
-                            style={{ backgroundColor: "#e8d9f4", color: "#333", border: "none" }}
-                        >
+                        <select className="form-select rounded-pill" value={filtro} onChange={(e) => setFiltro(e.target.value)}>
                             <option>Evento</option>
-                            {/* Opciones de filtro generadas dinámicamente de los datos cargados */}
-                            {[...new Set(photos.map(p => p.event_name))].map((event, index) => (
-                                // Usamos event_name del backend como opción de filtro
-                                <option key={index} value={event}>{event}</option>
-                            ))}
+                            {[...new Set(photos.map(p => p.event_name))].map((event) => <option key={event} value={event}>{event}</option>)}
+                        </select>
+                        <select className="form-select rounded-pill" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+                            {availableYears.map(year => <option key={year} value={year}>{year === "Todos" ? "Año" : year}</option>)}
+                        </select>
+                        <select className="form-select rounded-pill" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
+                            {months.map((month, index) => <option key={month} value={index}>{month === "Todos" ? "Mes" : month}</option>)}
                         </select>
                     </div>
                 </div>
-            </div>
 
-            {/* --- Mensajes de Estado --- */}
+                {/* Columna de Contenido Principal (Derecha) */}
+                <div className="col-md-9">
 
-            {loading && (
-                <div className="text-center py-5">
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Cargando fotos...</span>
+
+            {/* BARRA DE ACCIÓN DE SELECCIÓN */}
+            {selectedPhotos.size > 0 && (
+                <div className="alert alert-secondary sticky-top d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-pill shadow-sm">
+                    <div className="d-flex align-items-center gap-3">
+                        <button className="btn btn-sm btn-light rounded-circle" onClick={() => setSelectedPhotos(new Set())} style={{ width: '35px', height: '35px' }}>
+                            <i className="bi bi-x-lg"></i>
+                        </button>
+                        <span className="fw-bold">{selectedPhotos.size} seleccionada(s)</span>
                     </div>
-                    <p className="mt-2">Cargando tus fotos de la nube...</p>
+                    <div className="d-flex gap-2">
+                        <button className="btn btn-sm btn-primary rounded-pill" onClick={handleDownloadSelected} disabled={isDownloadingZip}>
+                            {isDownloadingZip ? (
+                                <>
+                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Comprimiendo...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <i className="bi bi-download me-2"></i>
+                                    <span>Descargar ZIP</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             )}
 
-            {errorMessage && (
-                <div className="alert alert-danger text-center" role="alert">
-                    <i className="bi bi-lock-fill me-2"></i>
-                    <p className="mb-1 fw-bold">{errorMessage}</p>
-                    {/* ⚠️ Ajusta la ruta a tu página de planes */}
-                    <a href="/client/storage-plan" className="alert-link fw-bold">
-                        Revisa tu Plan de Almacenamiento aquí
-                    </a>
-                </div>
+            {/* Mensajes de Estado */}
+            {loading && <div className="text-center py-5"><div className="spinner-border text-primary"></div><p className="mt-2">Cargando...</p></div>}
+            {errorMessage && <div className="alert alert-danger text-center"><i className="bi bi-lock-fill me-2"></i>{errorMessage}</div>}
+            {!loading && !errorMessage && photos.length === 0 && <div className="alert alert-info text-center">No tienes fotos disponibles.</div>}
+            
+            {/* Botón para seleccionar todo */}
+            {!loading && !errorMessage && photos.length > 0 && selectedPhotos.size === 0 && (
+                 <div className="text-end mb-3">
+                    <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={handleSelectAllVisible}>
+                        Seleccionar todo
+                    </button>
+                 </div>
             )}
 
-            {/* Mensaje de Sin Fotos (Solo si no hay error y ya cargó) */}
-            {!loading && !errorMessage && photos.length === 0 && (
-                <div className="alert alert-info text-center" role="alert">
-                    No tienes fotos disponibles en la nube asociadas a tu cuenta.
-                </div>
-            )}
-
-            {/* --- Galería (Solo si hay fotos para mostrar) --- */}
+            {/* Galería de Fotos */}
             {!loading && !errorMessage && photos.length > 0 && (
-                <div className="row g-4">
-                    {fotosFiltradas.map((foto) => (
-                        <div key={foto.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                            <div className="card border-0 shadow-sm position-relative">
-                                <img
-                                    // 🔑 USAMOS FOTO.URL DE CONTABO S3
-                                    src={foto.url}
-                                    alt={foto.event_name}
-                                    className="card-img-top rounded-3"
-                                    style={{ height: "200px", objectFit: "cover" }}
-                                />
-                                <div className="card-body text-center">
-                                    <p className="fw-semibold mb-1">{foto.event_name}</p>
-                                    <small className="text-muted">{foto.created_at}</small>
-                                </div>
-
-                                {/* Botón de descarga flotante */}
-                                <button
-                                    className="btn btn-sm position-absolute bottom-0 end-0 m-2 rounded-pill"
-                                    onClick={() => handleDescargar(foto.url)}
-                                    // Usé estilos inline para imitar el botón rosa que se ve en la imagen
-                                    style={{ backgroundColor: "#A474D9", color: "white", border: "none" }}
+                <div className="row g-3">
+                    {currentPhotos.map((foto) => {
+                        const isSelected = selectedPhotos.has(foto.id);
+                        return (
+                            <div key={foto.id} className="col-6 col-md-4 col-lg-3">
+                                <div 
+                                    className={`card border-0 shadow-sm position-relative h-100 ${isSelected ? 'border-primary border-3' : ''}`}
+                                    onClick={() => handleSelectPhoto(foto.id)}
+                                    style={{ cursor: 'pointer' }}
                                 >
-                                    <i className="bi bi-download me-1"></i> Descargar
-                                </button>
+                                    <img
+                                        src={foto.url}
+                                        alt={foto.event_name}
+                                        className="card-img-top rounded-3"
+                                        style={{ height: "200px", objectFit: "cover" }}
+                                    />
+                                     {isSelected && (
+                                        <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 rounded-3 d-flex justify-content-center align-items-center">
+                                            <i className="bi bi-check-circle-fill text-white fs-1"></i>
+                                        </div>
+                                    )}
+                                    <div className="position-absolute top-0 end-0 m-2">
+                                        <button 
+                                            className="btn btn-light btn-sm rounded-circle shadow-sm" 
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Evita que se seleccione la foto al descargar
+                                                handleDownloadIndividualPhoto(foto);
+                                            }}
+                                            title="Descargar foto"
+                                        >
+                                            <i className="bi bi-download"></i>
+                                        </button>
+                                    </div>
+                                    <div className="card-body text-center p-2">
+                                        <p className="fw-semibold mb-1 small">{foto.event_name}</p>
+                                        <small className="text-muted">{new Date(foto.created_at).toLocaleDateString()}</small>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
+
+            {/* Controles de Paginación */}
+            {!loading && !errorMessage && fotosFiltradas.length > photosPerPage && (
+                <nav aria-label="Page navigation example" className="mt-4">
+                    <ul className="pagination justify-content-center">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <button className="page-link rounded-pill mx-1" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}>Anterior</button>
+                        </li>
+                        {[...Array(totalPages)].map((_, i) => (
+                            <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                                <button className="page-link rounded-pill mx-1" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                            </li>
+                        ))}
+                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <button className="page-link rounded-pill mx-1" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}>Siguiente</button>
+                        </li>
+                    </ul>
+                </nav>
+            )}
+                </div>
+            </div>
         </div>
     );
 }

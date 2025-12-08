@@ -374,8 +374,8 @@ const Payments: React.FC = () => {
                     {/* Antes: <Col lg={10} xl={8}> */}
                     <Col xs={12} lg={12} xl={12}>
                         {/* Header */}
-                        <div className="app-header text-center mb-4">
-                            <h2 className="text-dark">Pagos y Cuotas</h2>
+                        <div className="app-header mb-4">
+                            <h2 className="text-dark tt">Pagos y Cuotas</h2>
                             {/* <p className="lead app-header-subtitle">
                                 Revisa tu historial de transacciones y gestiona tus cuotas pendientes
                             </p> */}

@@ -8,6 +8,7 @@
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
+        "@types/jszip": "^3.4.0",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
         "laravel-echo": "^2.2.6",
@@ -22,6 +23,7 @@
         "@mui/material": "^7.3.6",
         "@mui/x-charts": "^8.21.0",
         "cropperjs": "^2.1.0",
+        "jszip": "^3.10.1",
         "react-cropper": "^2.3.3"
     }
 }

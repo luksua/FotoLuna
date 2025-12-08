@@ -1,0 +1,125 @@
+.details-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+  }
+  
+  .details-modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+  }
+
+  .details-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .details-modal-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+  }
+  
+  .details-modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #555;
+  }
+
+  .details-modal-body {
+    margin-bottom: 20px;
+  }
+  
+  .details-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  
+  .details-modal-table th,
+  .details-modal-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .details-modal-table th {
+    background-color: #f7f7f7;
+    font-weight: bold;
+  }
+  
+  .details-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .details-modal-export-btn {
+    background-color: #218838; /* Verde */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .details-modal-export-btn:hover {
+    background-color: #1e7a34;
+  }
+  
+  /* Estilos para el modo oscuro */
+  .dark .details-modal-content {
+    background-color: #2d3748; /* Un gris oscuro */
+    color: #f7fafc; /* Texto claro */
+  }
+
+  .dark .details-modal-header {
+    border-bottom: 1px solid #4a5568; /* Un borde más claro */
+  }
+
+  .dark .details-modal-title {
+    color: #f7fafc;
+  }
+
+  .dark .details-modal-close-btn {
+    color: #cbd5e0;
+  }
+
+  .dark .details-modal-table th,
+  .dark .details-modal-table td {
+    border: 1px solid #4a5568;
+  }
+
+  .dark .details-modal-table th {
+    background-color: #4a5568; /* Un fondo de cabecera más oscuro */
+  }
+  
+  .dark .details-modal-table tr:nth-child(even) {
+    background-color: #2d3748;
+}
+  
+.dark .details-modal-table tr:nth-child(odd) {
+    background-color: #354153;
+}
+  

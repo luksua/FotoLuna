@@ -1,0 +1,265 @@
+/* ==========================
+   CONTENEDOR PRINCIPAL
+   ========================== */
+
+.acp-page {
+    /* deja espacio para el navbar superior */
+    padding-top: 90px;
+
+    /* deja espacio para el sidebar de la izquierda
+     ajusta 220–260px según el ancho real del menú */
+    padding-left: 240px;
+
+    padding-right: 40px;
+    padding-bottom: 40px;
+
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    background: radial-gradient(circle at top left, #f9f5ff 0, #fef9ff 35%, #f9fafb 100%);
+}
+
+/* En pantallas pequeñas (donde el sidebar se esconde o se hace overlay) */
+@media (max-width: 992px) {
+    .acp-page {
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-top: 80px;
+    }
+}
+
+/* ==========================
+   HEADER Y BOTÓN VOLVER
+   ========================== */
+
+.acp-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.acp-back-btn {
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(148, 163, 184, 0.18);
+    transition: all 0.15s ease;
+}
+
+.acp-back-btn:hover {
+    background: #f3e8ff;
+    border-color: #c4b5fd;
+    color: #4c1d95;
+    transform: translateY(-1px);
+}
+
+.acp-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1f2933;
+    margin: 0;
+}
+
+.acp-subtitle {
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* ==========================
+   TOOLBAR (FILTROS / ORDEN)
+   ========================== */
+
+.acp-toolbar {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px rgba(148, 163, 184, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.acp-toolbar__group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+}
+
+.acp-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.acp-select {
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    background: #ffffff;
+    color: #374151;
+    outline: none;
+    min-width: 150px;
+    box-shadow: 0 2px 6px rgba(148, 163, 184, 0.18);
+}
+
+.acp-select:focus {
+    border-color: #c4b5fd;
+    box-shadow: 0 0 0 2px rgba(196, 181, 253, 0.5);
+}
+
+/* botón "Descargar esta página" */
+
+.acp-download-btn {
+    border-radius: 999px;
+    border: none;
+    padding: 0.5rem 1.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    color: #ffffff;
+    box-shadow: 0 12px 25px rgba(129, 140, 248, 0.5);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.acp-download-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    box-shadow: none;
+}
+
+.acp-download-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 35px rgba(129, 140, 248, 0.7);
+}
+
+/* ==========================
+   GRID Y CARDS
+   ========================== */
+
+.acp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.acp-card {
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 14px 35px rgba(148, 163, 184, 0.35);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.acp-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 45px rgba(129, 140, 248, 0.45);
+}
+
+.acp-card__img-wrapper {
+    width: 100%;
+    height: 210px;
+    background: #e5e7eb;
+}
+
+.acp-card__img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.acp-card__body {
+    padding: 0.85rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.acp-card__event {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4c1d95;
+}
+
+.acp-card__date {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.acp-card__download {
+    align-self: flex-start;
+    margin-top: 0.35rem;
+    border-radius: 999px;
+    border: none;
+    padding: 0.32rem 0.9rem;
+    font-size: 0.78rem;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(129, 140, 248, 0.55);
+    cursor: pointer;
+}
+
+.acp-card__download:hover {
+    transform: translateY(-1px);
+}
+
+/* ==========================
+   PAGINACIÓN
+   ========================== */
+
+.acp-pagination {
+    margin-top: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.acp-page-btn {
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.8rem;
+    background: #ffffff;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.acp-page-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.acp-page-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* ==========================
+   ERRORES / ESTADO VACÍO
+   ========================== */
+
+.acp-error {
+    color: #b91c1c;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}

@@ -297,4 +297,3 @@ class CommentsController extends Controller
     }
 
 }
-

@@ -1,0 +1,161 @@
+/* EmployeeCustomers.css */
+
+/* === BARRA DE HERRAMIENTAS (Filtros) === */
+.filters-toolbar {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 15px 25px;
+    box-shadow: 0 4px 20px rgba(180, 123, 211, 0.08);
+    /* Sombra lila suave */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.search-input-custom {
+    border-radius: 50px;
+    border: 1px solid #e2e8f0;
+    padding-left: 20px;
+    background-color: #f8f9fa;
+    transition: all 0.3s;
+}
+
+.search-input-custom:focus {
+    background-color: #fff;
+    border-color: #b47bd3;
+    box-shadow: 0 0 0 3px rgba(180, 123, 211, 0.1);
+}
+
+.filter-select-custom {
+    border-radius: 50px;
+    border: 1px solid #e2e8f0;
+    background-color: #fff;
+    color: #4a5568;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.filter-select-custom:focus {
+    border-color: #b47bd3;
+    box-shadow: none;
+}
+
+.btn-add-custom {
+    background: linear-gradient(135deg, #b47bd3 0%, #8e44ad 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 8px 25px;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 4px 15px rgba(180, 123, 211, 0.4);
+    transition: transform 0.2s;
+}
+
+.btn-add-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(180, 123, 211, 0.6);
+}
+
+/* === TARJETA DE CLIENTE (CARD) === */
+.client-card-aesthetic {
+    background-color: #ffffff;
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    /* Sombra muy sutil inicial */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
+    /* Para que todas midan lo mismo en grid */
+}
+
+.client-card-aesthetic:hover {
+    transform: translateY(-8px);
+    /* Efecto de levitación */
+    box-shadow: 0 15px 35px rgba(180, 123, 211, 0.15);
+    /* Sombra lila al flotar */
+}
+
+/* Decoración de fondo superior (Círculo difuso) */
+.card-bg-decoration {
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(180, 123, 211, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+/* Avatar */
+.client-avatar-wrapper {
+    position: relative;
+    z-index: 1;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.client-avatar-img {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #ffffff;
+    /* Borde blanco para separar del fondo */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Textos */
+.client-name {
+    font-weight: 800;
+    color: #2d3748;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.client-doc {
+    color: #a0aec0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Botón "Ver más" */
+.btn-view-profile {
+    background-color: #f3e5f5;
+    color: #8e24aa;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.btn-view-profile:hover {
+    background-color: #e1bee7;
+    color: #7b1fa2;
+}
+
+/* Badge "Sin Cita" */
+.badge-no-appointment {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: #fff3e0;
+    color: #ef6c00;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
