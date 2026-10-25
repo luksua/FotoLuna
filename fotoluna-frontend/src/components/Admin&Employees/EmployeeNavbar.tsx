@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from "react";
 import "../../styles/EmployeeNavbar.css";
-import logoFotoluna from "../../assets/img/logo.png";
+import logoFotoluna from "../../assets/Img/logo.png";
 import NotificationBell from '../NotificationBell';
 import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";

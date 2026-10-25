@@ -1,5 +1,5 @@
 import React from "react";
-import "../Styles/home.css";
+import "../styles/home.css";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 import { useAuth } from "../../../../context/useAuth";
 import { useWeather } from "../../../../hooks/useWeather";

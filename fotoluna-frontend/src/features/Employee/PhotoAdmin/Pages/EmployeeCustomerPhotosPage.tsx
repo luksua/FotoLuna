@@ -3,8 +3,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Importar estilos de iconos
-import "../styles/EmployeePhotos.css";
-import "../styles/EmployeeCustomerPhotosPage.css";
+import "../Styles/EmployeePhotos.css";
+import "../Styles/EmployeeCustomerPhotosPage.css";
 import axios from "axios";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";

@@ -1,4 +1,4 @@
-import "../../styles/HomeNav.css";
+import "../../styles/homeNav.css";
 import "../../styles/homeSideNav.css";
 import HomeButton from "../Home/HomeButton";
 import { useAuth } from "../../context/useAuth";

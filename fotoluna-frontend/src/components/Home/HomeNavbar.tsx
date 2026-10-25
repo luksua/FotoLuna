@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/HomeNav.css";
+import "../../styles/homeNav.css";
 import "../../styles/homeSideNav.css";
 import HomeMobileSidebar from "./HomeMobileSidebar";
 import HomeSidebar from "./HomeSidebar";
