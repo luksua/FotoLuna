@@ -13,6 +13,10 @@ import "./styles/buttons.css";
 // Componentes principales
 import App from "./App";
 import AuthProvider from "./context/AuthProvider";
+import { initDemoAdapter } from "./mock/demoAdapter";
+
+// Inicializar interceptores demo para Netlify y modo demostración
+initDemoAdapter();
 
 // Punto de entrada de la aplicación
 const rootElement = document.getElementById("root");

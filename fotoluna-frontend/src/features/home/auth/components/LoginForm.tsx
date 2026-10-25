@@ -22,6 +22,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, variant = "page" }) =>
     const {
         control,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm<FormValues>({
         defaultValues: {
@@ -42,6 +43,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, variant = "page" }) =>
 
     const serverErrorFor = (field: string) => {
         return serverErrors[field] ? serverErrors[field].join(" ") : undefined;
+    };
+
+    const quickLogin = async (role: "admin" | "empleado" | "cliente") => {
+        let email = "cliente@fotoluna.com";
+        const password = `${role}123`;
+        if (role === "admin") email = "admin@fotoluna.com";
+        if (role === "empleado") email = "empleado@fotoluna.com";
+
+        setValue("emailCustomer", email);
+        setValue("password", password);
+        await onSubmit({ emailCustomer: email, password });
     };
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
@@ -228,6 +240,46 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, variant = "page" }) =>
                         )}
                     </button>
                 </form>
+
+                {/* Accesos Rápidos Demo (1 Clic) */}
+                <div className="p-2 mt-3 rounded-3" style={{ background: "rgba(182, 149, 92, 0.08)", border: "1px dashed rgba(182, 149, 92, 0.4)" }}>
+                    <div className="d-flex align-items-center justify-content-between mb-2">
+                        <span className="small fw-semibold text-dark d-flex align-items-center gap-1" style={{ fontSize: "0.78rem" }}>
+                            <i className="bi bi-lightning-charge-fill text-warning"></i>
+                            Accesos Demo (1 Clic)
+                        </span>
+                        <span className="badge bg-secondary-subtle text-secondary" style={{ fontSize: "0.62rem" }}>Demo Netlify</span>
+                    </div>
+                    <div className="d-flex gap-1 flex-wrap">
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-dark flex-grow-1 py-1"
+                            style={{ fontSize: "0.74rem" }}
+                            onClick={() => quickLogin("admin")}
+                            disabled={loading}
+                        >
+                            👑 Admin
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary flex-grow-1 py-1"
+                            style={{ fontSize: "0.74rem" }}
+                            onClick={() => quickLogin("empleado")}
+                            disabled={loading}
+                        >
+                            📷 Empleado
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-success flex-grow-1 py-1"
+                            style={{ fontSize: "0.74rem" }}
+                            onClick={() => quickLogin("cliente")}
+                            disabled={loading}
+                        >
+                            👤 Cliente
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -401,6 +453,49 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, variant = "page" }) =>
                                 )}
                             </button>
                         </form>
+
+                        {/* Accesos Rápidos Demo (1 Clic) */}
+                        <div className="p-3 my-3 rounded-3" style={{ background: "rgba(182, 149, 92, 0.08)", border: "1px dashed rgba(182, 149, 92, 0.4)" }}>
+                            <div className="d-flex align-items-center justify-content-between mb-2">
+                                <span className="small fw-semibold text-dark d-flex align-items-center gap-1">
+                                    <i className="bi bi-lightning-charge-fill text-warning"></i>
+                                    Accesos Rápidos Demo (1 Clic)
+                                </span>
+                                <span className="badge bg-secondary-subtle text-secondary" style={{ fontSize: "0.68rem" }}>Demo Netlify</span>
+                            </div>
+                            <div className="d-flex gap-2 flex-wrap">
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-dark flex-grow-1 py-1"
+                                    style={{ fontSize: "0.78rem" }}
+                                    onClick={() => quickLogin("admin")}
+                                    disabled={loading}
+                                >
+                                    👑 Demo Admin
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-primary flex-grow-1 py-1"
+                                    style={{ fontSize: "0.78rem" }}
+                                    onClick={() => quickLogin("empleado")}
+                                    disabled={loading}
+                                >
+                                    📷 Demo Empleado
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-success flex-grow-1 py-1"
+                                    style={{ fontSize: "0.78rem" }}
+                                    onClick={() => quickLogin("cliente")}
+                                    disabled={loading}
+                                >
+                                    👤 Demo Cliente
+                                </button>
+                            </div>
+                            <p className="text-muted mt-2 mb-0" style={{ fontSize: "0.74rem" }}>
+                                Haz clic en cualquiera para ingresar instantáneamente al panel sin necesidad de escribir contraseñas.
+                            </p>
+                        </div>
 
                         <div className="auth-switch-footer">
                             ¿Aún no tienes una cuenta?
