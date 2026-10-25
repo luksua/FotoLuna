@@ -71,7 +71,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
             (async () => {
                 try {
                     setAuthToken(t);
-                    const res = await api.get("/api/me");
+                    const res = await api.get("/me");
                     const serverUser = res.data || {};
                     const normalized = normalizeUser(serverUser);
                     setUser(normalized);
@@ -96,7 +96,7 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
         setAuthToken(t);
         setToken(t);
         try {
-            const res = await api.get("/api/me");
+            const res = await api.get("/me");
             const serverUser = res.data || {};
             const normalized = normalizeUser(serverUser);
             setUser(normalized);
@@ -121,31 +121,35 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
     //     localStorage.removeItem("token");
     // };
 
-    const logout = async () => {
+    const logout = async (auto = false) => {
         try {
             const token = localStorage.getItem("token");
-            console.log("TOKEN PARA LOGOUT:", token);
-            await api.post(
-                "/api/logout",
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/json",
-                    },
-                }
-            );
 
-
+            if (!auto) {
+                // Logout manual → sí enviamos la petición al backend
+                await api.post(
+                    "/logout",
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/json",
+                        },
+                    }
+                );
+            }
         } catch (err) {
             console.warn("Logout backend error:", err);
         }
 
+        // limpiar estado
         setUser(null);
         setToken(null);
         setAuthToken(null);
         localStorage.removeItem("token");
-        window.location.href = "/"; 
+
+        // redirigir
+        window.location.href = "/";
     };
 
 

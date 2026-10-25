@@ -6,8 +6,6 @@ import Button from "../../../../../components/Home/Button";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 // 👈 Cambia este valor por el eventId real de BODAS en tu base de datos
 const WEDDING_EVENT_ID = 4;
 
@@ -60,7 +58,7 @@ const Wedding = () => {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          `${API_BASE}/api/events/${WEDDING_EVENT_ID}/packages`,
+          `/api/events/${WEDDING_EVENT_ID}/packages`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

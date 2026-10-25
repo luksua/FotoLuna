@@ -170,83 +170,41 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({
 	};
 
 	return (
-		<div className="container">
-			<div className="form-section form-section-register">
-				<div className="row text-center">
-					<div className="col-lg-12 col-md-12 col-sm-12 bg-custom-2">
-						Registro de Cliente
-					</div>
-				</div>
-				<div className="row bg-custom-9">
-					{/* Lado de la imagen */}
-					<div className="col-lg-6 col-md-6 col-sm-12 d-flex flex-column align-items-center part1">
+		<div className="add-customer-form-wrapper">
+			<form onSubmit={handleSubmit(onSubmit)}>
+				{/* Sección de Foto de Perfil */}
+				<div className="d-flex flex-column align-items-center mb-4 text-center">
+					<div className="position-relative profile-upload-circle">
 						<img
 							src={cropData ? cropData : profileImage}
-							alt="Foto Perfil Recortada"
-							className="profile-img mt-3"
+							alt="Foto Perfil"
+							className="rounded-circle shadow-sm"
+							style={{
+								width: "100px",
+								height: "100px",
+								objectFit: "cover",
+								border: "3px solid #f3e8ff",
+								outline: "2px solid #c792df",
+							}}
 						/>
-
-						{showModal && (
-							<>
-								<div className="modal fade show" style={{ display: "block" }}>
-									<div className="modal-dialog modal-dialog-centered">
-										<div className="modal-content">
-											<div className="modal-header">
-												<h5 className="modal-title">Recortar Imagen</h5>
-												<button
-													type="button"
-													className="btn-close"
-													onClick={() => setShowModal(false)}
-												></button>
-											</div>
-											<div className="modal-body">
-												<Cropper
-													src={profileImage}
-													style={{ height: 300, width: "100%" }}
-													initialAspectRatio={1}
-													aspectRatio={1}
-													guides={true}
-													cropBoxResizable={false}
-													viewMode={1}
-													ref={cropperRef}
-													minCropBoxHeight={10}
-													minCropBoxWidth={10}
-													background={false}
-													responsive={true}
-													checkOrientation={false}
-												/>
-											</div>
-											<div className="modal-footer">
-												<button
-													className="btn btn-secondary"
-													onClick={() => setShowModal(false)}
-												>
-													Cancelar
-												</button>
-												<button
-													className="btn custom-upload-btn"
-													onClick={() => {
-														getCropData();
-														setShowModal(false);
-													}}
-												>
-													Recortar Imagen
-												</button>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div className="modal-backdrop fade show"></div>
-							</>
-						)}
-
 						<label
 							htmlFor="profileImage-employee"
-							className="btn custom-upload-btn custom-file-upload mt-3"
+							className="btn btn-sm position-absolute bottom-0 end-0 rounded-circle shadow"
 							onClick={() => setShowModal(true)}
-							style={{ cursor: "pointer" }}
+							style={{
+								backgroundColor: "#9d4edd",
+								color: "#ffffff",
+								width: "32px",
+								height: "32px",
+								padding: "0",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								cursor: "pointer",
+							}}
+							title="Cambiar foto"
 						>
-							<i className="bi bi-camera"></i>
+							<i className="bi bi-camera-fill" style={{ fontSize: "0.85rem" }}></i>
 						</label>
 						<input
 							type="file"
@@ -257,242 +215,341 @@ const AddCustomerForm: React.FC<AddCustomerFormProps> = ({
 							hidden
 						/>
 					</div>
+					<small className="text-muted mt-2" style={{ fontSize: "0.8rem" }}>
+						Foto de perfil del cliente (opcional)
+					</small>
 
-					{/* Lado del formulario */}
-					<div className="col-lg-6 col-md-6 col-sm-12">
-						<form onSubmit={handleSubmit(onSubmit)}>
-							{/* Nombres */}
-							<Controller
-								name="firstNameCustomer"
-								control={control}
-								rules={{ required: "El nombre es obligatorio" }}
-								render={({ field }) => (
-									<InputLabel
-										id="firstNameEmployeeCustomer"
-										label="Nombres:"
-										type="text"
-										value={field.value || ""}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.firstNameCustomer?.message ||
-											serverErrorFor("firstNameCustomer")
-										}
-									/>
-								)}
-							/>
-
-							{/* Apellidos */}
-							<Controller
-								name="lastNameCustomer"
-								control={control}
-								rules={{ required: "El apellido es obligatorio" }}
-								render={({ field }) => (
-									<InputLabel
-										id="lastNameEmployeeCustomer"
-										label="Apellidos:"
-										type="text"
-										value={field.value}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.lastNameCustomer?.message ||
-											serverErrorFor("lastNameCustomer")
-										}
-									/>
-								)}
-							/>
-
-							{/* Teléfono */}
-							<Controller
-								name="phoneCustomer"
-								control={control}
-								rules={{
-									required: "El número de teléfono es obligatorio",
-									pattern: {
-										value: /^[0-9]+$/,
-										message: "Solo se permiten números",
-									},
-								}}
-								render={({ field }) => (
-									<InputLabel
-										id="phoneEmployeeCustomer"
-										label="Teléfono:"
-										type="number"
-										value={field.value}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.phoneCustomer?.message ||
-											serverErrorFor("phoneCustomer")
-										}
-									/>
-								)}
-							/>
-
-							{/* Tipo de documento */}
-							<Controller
-								name="documentType"
-								control={control}
-								rules={{ required: "Seleccione el tipo de documento" }}
-								render={({ field }) => (
-									<div className="mb-3">
-										<label htmlFor="documentTypeEmployee" className="form-label">
-											Tipo de Documento:
-										</label>
-										<select
-											id="documentTypeEmployee"
-											className={`form-select ${
-												errors.documentType || serverErrorFor("documentType")
-													? "is-invalid"
-													: ""
-											}`}
-											value={field.value}
-											onChange={(e) => field.onChange(e.target.value)}
-											onBlur={field.onBlur}
-											ref={field.ref}
-										>
-											<option value="CC">Cédula de ciudadanía (CC)</option>
-											<option value="CE">Cédula de extranjería (CE)</option>
-											<option value="PAS">Pasaporte (PAS)</option>
-										</select>
-										<div className="invalid-feedback">
-											{errors.documentType?.message ||
-												serverErrorFor("documentType")}
+					{/* Modal de recorte */}
+					{showModal && (
+						<>
+							<div className="modal fade show" style={{ display: "block", zIndex: 1060 }}>
+								<div className="modal-dialog modal-dialog-centered">
+									<div className="modal-content rounded-4 border-0 shadow-lg">
+										<div className="modal-header border-0 pb-0">
+											<h5 className="modal-title fw-bold">Recortar Imagen</h5>
+											<button
+												type="button"
+												className="btn-close"
+												onClick={() => setShowModal(false)}
+											></button>
+										</div>
+										<div className="modal-body">
+											<Cropper
+												src={profileImage}
+												style={{ height: 280, width: "100%" }}
+												initialAspectRatio={1}
+												aspectRatio={1}
+												guides={true}
+												cropBoxResizable={false}
+												viewMode={1}
+												ref={cropperRef}
+												minCropBoxHeight={10}
+												minCropBoxWidth={10}
+												background={false}
+												responsive={true}
+												checkOrientation={false}
+											/>
+										</div>
+										<div className="modal-footer border-0 pt-0">
+											<button
+												type="button"
+												className="btn btn-light rounded-pill px-3"
+												onClick={() => setShowModal(false)}
+											>
+												Cancelar
+											</button>
+											<button
+												type="button"
+												className="btn btn-primary rounded-pill px-4"
+												style={{
+													background: "linear-gradient(135deg, #c792df 0%, #9d4edd 100%)",
+													border: "none",
+												}}
+												onClick={() => {
+													getCropData();
+													setShowModal(false);
+												}}
+											>
+												Aplicar Recorte
+											</button>
 										</div>
 									</div>
-								)}
-							/>
-
-							{/* Número de documento */}
-							<Controller
-								name="documentNumber"
-								control={control}
-								rules={{ required: "El número es obligatorio" }}
-								render={({ field }) => (
-									<InputLabel
-										id="documentNumberEmployeeCustomer"
-										label="Número de Documento:"
-										type="number"
-										value={field.value}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.documentNumber?.message ||
-											serverErrorFor("documentNumber")
-										}
-									/>
-								)}
-							/>
-
-							{/* Correo */}
-							<Controller
-								name="emailCustomer"
-								control={control}
-								rules={{ required: "El email es obligatorio" }}
-								render={({ field }) => (
-									<InputLabel
-										id="emailCustomerEmployee"
-										label="Correo:"
-										type="email"
-										value={field.value}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.emailCustomer?.message || serverErrorFor("email")
-										}
-									/>
-								)}
-							/>
-
-							{/* Contraseña */}
-							<Controller
-								name="password"
-								control={control}
-								rules={{
-									required: "Debe de escribir una contraseña",
-									minLength: {
-										value: 8,
-										message: "Debe tener mínimo 8 caracteres",
-									},
-								}}
-								render={({ field }) => (
-									<InputLabel
-										id="passwordEmployeeCustomer"
-										label="Contraseña:"
-										type="password"
-										value={field.value}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.password?.message || serverErrorFor("password")
-										}
-									/>
-								)}
-							/>
-
-							{/* Confirmar contraseña */}
-							<Controller
-								name="confirmPassword"
-								control={control}
-								rules={{
-									required: "Confirma tu contraseña",
-									validate: (value: string) => {
-										if (watch("password") !== value) {
-											return "Las contraseñas no coinciden";
-										}
-										return true;
-									},
-								}}
-								render={({ field }) => (
-									<InputLabel
-										id="confirmPasswordEmployeeCustomer"
-										label="Confirmar Contraseña:"
-										type="password"
-										value={field.value}
-										onChange={field.onChange}
-										onBlur={field.onBlur}
-										inputRef={field.ref}
-										error={
-											errors.confirmPassword?.message ||
-											serverErrorFor("password_confirmation")
-										}
-									/>
-								)}
-							/>
-
-							<div id="emailHelp" className="form-text mb-4 text-end">
-								La contraseña debe tener mínimo 8 caracteres
+								</div>
 							</div>
+							<div className="modal-backdrop fade show" style={{ zIndex: 1055 }}></div>
+						</>
+					)}
+				</div>
 
-							{serverErrors.general && (
-								<div className="alert alert-danger">
-									{serverErrors.general.join(" ")}
+				{/* Grid de campos en 2 columnas */}
+				<div className="row g-3">
+					{/* Nombres */}
+					<div className="col-md-6">
+						<Controller
+							name="firstNameCustomer"
+							control={control}
+							rules={{ required: "El nombre es obligatorio" }}
+							render={({ field }) => (
+								<InputLabel
+									id="firstNameEmployeeCustomer"
+									label="Nombres:"
+									type="text"
+									value={field.value || ""}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.firstNameCustomer?.message ||
+										serverErrorFor("firstNameCustomer")
+									}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Apellidos */}
+					<div className="col-md-6">
+						<Controller
+							name="lastNameCustomer"
+							control={control}
+							rules={{ required: "El apellido es obligatorio" }}
+							render={({ field }) => (
+								<InputLabel
+									id="lastNameEmployeeCustomer"
+									label="Apellidos:"
+									type="text"
+									value={field.value}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.lastNameCustomer?.message ||
+										serverErrorFor("lastNameCustomer")
+									}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Teléfono */}
+					<div className="col-md-6">
+						<Controller
+							name="phoneCustomer"
+							control={control}
+							rules={{
+								required: "El número de teléfono es obligatorio",
+								pattern: {
+									value: /^[0-9]+$/,
+									message: "Solo se permiten números",
+								},
+							}}
+							render={({ field }) => (
+								<InputLabel
+									id="phoneEmployeeCustomer"
+									label="Teléfono:"
+									type="number"
+									value={field.value}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.phoneCustomer?.message ||
+										serverErrorFor("phoneCustomer")
+									}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Tipo de documento */}
+					<div className="col-md-6">
+						<Controller
+							name="documentType"
+							control={control}
+							rules={{ required: "Seleccione el tipo de documento" }}
+							render={({ field }) => (
+								<div className="mb-3">
+									<label htmlFor="documentTypeEmployee" className="form-label" style={{ fontSize: "0.85rem", fontWeight: 700, color: "#4a3b61" }}>
+										Tipo de Documento:
+									</label>
+									<select
+										id="documentTypeEmployee"
+										className={`form-select ${
+											errors.documentType || serverErrorFor("documentType")
+												? "is-invalid"
+												: ""
+										}`}
+										style={{ borderRadius: "12px", border: "1px solid #e2e8f0", padding: "10px 14px", backgroundColor: "#fdfbfe" }}
+										value={field.value}
+										onChange={(e) => field.onChange(e.target.value)}
+										onBlur={field.onBlur}
+										ref={field.ref}
+									>
+										<option value="CC">Cédula de ciudadanía (CC)</option>
+										<option value="CE">Cédula de extranjería (CE)</option>
+										<option value="PAS">Pasaporte (PAS)</option>
+									</select>
+									<div className="invalid-feedback">
+										{errors.documentType?.message ||
+											serverErrorFor("documentType")}
+									</div>
 								</div>
 							)}
+						/>
+					</div>
 
-							<div className="d-flex justify-content-center gap-2">
-								<Button value={loading ? "Creando..." : "Crear Cuenta"} />
-								{onCancel && (
-									<button
-										type="button"
-										className="btn custom-upload-btn mt-2"
-										onClick={onCancel}
-									>
-										Cancelar
-									</button>
-								)}
-							</div>
-						</form>
+					{/* Número de documento */}
+					<div className="col-md-6">
+						<Controller
+							name="documentNumber"
+							control={control}
+							rules={{ required: "El número es obligatorio" }}
+							render={({ field }) => (
+								<InputLabel
+									id="documentNumberEmployeeCustomer"
+									label="Número de Documento:"
+									type="number"
+									value={field.value}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.documentNumber?.message ||
+										serverErrorFor("documentNumber")
+									}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Correo */}
+					<div className="col-md-6">
+						<Controller
+							name="emailCustomer"
+							control={control}
+							rules={{ required: "El email es obligatorio" }}
+							render={({ field }) => (
+								<InputLabel
+									id="emailCustomerEmployee"
+									label="Correo Electrónico:"
+									type="email"
+									value={field.value}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.emailCustomer?.message || serverErrorFor("email")
+									}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Contraseña */}
+					<div className="col-md-6">
+						<Controller
+							name="password"
+							control={control}
+							rules={{
+								required: "Debe escribir una contraseña",
+								minLength: {
+									value: 8,
+									message: "Mínimo 8 caracteres",
+								},
+							}}
+							render={({ field }) => (
+								<InputLabel
+									id="passwordEmployeeCustomer"
+									label="Contraseña:"
+									type="password"
+									value={field.value}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.password?.message || serverErrorFor("password")
+									}
+								/>
+							)}
+						/>
+					</div>
+
+					{/* Confirmar contraseña */}
+					<div className="col-md-6">
+						<Controller
+							name="confirmPassword"
+							control={control}
+							rules={{
+								required: "Confirma la contraseña",
+								validate: (value: string) => {
+									if (watch("password") !== value) {
+										return "Las contraseñas no coinciden";
+									}
+									return true;
+								},
+							}}
+							render={({ field }) => (
+								<InputLabel
+									id="confirmPasswordEmployeeCustomer"
+									label="Confirmar Contraseña:"
+									type="password"
+									value={field.value}
+									onChange={field.onChange}
+									onBlur={field.onBlur}
+									inputRef={field.ref}
+									error={
+										errors.confirmPassword?.message ||
+										serverErrorFor("password_confirmation")
+									}
+								/>
+							)}
+						/>
 					</div>
 				</div>
-			</div>
+
+				<div className="form-text text-muted small text-end my-2">
+					<i className="bi bi-info-circle me-1"></i> La contraseña temporal debe tener mínimo 8 caracteres
+				</div>
+
+				{serverErrors.general && (
+					<div className="alert alert-danger py-2 px-3 small rounded-3 my-3">
+						<i className="bi bi-exclamation-triangle-fill me-1"></i> {serverErrors.general.join(" ")}
+					</div>
+				)}
+
+				<div className="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+					{onCancel && (
+						<button
+							type="button"
+							className="btn btn-light rounded-pill px-4 fw-semibold text-secondary"
+							onClick={onCancel}
+						>
+							Cancelar
+						</button>
+					)}
+					<button
+						type="submit"
+						disabled={loading}
+						className="btn text-white rounded-pill px-4 fw-bold shadow-sm"
+						style={{
+							background: "linear-gradient(135deg, #c792df 0%, #9d4edd 100%)",
+							border: "none",
+							minWidth: "140px",
+						}}
+					>
+						{loading ? (
+							<>
+								<span className="spinner-border spinner-border-sm me-2" role="status"></span>
+								Creando...
+							</>
+						) : (
+							<>
+								<i className="bi bi-check-lg me-1"></i> Crear Cliente
+							</>
+						)}
+					</button>
+				</div>
+			</form>
 		</div>
 	);
 };

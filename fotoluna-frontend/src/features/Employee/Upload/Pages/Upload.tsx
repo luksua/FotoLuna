@@ -24,9 +24,7 @@ interface BookingOption {
     appointmentIdFK: number;
 }
 
-
-// ⚠ Ajusta este valor si tu backend no está en localhost:8000
-const API_BASE_URL = "http://localhost:8000/api";
+// const API_BASE_URL = "/api";
 /* Helpers para formatear fecha y hora para <input type="date/time"> */
 const formatDateInput = (date: Date): string => {
     const y = date.getFullYear();
@@ -49,7 +47,6 @@ const Upload: React.FC = () => {
     const [eventsList, setEventsList] = useState<any[]>(
         []
     );
-
 
     const [files, setFiles] = useState<File[]>([]);
     const [selectedEventId, setSelectedEventId] = useState("");
@@ -85,7 +82,7 @@ const Upload: React.FC = () => {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/events`, {
+                const response = await fetch(`/api/events`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -112,7 +109,7 @@ const Upload: React.FC = () => {
             if (!token || !user) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/customers?employee_id=${user.id}`, {
+                const response = await fetch(`/api/customers?employee_id=${user.id}`, { // estooo
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -188,7 +185,7 @@ const Upload: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/customers/${customerId}/bookings?event_id=${eventId}`, {
+            const response = await fetch(`/api/customers/${customerId}/bookings?event_id=${eventId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -393,7 +390,7 @@ const Upload: React.FC = () => {
             setStatusMessage("");
 
             const response = await fetch(
-                `${API_BASE_URL}/employee/cloud-photos`,
+                `/api/employee/cloud-photos`,
                 {
                     method: "POST",
                     body: formData,
@@ -461,10 +458,17 @@ const Upload: React.FC = () => {
         <EmployeeLayout>
             <div className="upload-container">
                 <div className="upload-box">
-                    <div className="upload-header">
-                        <h3 className="upload-title">Subir Fotos</h3>
+                    <div className="upload-header-modern">
+                        <div className="d-flex align-items-center gap-2">
+                            <div className="upload-header-icon-badge">
+                                <i className="bi bi-cloud-arrow-up-fill"></i>
+                            </div>
+                            <div>
+                                <h2 className="upload-title-modern">Subir Sesión Fotográfica</h2>
+                                <p className="upload-subtitle-modern">Carga y entrega de fotos procesadas para los clientes en su nube personal.</p>
+                            </div>
+                        </div>
                     </div>
-                    <hr />
 
                     {/* Área de subida (sin cambios) */}
                     <div
@@ -513,20 +517,26 @@ const Upload: React.FC = () => {
                                         setFiles([]);
                                     }}
                                 >
-                                    <i className="bi bi-arrow-repeat"></i>
+                                    <i className="bi bi-arrow-repeat me-1"></i>
                                     Cambiar
                                 </button>
                             </div>
                         ) : (
                             <div className="upload-content">
-                                <i className="bi bi-cloud-arrow-up upload-icon"></i>
-                                <span>Arrastra y suelta las fotos aquí</span>
+                                <div className="upload-icon-circle">
+                                    <i className="bi bi-cloud-arrow-up upload-icon"></i>
+                                </div>
+                                <span className="upload-main-text">Arrastra y suelta las fotos aquí</span>
                                 <span className="upload-subtext">
-                                    o haz clic para seleccionar
+                                    o <strong className="upload-browse-link">haz clic para seleccionar archivos</strong> de tu equipo
                                 </span>
-                                <span className="upload-subtext-extra">
-                                    Puedes seleccionar varias fotos a la vez
-                                </span>
+                                <div className="upload-format-pills">
+                                    <span className="format-pill">JPG</span>
+                                    <span className="format-pill">PNG</span>
+                                    <span className="format-pill">WEBP</span>
+                                    <span className="format-pill">RAW</span>
+                                    <span className="format-pill info">Hasta 50MB</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -535,7 +545,7 @@ const Upload: React.FC = () => {
                     )}
 
                     {/* Formulario de información (sin cambios) */}
-                    <form className="upload-form" onSubmit={handleSubmit}>
+                    <form className="form-group" onSubmit={handleSubmit} >
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Evento</label>
@@ -739,6 +749,9 @@ const Upload: React.FC = () => {
                     </form>
                 </div>
             </div>
+            <footer>
+                <p>FotoLuna &copy;</p>
+            </footer>
         </EmployeeLayout>
     );
 };

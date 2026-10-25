@@ -8,8 +8,7 @@ import '../Styles/photo/PhotoAdmin.css';
 import EmployeeLayout from "../../../../layouts/HomeEmployeeLayout";
 
 
-// ⚠ Ajusta este valor si tu backend no está en localhost:8000
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL + "/api";
 
 
 // =========================================================
@@ -126,6 +125,7 @@ const EmployeeAdmin: React.FC = () => {
 
         // Limpiar el listener cuando el componente se desmonte
         return () => window.removeEventListener('photosUploaded', handlePhotosUploaded);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // [user] se eliminó porque el admin/employee es estático aquí.
 
     // La función de eliminar debe recargar la lista para reflejar el estado actual

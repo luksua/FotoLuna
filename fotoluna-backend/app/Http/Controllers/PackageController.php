@@ -17,9 +17,11 @@ class PackageController extends Controller
             ->with(['photos:photoId,packageIdFK,photoPath'])
             ->get([
                 'packageId as id',
+                'packageId',
                 'packageName',
                 'packageDescription',
                 'price as packagePrice',
+                'isGeneral',
             ]);
 
         // Paquetes específicos de este evento
@@ -28,9 +30,11 @@ class PackageController extends Controller
             ->with(['photos:photoId,packageIdFK,photoPath'])
             ->get([
                 'packageId as id',
+                'packageId',
                 'packageName',
                 'packageDescription',
                 'price as packagePrice',
+                'isGeneral',
             ]);
 
         if ($general->isEmpty() && $specific->isEmpty()) {

@@ -1,79 +1,120 @@
+/* ========================================================
+   FOTOLUNA - ESTILOS MODAL PERFIL DE USUARIO
+   ======================================================== */
+
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(25, 12, 42, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1050;
     padding: 20px;
+    animation: overlayFadeIn 0.25s ease-out;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .profile-modal {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(123, 44, 191, 0.18), 0 4px 18px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(157, 78, 221, 0.16);
     width: 100%;
-    max-width: 700px;
+    max-width: 680px;
     max-height: 90vh;
     overflow: hidden;
-    animation: modalSlideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    animation: profileModalSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes modalSlideIn {
+@keyframes profileModalSlide {
     from {
         opacity: 0;
-        transform: translateY(-50px) scale(0.9);
+        transform: translateY(-20px) scale(0.97);
     }
-
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
-.modal-header {
+.profile-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid #e9ecef;
-    background: #f8f9fa;
+    padding: 20px 28px;
+    border-bottom: 1px solid rgba(157, 78, 221, 0.12);
+    background: linear-gradient(180deg, #ffffff 0%, #faf6fd 100%);
+    flex-shrink: 0;
 }
 
-.modal-title {
-    font-size: 1.5rem;
-    font-weight: 600;
+.profile-header-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 16px rgba(123, 44, 191, 0.3);
+    flex-shrink: 0;
+}
+
+.profile-modal-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e1e2f;
     margin: 0;
+    letter-spacing: -0.01em;
 }
 
-.btn-close {
-    background: none;
+.profile-modal-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin: 2px 0 0 0;
+}
+
+.profile-btn-close {
+    background: #f4eef9;
     border: none;
-    font-size: 1.25rem;
-    color: #6c757d;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #7b2cbf;
     cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.btn-close:hover {
-    background-color: #e9ecef;
-    color: #495057;
-}
-
-.modal-body {
-    padding: 2rem;
-    overflow-y: auto;
-    max-height: calc(90vh - 80px);
-}
-
-.modal-subtitle {
-    color: #6c757d;
-    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.95rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.profile-btn-close:hover {
+    background: #ebd8fc;
+    color: #5a189a;
+    transform: rotate(90deg);
+}
+
+.profile-modal-body {
+    padding: 24px 28px 28px;
+    overflow-y: auto;
+    max-height: calc(90vh - 86px);
 }

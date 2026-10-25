@@ -24,8 +24,6 @@ interface Step2Props {
     preselectedPackageId?: number | null;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 // 🔹 Clave para guardar el borrador de este paso
 const STEP2_DRAFT_KEY = "appointmentStep2Draft";
 
@@ -87,7 +85,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    `${API_BASE}/api/events/${eventId}/packages`,
+                    `/api/events/${eventId}/packages`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -110,10 +108,10 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
     // ===============================
     // 3) Lista combinada para UI
     // ===============================
-    const combinedPackages: Package[] = [
+    const combinedPackages: Package[] = useMemo(() => [
         ...specificPackages,
         ...generalPackages,
-    ];
+    ], [specificPackages, generalPackages]);
 
     // ===============================
     // 4) Aplicar preselectedPackageId
@@ -204,7 +202,7 @@ const AppointmentStep2Packages: React.FC<Step2Props> = ({
         try {
             const token = localStorage.getItem("token");
             const res = await axios.post(
-                `${API_BASE}/api/appointments/${appointmentId}/booking`,
+                `/api/appointments/${appointmentId}/booking`,
                 { packageIdFK: selectedPackage },
                 {
                     headers: {

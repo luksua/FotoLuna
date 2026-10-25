@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../styles/quinces.css";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const QUINCES_EVENT_ID = 3;
 
 interface QuincePackage {
@@ -35,7 +34,7 @@ export default function Quinces() {
                 const token = localStorage.getItem("token");
 
                 const res = await axios.get(
-                    `${API_BASE}/api/events/${QUINCES_EVENT_ID}/packages`,
+                    `/api/events/${QUINCES_EVENT_ID}/packages`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

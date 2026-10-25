@@ -6,8 +6,6 @@ import axios from "axios";
 import AppointmentFormStep4PaymentEmbedded from "./AppointmentFormStep4Payment";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 type DocumentType = {
     id: number;
     name: string;
@@ -116,7 +114,7 @@ const Apointment: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get(`${API_BASE}/api/appointments-customer`, {
+            const res = await axios.get(`/api/appointments-customer`, {
                 headers: getAuthHeaders(),
                 params: { page },
             });
@@ -345,7 +343,7 @@ const Apointment: React.FC = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                `${API_BASE}/api/bookings/${bookingId}/receipt`,
+                `/api/bookings/${bookingId}/receipt`,
                 {
                     headers: {
                         Authorization: token ? `Bearer ${token}` : "",
@@ -378,7 +376,7 @@ const Apointment: React.FC = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                `${API_BASE}/api/appointments/${appointmentId}/installments/${installmentId}/receipt`,
+                `/api/appointments/${appointmentId}/installments/${installmentId}/receipt`,
                 {
                     headers: {
                         Authorization: token ? `Bearer ${token}` : "",

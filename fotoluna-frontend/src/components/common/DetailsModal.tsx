@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Modal, Button, Form, InputGroup, Pagination, Col, Row } from 'react-bootstrap';
+import { Modal, Button, Form, Pagination, Col, Row } from 'react-bootstrap';
 import { exportToExcel } from '../../lib/excel-export';
 import './DetailsModal.css';
+import '../../styles/buttons.css';
 import { isToday, isThisWeek, isThisMonth, isSameDay, isWithinInterval, parseISO } from '../../lib/date-utils';
 
 interface DetailsModalProps {
@@ -73,8 +74,6 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ isOpen, onClose, title, dat
                 return false;
             }
 
-            const now = new Date();
-
             switch (dateFilterType) {
                 case 'today':
                     return isToday(itemDate);
@@ -82,17 +81,19 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ isOpen, onClose, title, dat
                     return isThisWeek(itemDate);
                 case 'this_month':
                     return isThisMonth(itemDate);
-                case 'specific_date':
+                case 'specific_date': {
                     if (!specificDate) return true; // No specific date selected, so don't filter
                     const sDate = parseISO(specificDate);
                     return isSameDay(itemDate, sDate);
-                case 'custom_range':
+                }
+                case 'custom_range': {
                     if (!customStartDate || !customEndDate) return true; // No range selected, so don't filter
                     const csDate = parseISO(customStartDate);
                     const ceDate = parseISO(customEndDate);
                     // Ensure start date is before end date for valid interval
                     if (csDate.getTime() > ceDate.getTime()) return false;
                     return isWithinInterval(itemDate, csDate, ceDate);
+                }
                 default:
                     return true;
             }
@@ -286,7 +287,7 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ isOpen, onClose, title, dat
         </div>
 
         {totalPages > 1 && (
-          <Pagination className="justify-content-center">
+          <Pagination className="justify-content-center details-pagination">
             <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
             <Pagination.Prev onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} />
             {[...Array(totalPages).keys()].map(page => (
@@ -305,10 +306,14 @@ const DetailsModal: React.FC<DetailsModalProps> = ({ isOpen, onClose, title, dat
 
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
+        <Button className="custom2-upload-btn" onClick={onClose}>
           Cerrar
         </Button>
-        <Button variant="primary" onClick={handleDownload} disabled={sortedAndFilteredData.length === 0}>
+        <Button
+          className="custom-upload-btn"
+          onClick={handleDownload}
+          disabled={sortedAndFilteredData.length === 0}
+        >
           <i className="bi bi-download me-2"></i>Descargar Excel
         </Button>
       </Modal.Footer>

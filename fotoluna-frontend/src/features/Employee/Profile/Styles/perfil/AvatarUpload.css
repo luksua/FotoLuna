@@ -1,33 +1,41 @@
+/* ========================================================
+   FOTOLUNA - AVATAR UPLOAD MODERNO
+   ======================================================== */
+
 .avatar-upload {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .avatar-preview-container {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    gap: 20px;
 }
 
 .avatar-preview {
-    width: 120px;
-    height: 120px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
-    background: #f8f9fa;
-    border: 3px solid #e9ecef;
+    background: #fdfaff;
+    border: 3px solid #ede0ff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 6px 18px rgba(123, 44, 191, 0.15);
+    flex-shrink: 0;
 }
 
 .avatar-preview:hover {
-    border-color: #0d6efd;
+    border-color: #9d4edd;
     transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(123, 44, 191, 0.28);
 }
 
 .avatar-image {
@@ -38,8 +46,11 @@
 }
 
 .avatar-placeholder {
-    font-size: 3rem;
-    color: #6c757d;
+    font-size: 2.6rem;
+    color: #c792df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .avatar-overlay {
@@ -48,14 +59,16 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(90, 24, 154, 0.72);
+    backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #ffffff;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
     border-radius: 50%;
+    font-size: 1.4rem;
 }
 
 .avatar-preview:hover .avatar-overlay {
@@ -64,10 +77,184 @@
 
 .avatar-actions {
     display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
 }
 
-.avatar-actions .btn {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-}   
+.btn-change-avatar {
+    background: #f8f0fc;
+    color: #7b2cbf;
+    border: 1px solid rgba(157, 78, 221, 0.25);
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-change-avatar:hover {
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+    transform: translateY(-1px);
+}
+
+.avatar-format-hint {
+    font-size: 0.76rem;
+    color: #94a3b8;
+}
+
+.avatar-error-text {
+    font-size: 0.75rem;
+    color: #e63946;
+    font-weight: 500;
+}
+
+/* ========================================================
+   MODAL DE RECORTE (CROPPER)
+   ======================================================== */
+
+.avatar-cropper-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 7, 28, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+    padding: 20px;
+    animation: overlayFadeIn 0.2s ease-out;
+}
+
+.avatar-cropper-card {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(157, 78, 221, 0.2);
+    overflow: hidden;
+    animation: profileModalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.avatar-cropper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    border-bottom: 1px solid rgba(157, 78, 221, 0.15);
+}
+
+.avatar-cropper-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(157, 78, 221, 0.15);
+    color: #7b2cbf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.avatar-cropper-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin: 0;
+}
+
+.avatar-cropper-subtitle {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.avatar-cropper-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(157, 78, 221, 0.2);
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.avatar-cropper-close:hover {
+    background: #e63946;
+    color: #ffffff;
+    border-color: #e63946;
+    transform: rotate(90deg);
+}
+
+.avatar-cropper-body {
+    padding: 20px 24px;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+}
+
+.avatar-cropper-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-cropper-cancel {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cropper-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.btn-cropper-save {
+    background: linear-gradient(135deg, #c792df 0%, #9d4edd 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 22px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(157, 78, 221, 0.35);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-cropper-save:hover {
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+    box-shadow: 0 6px 18px rgba(123, 44, 191, 0.45);
+    transform: translateY(-1px);
+}

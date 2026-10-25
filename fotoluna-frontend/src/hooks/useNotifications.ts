@@ -4,7 +4,6 @@ import { echo } from '../lib/echo';
 import type { BackendNotification } from '../types/Notification';
 
 // useNotifications.ts
-const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 interface UseNotificationsOptions {
     userId: number | null;
@@ -23,7 +22,7 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
             setLoading(true);
             setError(null);
 
-            const res = await fetch(`${API_URL}/api/notifications`, {
+            const res = await fetch("/api/notifications", {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
@@ -46,7 +45,7 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
     const markAsRead = async (id: string) => {
         if (!token) return;
         try {
-            const res = await fetch(`${API_URL}/api/notifications/${id}/read`, {
+            const res = await fetch(`/api/notifications/${id}/read`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -60,6 +59,28 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
                 prev.map((n) =>
                     n.id === id ? { ...n, read_at: new Date().toISOString() } : n
                 )
+            );
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        if (!token) return;
+        try {
+            const res = await fetch('/api/notifications/read-all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!res.ok) throw new Error('No se pudo marcar todo como leído');
+
+            const now = new Date().toISOString();
+            setNotifications((prev) =>
+                prev.map((n) => ({ ...n, read_at: n.read_at ?? now }))
             );
         } catch (err) {
             console.error(err);
@@ -97,5 +118,6 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
         loading,
         error,
         markAsRead,
+        markAllAsRead,
     };
 }

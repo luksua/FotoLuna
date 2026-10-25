@@ -81,7 +81,7 @@ const AdminEvents: React.FC = () => {
                 const headers = getAuthHeaders();
                 
                 // Fetch eventos
-                const eventsRes = await fetch('/api/admin/events', { headers });
+                const eventsRes = await fetch(`/api/admin/events`, { headers });
                 if (!eventsRes.ok) throw new Error(`Events: ${eventsRes.status}`);
                 const eventsData = await eventsRes.json();
                 console.log('Events data:', eventsData);
@@ -90,7 +90,7 @@ const AdminEvents: React.FC = () => {
                 }
 
                 // Fetch paquetes
-                const packagesRes = await fetch('/api/admin/packages', { headers });
+                const packagesRes = await fetch(`/api/admin/packages`, { headers });
                 if (!packagesRes.ok) throw new Error(`Packages: ${packagesRes.status}`);
                 const packagesData = await packagesRes.json();
                 console.log('Packages data:', packagesData);
@@ -99,7 +99,7 @@ const AdminEvents: React.FC = () => {
                 }
 
                 // Fetch tipos de documentos
-                const docsRes = await fetch('/api/admin/document-types', { headers });
+                const docsRes = await fetch(`/api/admin/document-types`, { headers });
                 if (!docsRes.ok) throw new Error(`Docs: ${docsRes.status}`);
                 const docsData = await docsRes.json();
                 console.log('Docs data:', docsData);
@@ -253,7 +253,7 @@ const AdminEvents: React.FC = () => {
 
     const addPackage = async (data: { nombre: string; descripcion: string; precio: number; eventId?: number }) => {
         try {
-            const response = await fetch('/api/admin/packages', {
+            const response = await fetch(`/api/admin/packages`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ nombre: data.nombre, descripcion: data.descripcion, precio: data.precio, eventId: data.eventId }),
@@ -305,7 +305,7 @@ const AdminEvents: React.FC = () => {
 
     const fetchPackages = async () => {
         try {
-            const response = await fetch('/api/admin/packages', { headers: getAuthHeaders() });
+            const response = await fetch(`/api/admin/packages`, { headers: getAuthHeaders() });
             if (!response.ok) throw new Error(`Packages: ${response.status}`);
             const data = await response.json();
             console.log('Packages data:', data);
@@ -341,7 +341,7 @@ const AdminEvents: React.FC = () => {
 
     const addDocument = async (data: { nombre: string; descripcion: string; cantidad: number; precio: number; requiereSubida: boolean; requierePresencial: boolean }) => {
         try {
-            const response = await fetch('/api/admin/document-types', {
+            const response = await fetch(`/api/admin/document-types`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ nombre: data.nombre, descripcion: data.descripcion, cantidad: data.cantidad, precio: data.precio, requiereSubida: data.requiereSubida, requierePresencial: data.requierePresencial }),
@@ -393,7 +393,7 @@ const AdminEvents: React.FC = () => {
 
     const fetchDocuments = async () => {
         try {
-            const response = await fetch('/api/admin/document-types', { headers: getAuthHeaders() });
+            const response = await fetch(`/api/admin/document-types`, { headers: getAuthHeaders() });
             if (!response.ok) throw new Error(`Documents: ${response.status}`);
             const data = await response.json();
             console.log('Documents data:', data);
@@ -417,7 +417,7 @@ const AdminEvents: React.FC = () => {
 
     const addEvent = async (data: { nombre: string; descripcion: string }) => {
         try {
-            const response = await fetch('/api/admin/events', {
+            const response = await fetch(`/api/admin/events`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(data),
@@ -467,7 +467,7 @@ const AdminEvents: React.FC = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch('/api/admin/events', { headers: getAuthHeaders() });
+            const response = await fetch(`/api/admin/events`, { headers: getAuthHeaders() });
             if (!response.ok) throw new Error(`Events: ${response.status}`);
             const data = await response.json();
             console.log('Events data:', data);

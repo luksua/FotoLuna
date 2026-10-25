@@ -1,111 +1,371 @@
-/* ========== PAGE LAYOUT ========== */
-.emp-page {
-    padding: 2rem;
-    background-color: #f9fafb;
+/* ========================================================
+   FOTOLUNA - ESTILOS DE HISTORIAL Y ADMINISTRACIÓN DE FOTOS
+   ======================================================== */
+
+:root {
+    --fl-purple-primary: #9d4edd;
+    --fl-purple-dark: #7b2cbf;
+    --fl-purple-deep: #5a189a;
+    --fl-purple-light: #f8f0fc;
+    --fl-purple-soft: #f3e8ff;
+    --fl-purple-border: rgba(157, 78, 221, 0.2);
+    --fl-text-dark: #212529;
+    --fl-text-muted: #6c757d;
 }
 
-.emp-header {
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 1rem;
+.emp-photos-container {
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 12px 18px 24px;
+    animation: empFadeIn 0.35s ease-out;
 }
 
-.emp-title {
-    font-size: 2rem;
+/* Header */
+.emp-photos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(157, 78, 221, 0.12);
+}
+
+.emp-photos-header-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--fl-purple-primary) 0%, var(--fl-purple-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.45rem;
+    box-shadow: 0 6px 16px rgba(123, 44, 191, 0.28);
+    flex-shrink: 0;
+}
+
+.emp-photos-title {
+    font-size: 1.35rem;
     font-weight: 700;
-    color: #111827;
+    color: #1e1e2f;
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
-.emp-subtitle {
-    font-size: 1rem;
-    color: #6b7280;
-    margin-top: 0.25rem;
+.emp-badge-count {
+    background: var(--fl-purple-light);
+    color: var(--fl-purple-dark);
+    border: 1px solid rgba(157, 78, 221, 0.25);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
 }
 
-/* ========== GRID OF CARDS ========== */
-.emp-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
+.emp-photos-subtitle {
+    margin: 3px 0 0 0;
+    font-size: 0.88rem;
+    color: var(--fl-text-muted);
 }
 
-/* ========== INDIVIDUAL CARD ========== */
-.emp-card {
-    background: #fff;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
+.emp-btn-upload-new {
+    background: linear-gradient(135deg, var(--fl-purple-primary) 0%, var(--fl-purple-dark) 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(123, 44, 191, 0.28);
+    display: inline-flex;
+    align-items: center;
 }
 
-.emp-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+.emp-btn-upload-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(123, 44, 191, 0.4);
 }
 
-/* cover image */
-.emp-card__cover {
+/* Loading state */
+.emp-loading-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 48px 20px;
+    text-align: center;
+    border: 1px solid rgba(157, 78, 221, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* Empty State Card */
+.emp-empty-state-card {
+    background: linear-gradient(180deg, #ffffff 0%, #faf6fd 100%);
+    border-radius: 24px;
+    border: 1.5px dashed rgba(157, 78, 221, 0.25);
+    padding: 56px 24px;
+    text-align: center;
+    max-width: 640px;
+    margin: 40px auto;
+    box-shadow: 0 10px 30px rgba(123, 44, 191, 0.06);
+}
+
+.emp-empty-icon-wrapper {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--fl-purple-light) 0%, #ede0ff 100%);
+    color: var(--fl-purple-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin: 0 auto 18px;
+    box-shadow: 0 8px 20px rgba(157, 78, 221, 0.15);
+}
+
+.emp-empty-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e1e2f;
+    margin: 0 0 10px;
+}
+
+.emp-empty-desc {
+    font-size: 0.92rem;
+    color: var(--fl-text-muted);
+    max-width: 480px;
+    margin: 0 auto 24px;
+    line-height: 1.55;
+}
+
+.emp-empty-cta-btn {
+    background: linear-gradient(135deg, var(--fl-purple-primary) 0%, var(--fl-purple-dark) 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(123, 44, 191, 0.32);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.emp-empty-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(123, 44, 191, 0.45);
+}
+
+/* =======================================
+   GRID DE SESIONES
+   ======================================= */
+.emp-photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 22px;
+}
+
+/* Tarjeta individual */
+.emp-summary-card {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(157, 78, 221, 0.12);
+    box-shadow: 0 6px 20px rgba(123, 44, 191, 0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.emp-summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(123, 44, 191, 0.16);
+    border-color: rgba(157, 78, 221, 0.3);
+}
+
+.emp-summary-cover {
+    position: relative;
     height: 180px;
-    background: #e5e7eb;
+    overflow: hidden;
+    background: #f3f0f7;
 }
 
-.emp-card__cover img {
+.emp-summary-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.35s ease;
 }
 
-.emp-card__body {
-    padding: 1rem;
+.emp-summary-card:hover .emp-summary-cover img {
+    transform: scale(1.04);
 }
 
-.emp-card__name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
-}
-
-.emp-card__meta {
-    color: #6b7280;
-    font-size: 0.85rem;
-    margin-bottom: 0.75rem;
-}
-
-.emp-card__actions {
+.emp-cover-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(17, 24, 39, 0.78);
+    backdrop-filter: blur(6px);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
     display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
-    border-top: 1px solid #f3f4f6;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-/* Buttons */
-.emp-btn {
-    padding: 0.45rem 0.9rem;
-    border-radius: 0.5rem;
-    font-size: 0.85rem;
+.emp-summary-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.emp-customer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.emp-customer-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--fl-purple-light);
+    color: var(--fl-purple-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.emp-customer-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e1e2f;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.emp-customer-date {
+    font-size: 0.78rem;
+    color: var(--fl-text-muted);
+    margin: 2px 0 0;
+}
+
+/* Micro preview */
+.emp-photo-grid-preview {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #faf7fc;
+    border: 1px solid rgba(157, 78, 221, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+}
+
+.emp-photo-thumb-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.emp-photo-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.emp-photo-thumb-img:hover {
+    transform: scale(1.15);
+}
+
+.emp-photo-thumb-more {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: rgba(157, 78, 221, 0.12);
+    color: var(--fl-purple-deep);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.emp-summary-action-btn {
+    margin-top: auto;
+    background: var(--fl-purple-light);
+    color: var(--fl-purple-dark);
+    border: 1.5px solid rgba(157, 78, 221, 0.25);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 0.86rem;
+    font-weight: 700;
     cursor: pointer;
-    border: none;
-    transition: background 0.15s;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.emp-btn--primary {
-    background-color: #4f46e5;
-    color: white;
+.emp-summary-action-btn:hover {
+    background: linear-gradient(135deg, var(--fl-purple-primary) 0%, var(--fl-purple-dark) 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(123, 44, 191, 0.3);
+    transform: translateY(-1px);
 }
-.emp-btn--primary:hover { background-color: #4338ca; }
 
-.emp-btn--secondary {
-    background-color: #f3f4f6;
-    color: #374151;
+/* Animación */
+@keyframes empFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-.emp-btn--secondary:hover { background-color: #e5e7eb; }
 
-/* Recent photos preview inside card */
-.emp-recent-photos {
-    padding: 1rem;
-    background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
+@media (max-width: 600px) {
+    .emp-photos-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .emp-btn-upload-new {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+footer {
+    text-align: center;
+    color: #a0aec0;
+    font-size: 0.82rem;
+    padding: 14px 0;
+    margin-top: 10px;
 }

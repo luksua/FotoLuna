@@ -38,7 +38,7 @@ const Comments = () => {
     const fetchPhotographers = async () => {
         try {
             // Nueva ruta pública que devuelve todos los employees
-            const res = await fetch("/api/employees/all", {
+            const res = await fetch(`/employees/all`, {
                 headers: { Accept: "application/json" }
             });
             const data = await res.json();
@@ -71,7 +71,7 @@ const Comments = () => {
 
     const fetchComments = async () => {
         try {
-            const res = await fetch(`/api/comments`);
+            const res = await fetch(`/comments`);
             const data = await res.json();
             if (data.success) {
                 setComments(data.data);
@@ -148,7 +148,7 @@ const Comments = () => {
                 formDataToSend.append("photo", formData.photo);
             }
 
-            const res = await fetch(`/api/comments`, {
+            const res = await fetch(`/comments`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

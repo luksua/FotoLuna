@@ -22,11 +22,20 @@ import AddCustomerForm from "../../Customers/Components/AddCustomerForm";
 // =========================================================
 // 🔹 FUNCIONES HELPER (DECLARADAS AL INICIO)
 // =========================================================
-const isSameDay = (utcDate: Date, localDate: Date): boolean => {
-    // Create a new Date object representing midnight UTC for the local date's year, month, and day
-    const localDateAsUTC = new Date(Date.UTC(localDate.getFullYear(), localDate.getMonth(), localDate.getDate()));
-    // Compare the timestamps
-    return utcDate.getTime() === localDateAsUTC.getTime();
+export const formatDateToYMD = (d: Date): string => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+const isSameDay = (d1: Date, d2: Date): boolean => {
+    if (!d1 || !d2) return false;
+    return (
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate()
+    );
 };
 
 const timeToMinutes = (hhmm: string): number => {
@@ -39,16 +48,14 @@ const createId = () => `${Date.now()}-${Math.random()}`;
 const parseBackendDate = (raw: any): Date => {
     if (!raw) return new Date();
 
-    // 1. Tomar solo la parte de la fecha (ej: "2025-11-25")
+    // 1. Tomar solo la parte de la fecha (ej: "2026-10-22")
     const base = String(raw).split(" ")[0];
 
     // 2. Extraer Y, M, D
     const [y, m, d] = base.split("-").map(Number);
 
-    // 3. 🔑 ANCLAR A UTC: Esto garantiza que el objeto Date representa
-    // el día exacto de la DB, independientemente de la zona horaria del usuario.
-    // Restamos 1 al mes (m - 1).
-    return new Date(Date.UTC(y, m - 1, d));
+    // 3. Crear fecha local a medianoche sin desfaces de UTC
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
 };
 
 export const STATUS_FRONT_TO_BACK: Record<CitaStatus, string> = {
@@ -216,11 +223,11 @@ const EmployeeAppointments: React.FC = () => {
     // =========================================================
 
     const handleDayClick = useCallback((date: Date) => {
-        setSelectedDate(date);
+        setSelectedDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
     }, []);
 
     const handleDotClick = useCallback((cita: Cita) => {
-        setSelectedDate(cita.date);
+        setSelectedDate(new Date(cita.date.getFullYear(), cita.date.getMonth(), cita.date.getDate()));
         setSelectedCita(cita);
     }, []);
 
@@ -239,7 +246,7 @@ const EmployeeAppointments: React.FC = () => {
             .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
     }, [citas, selectedDate]);
 
-    //  Effekt to keep selection in sync
+    // Effect to keep selection in sync
     useEffect(() => {
         if (citasDelDia.length > 0) {
             if (!selectedCita || !citasDelDia.some(c => c.id === selectedCita.id)) {
@@ -334,15 +341,15 @@ const EmployeeAppointments: React.FC = () => {
                 // Se asigna directamente el string.
                 parsedValue = value;
             }
-            
+
             // 3. Creación inmutable del nuevo formulario con el valor actualizado
-            let newForm: ExtendedCitaFormData = {
-                ...f, 
+            const newForm: ExtendedCitaFormData = {
+                ...f,
                 // Usamos 'as any' solo para satisfacer al índice dinámico de TypeScript
                 // ya que el valor de parsedValue ya fue correctamente tipado previamente.
-                [key]: parsedValue as any, 
+                [key]: parsedValue as any,
             };
-            
+
             // 4. Lógica CLAVE de Limpieza: (Se mantiene la lógica de negocio)
             if (key === 'eventIdFK') {
                 newForm.packageIdFK = null;
@@ -352,10 +359,10 @@ const EmployeeAppointments: React.FC = () => {
             if (key === 'packageIdFK') {
                 newForm.documentTypeIdFK = null;
             }
-            
+
             return newForm;
         });
-        
+
         setErrors((er) => ({ ...er, [name]: "" }));
     }, []);
 
@@ -368,7 +375,7 @@ const EmployeeAppointments: React.FC = () => {
         // 🔑 Al editar, NO cargar las FKs de Paquete/Documento
         setForm({
             ...initialForm,
-            date: cita.date.toISOString().split("T")[0],
+            date: formatDateToYMD(cita.date),
             startTime: cita.startTime,
             client: cita.client,
             status: cita.status,
@@ -388,11 +395,17 @@ const EmployeeAppointments: React.FC = () => {
         setIsEditing(false);
         setErrors({});
         setSuccess("");
-        // 🔑 Limpieza explícita de FKs al crear nueva cita
-        setForm({ ...initialForm, eventIdFK: null, packageIdFK: null, documentTypeIdFK: null });
+        // 🔑 Pre-seleccionar la fecha seleccionada en el calendario
+        setForm({
+            ...initialForm,
+            date: selectedDate ? formatDateToYMD(selectedDate) : formatDateToYMD(new Date()),
+            eventIdFK: null,
+            packageIdFK: null,
+            documentTypeIdFK: null,
+        });
         setCustomerOptions([]);
         setShowModal(true);
-    }, [initialForm]);
+    }, [initialForm, selectedDate]);
 
     // ... (Lógica de Búsqueda y Selección de Clientes)
 
@@ -409,7 +422,7 @@ const EmployeeAppointments: React.FC = () => {
         searchClientTimeout.current = setTimeout(async () => {
             try {
                 // 🚨 El endpoint DEBE usar el token y la query
-                const res = await api.get(`/api/customers/search?query=${query}`, {
+                const res = await api.get(`/customers/search?query=${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -457,14 +470,14 @@ const EmployeeAppointments: React.FC = () => {
         const fetchAllData = async () => {
             setIsLoading(true);
             try {
-                const resCitas = await api.get(`/api/employee/${EMPLOYEE_ID}/appointments`, {
+                const resCitas = await api.get(`employee/${EMPLOYEE_ID}/appointments`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const citasMap = mapBackendAppointments(resCitas.data || []);
                 setCitas(citasMap);
 
                 // 🔑 RUTA CLAVE: Obtiene Eventos (con Paquetes o Tipos de Documento anidados)
-                const resEvents = await api.get('/api/events-with-packages');
+                const resEvents = await api.get('/events-with-packages');
                 const eventOptions = (resEvents.data || []).map((e: any) => ({
                     id: e.id,
                     name: e.name || e.eventType,
@@ -473,7 +486,7 @@ const EmployeeAppointments: React.FC = () => {
                 setEvents(eventOptions);
 
                 // 🟢 CARGA TIPOS DE DOCUMENTO (Lista global para el select secundario del modal)
-                const resDocTypes = await api.get('/api/document-types');
+                const resDocTypes = await api.get('document-types');
                 const docTypeOptions = (resDocTypes.data.data || resDocTypes.data || []).map((d: any) => ({
                     id: d.id,
                     name: d.name
@@ -539,7 +552,7 @@ const EmployeeAppointments: React.FC = () => {
         if (isEditing && selectedCita) {
             // ... (Lógica PUT - No se envían FKs de paquete/documento)
             try {
-                const lockedDate = selectedCita.date.toISOString().split("T")[0];
+                const lockedDate = formatDateToYMD(selectedCita.date);
                 const lockedStart = selectedCita.startTime;
                 const lockedLocation = selectedCita.location;
 
@@ -552,7 +565,7 @@ const EmployeeAppointments: React.FC = () => {
                 };
 
                 await api.put(
-                    `/api/employee/appointments/${selectedCita.appointmentId}`,
+                    `/employee/appointments/${selectedCita.appointmentId}`,
                     updatePayload,
                     { headers }
                 );
@@ -581,7 +594,7 @@ const EmployeeAppointments: React.FC = () => {
         try {
             // ✅ CORRECCIÓN: Se elimina el nombre de la variable de respuesta
             // para evitar el warning '6133' de variable no leída.
-            await api.post(`/api/appointments`, payload, { headers }); 
+            await api.post(`/appointments`, payload, { headers });
 
             setSuccess("Cita creada exitosamente. Recargando citas...");
             setTimeout(() => {
@@ -602,16 +615,40 @@ const EmployeeAppointments: React.FC = () => {
 
 
     return (
-        <EmployeeLayout>
+        <EmployeeLayout contentClassName="appointments-layout-main">
             {isLoading && <Spinner />}
-            <div className="container-fluid bg-light min-vh-100 appointments-page">
-                <div className="container py-4">
-                    <h2 className="text-dark tt">Citas</h2>
-                    <hr />
+            <div className="container-fluid appointments-page px-0">
+                <div className="appointments-container">
+                    {/* Header Principal Compacto */}
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 page-header-appointments">
+                        <div>
+                            <div className="d-flex align-items-center gap-2 mb-1">
+                                <div className="page-header-icon-badge">
+                                    <i className="bi bi-calendar3-range"></i>
+                                </div>
+                                <h1 className="h4 fw-bold mb-0 page-title">Agenda de Citas</h1>
+                                <span className="badge rounded-pill total-counter-badge">
+                                    <i className="bi bi-camera me-1"></i>
+                                    {citas.length} {citas.length === 1 ? "cita" : "citas"}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                            <button
+                                type="button"
+                                className="btn btn-primary d-flex align-items-center gap-2 px-3 py-1-5 rounded-pill shadow-sm fl-btn-primary"
+                                onClick={handleNewClick}
+                            >
+                                <i className="bi bi-calendar-plus-fill"></i>
+                                <span>Nueva Cita</span>
+                            </button>
+                        </div>
+                    </div>
 
-                    <div className="row g-4">
-                        <div className="col-lg-8">
-                            <div className="card shadow-sm p-3">
+                    {/* Grid Principal que llena exactamente el espacio vertical */}
+                    <div className="row g-3 appointments-main-grid flex-grow-1">
+                        <div className="col-xl-8 col-lg-7 h-100 appointments-col">
+                            <div className="card shadow-sm border-0 appointments-card calendar-card-wrapper h-100">
                                 <Calendar
                                     currentMonth={currentMonth}
                                     selectedDate={selectedDate}
@@ -623,8 +660,8 @@ const EmployeeAppointments: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="col-lg-4">
-                            <div className="card shadow-sm p-3 h-100">
+                        <div className="col-xl-4 col-lg-5 h-100 appointments-col">
+                            <div className="card shadow-sm border-0 appointments-card details-card-wrapper h-100">
                                 <AppointmentDetails
                                     citasDelDia={citasDelDia}
                                     selectedCita={selectedCita}
@@ -636,6 +673,8 @@ const EmployeeAppointments: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Modal de Cita */}
                     <AppointmentModal
                         show={showModal}
                         isEditing={isEditing}
@@ -644,7 +683,6 @@ const EmployeeAppointments: React.FC = () => {
                         success={success}
                         allowedStatuses={allowedStatuses}
                         canEditDateTime={canEditDateTime}
-
                         customers={customerOptions}
                         events={events}
                         packages={packagesForSelectedEvent}
@@ -652,7 +690,6 @@ const EmployeeAppointments: React.FC = () => {
                         onClientSelect={handleClientSelect}
                         onSearchClient={handleSearchClient}
                         onAddCustomerClick={handleOpenAddCustomer}
-
                         onChange={handleChange}
                         onSubmit={handleSubmit}
                         onClose={() => {
@@ -661,9 +698,11 @@ const EmployeeAppointments: React.FC = () => {
                             setErrors({});
                         }}
                     />
+
+                    {/* Modal Crear Cliente Rápido */}
                     {showAddCustomerForm && (
                         <div className="modal-cita-backdrop" onClick={handleCloseAddCustomer}>
-                            <div className="modal-cita" style={{ maxWidth: "900px" }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-cita-modern" style={{ maxWidth: "860px" }} onClick={(e) => e.stopPropagation()}>
                                 <AddCustomerForm
                                     onSuccess={handleCustomerCreatedInline}
                                     onCancel={handleCloseAddCustomer}

@@ -188,8 +188,6 @@ const EditPlanModal: React.FC<EditPlanModalProps> = ({
     );
 };
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 type PlanFilterStatus = "all" | "active" | "inactive";
 
 const StoragePlan: React.FC = () => {
@@ -205,7 +203,7 @@ const StoragePlan: React.FC = () => {
     const fetchPlans = async () => {
         try {
             const { data } = await axios.get<StoragePlan[]>(
-                `${API_BASE}/api/admin/storage-plans`
+                `/api/admin/storage-plans`
             );
             setPlans(data);
         } catch (error) {
@@ -259,7 +257,7 @@ const StoragePlan: React.FC = () => {
             };
 
             const { data } = await axios.put<StoragePlan>(
-                `${API_BASE}/api/admin/storage-plans/${planToSave.id}`,
+                `/api/admin/storage-plans/${planToSave.id}`,
                 payload
             );
 

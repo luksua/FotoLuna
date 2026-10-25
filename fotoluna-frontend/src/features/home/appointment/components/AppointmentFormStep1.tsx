@@ -17,8 +17,6 @@ import "../styles/appointment.css";
 import Login from "../../auth/components/LoginForm";
 import Register from "../../auth/components/SignUpForm";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 // Borrador paso 1
 const APPOINTMENT_DRAFT_KEY = "appointmentDraftStep1";
 
@@ -78,7 +76,7 @@ async function findFirstAvailableDate(start: Date, maxDays = 60): Promise<Date |
         const d = addDays(start, i);
         const dateStr = format(d, "yyyy-MM-dd");
         try {
-            const res = await axios.get(`${API_BASE}/api/availability`, { params: { date: dateStr } });
+            const res = await axios.get(`/api/availability`, { params: { date: dateStr } });
             if (!res.data?.allBlocked) return d;
         } catch {
             // Ignorar errores, continuar
@@ -264,7 +262,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
         const fetchEvents = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await axios.get(`${API_BASE}/api/events`, {
+                const res = await axios.get(`/api/events`, {
                     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
                 });
 
@@ -340,7 +338,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
 
         (async () => {
             try {
-                const res = await axios.get(`${API_BASE}/api/availability`, {
+                const res = await axios.get(`/api/availability`, {
                     params: { date: format(selectedDate, "yyyy-MM-dd") },
                 });
                 setAvailableTimes(res.data.available ?? []);
@@ -363,25 +361,45 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
 
         (async () => {
             try {
-                const res = await axios.get<
-                    Record<string, { allBlocked: boolean; hasAppointments: boolean }>
-                >(`${API_BASE}/api/availability`, {
+                const res = await axios.get(`/api/availability`, {
                     params: {
                         month: visibleMonth.getMonth() + 1,
                         year: visibleMonth.getFullYear(),
                     },
                 });
 
+                console.log("month availability:", res.data);
+
+                // Soportar tanto { data: {...} } como {...} directo
+                const raw: any = res.data;
+                const map: Record<string, { allBlocked: boolean; hasAppointments: boolean }> =
+                    raw && typeof raw === "object" && raw.data && typeof raw.data === "object"
+                        ? raw.data
+                        : raw;
+
                 const blocked: string[] = [];
                 const busy: string[] = [];
 
-                Object.entries(res.data).forEach(([date, info]) => {
-                    if (info.allBlocked) blocked.push(date);
-                    if (info.hasAppointments) busy.push(date);
+                Object.entries(map).forEach(([key, infoAny]) => {
+                    const info = infoAny as { allBlocked?: boolean; hasAppointments?: boolean };
+
+                    // 🔑 Normalizar la clave a "yyyy-MM-dd"
+                    let dateStr: string;
+                    if (typeof key === "string") {
+                        // "2025-12-01 00:00:00" → "2025-12-01"
+                        // "2025-12-01T00:00:00.000000Z" → "2025-12-01"
+                        dateStr = key.slice(0, 10);
+                    } else {
+                        dateStr = format(new Date(key as any), "yyyy-MM-dd");
+                    }
+
+                    if (info.allBlocked) blocked.push(dateStr);
+                    if (info.hasAppointments) busy.push(dateStr);
                 });
 
-                setUnavailableDays(blocked);
-                setBusyDays(busy);
+                // quitar duplicados por si acaso
+                setUnavailableDays(Array.from(new Set(blocked)));
+                setBusyDays(Array.from(new Set(busy)));
             } catch (error) {
                 console.error("Error cargando días bloqueados:", error);
                 setUnavailableDays([]);
@@ -389,6 +407,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
             }
         })();
     }, [visibleMonth]);
+
 
     // ================================
     // 7) Submit
@@ -430,7 +449,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
             if (effectiveAppointmentId) {
                 // 👈 actualizamos la cita existente (borrador)
                 res = await axios.put(
-                    `${API_BASE}/api/appointmentsCustomer/${effectiveAppointmentId}`,
+                    `/api/appointmentsCustomer/${effectiveAppointmentId}`,
                     payload,
                     { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
                 );
@@ -439,7 +458,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
             } else {
                 // 👈 creamos una nueva cita borrador
                 res = await axios.post(
-                    `${API_BASE}/api/appointmentsCustomer`,
+                    `/api/appointmentsCustomer`,
                     payload,
                     { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
                 );
@@ -496,7 +515,7 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
 
         setTimeout(() => setAuthMessage(null), 5000);
     };
-
+    const effectiveSelectedDate = selectedDate ?? new Date();
     // ================================
     // RENDER
     // ================================
@@ -541,11 +560,11 @@ const AppointmentStep1Validated: React.FC<AppointmentStep1Props> = ({
 
                         <div className="bg-white shadow-sm rounded-3 p-3 d-flex a flex-column flex-lg-row gap-4">
                             <div className="calendar-container flex-grow-1">
-                                {!initialResolved || !selectedDate ? (
+                                {!initialResolved ? (
                                     <div className="p-4 text-muted">Cargando calendario…</div>
                                 ) : (
                                     <Calendar
-                                        date={selectedDate}
+                                        date={effectiveSelectedDate}
                                         onChange={(date: Date) => {
                                             const dateStr = format(date, "yyyy-MM-dd");
                                             const isUnavailable = unavailableDays.includes(dateStr);

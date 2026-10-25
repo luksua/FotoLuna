@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const GRADUATION_EVENT_ID = 7;
 
 interface Package {
@@ -51,7 +50,7 @@ const GraduationPhotography: React.FC = () => {
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    `${API_BASE}/api/events/${GRADUATION_EVENT_ID}/packages`,
+                    `/api/events/${GRADUATION_EVENT_ID}/packages`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -80,7 +79,7 @@ const GraduationPhotography: React.FC = () => {
                         ],
                     popular: index === 0,
                     // imagen tomada del arreglo LOCAL_IMAGES
-                    image: LOCAL_IMAGES[index] ?? "/img/graduacion-default.jpg",
+                    image: LOCAL_IMAGES[index] ?? "/img/grado.jpg",
                     category: (pkg.category as Package["category"]) ?? "standard",
                     duration: pkg.duration ?? "1 hora",
                     photos: pkg.photosCount ? `${pkg.photosCount} fotos` : "Fotos digitales",

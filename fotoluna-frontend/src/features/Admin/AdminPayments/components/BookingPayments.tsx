@@ -12,7 +12,6 @@ import type {
     FilterType,
 } from "../../../Employee/Payment/Component/Types/payment";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 const BookingPayments: React.FC = () => {
     const [filter, setFilter] = useState<FilterType>("all");
@@ -49,7 +48,7 @@ const BookingPayments: React.FC = () => {
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(
-                    `${API_URL}/api/admin/booking-payments`,
+                    `/api/admin/booking-payments`,
                     {
                         params,
                         headers: token
@@ -99,7 +98,7 @@ const BookingPayments: React.FC = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                `${API_URL}/api/bookings/${bookingId}/receipt`,
+                `/api/bookings/${bookingId}/receipt`,
                 {
                     headers: {
                         Authorization: token ? `Bearer ${token}` : "",
@@ -139,7 +138,7 @@ const BookingPayments: React.FC = () => {
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                `${API_URL}/api/appointments/${appointmentId}/installments/${installmentId}/receipt`,
+                `/api/appointments/${appointmentId}/installments/${installmentId}/receipt`,
                 {
                     headers: {
                         Authorization: token ? `Bearer ${token}` : "",
@@ -362,7 +361,7 @@ const BookingPayments: React.FC = () => {
                 if (filter !== 'all') params.status = filter;
                 if (searchTerm.trim() !== '') params.client = searchTerm.trim();
 
-                const response = await axios.get(`${API_URL}/api/admin/booking-payments`, {
+                const response = await axios.get(`/api/admin/booking-payments`, {
                     params,
                     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
                 });

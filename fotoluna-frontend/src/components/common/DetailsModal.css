@@ -1,5 +1,12 @@
 .details-modal .modal-dialog {
     max-width: 80%;
+    margin: 1.5rem auto;
+}
+
+.details-modal .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .details-modal .modal-header {
@@ -9,6 +16,13 @@
 
 .details-modal .modal-title {
     color: #343a40;
+}
+
+.details-modal .modal-body {
+    flex: 1;
+    overflow: auto;
+    max-height: calc(90vh - 140px);
+    padding: 1rem 1.25rem;
 }
 
 .details-modal .table-responsive {
@@ -29,4 +43,39 @@
 
 .details-modal .sortable-header:hover {
     background-color: #dcdcdc;
+}
+
+.details-modal .details-pagination .page-link {
+    color: #fff;
+    background-color: #c792df;
+    border-color: #c792df;
+}
+
+.details-modal .details-pagination .page-link:hover {
+    color: #fff;
+    background-color: #a47ec8;
+    border-color: #a47ec8;
+}
+
+.details-modal .details-pagination .page-item.active .page-link {
+    background-color: #b37cc5;
+    border-color: #b37cc5;
+}
+
+.details-modal .details-pagination .page-item.disabled .page-link {
+    color: #e0d4e9;
+    background-color: #f3eaf7;
+    border-color: #e0d4e9;
+}
+
+@media (max-width: 1366px) {
+    .details-modal .modal-dialog {
+        max-width: 90vw;
+    }
+    .details-modal .modal-body {
+        max-height: calc(85vh - 140px);
+    }
+    .details-modal .table-responsive {
+        max-height: 55vh;
+    }
 }

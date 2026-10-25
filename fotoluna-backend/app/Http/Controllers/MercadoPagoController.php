@@ -11,7 +11,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
-MercadoPagoConfig::setAccessToken(env('MP_ACCESS_TOKEN'));
+
 
 class MercadoPagoController extends Controller
 {

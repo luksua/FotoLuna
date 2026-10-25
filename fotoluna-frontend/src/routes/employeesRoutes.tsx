@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import Spinner from "../features/Employee/Appointment/Components/Spinner";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 const HomeEmployee = lazy(() => import("../features/Employee/Home/Pages/HomeEmployee"));
 const AppointmentsEmployee = lazy(() => import("../features/Employee/Appointment/Pages/ApointmentsEmploye"));
@@ -15,49 +16,61 @@ const employeeRoutes = [
     {
         path: "/empleado",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <HomeEmployee />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <HomeEmployee />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/employee/appointments",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AppointmentsEmployee />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AppointmentsEmployee />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/employee/upload",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <EmployeeUpload />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <EmployeeUpload />
+                </Suspense>
+            </ProtectedRoute >
         ),
     },
     {
         path: "/employee/admin",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminEmployee />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminEmployee />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/employee/customers",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <CustomersEmployee />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <CustomersEmployee />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/employee/payments",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <Payments />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <Payments />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     // =========================================================
@@ -67,9 +80,11 @@ const employeeRoutes = [
         // 1. Vista de resumen/tarjetas (GET /api/employee/photos/summary)
         path: "/employee/photos",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <EmployeePhotosPage />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <EmployeePhotosPage />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
@@ -77,9 +92,11 @@ const employeeRoutes = [
         // (GET /api/employee/customers/{customerId}/photos/recent)
         path: "/employee/customers/:customerId/photos/recent",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <EmployeeCustomerRecentPhotosPage />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["empleado"]}>
+                <Suspense fallback={<Spinner />}>
+                    <EmployeeCustomerRecentPhotosPage />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
 ];

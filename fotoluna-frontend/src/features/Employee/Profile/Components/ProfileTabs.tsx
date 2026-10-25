@@ -9,31 +9,31 @@ const ProfileTabs: React.FC<ProfileTabProps> = ({
     activeTab,
     onTabChange,
     profile,
-    onProfileUpdate
+    onProfileUpdate,
+    onClose
 }) => {
     const tabs = [
-        { id: 'profile', label: 'Información Personal', icon: 'bi-person' },
-        { id: 'security', label: 'Seguridad', icon: 'bi-shield-lock' },
+        { id: 'profile', label: 'Información Personal', icon: 'bi-person-badge-fill' },
+        { id: 'security', label: 'Seguridad', icon: 'bi-shield-check' },
     ];
 
     return (
         <div className="profile-tabs">
-            {/* Navigation Tabs */}
-            <ul className="nav nav-tabs tab-nav" role="tablist">
+            {/* Segmented Navigation Tabs */}
+            <div className="profile-tab-nav" role="tablist">
                 {tabs.map((tab) => (
-                    <li key={tab.id} className="nav-item" role="presentation">
-                        <button
-                            className={`nav-link ${activeTab === tab.id ? 'active' : ''}`}
-                            onClick={() => onTabChange(tab.id)}
-                            type="button"
-                            role="tab"
-                        >
-                            <i className={`${tab.icon} me-2`}></i>
-                            {tab.label}
-                        </button>
-                    </li>
+                    <button
+                        key={tab.id}
+                        className={`profile-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                        onClick={() => onTabChange(tab.id)}
+                        type="button"
+                        role="tab"
+                    >
+                        <i className={`bi ${tab.icon}`}></i>
+                        <span>{tab.label}</span>
+                    </button>
                 ))}
-            </ul>
+            </div>
 
             {/* Tab Content */}
             <div className="tab-content">
@@ -41,11 +41,12 @@ const ProfileTabs: React.FC<ProfileTabProps> = ({
                     <ProfileInfo
                         profile={profile}
                         onProfileUpdate={onProfileUpdate}
+                        onClose={onClose}
                     />
                 </div>
 
                 <div className={`tab-pane fade ${activeTab === 'security' ? 'show active' : ''}`}>
-                    <SecuritySettings />
+                    <SecuritySettings onClose={onClose} />
                 </div>
             </div>
         </div>

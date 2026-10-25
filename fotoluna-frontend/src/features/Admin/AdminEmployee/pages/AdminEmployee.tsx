@@ -7,7 +7,6 @@ import SuccessAlert from "../components/SuccessAlert";
 import ExportButton from "../../../../components/ExportButton";
 import { exportEmployeesToExcel } from '../../../../services/exportService';
 
-
 type Employee = {
     id: number;
     nombre: string;
@@ -66,7 +65,7 @@ const EmployeeCustomers = () => {
     useEffect(() => {
         let mounted = true;
         setLoading(true);
-        fetch('/api/admin/employees', { headers: getAuthHeaders() })
+        fetch(`/api/admin/employees`, { headers: getAuthHeaders() })
             .then((res) => res.json())
             .then((data) => {
                 if (!mounted) return;
@@ -110,7 +109,7 @@ const EmployeeCustomers = () => {
     // Cargar ratings de fotografos
     useEffect(() => {
         let mounted = true;
-        fetch('/api/employees/ratings', { headers: getAuthHeaders() })
+        fetch(`/api/employees/ratings`, { headers: getAuthHeaders() })
             .then((res) => res.json())
             .then((data) => {
                 if (!mounted) return;

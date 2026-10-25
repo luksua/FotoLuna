@@ -2,7 +2,6 @@
 import axios from 'axios';
 import { useAuth } from '../context/useAuth'; // Para obtener el ID del empleado
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
@@ -107,7 +106,7 @@ export const getEmployeeAppointments = async (employeeId: number): Promise<Emplo
     try {
         // La ruta del backend es /api/employee/{employee}/appointments
         const response = await axios.get<EmployeeAppointment[]>(
-            `${API_BASE_URL}/api/employee/${employeeId}/appointments`,
+            `/api/employee/${employeeId}/appointments`,
             getAuthHeaders()
         );
         // Devolvemos response.data si es un array, o un array vacío si no lo es
@@ -125,7 +124,7 @@ export const getEmployeePhotoSummary = async (): Promise<PhotoSummary[]> => {
     try {
         // La ruta es /api/employee/photos/summary
         const response = await axios.get<PhotoSummary[]>(
-            `${API_BASE_URL}/api/employee/photos/summary`,
+            `/api/employee/photos/summary`,
             getAuthHeaders()
         );
         return Array.isArray(response.data) ? response.data : [];
@@ -142,7 +141,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
     try {
         // La ruta es /api/customers
         const response = await axios.get<{ data: Customer[] }>( // Updated generic type
-            `${API_BASE_URL}/api/customers`,
+            `/api/customers`, // si no funciona es con /api
             getAuthHeaders()
         );
         // Devolvemos response.data.data si es un array, o un array vacío si no lo es
@@ -165,7 +164,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
 export const getEmployeePayments = async (): Promise<Payment[]> => {
     try {
         const response = await axios.get<{ data: Payment[] }>(
-            `${API_BASE_URL}/employee/payments`,
+            `/api/employee/payments`,
             getAuthHeaders()
         );
         return Array.isArray(response.data.data) ? response.data.data : [];

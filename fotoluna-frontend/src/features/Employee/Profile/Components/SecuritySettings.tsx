@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { changePassword } from '../../../../services/passwordService';
 import '../Styles/perfil/SecuritySettings.css';
 
-const SecuritySettings: React.FC = () => {
+interface SecuritySettingsProps {
+    onClose?: () => void;
+}
+
+const SecuritySettings: React.FC<SecuritySettingsProps> = ({ onClose }) => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -99,59 +103,87 @@ const SecuritySettings: React.FC = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleChangePassword}>
-                    <div className="mb-3">
-                        <label htmlFor="currentPassword" className="form-label form-label-employee">Contraseña actual</label>
+                <form onSubmit={handleChangePassword} className="security-form">
+                    <div className="security-form-group mb-3">
+                        <label htmlFor="currentPassword" className="security-form-label">
+                            <i className="bi bi-key me-1"></i> Contraseña actual
+                        </label>
                         <input
                             type="password"
-                            className={`form-control form-control-employee ${errors.currentPassword ? 'is-invalid' : ''}`}
+                            className={`security-form-input ${errors.currentPassword ? 'is-invalid' : ''}`}
                             id="currentPassword"
                             placeholder="Ingresa tu contraseña actual"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                         />
                         {errors.currentPassword && (
-                            <div className="invalid-feedback d-block">{errors.currentPassword}</div>
+                            <div className="security-invalid-feedback">{errors.currentPassword}</div>
                         )}
                     </div>
 
-                    <div className="mb-3">
-                        <label htmlFor="newPassword" className="form-label form-label-employee">Nueva contraseña</label>
+                    <div className="security-form-group mb-3">
+                        <label htmlFor="newPassword" className="security-form-label">
+                            <i className="bi bi-lock me-1"></i> Nueva contraseña
+                        </label>
                         <input
                             type="password"
-                            className={`form-control form-control-employee ${errors.newPassword ? 'is-invalid' : ''}`}
+                            className={`security-form-input ${errors.newPassword ? 'is-invalid' : ''}`}
                             id="newPassword"
-                            placeholder="Ingresa tu nueva contraseña"
+                            placeholder="Mínimo 8 caracteres"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                         />
                         {errors.newPassword && (
-                            <div className="invalid-feedback d-block">{errors.newPassword}</div>
+                            <div className="security-invalid-feedback">{errors.newPassword}</div>
                         )}
                     </div>
 
-                    <div className="mb-4">
-                        <label htmlFor="confirmPassword" className="form-label form-label-employee">Confirmar nueva contraseña</label>
+                    <div className="security-form-group mb-4">
+                        <label htmlFor="confirmPassword" className="security-form-label">
+                            <i className="bi bi-shield-lock me-1"></i> Confirmar nueva contraseña
+                        </label>
                         <input
                             type="password"
-                            className={`form-control form-control-employee ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                            className={`security-form-input ${errors.confirmPassword ? 'is-invalid' : ''}`}
                             id="confirmPassword"
-                            placeholder="Confirma tu nueva contraseña"
+                            placeholder="Repite la nueva contraseña"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
                         {errors.confirmPassword && (
-                            <div className="invalid-feedback d-block">{errors.confirmPassword}</div>
+                            <div className="security-invalid-feedback">{errors.confirmPassword}</div>
                         )}
                     </div>
 
-                    <button
-                        type="submit"
-                        className="btn btn-primary-employee"
-                        disabled={loading}
-                    >
-                        {loading ? 'Actualizando...' : 'Actualizar contraseña'}
-                    </button>
+                    <div className="d-flex justify-content-end gap-2">
+                        {onClose && (
+                            <button
+                                type="button"
+                                className="btn-profile-cancel"
+                                onClick={onClose}
+                                disabled={loading}
+                            >
+                                Cancelar
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            className="btn-security-submit"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Actualizando...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="bi bi-shield-check me-1"></i>
+                                    Actualizar contraseña
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </form>
             </div>
 

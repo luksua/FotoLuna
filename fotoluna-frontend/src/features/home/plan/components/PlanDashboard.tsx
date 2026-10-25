@@ -48,8 +48,6 @@ type DashboardResponse = {
     paymentMethod?: PaymentMethod | null;
 };
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 const currency = (value: number) =>
     new Intl.NumberFormat("es-CO", {
         style: "currency",
@@ -124,7 +122,7 @@ const StorageDashboard: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            const res = await axios.get(`${API_BASE}/api/storage/dashboard`, {
+            const res = await axios.get(`api/storage/dashboard`, {
                 headers: {
                     Accept: "application/json",
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -148,7 +146,7 @@ const StorageDashboard: React.FC = () => {
         setSuccessMsg(null);
 
         try {
-            const res = await fetch(`${API_BASE}/api/storage/cancel-subscription`, {
+            const res = await fetch(`/storage/cancel-subscription`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -183,16 +181,42 @@ const StorageDashboard: React.FC = () => {
         setIsChangePlanModalOpen(true);
     };
 
-    // 👉 Si estoy comprando un plan, muestro SOLO la pantalla de pago
+    // 👉 Si estoy comprando un plan, muestro la pantalla de pago centrada y estilizada
     if (planToPay) {
         return (
-            <div className="container py-5 sd-dashboard-container bg-custom-2">
-                <h1 className="sd-title-main mb-3">
-                    Comprar plan: {planToPay.name}
-                </h1>
-                <p className="sd-text-muted mb-4">
-                    Total a pagar: {currency(Number(planToPay.price))}
-                </p>
+            <div className="container py-5 bg-custom-2" style={{ maxWidth: "700px" }}>
+                <div className="mb-4">
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-link text-decoration-none text-muted p-0 mb-3 d-inline-flex align-items-center gap-1"
+                        onClick={() => setPlanToPay(null)}
+                        style={{ color: "#718096" }}
+                    >
+                        <i className="bi bi-arrow-left"></i> Volver a los planes
+                    </button>
+                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h2 className="sd-title-main mb-1" style={{ fontSize: "1.75rem", fontWeight: 700 }}>
+                                Suscripción: {planToPay.name}
+                            </h2>
+                            <p className="sd-text-muted mb-0">
+                                {planToPay.description || "Almacenamiento en la nube para tus fotografías"}
+                            </p>
+                        </div>
+                        <span
+                            className="badge px-3 py-2 rounded-pill"
+                            style={{
+                                backgroundColor: "#faf4ff",
+                                color: "#9d4edd",
+                                border: "1px solid #ebd9f5",
+                                fontSize: "0.85rem",
+                                fontWeight: 600,
+                            }}
+                        >
+                            {planToPay.duration_months} {planToPay.duration_months === 1 ? "Mes" : "Meses"}
+                        </span>
+                    </div>
+                </div>
 
                 <AppointmentFormStep4PaymentEmbedded
                     bookingId={null}

@@ -154,7 +154,6 @@
     font-size: 1.1rem;
 }
 
-.notification-btn,
 .settings-btn {
     background: none;
     border: none;
@@ -167,28 +166,9 @@
     font-size: 1rem;
 }
 
-.notification-btn:hover,
 .settings-btn:hover {
-  
     color: var(--pastel-lilac);
     transform: scale(1.1);
-}
-
-.notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: var(--pastel-pink);
-    color: var(--text-dark);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    border: 2px solid var(--white);
 }
 
 /* Perfil de usuario */

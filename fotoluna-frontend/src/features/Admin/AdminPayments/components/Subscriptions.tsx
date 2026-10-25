@@ -20,8 +20,6 @@ export interface PaymentSummary {
     approvedCount: number;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 const Subscriptions: React.FC = () => {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [summary, setSummary] = useState<PaymentSummary | null>(null);
@@ -42,7 +40,7 @@ const Subscriptions: React.FC = () => {
         let lastPageNum = 1;
         try {
             do {
-                const { data } = await axios.get(`${API_BASE}/api/admin/payments`, {
+                const { data } = await axios.get(`/api/admin/payments`, {
                     params: {
                         search: search || undefined,
                         status: status || undefined,
@@ -72,7 +70,7 @@ const Subscriptions: React.FC = () => {
     const fetchSummary = async () => {
         try {
             const { data } = await axios.get<PaymentSummary>(
-                `${API_BASE}/api/admin/payments/summary`
+                `/api/admin/payments/summary`
             );
             setSummary(data);
         } catch (error) {
@@ -84,7 +82,7 @@ const Subscriptions: React.FC = () => {
         setLoading(true);
         try {
             const { data } = await axios.get(
-                `${API_BASE}/api/admin/payments`,
+                `/api/admin/payments`,
                 {
                     params: {
                         search: search || undefined,

@@ -73,22 +73,21 @@ const UserModal: React.FC<ModalProps> = ({ user, onClose }) => {
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
-            
+
             // Usar userId si es disponible (para customers), sino usar id (para employees)
             const userIdToUse = user.userId || user.id;
             console.log('Debug - User:', user);
             console.log('Debug - userIdToUse:', userIdToUse);
-            
-            const response = await fetch(
-                `/api/admin/appointments/pending/${userIdToUse}?page=${page}&per_page=${perPage}`,
-                {
-                    headers
-                });
+
+            const response = await fetch(`/api/admin/appointments/pending/${userIdToUse}?page=${page}&per_page=${perPage}`, {
+                headers
+            });
+
             console.log('Debug - Response status:', response.status);
-            
+
             const data = await response.json();
             console.log('Debug - Response data:', data);
-            
+
             if (data.success) {
                 setAppointments(data.data || []);
                 if (data.meta) {
@@ -340,7 +339,7 @@ const EmployeeAdmin: React.FC = () => {
     const [query, setQuery] = useState("");
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-    
+
     // Calcular items por página basado en ancho de pantalla
     const getItemsPerPage = () => {
         if (windowWidth < 768) return 6;   // Móvil: 2 columnas × 3 filas
@@ -373,23 +372,23 @@ const EmployeeAdmin: React.FC = () => {
     useEffect(() => {
         let mounted = true;
         setLoading(true);
-        
+
         const fetchAllUsers = async () => {
             try {
                 const headers = getAuthHeaders();
-                
+
                 const [employeesRes, customersRes] = await Promise.all([
-                    fetch('/api/admin/employees', { headers }),
-                    fetch('/api/admin/customers', { headers })
+                    fetch(`/api/admin/employees`, { headers }),
+                    fetch(`/api/admin/customers`, { headers })
                 ]);
-                
+
                 const employeesData = await employeesRes.json();
                 const customersData = await customersRes.json();
-                
+
                 if (!mounted) return;
-                
+
                 const allUsers: User[] = [];
-                
+
                 if (employeesData && employeesData.success && Array.isArray(employeesData.data)) {
                     allUsers.push(...employeesData.data.map((e: any) => ({
                         id: e.id,
@@ -400,7 +399,7 @@ const EmployeeAdmin: React.FC = () => {
                         avatar: e.avatar || imgperfil,
                     })));
                 }
-                
+
                 if (customersData && customersData.success && Array.isArray(customersData.data)) {
                     const mappedCustomers = customersData.data.map((c: any) => ({
                         id: c.id,
@@ -414,7 +413,7 @@ const EmployeeAdmin: React.FC = () => {
                     console.log('Debug - Mapped customers:', mappedCustomers);
                     allUsers.push(...mappedCustomers);
                 }
-                
+
                 setUsers(allUsers);
                 setPage(1);
                 setQuery("");
@@ -428,7 +427,7 @@ const EmployeeAdmin: React.FC = () => {
                 }
             }
         };
-        
+
         fetchAllUsers();
 
         return () => {

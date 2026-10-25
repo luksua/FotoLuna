@@ -4,8 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import PaymentErrorModal from "./PaymentModal";
 import Button from "../../../../components/Home/Button";
+import "../styles/appointment.css";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY ?? "";
 
 declare global {
@@ -82,56 +82,82 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
     const bricksBuilder = mp.bricks();
     let cancelled = false;
 
-    // Config según método elegido
-    const paymentMethodsConfig =
-      paymentMethod === "Card"
-        ? {
-          creditCard: "all",
-          debitCard: "all",
-        }
-        : {
-          bankTransfer: "all", // PSE
-        };
+    const isCard = paymentMethod === "Card";
+    const brickName = isCard ? "cardPayment" : "payment";
 
     const renderPaymentBrick = async () => {
       if (!bricksContainerRef.current) return;
 
-      // Desmontar brick anterior
+      // Desmontar brick anterior de forma segura
       if (brickControllerRef.current) {
-        brickControllerRef.current.unmount?.();
+        try {
+          await brickControllerRef.current.unmount?.();
+        } catch (e) {
+          console.warn("Mercado Pago unmount warning:", e);
+        }
         brickControllerRef.current = null;
       }
 
-      const controller = await bricksBuilder.create(
-        "payment",
+      if (cancelled || !bricksContainerRef.current) return;
+
+      // Asegurar contenedor limpio antes de montar
+      bricksContainerRef.current.innerHTML = "";
+
+      const visualConfig = {
+        style: {
+          theme: "bootstrap",
+          customVariables: {
+            baseColor: "#C792DF",
+            baseColorFirstVariant: "#B370D4",
+            baseColorSecondVariant: "#9C4CBD",
+            buttonTextColor: "#ffffff",
+            borderRadiusMedium: "10px",
+            borderRadiusSmall: "6px",
+            borderRadiusLarge: "14px",
+          },
+        },
+      };
+
+      const customizationConfig: any = isCard
+        ? {
+          visual: visualConfig,
+          paymentMethods: {
+            maxInstallments: 12,
+          },
+        }
+        : {
+          visual: visualConfig,
+          paymentMethods: {
+            bankTransfer: "all", // PSE
+          },
+        };
+
+      try {
+        const controller = await bricksBuilder.create(
+        brickName,
         "paymentBrick_container",
         {
           initialization: {
             amount: total,
-          },
-          customization: {
-            paymentMethods: paymentMethodsConfig,
-            visual: {
-              style: {
-                theme: "default",
-              },
+            payer: {
+              email: userEmail,
             },
           },
+          customization: customizationConfig,
           callbacks: {
             onReady: () => {
-              console.log("Payment Brick listo");
+              console.log(`${brickName} listo`);
             },
 
-            onSubmit: ({
-              formData,
-              selectedPaymentMethod,
-            }: {
-              formData: any;
-              selectedPaymentMethod: any;
-            }) => {
+            onSubmit: (arg1: any, arg2?: any) => {
               return new Promise<void>(async (resolve, reject) => {
                 try {
                   setMountError(null);
+
+                  // En cardPayment: arg1 es formData, arg2 es additionalData
+                  // En payment (PSE): arg1 es { formData, selectedPaymentMethod }
+                  const formData = arg1?.formData ?? arg1;
+                  const selectedPaymentMethod = arg1?.selectedPaymentMethod ?? arg2;
 
                   const paymentMethodId =
                     selectedPaymentMethod?.id ??
@@ -177,9 +203,10 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
                       storage_plan_id: storagePlanId ?? null,
                     };
                   }
+                  console.log("Payload que se envía al backend:", payload);
 
                   const res = await axios.post(
-                    `${API_BASE}${endpoint}`,
+                    `${endpoint}`,
                     payload,
                     {
                       headers: {
@@ -313,20 +340,33 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
             // },
 
             onError: (error: any) => {
-              console.error("Error en Payment Brick:", error);
-              setErrorMessage("Ocurrió un error en el formulario de pago.");
+              console.error("Error en Payment Brick (OBJETO COMPLETO):", error);
+              console.error("Mensaje:", error?.message);
+              console.error("Causa:", error?.cause);
+
+              setErrorMessage(
+                error?.message || "Ocurrió un error en el formulario de pago."
+              );
               setShowErrorModal(true);
             },
           },
         }
-      );
+        );
+        if (cancelled) {
+          try {
+            await controller.unmount?.();
+          } catch (e) {
+            console.warn("Mercado Pago unmount on cancelled:", e);
+          }
+          return;
+        }
 
-      if (cancelled) {
-        controller.unmount?.();
-        return;
+        brickControllerRef.current = controller;
+      } catch (err: any) {
+        if (!cancelled) {
+          console.error("Error creating Mercado Pago brick:", err);
+        }
       }
-
-      brickControllerRef.current = controller;
     };
 
     renderPaymentBrick();
@@ -334,7 +374,11 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
     return () => {
       cancelled = true;
       if (brickControllerRef.current) {
-        brickControllerRef.current.unmount?.();
+        try {
+          brickControllerRef.current.unmount?.();
+        } catch (e) {
+          console.warn("Mercado Pago cleanup warning:", e);
+        }
         brickControllerRef.current = null;
       }
     };
@@ -362,10 +406,33 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
     <>
       <div className="payment-step-wrapper">
         <div className="payment-card">
+          <div className="payment-card-header">
+            <h5 className="payment-card-title">
+              <i className="bi bi-shield-check text-success me-2"></i>
+              {paymentMethod === "Card" ? "Pago con Tarjeta de Crédito / Débito" : "Pago con PSE"}
+            </h5>
+            <span className="payment-badge-secure">
+              <i className="bi bi-lock-fill me-1"></i> Transacción 100% Segura
+            </span>
+          </div>
+
+          <div className="payment-amount-banner mb-3 p-3 rounded-3 d-flex justify-content-between align-items-center">
+            <div>
+              <span className="text-muted small d-block">
+                {storagePlanId && !bookingId ? "Total del plan a pagar:" : "Monto a pagar en este paso:"}
+              </span>
+              <strong className="fs-5 text-purple">${total.toLocaleString("es-CO")} COP</strong>
+            </div>
+            <div className="d-flex gap-2">
+              <i className="bi bi-credit-card-2-front fs-3 text-purple"></i>
+            </div>
+          </div>
+
           <div
             id="paymentBrick_container"
             ref={bricksContainerRef}
             className="payment-brick-container"
+            translate="no"
           />
         </div>
 
@@ -376,8 +443,14 @@ const AppointmentFormStep4PaymentEmbedded: React.FC<Props> = ({
         />
       </div>
       <div className="payment-actions">
-        <div className="d-flex justify-content-between mt-4">
-          <Button value="Atrás" onClick={onBack} />
+        <div className="d-flex justify-content-start mt-3">
+          <button
+            type="button"
+            className="btn btn-outline-secondary px-4 py-2 rounded-3 d-inline-flex align-items-center gap-2 fw-semibold"
+            onClick={onBack}
+          >
+            <i className="bi bi-arrow-left"></i> Atrás
+          </button>
         </div>
       </div>
     </>

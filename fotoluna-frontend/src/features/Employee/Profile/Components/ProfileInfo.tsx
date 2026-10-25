@@ -4,7 +4,7 @@ import AvatarUpload from './AvatarUpload';
 import { updateProfile } from '../../../../services/profileService';
 import '../Styles/perfil/ProfileInfo.css';
 
-const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) => {
+const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate, onClose }) => {
     const [formData, setFormData] = useState({
         name: profile.name,
         email: profile.email,
@@ -109,6 +109,9 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
         setAvatar(null);
         setErrors({});
         setMessage(null);
+        if (onClose) {
+            onClose();
+        }
     };
 
     return (
@@ -122,7 +125,6 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
 
             {/* Avatar Section */}
             <div className="avatar-section mb-4">
-                <label className="form-label fw-semibold">Foto de perfil</label>
                 <AvatarUpload
                     avatar={profile.avatar}
                     onAvatarChange={setAvatar}
@@ -130,40 +132,32 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
             </div>
 
             {/* Name Field */}
-            <div className="row mb-3">
-                <div className="col-md-6">
-                    <label htmlFor="name" className="form-label form-label-employee fw-semibold">Nombre</label>
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            className={`form-control form-control-employee ${errors.name ? 'is-invalid' : ''}`}
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            placeholder="Ingresa tu nombre"
-                        />
-                    </div>
-                </div>
-                <div className="col-md-6">
-                    <label className="form-label form-label-employee fw-semibold d-block">&nbsp;</label>
-                    <div className="d-flex gap-2">
-                        <button type="button" className="btn btn-employee btn-outline-primary btn-sm">
-                            Cambiar
-                        </button>
-                        {/* <button type="button" className="btn btn-employee btn-outline-danger btn-sm">
-                            Eliminar
-                        </button> */}
-                    </div>
-                </div>
+            <div className="profile-form-group mb-3">
+                <label htmlFor="name" className="profile-form-label">
+                    <i className="bi bi-person me-1"></i> Nombre Completo
+                </label>
+                <input
+                    type="text"
+                    className={`profile-form-input ${errors.name ? 'is-invalid' : ''}`}
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Ingresa tu nombre"
+                />
+                {errors.name && (
+                    <div className="profile-invalid-feedback">{errors.name}</div>
+                )}
             </div>
 
             {/* Email Field */}
-            <div className="mb-3">
-                <label htmlFor="email" className="form-label form-label-employee fw-semibold">Correo electrónico</label>
+            <div className="profile-form-group mb-3">
+                <label htmlFor="email" className="profile-form-label">
+                    <i className="bi bi-envelope me-1"></i> Correo Electrónico
+                </label>
                 <input
                     type="email"
-                    className={`form-control form-control-employee ${errors.email ? 'is-invalid' : ''}`}
+                    className={`profile-form-input ${errors.email ? 'is-invalid' : ''}`}
                     id="email"
                     name="email"
                     value={formData.email}
@@ -171,33 +165,36 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
                     placeholder="tu@email.com"
                 />
                 {errors.email && (
-                    <div className="invalid-feedback d-block">{errors.email}</div>
+                    <div className="profile-invalid-feedback">{errors.email}</div>
                 )}
             </div>
 
             {/* Bio Field */}
-            <div className="mb-4">
-                <label htmlFor="bio" className="form-label form-label-employee fw-semibold">Biografía</label>
+            <div className="profile-form-group mb-4">
+                <label htmlFor="bio" className="profile-form-label">
+                    <i className="bi bi-chat-quote me-1"></i> Biografía / Rol
+                </label>
                 <textarea
-                    className="form-control form-control-employee"
+                    className="profile-form-input profile-form-textarea"
                     id="bio"
                     name="bio"
-                    rows={4}
+                    rows={3}
                     value={formData.bio}
                     onChange={handleInputChange}
-                    placeholder="Una breve descripción sobre ti."
+                    placeholder="Fotógrafo profesional en FotoLuna."
                     disabled
                 />
-                <div className="form-text">
-                    {formData.bio || 'Fotógrafa apasionada por los paisajes y la naturaleza.'}
+                <div className="profile-form-hint">
+                    <i className="bi bi-info-circle me-1"></i>
+                    {formData.bio || 'Fotógrafo y creativo profesional del equipo FotoLuna.'}
                 </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="d-flex gap-3 justify-content-end">
+            <div className="profile-form-actions">
                 <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn-profile-cancel"
                     onClick={handleCancel}
                     disabled={loading}
                 >
@@ -205,10 +202,20 @@ const ProfileInfo: React.FC<ProfileInfoProps> = ({ profile, onProfileUpdate }) =
                 </button>
                 <button
                     type="submit"
-                    className="btn btn-primary-employee"
+                    className="btn-profile-save"
                     disabled={loading}
                 >
-                    {loading ? 'Guardando...' : 'Guardar cambios'}
+                    {loading ? (
+                        <>
+                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Guardando...
+                        </>
+                    ) : (
+                        <>
+                            <i className="bi bi-check-lg me-1"></i>
+                            Guardar cambios
+                        </>
+                    )}
                 </button>
             </div>
         </form>

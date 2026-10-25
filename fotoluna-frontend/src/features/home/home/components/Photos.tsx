@@ -7,9 +7,6 @@ import { saveAs } from "file-saver";
 // IMPORTAR useAuth
 import { useAuth } from "../../../../context/useAuth";
 
-// Ajusta la URL base de tu API
-const API_BASE_URL = "http://localhost:8000/api";
-
 type TCloudPhoto = {
     id: number;
     url: string;
@@ -50,7 +47,7 @@ export default function Photos() {
             setLoading(true);
             setErrorMessage(null);
             try {
-                const response = await fetch(`${API_BASE_URL}/client/my-cloud-photos`, {
+                const response = await fetch(`/api/client/my-cloud-photos`, {
                     headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" },
                 });
                 const data = await response.json();

@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/appointmentSummary.css";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 type StoragePlan = {
     id: number;
     name: string;
@@ -64,7 +62,7 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
                 setLoading(true);
                 const token = localStorage.getItem("token");
 
-                const res = await axios.get(`${API_BASE}/api/bookings/${bookingId}`, {
+                const res = await axios.get(`/api/bookings/${bookingId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         Accept: "application/json",
@@ -92,7 +90,7 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
             const token = localStorage.getItem("token");
 
             await axios.post(
-                `${API_BASE}/api/bookings/${bookingId}/send-confirmation`,
+                `/api/bookings/${bookingId}/send-confirmation`,
                 {},
                 {
                     headers: {
@@ -120,7 +118,7 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                `${API_BASE}/api/bookings/${bookingId}/calendar-link`,
+                `/api/bookings/${bookingId}/calendar-link`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -183,7 +181,7 @@ const AppointmentSummary: React.FC<AppointmentSummaryProps> = ({
             const token = localStorage.getItem("token");
 
             const res = await axios.get(
-                `${API_BASE}/api/bookings/${bookingId}/receipt`,
+                `/api/bookings/${bookingId}/receipt`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

@@ -11,11 +11,13 @@ export interface ProfileTabProps {
   onTabChange: (tab: string) => void;
   profile: UserProfileData;
   onProfileUpdate: (profile: UserProfileData) => void;
+  onClose?: () => void;
 }
 
 export interface ProfileInfoProps {
   profile: UserProfileData;
   onProfileUpdate: (profile: UserProfileData) => void;
+  onClose?: () => void;
 }
 
 export interface AvatarUploadProps {

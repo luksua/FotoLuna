@@ -41,6 +41,20 @@ class NotificationController extends Controller
     }
 
     /**
+     * POST /api/notifications/read-all
+     * Marca todas las notificaciones no leídas como leídas
+     */
+    public function markAllAsRead(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $user->unreadNotifications->markAsRead();
+
+        return response()->noContent();
+    }
+
+    /**
      * DELETE /api/notifications/{id}
      * Descarta / elimina una notificación
      */

@@ -7,8 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 const BIRTHDAY_EVENT_ID = 2;
 
 const Birthday = () => {
@@ -51,7 +49,7 @@ const Birthday = () => {
                 const token = localStorage.getItem("token");
 
                 const res = await axios.get(
-                    `${API_BASE}/api/events/${BIRTHDAY_EVENT_ID}/packages`,
+                    `/api/events/${BIRTHDAY_EVENT_ID}/packages`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -68,7 +66,7 @@ const Birthday = () => {
                     title: pkg.packageName,
                     description: pkg.packageDescription,
                     price: pkg.packagePrice,
-                    img: pkg.photos?.[0]?.url ?? "/img/birthday-default.jpg", // fallback
+                    img: pkg.photos?.[0]?.url ?? "/img/birthday2.jpg", // fallback
                 }));
 
                 setPackages(combined);

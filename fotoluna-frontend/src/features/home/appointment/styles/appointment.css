@@ -1480,3 +1480,103 @@ button.svelte-11b9rht:disabled {
   /* Inputs internos del brick: full width, sin pasarse */
 
 }
+
+/* ========================================================
+   ESTILOS PREMIUM PARA EL FORMULARIO DE PAGO MERCADO PAGO
+======================================================== */
+.payment-step-wrapper {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.payment-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #ebd9f5;
+  box-shadow: 0 10px 30px rgba(199, 146, 223, 0.12);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.25s ease-in-out;
+}
+
+.payment-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.payment-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.payment-badge-secure {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #059669;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.payment-amount-banner {
+  background: linear-gradient(135deg, #fbf7fd 0%, #f4e8fa 100%);
+  border: 1px solid #e7cef3;
+}
+
+.text-purple {
+  color: #9d4edd !important;
+}
+
+/* ========================================================
+   REGLAS DEL CONTENEDOR DEL BRICK Y ELEMENTOS MP
+/* Asegurar que el contenedor del Brick tenga espacio y no rompa eventos */
+.payment-brick-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  min-height: 350px;
+}
+
+.payment-brick-container input[type="radio"] {
+  accent-color: #C792DF !important;
+  cursor: pointer !important;
+}
+
+/* Botón principal de pagar inyectado por Mercado Pago */
+.payment-brick-container button[type="submit"],
+.payment-brick-container [class*="submit-button"],
+.payment-brick-container .mp-button {
+  background: linear-gradient(135deg, #C792DF 0%, #a47ec8 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  font-size: 1.05rem !important;
+  padding: 0.85rem 1.75rem !important;
+  box-shadow: 0 6px 20px rgba(199, 146, 223, 0.35) !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  width: 100% !important;
+  margin-top: 1.25rem !important;
+}
+
+.payment-brick-container button[type="submit"]:hover,
+.payment-brick-container [class*="submit-button"]:hover,
+.payment-brick-container .mp-button:hover {
+  background: linear-gradient(135deg, #b37cc5 0%, #8f68b3 100%) !important;
+  box-shadow: 0 8px 24px rgba(199, 146, 223, 0.45) !important;
+  transform: translateY(-2px) !important;
+}

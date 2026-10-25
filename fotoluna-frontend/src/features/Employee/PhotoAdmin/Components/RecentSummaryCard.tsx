@@ -23,17 +23,22 @@ const formatDateTime = (dateString: string) => {
 
 // Componente simple para el grid de miniaturas
 const PhotoGrid: React.FC<{ photos: PhotoThumbnail[] }> = ({ photos }) => (
-    <div className="d-flex flex-wrap gap-1 mt-3 border p-1 rounded bg-light">
-        {photos.map((photo) => (
-            <div key={photo.id} style={{ width: '45px', height: '45px', overflow: 'hidden' }}>
+    <div className="emp-photo-grid-preview">
+        {photos.slice(0, 5).map((photo) => (
+            <div key={photo.id} className="emp-photo-thumb-wrap">
                 <img
                     src={photo.url || photo.thumbnailUrl}
                     alt={photo.id.toString()}
-                    className="w-100 h-100 object-fit-cover rounded"
+                    className="emp-photo-thumb-img"
                     title={`Subida: ${formatDateTime(photo.uploadedAt)}`}
                 />
             </div>
         ))}
+        {photos.length > 5 && (
+            <div className="emp-photo-thumb-more">
+                +{photos.length - 5}
+            </div>
+        )}
     </div>
 );
 
@@ -47,27 +52,33 @@ export const RecentSummaryCard: React.FC<RecentSummaryCardProps> = ({
     const coverPhotoUrl = customer.recentPhotos[0]?.url || 'https://placehold.co/400x200/BDB7D3/ffffff?text=FOTO+LUNA';
 
     return (
-        <article className="card shadow-sm h-100 border-0 overflow-hidden card-jd" style={{ maxWidth: '350px' }}>
+        <article className="emp-summary-card">
             {/* Portada */}
-            <div className="position-relative" style={{ height: '200px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+            <div className="emp-summary-cover">
                 <img
                     src={coverPhotoUrl}
                     alt={`Portada de ${customer.customerName}`}
-                    className="w-100 h-100 object-fit-cover"
-                    // Fallback visual si la imagen falla
                     onError={(e: any) => e.target.src = 'https://placehold.co/400x200/BDB7D3/ffffff?text=FOTO+LUNA'}
                 />
-                <div className="position-absolute top-0 end-0 m-2 badge bg-dark opacity-75">
-                    {total} fotos recientes
+                <div className="emp-cover-badge">
+                    <i className="bi bi-image me-1"></i>
+                    {total} {total === 1 ? 'foto' : 'fotos'}
                 </div>
             </div>
 
-            <div className="card-body">
-                <h3 className="card-title text-purple-700 fw-bold tt">{customer.customerName}</h3>
-                <p className="card-text text-muted mb-3">
-                    <i className="bi bi-calendar me-1"></i>
-                    Última subida: {lastUpload}
-                </p>
+            <div className="emp-summary-body">
+                <div className="emp-customer-info">
+                    <div className="emp-customer-avatar">
+                        <i className="bi bi-person-fill"></i>
+                    </div>
+                    <div>
+                        <h3 className="emp-customer-name" title={customer.customerName}>{customer.customerName}</h3>
+                        <p className="emp-customer-date">
+                            <i className="bi bi-clock-history me-1"></i>
+                            {lastUpload}
+                        </p>
+                    </div>
+                </div>
 
                 {/* Mini-Galería */}
                 {customer.recentPhotos.length > 0 && (
@@ -75,16 +86,14 @@ export const RecentSummaryCard: React.FC<RecentSummaryCardProps> = ({
                 )}
 
                 {/* Acciones */}
-                <div className="mt-4 d-grid">
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => onViewRecent(customer.customerId)}
-                        style={{ backgroundColor: '#8c2db0', borderColor: '#8c2db0' }}
-                    >
-                        Ver {total} fotos recientes
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    className="emp-summary-action-btn"
+                    onClick={() => onViewRecent(customer.customerId)}
+                >
+                    <span>Ver {total} fotos</span>
+                    <i className="bi bi-arrow-right"></i>
+                </button>
             </div>
         </article>
     );

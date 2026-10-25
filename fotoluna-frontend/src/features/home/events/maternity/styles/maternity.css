@@ -52,7 +52,7 @@
     }
 }
 
-.ad-title {
+.ad-title-maternity {
     padding-top: 120px;
     color: #5E1D6F;
     margin-bottom: 1.5rem;
@@ -63,13 +63,13 @@
     transition: transform 0.3s ease;
 }
 
-.ad-title h1 {
+.ad-title-maternity h1 {
     font-weight: 400;
     font-style: normal;
     font-size: 80px;
 }
 
-.ad-text {
+.ad-text-maternity {
     font-size: 1.5rem;
     color: #5a4163;
     line-height: 2;
@@ -121,12 +121,12 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .ad-title {
+    .ad-title-maternity {
         font-size: 3rem;
         padding-top: 60px;
     }
 
-    .ad-text {
+    .ad-text-maternity {
         font-size: 1.1rem;
         padding: 1.5rem;
     }
@@ -217,15 +217,15 @@
         padding: 3rem 1.5rem;
     }
 
-    .ad-title {
+    .ad-title-maternity {
         padding-top: 80px;
     }
 
-    .ad-title h1 {
+    .ad-title-maternity h1 {
         font-size: 3rem;
     }
 
-    .ad-text {
+    .ad-text-maternity {
         font-size: 1.2rem;
         padding: 1.5rem;
         line-height: 1.8;
@@ -274,7 +274,7 @@
         padding: 2rem 1rem;
     }
 
-    .ad-title {
+    .ad-title-maternity {
         padding-top: 80px;
     }
 
@@ -283,7 +283,7 @@
         line-height: 1.2;
     }
 
-    .ad-text {
+    .ad-text-maternity {
         font-size: 1rem;
         padding: 1rem;
         line-height: 1.6;
@@ -359,7 +359,7 @@
         padding: 0 !important;
     }
 
-    .ad-text {
+    .ad-text-maternity {
         font-size: 0.9rem;
         padding: 0.8rem;
     }

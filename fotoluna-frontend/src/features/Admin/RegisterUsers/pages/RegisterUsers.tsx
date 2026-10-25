@@ -27,7 +27,6 @@ import "../styles/RegisterUsers.css";
 //     password_confirmation: string;
 // }
 
-
 const Register = () => {
     // 🚨 CORRECCIÓN TS6133: 'setIsSubmitting' no estaba definido.
     // const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,7 +111,7 @@ const Register = () => {
             };
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const res = await fetch('/api/admin/employees', {
+            const res = await fetch(`/api/admin/employees`, {
                 method: 'POST',
                 headers,
                 body: formData,
@@ -328,7 +327,7 @@ const Register = () => {
             </div>
 
             <footer>
-                <p>FotoLuna &copy;  </p>
+                <p>FotoLuna &copy;</p>
             </footer>
 
         </HomeLayout>

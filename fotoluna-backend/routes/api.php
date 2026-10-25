@@ -55,7 +55,8 @@ Route::get('/employees/all', [EmployeeController::class, 'all']);
 Route::get('/employees/ratings', [EmployeeController::class, 'ratings']);
 
 // Planes de almacenamiento (listado público)
-Route::get('/storage-plans', [StoragePlanController::class, 'index']);
+Route::get('/storage-plans', [StoragePlanController::class, 'indexCustomer']);
+Route::get('/storage-plans-customer', [StoragePlanController::class, 'indexCustomer']);
 
 // Formulario de contacto
 Route::post('/contact', [ContactController::class, 'store']);
@@ -80,8 +81,15 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // Perfil de usuario (cliente, empleado, admin)
+    Route::post('/customer', [ProfileController::class, 'update']);
+    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword']);
+
     // Notificaciones
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
@@ -133,10 +141,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 
-    // Perfil
-    Route::post('/customer', [ProfileController::class, 'update']);
-    Route::post('/customer/password', [ProfileController::class, 'updatePassword']);
-
     // Galería del cliente
     Route::get('/client/my-cloud-photos', [CloudPhotoController::class, 'getMyCloudPhotos']);
 
@@ -181,7 +185,6 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 
 
     // Storage (cliente)
-    Route::get('/storage-plans-customer', [StoragePlanController::class, 'indexCustomer']);
     Route::post('/storage/subscribe', [StorageSubscriptionController::class, 'createSubscription']);
     Route::get('/storage/dashboard', [StoragePlanController::class, 'index']);
     Route::post('/storage/change-plan', [StoragePlanController::class, 'changePlan']);

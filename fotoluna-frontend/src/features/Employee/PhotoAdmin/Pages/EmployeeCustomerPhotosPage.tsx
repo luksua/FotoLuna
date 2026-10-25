@@ -9,8 +9,6 @@ import axios from "axios";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-const API_SERVER_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 // --- Interfaces y Tipos ---
 interface PhotoItem {
     id: number;
@@ -63,7 +61,7 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
         try {
             const token = localStorage.getItem("token");
             if (!token) throw new Error("No hay sesión activa.");
-            const res = await axios.get<CustomerDetails>(`${API_SERVER_URL}/api/customers/${customerId}`, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await axios.get<CustomerDetails>(`/api/customers/${customerId}`, { headers: { Authorization: `Bearer ${token}` } });
             setCustomerName(res.data.fullName || `Cliente #${customerId}`);
         } catch (error) { setCustomerName(`Error al cargar nombre del Cliente #${customerId}`); }
         finally { setCustomerLoading(false); }
@@ -82,10 +80,10 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
                 order_by: filters.orderBy === "event" ? "event_name" : "created_at",
             });
             if (filters.event && filters.event !== "Todos") params.append("event", filters.event);
-            const res = await fetch(`${API_SERVER_URL}/api/employee/customers/${customerId}/cloud-photos?${params.toString()}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
+            const res = await fetch(`/api/employee/customers/${customerId}/cloud-photos?${params.toString()}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
             if (!res.ok) throw new Error("Error al cargar las fotos.");
             const data: ApiResponse = await res.json();
-            let list = [...data.photos];
+            const list = [...data.photos];
             if (filters.orderBy === "name") list.sort((a, b) => (a.original_name || "").localeCompare(b.original_name || ""));
             else if (filters.orderBy === "size") list.sort((a, b) => b.size - a.size);
             if (page === 1) {
@@ -136,7 +134,7 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
             if (!token) {
                 throw new Error("No hay token de autenticación.");
             }
-            const res = await fetch(`${API_SERVER_URL}/api/cloud-photos/${photo.id}/download`, {
+            const res = await fetch(`/api/cloud-photos/${photo.id}/download`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!res.ok) throw new Error(`No se pudo obtener la imagen. Estado: ${res.status}`);
@@ -157,7 +155,7 @@ const EmployeeCustomerPhotosPage: React.FC = () => {
                 throw new Error("No hay token de autenticación.");
             }
             await Promise.all(photosToDownload.map(async photo => {
-                const res = await fetch(`${API_SERVER_URL}/api/cloud-photos/${photo.id}/download`, {
+                const res = await fetch(`/api/cloud-photos/${photo.id}/download`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (res.ok) {

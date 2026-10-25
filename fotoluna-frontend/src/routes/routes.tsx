@@ -14,6 +14,7 @@ const Quinces = lazy(() => import("../features/home/events/quinces/pages/Quinces
 const ProfilePage = lazy(() => import("../features/home/home/pages/Account"));
 const Photos = lazy(() => import("../features/home/home/pages/Photos"));
 import Plan from "../features/home/plan/pages/PlanDashboard";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 const routes = [
     {
@@ -67,9 +68,11 @@ const routes = [
     {
         path: "/citas",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <Appointment />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["cliente"]}>
+                <Suspense fallback={<Spinner />}>
+                    <Appointment />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
@@ -83,9 +86,11 @@ const routes = [
     {
         path: "/notificaciones",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <Notification />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["cliente"]}>
+                <Suspense fallback={<Spinner />}>
+                    <Notification />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
@@ -99,21 +104,31 @@ const routes = [
     {
         path: "/miCuenta",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <ProfilePage />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["cliente"]}>
+                <Suspense fallback={<Spinner />}>
+                    <ProfilePage />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/fotos",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <Photos />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["cliente"]}>
+                <Suspense fallback={<Spinner />}>
+                    <Photos />
+                </Suspense>
+            </ProtectedRoute>
         ),
     }, {
         path: "/plan",
-        element: <Plan />
+        element: (
+            <ProtectedRoute allowedRoles={["cliente"]}>
+                <Suspense fallback={<Spinner />}>
+                    <Plan />
+                </Suspense>
+            </ProtectedRoute >
+        ),
     },
 ];
 

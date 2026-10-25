@@ -11,8 +11,6 @@ import '../Styles/Payment/PaymentEmployee.css';
 import EmployeeLayout from '../../../../layouts/HomeEmployeeLayout';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
-
 const Payments: React.FC = () => {
     const [filter, setFilter] = useState<FilterType>('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -54,7 +52,7 @@ const Payments: React.FC = () => {
 
                 const token = localStorage.getItem('token');
 
-                const response = await axios.get(`${API_URL}/employee/payments`, {
+                const response = await axios.get(`/api/employee/payments`, {
                     params,
                     headers: token
                         ? { Authorization: `Bearer ${token}` }
@@ -82,7 +80,7 @@ const Payments: React.FC = () => {
             try {
                 const token = localStorage.getItem('token');
 
-                const response = await axios.get(`${API_URL}/employee/payments`, {
+                const response = await axios.get(`/api/employee/payments`, {
                     params: {
                         page: 1,
                         per_page: 200, // o 500, según tu volumen
@@ -132,7 +130,7 @@ const Payments: React.FC = () => {
             const token = localStorage.getItem('token');
 
             const res = await axios.get(
-                `${API_URL}/bookings/${bookingId}/receipt`,
+                `/api/bookings/${bookingId}/receipt`,
                 {
                     headers: {
                         Authorization: token ? `Bearer ${token}` : '',
@@ -173,7 +171,7 @@ const Payments: React.FC = () => {
             const token = localStorage.getItem('token');
 
             const res = await axios.get(
-                `${API_URL}/appointments/${appointmentId}/installments/${installmentId}/receipt`,
+                `/api/appointments/${appointmentId}/installments/${installmentId}/receipt`,
                 {
                     headers: {
                         Authorization: token ? `Bearer ${token}` : '',
@@ -224,17 +222,25 @@ const Payments: React.FC = () => {
                 onClick={() => setShowDetailModal(false)}
             >
                 <div
-                    className="custom-modal bg-custom-2"
+                    className="payment-detail-modal-card shadow-lg"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="modal-header">
-                        <div>
-                            <h5 className="modal-title">Detalle de pago</h5>
-                            <small className="text-muted">
-                                {p.clientName} · {p.date}
-                            </small>
-                            <br />
-                            <small className="text-muted">{p.description}</small>
+                    {/* Header del Modal */}
+                    <div className="payment-modal-header d-flex align-items-center justify-content-between p-4 border-bottom">
+                        <div className="d-flex align-items-center gap-3">
+                            <div className="modal-title-icon-box">
+                                <i className="bi bi-receipt-cutoff"></i>
+                            </div>
+                            <div>
+                                <h5 className="modal-title fw-bold text-dark m-0">Detalle de Pago</h5>
+                                <div className="text-muted small mt-1">
+                                    <span className="fw-semibold text-dark">{p.clientName}</span> · {p.date}
+                                </div>
+                                <div className="text-muted small">
+                                    <i className="bi bi-tag-fill me-1 text-primary"></i>
+                                    {p.description}
+                                </div>
+                            </div>
                         </div>
 
                         <button
@@ -245,117 +251,137 @@ const Payments: React.FC = () => {
                         />
                     </div>
 
-                    <div className="modal-body">
-                        {/* Resumen */}
-                        <div className="row g-2 mb-4 mt-1">
+                    <div className="payment-modal-body p-4">
+                        {/* 3 Tarjetas de Resumen Financiero */}
+                        <div className="row g-3 mb-4">
                             <div className="col-12 col-md-4">
-                                <div className="shadow p-2 rounded bg-light h-100">
-                                    <small className="text-muted d-block">Total del servicio</small>
-                                    <strong>{formatCOP(total)}</strong>
+                                <div className="modal-summary-card total p-3 rounded-4">
+                                    <div className="d-flex align-items-center justify-content-between mb-2">
+                                        <small className="text-muted fw-bold">TOTAL SERVICIO</small>
+                                        <i className="bi bi-wallet2 text-muted"></i>
+                                    </div>
+                                    <h4 className="fw-bold text-dark m-0">{formatCOP(total)}</h4>
                                 </div>
                             </div>
                             <div className="col-12 col-md-4">
-                                <div className="shadow p-2 rounded bg-light h-100">
-                                    <small className="text-muted d-block">Pagado</small>
-                                    <strong>{formatCOP(paid)}</strong>
+                                <div className="modal-summary-card paid p-3 rounded-4">
+                                    <div className="d-flex align-items-center justify-content-between mb-2">
+                                        <small className="text-success fw-bold">PAGADO</small>
+                                        <i className="bi bi-check-circle-fill text-success"></i>
+                                    </div>
+                                    <h4 className="fw-bold text-success m-0">{formatCOP(paid)}</h4>
                                 </div>
                             </div>
                             <div className="col-12 col-md-4">
-                                <div className="shadow p-2 rounded bg-light h-100">
-                                    <small className="text-muted d-block">Saldo pendiente</small>
-                                    <strong>{formatCOP(pending)}</strong>
+                                <div className="modal-summary-card pending p-3 rounded-4">
+                                    <div className="d-flex align-items-center justify-content-between mb-2">
+                                        <small className="text-warning fw-bold">SALDO PENDIENTE</small>
+                                        <i className="bi bi-hourglass-split text-warning"></i>
+                                    </div>
+                                    <h4 className="fw-bold text-warning m-0">{formatCOP(pending)}</h4>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Tabla de cuotas (reales o virtuales) */}
-                        {!hasInstallments ? (
-                            <p className="text-muted">
-                                Este pago no está dividido en cuotas. Estado:{' '}
-                                <strong>{p.status}</strong>
-                            </p>
-                        ) : (
-                            <div className="table-responsive">
-                                <table className="table table-sm align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Vencimiento</th>
-                                            <th>Monto</th>
-                                            <th>Estado</th>
-                                            <th>Recibo</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {installments.map((ins, index) => {
-                                            let badgeClass = 'status-pill sm ';
-                                            let label = '';
+                        {/* Tabla de cuotas */}
+                        <div className="installments-section">
+                            <h6 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                                <i className="bi bi-list-columns-reverse text-primary"></i>
+                                Desglose de Cuotas
+                            </h6>
 
-                                            if (ins.paid) {
-                                                badgeClass += 'paid';
-                                                label = 'Pagada';
-                                            } else if (ins.is_overdue) {
-                                                badgeClass += 'expired';
-                                                label = 'Vencida';
-                                            } else {
-                                                badgeClass += 'pending';
-                                                label = 'Pendiente';
-                                            }
+                            {!hasInstallments ? (
+                                <div className="p-3 bg-light rounded-3 text-muted small">
+                                    <i className="bi bi-info-circle me-1"></i> Este pago corresponde a una modalidad de pago único (sin cuotas). Estado: <strong className="text-dark text-capitalize">{p.status}</strong>.
+                                </div>
+                            ) : (
+                                <div className="table-responsive rounded-3 border">
+                                    <table className="table table-sm align-middle mb-0 custom-modal-table">
+                                        <thead>
+                                            <tr>
+                                                <th className="ps-3">#</th>
+                                                <th>Vencimiento</th>
+                                                <th>Monto</th>
+                                                <th>Estado</th>
+                                                <th className="text-end pe-3">Recibo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {installments.map((ins, index) => {
+                                                let badgeClass = 'status-pill sm ';
+                                                let label = '';
 
-                                            const dateLabel = ins.due_date
-                                                ? new Date(ins.due_date).toLocaleDateString('es-CO', {
-                                                    dateStyle: 'medium',
-                                                })
-                                                : '—';
+                                                if (ins.paid) {
+                                                    badgeClass += 'paid';
+                                                    label = 'Pagada';
+                                                } else if (ins.is_overdue) {
+                                                    badgeClass += 'expired';
+                                                    label = 'Vencida';
+                                                } else {
+                                                    badgeClass += 'pending';
+                                                    label = 'Pendiente';
+                                                }
 
-                                            return (
-                                                <tr key={ins.id ?? index}>
-                                                    <td>{index + 1}</td>
-                                                    <td>{dateLabel}</td>
-                                                    <td>{formatCOP(ins.amount)}</td>
-                                                    <td>
-                                                        <span className={badgeClass}>{label}</span>
-                                                    </td>
-                                                    <td>
-                                                        {ins.paid && ins.id != null && p.booking_id && (
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-sm btn-outline-secondary"
-                                                                onClick={() =>
-                                                                    handleDownloadInstallmentReceipt(
-                                                                        selectedPayment,
-                                                                        ins.id as number
-                                                                    )
-                                                                }
-                                                            >
-                                                                Ver recibo
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                                                const dateLabel = ins.due_date
+                                                    ? new Date(ins.due_date).toLocaleDateString('es-CO', {
+                                                        dateStyle: 'medium',
+                                                    })
+                                                    : '—';
+
+                                                return (
+                                                    <tr key={ins.id ?? index}>
+                                                        <td className="ps-3 fw-bold">{index + 1}</td>
+                                                        <td className="text-muted">{dateLabel}</td>
+                                                        <td className="fw-bold">{formatCOP(ins.amount)}</td>
+                                                        <td>
+                                                            <span className={badgeClass}>{label}</span>
+                                                        </td>
+                                                        <td className="text-end pe-3">
+                                                            {ins.paid && ins.id != null && p.booking_id && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-sm btn-outline-purple rounded-pill px-3"
+                                                                    onClick={() =>
+                                                                        handleDownloadInstallmentReceipt(
+                                                                            selectedPayment,
+                                                                            ins.id as number
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <i className="bi bi-file-earmark-pdf me-1"></i> Recibo
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="modal-footer">
-                        {/* Recibo general si hay algo pagado */}
-                        {p.booking_id && paid > 0 && (
+                    <div className="payment-modal-footer d-flex justify-content-between p-4 border-top">
+                        {p.booking_id && paid > 0 ? (
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary me-auto"
+                                className="btn btn-outline-secondary rounded-pill px-3 fw-semibold"
                                 onClick={() => handleDownloadBookingReceipt(p.booking_id)}
                             >
-                                Recibo general
+                                <i className="bi bi-download me-1"></i> Recibo general
                             </button>
+                        ) : (
+                            <div></div>
                         )}
 
                         <button
                             type="button"
-                            className="btn btn-primary"
+                            className="btn btn-primary rounded-pill px-4 fw-bold"
+                            style={{
+                                background: 'linear-gradient(135deg, #c792df 0%, #9d4edd 100%)',
+                                border: 'none',
+                            }}
                             onClick={() => setShowDetailModal(false)}
                         >
                             Cerrar
@@ -367,65 +393,68 @@ const Payments: React.FC = () => {
     };
 
     return (
-        <EmployeeLayout>
+        <EmployeeLayout contentClassName="appointments-layout-main">
             {renderDetailModal()}
-            <Container fluid className="app-container payments-page">
-                <Row className="justify-content-center">
-                    {/* Antes: <Col lg={10} xl={8}> */}
-                    <Col xs={12} lg={12} xl={12}>
-                        {/* Header */}
-                        <div className="app-header mb-4">
-                            <h2 className="text-dark tt">Pagos y Cuotas</h2>
-                            {/* <p className="lead app-header-subtitle">
-                                Revisa tu historial de transacciones y gestiona tus cuotas pendientes
-                            </p> */}
-                        </div>
-
-                        {/* Errores */}
-                        {error && (
-                            <Alert variant="danger" className="mb-3">
-                                {error}
-                            </Alert>
-                        )}
-
-                        {/* Loading */}
-                        {loading && (
-                            <div className="text-center my-4">
-                                <Spinner animation="border" />
+            <Container fluid className="employee-payments-page px-0">
+                {/* Header Principal Compacto */}
+                <header className="page-header-payments d-flex align-items-center justify-content-between mb-2">
+                    <div>
+                        <div className="d-flex align-items-center gap-2 mb-1">
+                            <div className="page-header-icon-badge">
+                                <i className="bi bi-wallet2"></i>
                             </div>
-                        )}
+                            <h1 className="fw-bold text-dark m-0 page-title">Pagos y Cuotas</h1>
+                            <span className="badge rounded-pill total-counter-badge">
+                                {totalItems} {totalItems === 1 ? 'registro' : 'registros'}
+                            </span>
+                        </div>
+                    </div>
+                </header>
 
-                        {/* Estadísticas (siempre con datos globales) */}
-                        {!loading && (
-                            <PaymentStats
-                                payments={statsPayments.length ? statsPayments : payments}
-                            />
-                        )}
+                {/* Errores */}
+                {error && (
+                    <Alert variant="danger" className="mb-3 rounded-4 shadow-sm">
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        {error}
+                    </Alert>
+                )}
 
-                        {/* Filtros */}
-                        <PaymentFilters
-                            currentFilter={filter}
-                            onFilterChange={handleFilterChange}
-                            searchTerm={searchTerm}
-                            onSearchTermChange={setSearchTerm}
-                            order={order}
-                            onOrderChange={setOrder}
-                        />
+                {/* Loading */}
+                {loading && (
+                    <div className="text-center my-4 py-3">
+                        <Spinner animation="border" style={{ color: '#9d4edd' }} />
+                        <div className="text-muted small mt-2">Cargando pagos...</div>
+                    </div>
+                )}
 
-                        {/* Tabla de pagos */}
-                        <PaymentTable
-                            payments={payments}
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalItems={totalItems}
-                            onPageChange={handlePageChange}
-                            onViewDetails={handleViewDetails}
-                        />
-                    </Col>
-                </Row>
+                {/* Estadísticas (siempre con datos globales) */}
+                {!loading && (
+                    <PaymentStats
+                        payments={statsPayments.length ? statsPayments : payments}
+                    />
+                )}
+
+                {/* Filtros */}
+                <PaymentFilters
+                    currentFilter={filter}
+                    onFilterChange={handleFilterChange}
+                    searchTerm={searchTerm}
+                    onSearchTermChange={setSearchTerm}
+                    order={order}
+                    onOrderChange={setOrder}
+                />
+
+                {/* Tabla de pagos */}
+                <PaymentTable
+                    payments={payments}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    onPageChange={handlePageChange}
+                    onViewDetails={handleViewDetails}
+                />
             </Container>
         </EmployeeLayout>
-
     );
 };
 

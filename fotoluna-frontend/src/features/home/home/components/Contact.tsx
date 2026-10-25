@@ -40,7 +40,7 @@ const Contact = () => {
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         try {
-            const response = await fetch("http://localhost:8000/api/contact", {
+            const response = await fetch("http://209.94.63.197/api/contact", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -1,6 +1,6 @@
 // components/PaymentFilters.tsx
 import React from 'react';
-import { Button, ButtonGroup, Form, Row, Col } from 'react-bootstrap';
+import { Form, Row, Col } from 'react-bootstrap';
 import type { FilterType } from './Types/payment';
 
 interface PaymentFiltersProps {
@@ -22,61 +22,79 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
     order,
     onOrderChange,
 }) => {
-    const filters: { key: FilterType; label: string; variant: string }[] = [
-        { key: 'all',     label: 'Todos',        variant: 'outline-primary' },
-        { key: 'paid',    label: 'Pagado',       variant: 'outline-success' },
-        { key: 'pending', label: 'Pendiente',    variant: 'outline-warning' },
-        { key: 'partial', label: 'En cuotas',    variant: 'outline-info' },
-        { key: 'overdue', label: 'Vencido',      variant: 'outline-danger' },
-        { key: 'no_info', label: 'Sin info',     variant: 'outline-secondary' },
+    const filters: { key: FilterType; label: string; icon: string; className: string }[] = [
+        { key: 'all',     label: 'Todos',     icon: 'bi-grid-fill',              className: 'pill-all' },
+        { key: 'paid',    label: 'Pagado',    icon: 'bi-check-circle-fill',      className: 'pill-paid' },
+        { key: 'pending', label: 'Pendiente', icon: 'bi-clock-fill',             className: 'pill-pending' },
+        { key: 'partial', label: 'En cuotas', icon: 'bi-pie-chart-fill',         className: 'pill-partial' },
+        { key: 'overdue', label: 'Vencido',   icon: 'bi-exclamation-circle-fill', className: 'pill-overdue' },
+        { key: 'no_info', label: 'Sin info',  icon: 'bi-dash-circle',            className: 'pill-no-info' },
     ];
 
     return (
-        <div className="filters-section mb-4">
+        <div className="payment-filters-toolbar shadow-sm mb-4">
             {/* Fila de buscador + orden */}
-            <Row className="g-2 align-items-center mb-3">
+            <Row className="g-3 align-items-center mb-3">
                 <Col md={8}>
-                    <Form.Control
-                        type="text"
-                        placeholder="Buscar por cliente, cédula, correo o teléfono..."
-                        value={searchTerm}
-                        onChange={(e) => onSearchTermChange(e.target.value)}
-                    />
+                    <div className="search-box-wrapper">
+                        <i className="bi bi-search search-icon"></i>
+                        <Form.Control
+                            type="text"
+                            placeholder="Buscar por cliente, cédula, correo o teléfono..."
+                            value={searchTerm}
+                            onChange={(e) => onSearchTermChange(e.target.value)}
+                            className="search-input-custom"
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                className="btn-clear-search"
+                                onClick={() => onSearchTermChange("")}
+                                title="Limpiar búsqueda"
+                            >
+                                <i className="bi bi-x-circle-fill"></i>
+                            </button>
+                        )}
+                    </div>
                 </Col>
+
                 <Col md={4}>
-                    <Form.Select
-                        value={order}
-                        onChange={(e) =>
-                            onOrderChange(e.target.value as 'asc' | 'desc')
-                        }
-                    >
-                        <option value="desc">Más recientes primero</option>
-                        <option value="asc">Más antiguos primero</option>
-                    </Form.Select>
+                    <div className="order-select-wrapper">
+                        <i className="bi bi-arrow-down-up order-icon"></i>
+                        <Form.Select
+                            value={order}
+                            onChange={(e) =>
+                                onOrderChange(e.target.value as 'asc' | 'desc')
+                            }
+                            className="order-select-custom"
+                        >
+                            <option value="desc">Más recientes primero</option>
+                            <option value="asc">Más antiguos primero</option>
+                        </Form.Select>
+                    </div>
                 </Col>
             </Row>
 
-            {/* Botones de estado */}
-            <ButtonGroup className="w-100 flex-wrap">
-                {filters.map((filter) => (
-                    <Button
-                        key={filter.key}
-                        variant={
-                            currentFilter === filter.key
-                                ? filter.key === 'all'
-                                    ? 'primary'
-                                    : filter.variant.replace('outline-', '')
-                                : filter.variant
-                        }
-                        onClick={() => onFilterChange(filter.key)}
-                        className="filter-btn"
-                    >
-                        {filter.label}
-                    </Button>
-                ))}
-            </ButtonGroup>
+            {/* Pestañas de estado estilo píldoras modernas */}
+            <div className="status-pills-bar">
+                {filters.map((f) => {
+                    const isActive = currentFilter === f.key;
+                    return (
+                        <button
+                            key={f.key}
+                            type="button"
+                            onClick={() => onFilterChange(f.key)}
+                            className={`status-filter-pill ${f.className} ${isActive ? 'active' : ''}`}
+                        >
+                            <i className={`bi ${f.icon} me-1`}></i>
+                            <span>{f.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 };
 
 export default PaymentFilters;
+

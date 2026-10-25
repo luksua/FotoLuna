@@ -6,8 +6,6 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 interface DocumentPromotion {
     id: number;
     title: string;
@@ -33,7 +31,7 @@ const ProfessionalPhotoPromotions: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await axios.get(`${API_BASE}/api/document-types`);
+                const res = await axios.get(`/api/document-types`);
                 const docs = res.data;
 
                 const mapped = docs.map((doc: any) => ({

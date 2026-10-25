@@ -20,7 +20,7 @@ import { getSalesByMonth, type SalesMonth } from "../../../../services/appointme
 import "../Styles/dashboard.css";
 
 // Datos para el gráfico de barras - Se cargarán dinámicamente
-let initialChartData = [
+const initialChartData = [
     { mes: "Enero", ventas: 0 },
     { mes: "Febrero", ventas: 0 },
     { mes: "Marzo", ventas: 0 },
@@ -65,7 +65,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchRatings = async () => {
             try {
-                const response = await api.get('/api/comments/ratings/stats');
+                const response = await api.get(`/comments/ratings/stats`);
                 if (response.data.success) {
                     setEstrellasData(response.data.data);
                     setAverageRating(response.data.average);
@@ -79,7 +79,7 @@ const Dashboard = () => {
 
         const fetchPackagesStats = async () => {
             try {
-                const res = await api.get('/api/admin/packages/stats');
+                const res = await api.get(`/admin/packages/stats`);
                 if (res.data && res.data.success) {
                     console.log('packages stats del backend:', res.data.data);
                     setPackagesStats(res.data.data || []);
@@ -91,7 +91,7 @@ const Dashboard = () => {
 
         const fetchEmployeeRatings = async () => {
             try {
-                const res = await api.get('/api/employees/ratings');
+                const res = await api.get(`/employees/ratings`);
                 if (res.data && res.data.success && Array.isArray(res.data.data)) {
                     // Ordenar y tomar top 3
                     const sorted = res.data.data
@@ -106,7 +106,7 @@ const Dashboard = () => {
 
         const fetchMonthlySales = async () => {
             try {
-                const res = await api.get('/api/admin/packages/sales/monthly');
+                const res = await api.get(`/admin/packages/sales/monthly`);
                 if (res.data && res.data.success) {
                     setMonthlySales(res.data.data.totalSales || 0);
                 }
@@ -128,7 +128,7 @@ const Dashboard = () => {
 
         const fetchCustomersCount = async () => {
             try {
-                const res = await api.get('/api/admin/customers/count');
+                const res = await api.get(`/admin/customers/count`);
                 if (res.data && res.data.success) {
                     setCustomersCount(res.data.data.total || 0);
                 }

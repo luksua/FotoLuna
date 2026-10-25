@@ -38,8 +38,6 @@
 //     currentSubscription: StorageSubscriptionForWizard | null;
 // };
 
-// const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 // const NEQUI_PAYMENT_LINK =
 //     import.meta.env.VITE_NEQUI_PAYMENT_LINK ?? "https://tu-link-nequi";
 // const DAVIPLATA_PAYMENT_LINK =
@@ -428,8 +426,6 @@ type StorageDashboardForWizard = {
     currentSubscription: StorageSubscriptionForWizard | null;
 };
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
-
 const NEQUI_PAYMENT_LINK =
     import.meta.env.VITE_NEQUI_PAYMENT_LINK ?? "https://tu-link-nequi";
 const DAVIPLATA_PAYMENT_LINK =
@@ -619,7 +615,7 @@ const AppointmentForm: React.FC = () => {
             const token = localStorage.getItem("token");
 
             await axios.post(
-                `${API_BASE}/api/bookings/${bookingId}/payments/offline`,
+                `/api/bookings/${bookingId}/payments/offline`,
                 {
                     amount: grandTotal,
                     paymentMethod,
@@ -654,7 +650,7 @@ const AppointmentForm: React.FC = () => {
             try {
                 const token = localStorage.getItem("token");
 
-                const res = await axios.get(`${API_BASE}/api/bookings/${bookingId}`, {
+                const res = await axios.get(`/api/bookings/${bookingId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         Accept: "application/json",
@@ -710,7 +706,7 @@ const AppointmentForm: React.FC = () => {
                 const token = localStorage.getItem("token");
                 if (!token) return;
 
-                const res = await axios.get(`${API_BASE}/api/storage/dashboard`, {
+                const res = await axios.get(`/api/storage/dashboard`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         Accept: "application/json",
@@ -823,7 +819,7 @@ const AppointmentForm: React.FC = () => {
             }
 
             const res = await axios.post(
-                `${API_BASE}/api/bookings/${bookingId}/installments-plan`,
+                `/api/bookings/${bookingId}/installments-plan`,
                 payload,
                 {
                     headers: {

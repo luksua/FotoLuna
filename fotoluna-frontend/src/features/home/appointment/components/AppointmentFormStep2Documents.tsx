@@ -106,7 +106,7 @@ const AppointmentStep2Documents: React.FC<Step3Props> = ({
 
     // ========= Cargar tipos de documentos =========
     useEffect(() => {
-        api.get("/api/document-types").then(({ data }) => {
+        api.get("/document-types").then(({ data }) => {
             setDocuments(data);
 
             // Decidir qué documento marcar al cargar:

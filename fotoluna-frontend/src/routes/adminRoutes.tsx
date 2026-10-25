@@ -1,6 +1,7 @@
 // import HomeAdmin from "../features/HomeEmployee/pages/HomeAdmin";
 import { lazy, Suspense } from "react";
 import Spinner from "../features/Employee/Appointment/Components/Spinner";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 const Dashboard = lazy(() => import("../features/Admin/Dashboard/pages/Dashboard"));
 const RegisterUsers = lazy(() => import("../features/Admin/RegisterUsers/pages/RegisterUsers"));
@@ -21,99 +22,123 @@ const adminRoutes = [
     {
         path: "/admin",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <HomeAdmin />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <HomeAdmin />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/dashboard",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <Dashboard />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <Dashboard />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/RegisterUsers",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <RegisterUsers />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <RegisterUsers />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/AdminUsers",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminUsers />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminUsers />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/AdminEmployee",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminEmployee />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminEmployee />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/notifications",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <NotificationsEmployee />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <NotificationsEmployee />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/AdminEvents",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminEvents />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminEvents />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/AdminAppointments",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminAppointments />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminAppointments />
+                </Suspense>
+            </ProtectedRoute>
         ),
 
     },
     {
         path: "/AdminPhotos",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminPhotosPage />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminPhotosPage />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     // 🚨 RUTA AGREGADA PARA LA GALERÍA COMPLETA DEL CLIENTE
     {
         path: "/admin/customers/:customerId/photos",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <AdminCustomerPhotosPage />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <AdminCustomerPhotosPage />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/adminPayments",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <PaymentsAndSubscriptions />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <PaymentsAndSubscriptions />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
     {
         path: "/storage-plan",
         element: (
-            <Suspense fallback={<Spinner />}>
-                <SubscriptionsPage />
-            </Suspense>
+            <ProtectedRoute allowedRoles={["admin"]}>
+                <Suspense fallback={<Spinner />}>
+                    <SubscriptionsPage />
+                </Suspense>
+            </ProtectedRoute>
         ),
     },
 ];

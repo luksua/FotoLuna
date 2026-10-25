@@ -1,19 +1,51 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-
-export const exportStoragePaymentsToExcel = async (payments: any[], fileName = 'Pagos_Almacenamiento', totalAmount?: number) => {
+export const exportStoragePaymentsToExcel = async (
+    payments: any[],
+    fileName = 'Pagos_Almacenamiento',
+    totalAmount?: number
+) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Pagos Almacenamiento');
 
+    // Definimos columnas SIN header automático
     worksheet.columns = [
-        { header: 'ID', key: 'id', width: 15 },
-        { header: 'Fecha', key: 'date', width: 22 },
-        { header: 'Monto', key: 'amount', width: 22 },
-        { header: 'Estado', key: 'status', width: 18 },
+        { key: 'id',     width: 15 },
+        { key: 'date',   width: 22 },
+        { key: 'amount', width: 22 },
+        { key: 'status', width: 18 },
     ];
 
-    worksheet.getRow(1).eachCell((cell) => {
+    const totalColumns = worksheet.columns.length;
+    const lastColumnLetter = worksheet.getColumn(totalColumns).letter; // Ej: D
+
+    // 1) TÍTULO (fila 1)
+    const titleRow = worksheet.getRow(1);
+    worksheet.mergeCells(`A1:${lastColumnLetter}1`);
+    titleRow.getCell(1).value = 'Reporte de Pagos de Almacenamiento';
+    titleRow.getCell(1).font = { bold: true, size: 16, color: { argb: 'FF000000' } };
+    titleRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // 2) FECHA DE GENERACIÓN (fila 2)
+    const now = new Date();
+    const generatedAt = now.toLocaleString('es-CO');
+    const dateRow = worksheet.getRow(2);
+    worksheet.mergeCells(`A2:${lastColumnLetter}2`);
+    dateRow.getCell(1).value = `Fecha de generación: ${generatedAt}`;
+    dateRow.getCell(1).font = { italic: true, size: 11, color: { argb: 'FF000000' } };
+    dateRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // 3) Fila 3 vacía (separador)
+
+    // 4) ENCABEZADOS (fila 4)
+    const headerRowIndex = 4;
+    const headerRow = worksheet.getRow(headerRowIndex);
+    const headers = ['ID', 'Fecha', 'Monto', 'Estado'];
+
+    headers.forEach((header, index) => {
+        const cell = headerRow.getCell(index + 1); // 1-based
+        cell.value = header;
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF805fa6' } };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -25,8 +57,7 @@ export const exportStoragePaymentsToExcel = async (payments: any[], fileName = '
         };
     });
 
-    // (Se añadirá la fila de ingresos totales debajo de la tabla, después de listar los pagos)
-
+    // Mapa de estados
     const statusMap: Record<string, string> = {
         approved: 'Aprobado',
         pending: 'Pendiente',
@@ -34,15 +65,23 @@ export const exportStoragePaymentsToExcel = async (payments: any[], fileName = '
         in_process: 'Rechazado',
     };
 
+    // 5) FILAS DE DATOS (a partir de la fila 5)
     payments.forEach((p) => {
         const rawStatus = (p.paymentStatus ?? '').toLowerCase();
         const statusText = statusMap[rawStatus] ?? p.paymentStatus ?? '';
+
         const row = worksheet.addRow({
             id: Number(p.paymentId ?? p.id ?? ''),
-            date: p.paymentDate ? new Date(p.paymentDate).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : '',
+            date: p.paymentDate
+                ? new Date(p.paymentDate).toLocaleString('es-CO', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                  })
+                : '',
             amount: Number(p.amount ?? 0),
             status: statusText,
         });
+
         row.eachCell((cell) => {
             cell.border = {
                 top: { style: 'thin' },
@@ -54,47 +93,63 @@ export const exportStoragePaymentsToExcel = async (payments: any[], fileName = '
         });
     });
 
-    // Agregar fila de ingresos totales si se proporciona (debajo de la tabla)
+    // 6) Fila de ingresos totales (debajo de la tabla)
     if (typeof totalAmount === 'number') {
-        // fila vacía separadora
-        worksheet.addRow({ id: '', date: '', amount: '', status: '' });
-        const totalRow = worksheet.addRow({ id: '', date: '', amount: totalAmount, status: 'Ingresos Totales' });
+        worksheet.addRow({ id: '', date: '', amount: '', status: '' }); // fila separadora
+
+        const totalRow = worksheet.addRow({
+            id: '',
+            date: '',
+            amount: totalAmount,
+            status: 'Ingresos Totales',
+        });
+
         totalRow.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
         totalRow.getCell('amount').numFmt = '[$$-es-CO]#,##0.00';
         totalRow.getCell('status').alignment = { horizontal: 'center', vertical: 'middle' };
     }
 
-    // Formato de moneda para columna Monto
+    // 7) Formato de moneda para columna Monto
     try {
         worksheet.getColumn('amount').numFmt = '[$$-es-CO]#,##0.00';
-    } catch {}
+    } catch {
+        // ignore
+    }
+
     // Formato entero para columna ID
     try {
         worksheet.getColumn('id').numFmt = '0';
-    } catch {}
+    } catch {
+        // ignore
+    }
 
-    // Ajuste automático de columnas teniendo en cuenta formato de moneda y anchos mínimos
+    // 8) Ajuste automático de columnas
     const minWidths: Record<string, number> = { id: 8, date: 18, amount: 16, status: 12 };
-    const currencyFormatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 });
+    const currencyFormatter = new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 2,
+    });
 
     worksheet.columns.forEach((col: any) => {
         let maxLength = 0;
         col.eachCell?.({ includeEmpty: true }, (cell: any) => {
             let text = '';
+
             if (col.key === 'amount' && typeof cell.value === 'number') {
                 try {
                     text = currencyFormatter.format(cell.value);
-                } catch (e) {
+                } catch {
                     text = String(cell.value);
                 }
+            } else if (cell.text !== undefined && cell.text !== null) {
+                text = String(cell.text);
+            } else if (cell.value !== undefined && cell.value !== null) {
+                text = String(cell.value);
             } else {
-                // preferir cell.text si existe (ya formateado por ExcelJS), sino cell.value
-                if (cell.text !== undefined && cell.text !== null) text = String(cell.text);
-                else if (cell.value !== undefined && cell.value !== null) text = String(cell.value);
-                else text = '';
+                text = '';
             }
 
-            // contar longitud real (sin saltos)
             const cellLength = text.replace(/\r?\n/g, ' ').length;
             if (cellLength > maxLength) maxLength = cellLength;
         });

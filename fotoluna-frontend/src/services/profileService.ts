@@ -26,7 +26,7 @@ export const updateProfile = async (data: UpdateProfileRequest): Promise<UpdateP
         formData.append('avatar', data.avatar);
     }
 
-    const response = await api.post<UpdateProfileResponse>('/api/customer', formData, {
+    const response = await api.post<UpdateProfileResponse>('/customer', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },

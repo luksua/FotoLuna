@@ -10,7 +10,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Maternity = () => {
-    const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
     const MATERNITY_EVENT_ID = 1;
 
     const contentRef = useRef<HTMLDivElement>(null);
@@ -62,7 +61,7 @@ const Maternity = () => {
             try {
                 const token = localStorage.getItem("token");
                 const res = await axios.get(
-                    `${API_BASE}/api/events/${MATERNITY_EVENT_ID}/packages`,
+                    `/api/events/${MATERNITY_EVENT_ID}/packages`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -93,7 +92,7 @@ const Maternity = () => {
         };
 
         fetchPackages();
-    }, [API_BASE]);
+    }, []);
 
     const handleReserve = (pkgId: number) => {
         navigate("/nuevaCita", {
@@ -117,7 +116,7 @@ const Maternity = () => {
         <>
             <div className="container-ad">
                 <div className="content" ref={contentRef}>
-                    <div className="ad-title">
+                    <div className="ad-title-maternity">
                         <h1 className="bg-custom-11">
                             <SplitText
                                 text="Captura Momentos Únicos"
@@ -137,7 +136,7 @@ const Maternity = () => {
                     <div className="row pt-5 bg-custom-2">
                         <div className="col-lg-8">
                             <div className="content-box p-4">
-                                <p className="ad-text">
+                                <p className="ad-text-maternity">
                                     Inmortaliza la dulce espera con fotografías profesionales que
                                     capturen la belleza y emoción de este momento especial.
                                     Creamos recuerdos que atesorarás para siempre.

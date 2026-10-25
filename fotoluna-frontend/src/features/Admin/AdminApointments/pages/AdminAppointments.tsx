@@ -9,7 +9,7 @@ import ExportButton from "../../../../components/ExportButton";
 import { exportAppointmentsToExcel } from "../../../../services/exportAppointmentsService";
 import "../styles/adminAppointments.css";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api"; // ajusta a tu entorno
+ // ajusta a tu entorno
 const PAGE_SIZE = 10;
 
 // Helper para paginación compacta: 1 2 … 10 … 27 28
@@ -61,7 +61,10 @@ const AdminAppointments: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
 
     // filtros - aplica valores del location.state si existen
-    const locationState = location.state as { filterStatus?: string; sortOrder?: string } | null;
+    const locationState = location.state as {
+        filterStatus?: string;
+        sortOrder?: "newest" | "oldest" | "all";
+    } | null;
     const [filterText, setFilterText] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<string>(locationState?.filterStatus || "all");
     const [filterAssigned, setFilterAssigned] = useState<string>("all"); // all | assigned | unassigned
@@ -91,7 +94,7 @@ const AdminAppointments: React.FC = () => {
         setLoading(true);
         try {
             const response = await axios.get<AdminAppointmentsResponse>(
-                `${API_BASE_URL}/admin/appointments`,
+                `/api/admin/appointments`,
                 {
                     headers: getAuthHeaders(),
                     params: {
@@ -157,7 +160,7 @@ const AdminAppointments: React.FC = () => {
         try {
             do {
                 const response = await axios.get<AdminAppointmentsResponse>(
-                    `${API_BASE_URL}/admin/appointments`,
+                    `/api/admin/appointments`,
                     {
                         headers: getAuthHeaders(),
                         params: {
@@ -362,7 +365,7 @@ const AdminAppointments: React.FC = () => {
                         onClose={handleCloseModal}
                         appointment={selectedAppointment}
                         onAssigned={handleAssigned}
-                        apiBaseUrl={API_BASE_URL}
+                        apiBaseUrl="/api"
                         getAuthHeaders={getAuthHeaders}
                     />
                 )}

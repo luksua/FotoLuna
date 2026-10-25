@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/appointmentPlan.css";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const STORAGE_PLAN_DRAFT_KEY = "appointmentStep4StoragePlan";
 
 interface StoragePlansSelectorProps {
@@ -39,7 +38,7 @@ const StoragePlansSelector: React.FC<StoragePlansSelectorProps> = ({
 
                 const token = localStorage.getItem("token");
 
-                const res = await axios.get(`${API_BASE}/api/storage-plans-customer`, {
+                const res = await axios.get(`/api/storage-plans-customer`, {
                     headers: {
                         Accept: "application/json",
                         Authorization: token ? `Bearer ${token}` : "",

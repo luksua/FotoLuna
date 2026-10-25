@@ -4,9 +4,8 @@ import "../../styles/EmployeeNavbar.css";
 import logoFotoluna from "../../assets/img/logo.png";
 import NotificationBell from '../NotificationBell';
 import UserProfile from "../../features/Employee/Profile/Pages/UserProfile";
-import SettingsModal from "../../features/Employee/Settings/Pages/SettingsModal";
 import type { UserProfileData } from "../../features/Employee/Profile/Components/types/Profile";
-import ThemeToggle from "./LightDarkTheme";
+
 import { useAuth } from "../../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ConfirmModal } from "../../components/ConfirmModal";
@@ -82,9 +81,6 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
         setShowUserProfile(true);
     };
 
-    const handleSettingsClick = () => {
-        setShowSettings(true);
-    };
 
     const handleLogoutClick = () => {
         setShowLogoutConfirm(true);
@@ -113,7 +109,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                 </div>
 
                 {/* Barra de búsqueda */}
-                <div className="navbar-search">
+                {/* <div className="navbar-search">
                     <form className="search-form" onSubmit={handleSearchSubmit}>
                         <input
                             type="text"
@@ -126,14 +122,10 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                             <i className="bi bi-search"></i>
                         </button>
                     </form>
-                </div>
+                </div> */}
 
                 {/* Navegación y acciones */}
                 <div className="navbar-actions">
-                    <nav className="navbar">
-                        <ThemeToggle />
-                    </nav>
-
                     {/* 🔔 Campanita de notificaciones */}
                     {user && <NotificationBell />}
 
@@ -168,13 +160,6 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                                     <i className="bi bi-person-circle me-2"></i>
                                     Perfil
                                 </button>
-                                <button
-                                    className="dropdown-item"
-                                    onClick={handleSettingsClick}
-                                >
-                                    <i className="bi bi-gear-fill me-2"></i>
-                                    Ajustes
-                                </button>
                                 <hr className="dropdown-divider" />
                                 <button
                                     className="dropdown-item dropdown-item-danger"
@@ -196,13 +181,7 @@ const EmployeeNavbar: React.FC<EmployeeNavbarProps> = () => {
                 profile={userProfile}
                 onProfileUpdate={handleProfileUpdate}
             />
-
-            {/* Modal de Configuración */}
-            <SettingsModal
-                isOpen={showSettings}
-                onClose={() => setShowSettings(false)}
-            />
-
+            
             {/* Modal de confirmación de logout */}
             <ConfirmModal
                 isOpen={showLogoutConfirm}

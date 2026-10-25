@@ -5,8 +5,6 @@ import axios from "axios";
 // Quitamos Dropdown y Form porque usaremos estilos personalizados más limpios
 import { Pagination, Spinner } from "react-bootstrap";
 
-const API_URL = "http://localhost:8000/api";
-
 interface Photo {
     id: number;
     url: string;
@@ -38,7 +36,7 @@ const ClientGallery: React.FC<ClientGalleryProps> = ({ clientId }) => {
         try {
             const token = localStorage.getItem("token");
 
-            const response = await axios.get(`${API_URL}/employee/customers/${clientId}/cloud-photos`, {
+            const response = await axios.get(`/api/employee/customers/${clientId}/cloud-photos`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : undefined,
                 params: {
                     page: page,

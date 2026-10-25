@@ -7,8 +7,6 @@ import axios from "axios";
 import ClientGallery from "./ClientGallery";
 import "../Styles/ClientModal.css";
 
-const API_URL = "http://localhost:8000/api";
-
 interface AppointmentRow {
     id: number;
     date: string;
@@ -88,7 +86,7 @@ const ClientModal: React.FC<ClientModalProps> = React.memo(({
         setError(null);
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get(`${API_URL}/customers/${clientId}`, {
+            const response = await axios.get(`/api/customers/${clientId}`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             });
             const data: ClientDetailsResponse = response.data;

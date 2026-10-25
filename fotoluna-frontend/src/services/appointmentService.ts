@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 export interface AdminAppointment {
     id: number;              // vamos a mapear desde appointmentId
@@ -31,7 +30,7 @@ export const getAppointments = async (): Promise<AdminAppointment[]> => {
             data: any[];    // objetos con appointmentId, bookingId, date, time, place, ...
             total: number;
         }>(
-            `${API_BASE_URL}/api/admin/appointments`,
+            `/api/admin/appointments`,
             getAuthHeaders()
         );
 
@@ -83,7 +82,7 @@ export const getCancelledAppointmentsCount = async (): Promise<number> => {
 export const getBookedPackagesCount = async (): Promise<number> => {
     try {
         const response = await axios.get<{ success: boolean; data: { total: number } }>(
-            `${API_BASE_URL}/api/admin/packages/count-booked`,
+            `/api/admin/packages/count-booked`,
             getAuthHeaders()
         );
         return response.data.data.total || 0;
@@ -101,7 +100,7 @@ export interface SalesMonth {
 export const getSalesByMonth = async (): Promise<SalesMonth[]> => {
     try {
         const response = await axios.get<{ success: boolean; data: SalesMonth[]; year: number }>(
-            `${API_BASE_URL}/api/admin/sales/by-month`,
+            `/api/admin/sales/by-month`,
             getAuthHeaders()
         );
         return response.data.data || [];
@@ -118,7 +117,7 @@ export const getNextAppointment = async (): Promise<AdminAppointment | null> => 
             success: boolean;
             data: any | null;
         }>(
-            `${API_BASE_URL}/api/admin/appointments/next`,
+            `/api/admin/appointments/next`,
             getAuthHeaders()
         );
 

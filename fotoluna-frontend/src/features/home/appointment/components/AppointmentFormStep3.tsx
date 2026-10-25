@@ -22,7 +22,6 @@ interface Step3Props {
     onNext: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 const STEP3_DRAFT_KEY = "appointmentStep3Photographer";
 
 const AppointmentStep3Photographer: React.FC<Step3Props> = ({
@@ -85,7 +84,7 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
                     params.documentTypeId = documentTypeId;
                 }
 
-                const res = await axios.get(`${API_BASE}/api/employees/available`, {
+                const res = await axios.get(`/api/employees/available`, {
                     headers: { Authorization: `Bearer ${token}` },
                     params,
                 });
@@ -128,7 +127,7 @@ const AppointmentStep3Photographer: React.FC<Step3Props> = ({
         try {
             const token = localStorage.getItem("token");
             await axios.put(
-                `${API_BASE}/api/bookings/${bookingId}`,
+                `/api/bookings/${bookingId}`,
                 {
                     employeeIdFK: selectedEmployee, // puede ser null (sin preferencia)
                     // bookingStatus: "Confirmed", // 👈 ya no tocamos el status aquí

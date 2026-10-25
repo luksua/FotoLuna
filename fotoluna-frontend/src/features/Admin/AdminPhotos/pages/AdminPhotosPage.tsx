@@ -8,8 +8,6 @@ import { CustomerPhotoCard } from "../Components/CustomerPhotoCard";
 import { PhotoModal } from "../Components/PhotoModal";
 import HomeLayout from "../../../../layouts/HomeAdminLayout";
 
-// URL del backend
-const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 export const AdminPhotosPage: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerPhotoSummary[]>([]);
@@ -40,7 +38,7 @@ export const AdminPhotosPage: React.FC = () => {
           throw new Error("No se encontró la sesión activa. Inicia sesión.");
         }
 
-        const response = await fetch(`${API_BASE_URL}/admin/cloud-photos/summary`, {
+        const response = await fetch(`/api/admin/cloud-photos/summary`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",

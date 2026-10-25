@@ -18,9 +18,9 @@ interface ProfileForm {
     confirmPassword: string;
 }
 
-const PROFILE_UPDATE_URL = "/api/customer"; // PATCH
-const PASSWORD_UPDATE_URL = "/api/customer/password"; // POST
-const PROFILE_GET_URL = "/api/me"; // GET
+const PROFILE_UPDATE_URL = "/customer"; // PATCH
+const PASSWORD_UPDATE_URL = "/acustomer/password"; // POST
+const PROFILE_GET_URL = "/me"; // GET
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB
 const LOCAL_PLACEHOLDER = "/img/imagenperfil.jpg"; // asegúrate de tener este archivo en public/img/
 

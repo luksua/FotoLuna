@@ -23,11 +23,21 @@ const UserProfile: React.FC<UserProfileProps> = ({
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2 className="modal-title">Perfil de Usuario</h2>
+                <div className="profile-modal-header">
+                    <div className="d-flex align-items-center gap-3">
+                        <div className="profile-header-icon-badge">
+                            <i className="bi bi-person-gear"></i>
+                        </div>
+                        <div>
+                            <h2 className="profile-modal-title">Perfil de Usuario</h2>
+                            <p className="profile-modal-subtitle">
+                                Administra tu información personal, foto y opciones de seguridad.
+                            </p>
+                        </div>
+                    </div>
                     <button
                         type="button"
-                        className="btn-close"
+                        className="profile-btn-close"
                         onClick={onClose}
                         aria-label="Cerrar"
                     >
@@ -35,16 +45,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     </button>
                 </div>
 
-                <div className="modal-body">
-                    <p className="modal-subtitle">
-                        Administra tu información personal y de perfil.
-                    </p>
-
+                <div className="profile-modal-body">
                     <ProfileTabs
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
                         profile={profile}
                         onProfileUpdate={onProfileUpdate}
+                        onClose={onClose}
                     />
                 </div>
             </div>

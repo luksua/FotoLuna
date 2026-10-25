@@ -12,9 +12,9 @@ interface CalendarProps {
     onDotClick: (cita: Cita) => void;
 }
 
-const WEEK_DAYS = ["LUN", "MAR", "MIE", "JUE", "VIE", "SÁB", "DOM"];
+const WEEK_DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
-// Genera los días que se muestran en el calendario
+// Genera los días que se muestran en el calendario (6 semanas = 42 días)
 const getCalendarDays = (month: Date): Date[] => {
     const year = month.getFullYear();
     const m = month.getMonth();
@@ -59,45 +59,79 @@ const Calendar: React.FC<CalendarProps> = React.memo(({
     const calendarDays = useMemo(() => getCalendarDays(currentMonth), [currentMonth]);
 
     const getCitasDelDia = useCallback((date: Date): Cita[] => {
-        const targetDateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).getTime();
-
         return citas.filter(
             (c) =>
-                c.date.getTime() === targetDateUTC
+                c.date.getFullYear() === date.getFullYear() &&
+                c.date.getMonth() === date.getMonth() &&
+                c.date.getDate() === date.getDate()
         );
     }, [citas]);
 
+    // Mes formateado con primera letra mayúscula
+    const formattedMonth = useMemo(() => {
+        const str = currentMonth.toLocaleDateString("es-ES", {
+            month: "long",
+            year: "numeric",
+        });
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }, [currentMonth]);
+
+    const today = new Date();
+
     return (
-        <div className="custom-calendar">
-            {/* Header */}
-            <div className="calendar-header">
-                <button className="btn" onClick={() => onChangeMonth("prev")}>
-                    ‹
-                </button>
+        <div className="custom-calendar fl-calendar-wrapper">
+            {/* Header del Calendario */}
+            <div className="calendar-header-modern">
+                <div className="calendar-title-wrap">
+                    <div className="calendar-icon-box">
+                        <i className="bi bi-calendar3"></i>
+                    </div>
+                    <div>
+                        <h4 className="calendar-month-name">{formattedMonth}</h4>
+                    </div>
+                </div>
 
-                <h4>
-                    {currentMonth.toLocaleDateString("es-ES", {
-                        month: "long",
-                        year: "numeric",
-                    })}
-                </h4>
-
-                <button className="btn" onClick={() => onChangeMonth("next")}>
-                    ›
-                </button>
+                <div className="calendar-controls">
+                    <button
+                        type="button"
+                        className="calendar-nav-btn"
+                        onClick={() => onChangeMonth("prev")}
+                        title="Mes anterior"
+                        aria-label="Mes anterior"
+                    >
+                        <i className="bi bi-chevron-left"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className="calendar-today-btn"
+                        onClick={() => onDayClick(new Date())}
+                        title="Ir a Hoy"
+                    >
+                        Hoy
+                    </button>
+                    <button
+                        type="button"
+                        className="calendar-nav-btn"
+                        onClick={() => onChangeMonth("next")}
+                        title="Mes siguiente"
+                        aria-label="Mes siguiente"
+                    >
+                        <i className="bi bi-chevron-right"></i>
+                    </button>
+                </div>
             </div>
 
             {/* Encabezados de semana */}
-            <div className="calendar-weekdays">
+            <div className="calendar-weekdays-modern">
                 {WEEK_DAYS.map((day) => (
-                    <div key={day} className="calendar-weekday">
+                    <div key={day} className="calendar-weekday-modern">
                         {day}
                     </div>
                 ))}
             </div>
 
             {/* Días */}
-            <div className="calendar-grid">
+            <div className="calendar-grid-modern">
                 {calendarDays.map((date, index) => {
                     const citasDelDia = getCitasDelDia(date);
 
@@ -110,7 +144,6 @@ const Calendar: React.FC<CalendarProps> = React.memo(({
                     const isCurrentMonth =
                         date.getMonth() === currentMonth.getMonth();
 
-                    const today = new Date();
                     const isToday =
                         date.getFullYear() === today.getFullYear() &&
                         date.getMonth() === today.getMonth() &&
@@ -118,32 +151,102 @@ const Calendar: React.FC<CalendarProps> = React.memo(({
 
                     return (
                         <div
-                            key={`${date.toISOString()}-${index}`}
-                            className={`day-column 
+                            key={`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${index}`}
+                            className={`day-cell 
                                 ${isSelected ? "selected" : ""} 
                                 ${!isCurrentMonth ? "other-month" : ""}
-                                ${isToday ? "today" : ""}`}
+                                ${isToday ? "today" : ""}
+                                ${citasDelDia.length > 0 ? "has-appointments" : ""}`}
                             onClick={() => onDayClick(date)}
                         >
-                            <div className="day-number">{date.getDate()}</div>
+                            <div className="day-header">
+                                <span className="day-number-label">{date.getDate()}</span>
+                                {isToday && <span className="today-badge">Hoy</span>}
+                                {citasDelDia.length > 0 && (
+                                    <span className="day-count-badge" title={`${citasDelDia.length} citas`}>
+                                        {citasDelDia.length}
+                                    </span>
+                                )}
+                            </div>
 
-                            {/* Bolitas */}
-                            <div className="appointment-dots">
-                                {citasDelDia.map((cita) => (
-                                    <div
-                                        key={cita.appointmentId}
-                                        className={`appointment-dot ${cita.status.toLowerCase()}`}
-                                        title={`${cita.client} - ${cita.startTime}`}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDotClick(cita);
-                                        }}
-                                    />
-                                ))}
+                            {/* Indicadores de citas */}
+                            <div className="appointment-indicators">
+                                {citasDelDia.length <= 2 ? (
+                                    citasDelDia.map((cita) => {
+                                        const statusClass = cita.status.toLowerCase();
+                                        return (
+                                            <div
+                                                key={cita.appointmentId}
+                                                className={`appointment-indicator-pill ${statusClass}`}
+                                                title={`${cita.client || "Cliente"} (${cita.startTime}) - ${cita.status}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDotClick(cita);
+                                                }}
+                                            >
+                                                <span className="indicator-time">{cita.startTime}</span>
+                                                <span className="indicator-client">{cita.client}</span>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <>
+                                        <div
+                                            key={citasDelDia[0].appointmentId}
+                                            className={`appointment-indicator-pill ${citasDelDia[0].status.toLowerCase()}`}
+                                            title={`${citasDelDia[0].client || "Cliente"} (${citasDelDia[0].startTime}) - ${citasDelDia[0].status}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDotClick(citasDelDia[0]);
+                                            }}
+                                        >
+                                            <span className="indicator-time">{citasDelDia[0].startTime}</span>
+                                            <span className="indicator-client">{citasDelDia[0].client}</span>
+                                        </div>
+                                        <div
+                                            className="indicator-more-badge"
+                                            title={`${citasDelDia.length - 1} citas adicionales para este día. Haz clic para verlas en el panel.`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDayClick(date);
+                                            }}
+                                        >
+                                            <span className="dots-cluster">
+                                                {citasDelDia.slice(1, 4).map((c, i) => (
+                                                    <span
+                                                        key={`${c.appointmentId}-${i}`}
+                                                        className={`mini-status-dot ${c.status.toLowerCase()}`}
+                                                    />
+                                                ))}
+                                            </span>
+                                            <span className="more-count">+{citasDelDia.length - 1} más</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     );
                 })}
+            </div>
+
+            {/* Leyenda de Estados */}
+            <div className="calendar-legend">
+                <div className="legend-item">
+                    <span className="legend-dot pendiente"></span>
+                    <span className="legend-text">Pendiente</span>
+                </div>
+                <div className="legend-item">
+                    <span className="legend-dot confirmada"></span>
+                    <span className="legend-text">Confirmada</span>
+                </div>
+                <div className="legend-item">
+                    <span className="legend-dot completada"></span>
+                    <span className="legend-text">Completada</span>
+                </div>
+                <div className="legend-item">
+                    <span className="legend-dot cancelada"></span>
+                    <span className="legend-text">Cancelada</span>
+                </div>
             </div>
         </div>
     );

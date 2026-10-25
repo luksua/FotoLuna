@@ -4,15 +4,16 @@ import EmployeeSidebar from "../components/Admin&Employees/EmployeeSidebar";
 import "../styles/HomeEmployeeLayout.css";
 type Props = {
     children: React.ReactNode;
+    contentClassName?: string;
 };
 
-const HomeEmployeeLayout: React.FC<Props> = ({ children }) => {
+const HomeEmployeeLayout: React.FC<Props> = ({ children, contentClassName = "" }) => {
     return (
         <div className="layout-root">
             <EmployeeNav/>
             <div className="main-content">
                 <EmployeeSidebar />
-                <main className="scrollspy-example-2">
+                <main className={`scrollspy-example-2 ${contentClassName}`.trim()}>
                     {children}
                 </main>
             </div>

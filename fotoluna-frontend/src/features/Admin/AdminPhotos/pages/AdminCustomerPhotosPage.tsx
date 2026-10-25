@@ -9,7 +9,6 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
 // 1. ✅ URL base del servidor (sin /api)
-const API_SERVER_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 interface PhotoItem {
     id: number;
@@ -94,7 +93,7 @@ const AdminCustomerPhotosPage: React.FC = () => {
             if (!token) throw new Error("No hay sesión activa.");
 
             const res = await axios.get<CustomerDetails>(
-                `${API_SERVER_URL}/api/customers/${customerId}`,
+                `/api/customers/${customerId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -149,7 +148,7 @@ const AdminCustomerPhotosPage: React.FC = () => {
                     params.append("year", yearFilter);
                 }
 
-                const url = `${API_SERVER_URL}/api/employee/customers/${customerId}/cloud-photos?${params.toString()}`;
+                const url = `/api/employee/customers/${customerId}/cloud-photos?${params.toString()}`;
 
                 const res = await fetch(url, {
                     method: "GET",
@@ -193,7 +192,7 @@ const AdminCustomerPhotosPage: React.FC = () => {
                     ...Array.from(yearsSet).sort((a, b) => Number(b) - Number(a)),
                 ]);
 
-                let sortedPhotos = [...data.photos]; // Start with data.photos for sorting
+                const sortedPhotos = [...data.photos]; // Start with data.photos for sorting
 
                 if (orderBy === "name") {
                     sortedPhotos.sort((a, b) =>
@@ -267,7 +266,7 @@ const AdminCustomerPhotosPage: React.FC = () => {
                 throw new Error("No hay token de autenticación.");
             }
             // Llama al endpoint de descarga del backend para forzar el Content-Disposition: attachment
-            const res = await fetch(`${API_SERVER_URL}/api/cloud-photos/${photo.id}/download`, {
+            const res = await fetch(`/api/cloud-photos/${photo.id}/download`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -298,7 +297,7 @@ const AdminCustomerPhotosPage: React.FC = () => {
             const photoPromises = photosToDownload.map(async (photo) => {
                 try {
                     // Usar el endpoint de descarga del backend también para el ZIP
-                    const response = await fetch(`${API_SERVER_URL}/api/cloud-photos/${photo.id}/download`, {
+                    const response = await fetch(`/api/cloud-photos/${photo.id}/download`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
 
