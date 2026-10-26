@@ -11,6 +11,7 @@ import {
     DEMO_APPOINTMENTS,
     DEMO_DASHBOARD_STATS,
     DEMO_NOTIFICATIONS,
+    DEMO_PAYMENTS,
 } from "./demoData";
 
 /**
@@ -518,10 +519,49 @@ export function handleMockRoute(url: string, method = "GET", bodyData?: any): Mo
         };
     }
 
+    // ==========================================
+    // 6. PAGOS Y FACTURACIÓN (EMPLOYEE & ADMIN)
+    // ==========================================
+
+    if ((clean.includes("/employee/payments") || clean.includes("/admin/booking-payments") || clean.includes("/admin/payments")) && upperMethod === "GET") {
+        if (clean.includes("/summary")) {
+            return {
+                status: 200,
+                data: {
+                    totalApprovedAmount: 175000,
+                    totalPendingAmount: 410000,
+                    totalCount: DEMO_PAYMENTS.length,
+                },
+            };
+        }
+
+        return {
+            status: 200,
+            data: {
+                data: DEMO_PAYMENTS,
+                meta: {
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: DEMO_PAYMENTS.length,
+                },
+                current_page: 1,
+                last_page: 1,
+                total: DEMO_PAYMENTS.length,
+            },
+        };
+    }
+
     // Si es cualquier otra ruta bajo /api/ en modo demo, devolver genérico según método
     if (clean.startsWith("/api/") || clean.startsWith("/storage")) {
         if (upperMethod === "GET") {
-            return { status: 200, data: [] };
+            const emptyList: any = [];
+            emptyList.data = [];
+            emptyList.meta = { current_page: 1, last_page: 1, total: 0, per_page: 10 };
+            emptyList.last_page = 1;
+            emptyList.total = 0;
+            emptyList.current_page = 1;
+            return { status: 200, data: emptyList };
         }
         return { status: 200, data: { success: true, message: "Operación simulada en modo demostración" } };
     }

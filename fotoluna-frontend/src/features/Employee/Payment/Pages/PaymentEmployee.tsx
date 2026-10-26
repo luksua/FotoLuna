@@ -59,11 +59,17 @@ const Payments: React.FC = () => {
                         : undefined,
                 });
 
-                const { data, meta } = response.data;
+                const payload = response?.data || {};
+                const data = Array.isArray(payload.data)
+                    ? payload.data
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
+                const meta = payload.meta || payload || {};
 
                 setPayments(data);
-                setTotalPages(meta.last_page ?? 1);
-                setTotalItems(meta.total ?? data.length);
+                setTotalPages(meta.last_page ?? payload.last_page ?? 1);
+                setTotalItems(meta.total ?? payload.total ?? data.length);
             } catch (err) {
                 console.error(err);
                 setError('No se pudieron cargar los pagos. Intenta nuevamente.');
@@ -92,7 +98,12 @@ const Payments: React.FC = () => {
                         : undefined,
                 });
 
-                const { data } = response.data;
+                const payload = response?.data || {};
+                const data = Array.isArray(payload.data)
+                    ? payload.data
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
                 setStatsPayments(data);
             } catch (err) {
                 console.error('Error obteniendo pagos para stats:', err);
@@ -430,7 +441,7 @@ const Payments: React.FC = () => {
                 {/* Estadísticas (siempre con datos globales) */}
                 {!loading && (
                     <PaymentStats
-                        payments={statsPayments.length ? statsPayments : payments}
+                        payments={(statsPayments && statsPayments.length) ? statsPayments : (payments || [])}
                     />
                 )}
 
