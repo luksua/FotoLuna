@@ -10,6 +10,7 @@ import {
     DEMO_STORAGE_PLANS,
     DEMO_APPOINTMENTS,
     DEMO_DASHBOARD_STATS,
+    DEMO_NOTIFICATIONS,
 } from "./demoData";
 
 /**
@@ -492,18 +493,18 @@ export function handleMockRoute(url: string, method = "GET", bodyData?: any): Mo
         };
     }
 
+    if (clean.includes("/notifications") && clean.includes("/read") && upperMethod === "POST") {
+        return { status: 200, data: { success: true } };
+    }
+
+    if (clean.includes("/notifications") && upperMethod === "DELETE") {
+        return { status: 204, data: null };
+    }
+
     if (clean.includes("/notifications") && upperMethod === "GET") {
         return {
             status: 200,
-            data: [
-                {
-                    id: 1,
-                    title: "Bienvenido a FotoLuna Demo",
-                    message: "Estás explorando la plataforma en modo demostración para Netlify.",
-                    read: false,
-                    created_at: new Date().toISOString(),
-                },
-            ],
+            data: DEMO_NOTIFICATIONS,
         };
     }
 

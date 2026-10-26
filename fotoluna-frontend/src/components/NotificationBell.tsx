@@ -37,7 +37,7 @@ const NotificationBell: React.FC = () => {
     };
 
     const mapBackendToUI = (n: BackendNotification): UiNotification => {
-        const created = new Date(n.created_at);
+        const created = n?.created_at ? new Date(n.created_at) : new Date();
         const now = new Date();
 
         const diffMs = now.getTime() - created.getTime();
@@ -45,7 +45,7 @@ const NotificationBell: React.FC = () => {
 
         let category: UiNotification["category"];
 
-        if (n.read_at) {
+        if (n?.read_at) {
             category = "older";
         } else {
             if (diffDays < 1) category = "today";
@@ -60,16 +60,19 @@ const NotificationBell: React.FC = () => {
             minute: "2-digit",
         });
 
-        const priority: UiNotification["priority"] = n.data.priority ?? "medium";
-        const title = n.data.title ?? "Notificación";
-        const message = n.data.message ?? "";
-        const icon = getNotificationIcon(title, message, n.data.icon);
+        // Soporta tanto formato anidado (n.data) como formato plano
+        const notifData = n?.data || (n as any) || {};
+        const priority: UiNotification["priority"] =
+            notifData.priority ?? (n as any)?.priority ?? "medium";
+        const title = notifData.title ?? (n as any)?.title ?? "Notificación";
+        const message = notifData.message ?? (n as any)?.message ?? "";
+        const icon = getNotificationIcon(title, message, notifData.icon ?? (n as any)?.icon);
 
         return {
-            id: n.id,
+            id: String(n?.id ?? Math.random()),
             title,
             message,
-            read: n.read_at !== null,
+            read: n?.read_at !== null && n?.read_at !== undefined,
             priority,
             date: dateLabel,
             category,
@@ -77,7 +80,8 @@ const NotificationBell: React.FC = () => {
         };
     };
 
-    const uiNotifications: UiNotification[] = backendNotifications
+    const uiNotifications: UiNotification[] = (backendNotifications || [])
+        .filter(Boolean)
         .map(mapBackendToUI)
         .filter((n) => !deletedNotifications.find((d) => d.id === n.id));
 

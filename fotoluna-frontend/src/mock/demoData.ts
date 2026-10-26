@@ -371,3 +371,44 @@ export const DEMO_DASHBOARD_STATS = {
     ],
     customersCount: 142,
 };
+
+export const DEMO_NOTIFICATIONS = [
+    {
+        id: "demo-notif-1",
+        type: "App\\Notifications\\WelcomeNotification",
+        notifiable_id: 1,
+        notifiable_type: "App\\Models\\User",
+        data: {
+            title: "¡Bienvenido a FotoLuna!",
+            message: "Estás explorando la plataforma en modo demostración para Netlify.",
+            priority: "low" as const,
+            icon: "bi bi-stars",
+        },
+        title: "¡Bienvenido a FotoLuna!",
+        message: "Estás explorando la plataforma en modo demostración para Netlify.",
+        priority: "low" as const,
+        icon: "bi bi-stars",
+        read_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    },
+    {
+        id: "demo-notif-2",
+        type: "App\\Notifications\\AppointmentBooked",
+        notifiable_id: 1,
+        notifiable_type: "App\\Models\\User",
+        data: {
+            title: "Sesión Fotográfica Agendada",
+            message: "Tu cita ha sido confirmada y asignada al fotógrafo.",
+            priority: "medium" as const,
+            icon: "bi bi-calendar-check-fill",
+        },
+        title: "Sesión Fotográfica Agendada",
+        message: "Tu cita ha sido confirmada y asignada al fotógrafo.",
+        priority: "medium" as const,
+        icon: "bi bi-calendar-check-fill",
+        read_at: null,
+        created_at: new Date(Date.now() - 3600000).toISOString(),
+        updated_at: new Date(Date.now() - 3600000).toISOString(),
+    },
+];
