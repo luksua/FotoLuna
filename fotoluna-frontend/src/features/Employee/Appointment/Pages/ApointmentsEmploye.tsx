@@ -311,7 +311,12 @@ const EmployeeAppointments: React.FC = () => {
             }
         }
 
-        if (!form.date) er.date = "La fecha es obligatoria";
+        const todayStr = formatDateToYMD(new Date());
+        if (!form.date) {
+            er.date = "La fecha es obligatoria";
+        } else if (!isEditing && form.date < todayStr) {
+            er.date = "No se pueden programar citas para fechas anteriores a hoy.";
+        }
         if (!form.startTime) er.startTime = "La hora es obligatoria";
         if (!form.location.trim()) er.location = "La ubicación es obligatoria";
         if (form.appointmentDuration < 15) er.appointmentDuration = "Duración mínima 15 minutos.";
@@ -395,10 +400,14 @@ const EmployeeAppointments: React.FC = () => {
         setIsEditing(false);
         setErrors({});
         setSuccess("");
-        // 🔑 Pre-seleccionar la fecha seleccionada en el calendario
+        const todayStr = formatDateToYMD(new Date());
+        const initialDate = selectedDate && formatDateToYMD(selectedDate) >= todayStr
+            ? formatDateToYMD(selectedDate)
+            : todayStr;
+        // 🔑 Pre-seleccionar la fecha seleccionada en el calendario (o hoy si es pasada)
         setForm({
             ...initialForm,
-            date: selectedDate ? formatDateToYMD(selectedDate) : formatDateToYMD(new Date()),
+            date: initialDate,
             eventIdFK: null,
             packageIdFK: null,
             documentTypeIdFK: null,

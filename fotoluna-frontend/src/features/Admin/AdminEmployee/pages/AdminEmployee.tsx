@@ -69,11 +69,12 @@ const EmployeeCustomers = () => {
             .then((res) => res.json())
             .then((data) => {
                 if (!mounted) return;
-                if (data && data.success) {
-                    const mapped = data.data.map((e: any) => {
-                        // Backend returns 'id' as 'emp_<id>' and 'uniqueId' as the numeric id.
-                        // Use numeric uniqueId when available so PATCH routes that expect a numeric
-                        // employeeId work correctly.
+                if (data) {
+                    const rawList = Array.isArray(data)
+                        ? data
+                        : (Array.isArray(data.data) ? data.data : (data.success && Array.isArray(data.data) ? data.data : []));
+
+                    const mapped = rawList.map((e: any) => {
                         let numericId: number | null = null;
                         if (e.uniqueId !== undefined && e.uniqueId !== null) {
                             numericId = Number(e.uniqueId);
@@ -85,11 +86,11 @@ const EmployeeCustomers = () => {
 
                         return {
                             id: numericId,
-                            nombre: e.name || '',
-                            telefono: e.phone || '',
-                            documento: e.document || '',
-                            correo: e.email || '',
-                            estado: !!e.isAvailable,
+                            nombre: e.name || `${e.firstNameEmployee || ''} ${e.lastNameEmployee || ''}`.trim() || 'Empleado',
+                            telefono: e.phone || e.phoneEmployee || '',
+                            documento: e.document || e.documentNumber || '',
+                            correo: e.email || e.emailEmployee || '',
+                            estado: e.isAvailable !== undefined ? !!e.isAvailable : (e.estado !== undefined ? !!e.estado : true),
                             address: e.address || '',
                             EPS: e.EPS || '',
                             specialty: e.specialty || '',

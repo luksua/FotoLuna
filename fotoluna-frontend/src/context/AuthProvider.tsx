@@ -60,28 +60,83 @@ const normalizeUser = (serverUser: any): User => {
     } as User;
 };
 
+// Helper para obtener el usuario almacenado de forma síncrona al cargar/recargar
+const getStoredUser = (): User | null => {
+    try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && typeof parsed === "object") {
+                return normalizeUser(parsed);
+            }
+        }
+        const t = localStorage.getItem("token") || "";
+        if (t.includes("admin")) {
+            return normalizeUser({
+                id: 1,
+                name: "Administrador FotoLuna",
+                first_name: "Administrador",
+                last_name: "FotoLuna",
+                email: "admin@fotoluna.com",
+                role: "admin",
+            });
+        }
+        if (t.includes("empleado")) {
+            return normalizeUser({
+                id: 2,
+                name: "Carlos Fotógrafo",
+                first_name: "Carlos",
+                last_name: "Fotógrafo",
+                email: "empleado@fotoluna.com",
+                role: "empleado",
+                employeeType: "Fotógrafo",
+            });
+        }
+        if (t.includes("cliente")) {
+            return normalizeUser({
+                id: 3,
+                name: "Laura Gómez",
+                first_name: "Laura",
+                last_name: "Gómez",
+                email: "cliente@fotoluna.com",
+                role: "cliente",
+            });
+        }
+    } catch (e) {
+        console.warn("Error leyendo usuario de localStorage:", e);
+    }
+    return null;
+};
+
 const AuthProvider: React.FC<Props> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(getStoredUser);
+    const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+    // Si ya existe token y usuario en localStorage, loading es false de inmediato para evitar redirecciones
+    const [loading, setLoading] = useState<boolean>(() => !localStorage.getItem("token"));
 
     useEffect(() => {
         const t = localStorage.getItem("token");
         if (t) {
+            setAuthToken(t);
             (async () => {
                 try {
-                    setAuthToken(t);
                     const res = await api.get("/me");
                     const serverUser = res.data || {};
                     const normalized = normalizeUser(serverUser);
                     setUser(normalized);
                     setToken(t);
+                    localStorage.setItem("user", JSON.stringify(normalized));
                 } catch (err) {
-                    console.warn("No se pudo restaurar sesión:", err);
-                    setUser(null);
-                    setToken(null);
-                    setAuthToken(null);
-                    localStorage.removeItem("token");
+                    console.warn("No se pudo restaurar sesión desde backend:", err);
+                    const localUser = getStoredUser();
+                    if (localUser) {
+                        setUser(localUser);
+                    } else {
+                        setUser(null);
+                        setToken(null);
+                        setAuthToken(null);
+                        localStorage.removeItem("token");
+                    }
                 } finally {
                     setLoading(false);
                 }
@@ -100,12 +155,18 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
             const serverUser = res.data || {};
             const normalized = normalizeUser(serverUser);
             setUser(normalized);
+            localStorage.setItem("user", JSON.stringify(normalized));
         } catch (err) {
-            setUser(null);
-            setToken(null);
-            setAuthToken(null);
-            localStorage.removeItem("token");
-            throw err;
+            const localUser = getStoredUser();
+            if (localUser) {
+                setUser(localUser);
+            } else {
+                setUser(null);
+                setToken(null);
+                setAuthToken(null);
+                localStorage.removeItem("token");
+                throw err;
+            }
         }
     };
 

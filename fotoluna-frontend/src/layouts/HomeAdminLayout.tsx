@@ -1,19 +1,20 @@
 import React from "react";
 import AdminSidebar from "../components/Admin&Employees/AdminSidebar";
 import EmployeeNavbar from "../components/Admin&Employees/EmployeeNavbar";
-import "../styles/ScrollAdmin.css";
+import "../styles/HomeEmployeeLayout.css";
 
 type Props = {
     children: React.ReactNode;
+    contentClassName?: string;
 };
 
-const HomeLayout: React.FC<Props> = ({ children }) => {     
+const HomeLayout: React.FC<Props> = ({ children, contentClassName = "" }) => {     
     return (
         <div className="layout-root">
-            <AdminSidebar />
+            <EmployeeNavbar />
             <div className="main-content">
-                <EmployeeNavbar />
-                <main className="scrollspy-example-2">
+                <AdminSidebar />
+                <main className={`scrollspy-example-2 ${contentClassName}`.trim()}>
                     {children}
                 </main>
             </div>

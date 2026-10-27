@@ -277,6 +277,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = React.memo(({
                                     type="date"
                                     className="form-control-modern"
                                     name="date"
+                                    min={!isEditing ? new Date().toISOString().split("T")[0] : undefined}
                                     value={form.date}
                                     onChange={onChange}
                                     required

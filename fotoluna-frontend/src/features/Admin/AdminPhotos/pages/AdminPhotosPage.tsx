@@ -53,8 +53,13 @@ export const AdminPhotosPage: React.FC = () => {
           throw new Error("Error al cargar los datos: " + response.statusText);
         }
 
-        const data: CustomerPhotoSummary[] = await response.json();
-        setCustomers(data);
+        const raw = await response.json();
+        const list: CustomerPhotoSummary[] = Array.isArray(raw)
+          ? raw
+          : Array.isArray(raw?.data)
+          ? raw.data
+          : [];
+        setCustomers(list);
       } catch (err: any) {
         console.error(err);
         setError(err.message ?? "Error inesperado (verifica CORS)");

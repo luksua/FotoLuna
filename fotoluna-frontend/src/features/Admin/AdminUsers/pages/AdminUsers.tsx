@@ -389,26 +389,34 @@ const EmployeeAdmin: React.FC = () => {
 
                 const allUsers: User[] = [];
 
-                if (employeesData && employeesData.success && Array.isArray(employeesData.data)) {
-                    allUsers.push(...employeesData.data.map((e: any) => ({
+                const empList = Array.isArray(employeesData)
+                    ? employeesData
+                    : (employeesData?.data && Array.isArray(employeesData.data) ? employeesData.data : []);
+
+                if (empList.length > 0) {
+                    allUsers.push(...empList.map((e: any) => ({
                         id: e.id,
-                        name: e.name,
-                        email: e.email,
-                        phone: e.phone || '',
-                        document: e.document || '',
-                        avatar: e.avatar || imgperfil,
+                        name: e.name || `${e.firstNameEmployee || ''} ${e.lastNameEmployee || ''}`.trim() || 'Empleado',
+                        email: e.email || e.emailEmployee || '',
+                        phone: e.phone || e.phoneEmployee || '',
+                        document: e.document || e.documentNumber || '',
+                        avatar: e.avatar || e.photoEmployee || imgperfil,
                     })));
                 }
 
-                if (customersData && customersData.success && Array.isArray(customersData.data)) {
-                    const mappedCustomers = customersData.data.map((c: any) => ({
+                const custList = Array.isArray(customersData)
+                    ? customersData
+                    : (customersData?.data && Array.isArray(customersData.data) ? customersData.data : []);
+
+                if (custList.length > 0) {
+                    const mappedCustomers = custList.map((c: any) => ({
                         id: c.id,
-                        userId: c.userId,
-                        name: c.name,
-                        email: c.email,
-                        phone: c.phone || '',
-                        document: c.document || '',
-                        avatar: c.avatar || imgperfil,
+                        userId: c.userId || c.id,
+                        name: c.name || `${c.firstNameCustomer || ''} ${c.lastNameCustomer || ''}`.trim() || 'Cliente',
+                        email: c.email || c.emailCustomer || '',
+                        phone: c.phone || c.phoneCustomer || '',
+                        document: c.document || c.documentNumber || '',
+                        avatar: c.avatar || c.photoCustomer || imgperfil,
                     }));
                     console.log('Debug - Mapped customers:', mappedCustomers);
                     allUsers.push(...mappedCustomers);

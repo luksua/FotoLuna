@@ -85,27 +85,48 @@ const AdminEvents: React.FC = () => {
                 if (!eventsRes.ok) throw new Error(`Events: ${eventsRes.status}`);
                 const eventsData = await eventsRes.json();
                 console.log('Events data:', eventsData);
-                if (eventsData && Array.isArray(eventsData)) {
-                    setEvents(eventsData);
-                }
+                const rawEvents = Array.isArray(eventsData) ? eventsData : (eventsData?.data && Array.isArray(eventsData.data) ? eventsData.data : []);
+                setEvents(rawEvents.map((e: any) => ({
+                    id: e.id ?? e.eventId ?? Math.floor(Math.random() * 10000),
+                    nombre: e.nombre || e.name || e.eventType || 'Evento sin nombre',
+                    descripcion: e.descripcion || e.description || '',
+                    duracion: e.duracion || e.duration || '60 min',
+                    precio: Number(e.precio ?? e.price ?? 0),
+                    estado: e.estado !== undefined ? Boolean(e.estado) : (e.isActive ?? true),
+                })));
 
                 // Fetch paquetes
                 const packagesRes = await fetch(`/api/admin/packages`, { headers });
                 if (!packagesRes.ok) throw new Error(`Packages: ${packagesRes.status}`);
                 const packagesData = await packagesRes.json();
                 console.log('Packages data:', packagesData);
-                if (packagesData && Array.isArray(packagesData)) {
-                    setPackages(packagesData);
-                }
+                const rawPackages = Array.isArray(packagesData) ? packagesData : (packagesData?.data && Array.isArray(packagesData.data) ? packagesData.data : []);
+                setPackages(rawPackages.map((p: any) => ({
+                    id: p.id ?? p.packageId ?? Math.floor(Math.random() * 10000),
+                    nombre: p.nombre || p.name || p.packageName || 'Paquete sin nombre',
+                    descripcion: p.descripcion || p.description || p.packageDescription || '',
+                    cantidad_eventos: Number(p.cantidad_eventos ?? p.eventCount ?? 1),
+                    precio: Number(p.precio ?? p.price ?? p.packagePrice ?? 0),
+                    evento_nombre: p.evento_nombre || p.eventName || '',
+                    estado: p.estado !== undefined ? Boolean(p.estado) : (p.isActive ?? true),
+                })));
 
                 // Fetch tipos de documentos
                 const docsRes = await fetch(`/api/admin/document-types`, { headers });
                 if (!docsRes.ok) throw new Error(`Docs: ${docsRes.status}`);
                 const docsData = await docsRes.json();
                 console.log('Docs data:', docsData);
-                if (docsData && Array.isArray(docsData)) {
-                    setDocumentTypes(docsData);
-                }
+                const rawDocs = Array.isArray(docsData) ? docsData : (docsData?.data && Array.isArray(docsData.data) ? docsData.data : []);
+                setDocumentTypes(rawDocs.map((d: any) => ({
+                    id: d.id ?? d.documentTypeId ?? Math.floor(Math.random() * 10000),
+                    nombre: d.nombre || d.name || 'Documento sin nombre',
+                    descripcion: d.descripcion || d.description || '',
+                    cantidad: Number(d.cantidad ?? d.quantity ?? 1),
+                    precio: Number(d.precio ?? d.price ?? 0),
+                    requiereSubida: Boolean(d.requiereSubida ?? d.requiresUpload ?? false),
+                    requierePresencial: Boolean(d.requierePresencial ?? d.requiresInPerson ?? false),
+                    estado: d.estado !== undefined ? Boolean(d.estado) : (d.isActive ?? true),
+                })));
 
                 setError(null);
             } catch (err: any) {
@@ -128,17 +149,17 @@ const AdminEvents: React.FC = () => {
 
     // Filtrar datos
     const filteredEvents = useMemo(
-        () => events.filter(e => e.nombre.toLowerCase().includes(searchQuery.toLowerCase())),
+        () => events.filter(e => (e?.nombre || (e as any)?.eventType || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [searchQuery, events]
     );
 
     const filteredPackages = useMemo(
-        () => packages.filter(p => p.nombre.toLowerCase().includes(searchQuery.toLowerCase())),
+        () => packages.filter(p => (p?.nombre || (p as any)?.packageName || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [searchQuery, packages]
     );
 
     const filteredDocumentTypes = useMemo(
-        () => documentTypes.filter(d => d.nombre.toLowerCase().includes(searchQuery.toLowerCase())),
+        () => documentTypes.filter(d => (d?.nombre || (d as any)?.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [searchQuery, documentTypes]
     );
 
