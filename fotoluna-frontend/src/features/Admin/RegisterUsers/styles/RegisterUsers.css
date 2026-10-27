@@ -1,57 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
 .register-input {
-    background: #e6d6ed;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 16px;
-    color: #7c5e8c;
+    background: #ffffff;
+    border: 1px solid rgba(199, 146, 223, 0.35);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #241442;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(157, 78, 221, 0.04);
+    transition: all 0.2s ease;
+}
+
+.register-input:focus {
+    outline: none;
+    border-color: #9d4edd;
+    box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
 }
 
 .register-select {
-    background: #e6d6ed;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 16px;
-    color: #7c5e8c;
+    background: #ffffff;
+    border: 1px solid rgba(199, 146, 223, 0.35);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #241442;
+    font-family: inherit;
     appearance: none;
-    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%237c5e8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3cpolyline points="6 9 12 15 18 9"%3e%3c/polyline%3e%3c/svg%3e');
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%237b2cbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3cpolyline points="6 9 12 15 18 9"%3e%3c/polyline%3e%3c/svg%3e');
     background-repeat: no-repeat;
-    background-position: right 12px center;
+    background-position: right 14px center;
     background-size: 16px;
-    padding-right: 40px;
+    padding-right: 42px;
+    box-shadow: 0 2px 8px rgba(157, 78, 221, 0.04);
+    transition: all 0.2s ease;
+}
+
+.register-select:focus {
+    outline: none;
+    border-color: #9d4edd;
+    box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
 }
 
 .register-filebox {
     display: flex;
     align-items: center;
-    border: 2px dashed #d1a3e2;
-    border-radius: 8px;
-    padding: 8px 12px;
-    background: #f3eaf7;
+    border: 2px dashed rgba(199, 146, 223, 0.5);
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: #fbf8fd;
 }
 
 .register-filelabel {
-    background: #e6d6ed;
-    color: #a36fc2;
-    padding: 6px 16px;
-    border-radius: 8px;
+    background: #f3e8ff;
+    color: #7b2cbf;
+    padding: 8px 18px;
+    border-radius: 10px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.register-filelabel:hover {
+    background: #e9d5ff;
 }
 
 .register-container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 24px;
-    background: #f5f5f8ff;
-    border-radius: 12px;
+    max-width: 720px;
+    margin: 20px auto;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid rgba(199, 146, 223, 0.28);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px -10px rgba(157, 78, 221, 0.15);
+    font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
 }
 
 .register-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    color: #7c5e8c;
+    color: #241442;
     margin: 0 0 24px 0;
     text-align: center;
 }
@@ -88,7 +117,7 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    color: #7c5e8c;
+    color: #7b2cbf;
 }
 
 /* Esconder el boton del ojito predeterminado y dejar el customizado*/
@@ -110,13 +139,22 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 
 .register-submit {
     padding: 12px 40px;
-    font-size: 18px;
-    background: #d1a3e2;
+    font-size: 16px;
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
     color: #fff;
     border: none;
     border-radius: 24px;
     font-weight: 700;
     cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(157, 78, 221, 0.25);
+    transition: all 0.2s ease;
+}
+
+.register-submit:hover {
+    background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(157, 78, 221, 0.35);
 }
 
 .register-message {

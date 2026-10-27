@@ -1,13 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
 :root {
-    --bg: #f6f7fb;
+    --bg: #fbf8fd;
     --card: #ffffff;
-    --muted: #6b7280;
-    --text: #111827;
-    --accent: #ac98c4;
-    --border: rgba(15, 23, 42, 0.06);
-    --radius: 10px;
+    --muted: #6b5c7e;
+    --text: #241442;
+    --accent: #9d4edd;
+    --accent-dark: #7b2cbf;
+    --border: rgba(199, 146, 223, 0.28);
+    --radius: 14px;
     --max-width: 1150px;
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-family: "Quicksand", system-ui, -apple-system, sans-serif;
 }
 
 .admin-root {
@@ -104,21 +107,22 @@
     display: grid;
     grid-template-columns: 80px 1fr;
     gap: 12px;
-    background: linear-gradient(180deg, var(--card), var(--card));
+    background: #ffffff;
     border-radius: var(--radius);
-    padding: 10px 12px;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    padding: 12px 14px;
+    box-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.08);
     border: 1px solid var(--border);
     height: 100%;
     width: 100%;
     box-sizing: border-box;
     align-items: start;
-    transition: transform .12s ease, box-shadow .12s ease;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 
 .admin-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 16px 36px -6px rgba(157, 78, 221, 0.16);
+    border-color: rgba(157, 78, 221, 0.4);
 }
 
 /* Avatar con tamaño fijo */
@@ -126,8 +130,8 @@
     width: 80px;
     height: 80px;
     object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    border: 2px solid rgba(199, 146, 223, 0.25);
 }
 
 .admin-info {
@@ -176,19 +180,22 @@
 }
 
 .admin-pagination button {
-    background: transparent;
+    background: #ffffff;
     border: 1px solid var(--border);
     min-width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
+    font-family: inherit;
     color: var(--text);
-    transition: background .12s ease, color .12s ease, transform .08s ease;
+    transition: all .15s ease;
 }
 
 .admin-pagination button:hover:not([disabled]) {
     transform: translateY(-2px);
+    border-color: #9d4edd;
+    color: #7b2cbf;
 }
 
 .admin-pagination button[disabled] {
@@ -197,9 +204,10 @@
 }
 
 .admin-pagination button.active {
-    background: var(--accent);
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
     color: white;
     border-color: transparent;
+    box-shadow: 0 4px 12px rgba(157, 78, 221, 0.25);
 }
 
 /* Search Row */
@@ -221,13 +229,15 @@
     flex: 1 1 420px;
     min-width: 180px;
     height: 42px;
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 8px 14px;
+    border-radius: 12px;
     border: 1px solid var(--border);
     background: white;
-    box-shadow: 0 1px 2px rgba(15,23,42,0.02);
+    box-shadow: 0 2px 8px rgba(157, 78, 221, 0.04);
     font-size: 0.95rem;
     color: var(--text);
+    font-family: inherit;
+    transition: all .2s ease;
 }
 
 @media (max-width: 767px) {
@@ -251,8 +261,8 @@
 
 .search-input:focus {
     outline: none;
-    border-color: rgba(124,58,237,0.12);
-    box-shadow: 0 6px 20px rgba(124,58,237,0.06);
+    border-color: #9d4edd;
+    box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
 }
 
 .search-count {
@@ -380,23 +390,30 @@
 }
 
 .admin-pagination button {
-    background: var(--accent);
-    border: 1px solid var(--accent);
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+    border: none;
     color: #fff;
-    padding: 8px 14px;
+    padding: 8px 16px;
     border-radius: 10px;
     min-width: 100px;
     cursor: pointer;
-    transition: background .15s ease, transform .1s ease;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all .15s ease;
+    box-shadow: 0 4px 12px rgba(157, 78, 221, 0.2);
 }
 
 .admin-pagination button:hover:not(:disabled) {
-    background: #957eb1;
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(157, 78, 221, 0.3);
 }
 
 .admin-pagination button:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
+    background: #e2d9eb;
+    color: #8c7a9c;
+    box-shadow: none;
     cursor: default;
 }
 

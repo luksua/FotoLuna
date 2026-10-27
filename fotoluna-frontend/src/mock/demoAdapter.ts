@@ -893,6 +893,83 @@ export function handleMockRoute(url: string, method = "GET", bodyData?: any): Mo
         };
     }
 
+    // GET /admin/appointments/:id/candidates
+    const candidatesMatch = clean.match(/(?:\/api)?\/admin\/appointments\/(\d+)\/candidates/);
+    if (candidatesMatch && upperMethod === "GET") {
+        const employees = getStoredJson("fotoluna_demo_employees", DEFAULT_EMPLOYEES);
+        const candidateList = employees.map((e: any, idx: number) => ({
+            employeeId: Number(e.id || e.uniqueId || idx + 1),
+            name: e.name || "Fotógrafo",
+            available: true,
+            availabilityStatus: "free",
+            dayAppointmentsCount: 1,
+            citasDelDia: [{ time: "14:00", status: "Scheduled" }],
+            score: 95,
+        }));
+
+        return {
+            status: 200,
+            data: {
+                appointment: {
+                    id: Number(candidatesMatch[1]),
+                    date: new Date().toISOString().split("T")[0],
+                    time: "10:00",
+                    status: "Pending_assignment",
+                },
+                suggestedEmployee: candidateList[0] || null,
+                employees: candidateList,
+            },
+        };
+    }
+
+    // POST /admin/appointments/:id/assign
+    const assignMatch = clean.match(/(?:\/api)?\/admin\/appointments\/(\d+)\/assign/);
+    if (assignMatch && upperMethod === "POST") {
+        const apptId = Number(assignMatch[1]);
+        const payload = parsePayload(bodyData);
+        const appts = getStoredJson("fotoluna_demo_appointments", DEMO_APPOINTMENTS);
+        const appt = appts.find((a: any) => Number(a.appointmentId || a.id) === apptId);
+        if (appt) {
+            appt.employeeId = payload.employee_id;
+            appt.status = "Scheduled";
+            setStoredJson("fotoluna_demo_appointments", appts);
+        }
+        return { status: 200, data: { success: true, message: "Fotógrafo asignado exitosamente" } };
+    }
+
+    // GET /admin/appointments
+    if ((clean === "/admin/appointments" || clean === "/api/admin/appointments") && upperMethod === "GET") {
+        const appts = getStoredJson("fotoluna_demo_appointments", DEMO_APPOINTMENTS);
+        const mapped = appts.map((a: any, idx: number) => ({
+            appointmentId: Number(a.appointmentId || a.id || idx + 1),
+            bookingId: Number(a.bookingId || a.id || idx + 1),
+            date: a.date || new Date().toISOString().split("T")[0],
+            time: a.time || a.startTime || a.appointmentTime || "10:00",
+            place: a.place || a.location || "Estudio FotoLuna",
+            comment: a.comment || a.notes || "",
+            status: a.status === "Pendiente" ? "Pending_assignment" : (a.status === "Confirmada" ? "Scheduled" : (a.status || "Scheduled")),
+            clientName: a.clientName || a.client || "Cliente FotoLuna",
+            clientEmail: a.clientEmail || a.email || "cliente@fotoluna.com",
+            clientDocument: a.clientDocument || a.document || "1020304050",
+            eventName: a.eventName || "Sesión Fotográfica",
+            employeeId: a.employeeId || (idx % 2 === 0 ? 2 : null),
+            employeeName: a.employeeName || (idx % 2 === 0 ? "Carlos Fotógrafo" : null),
+        }));
+
+        return {
+            status: 200,
+            data: {
+                data: mapped,
+                current_page: 1,
+                last_page: 1,
+                per_page: 10,
+                total: mapped.length,
+                from: 1,
+                to: mapped.length,
+            },
+        };
+    }
+
     if (clean.includes("/admin/appointments/pending")) {
         const appts = getStoredJson("fotoluna_demo_appointments", DEMO_APPOINTMENTS);
         return {

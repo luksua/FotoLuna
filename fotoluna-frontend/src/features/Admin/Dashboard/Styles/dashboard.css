@@ -1,62 +1,94 @@
+/* ==========================================================================
+   FotoLuna - Admin Dashboard Styles
+   Matching Employee Theme & Pastel Palette
+   ========================================================================== */
+
 :root {
-    --pastel-mint: #e1c0f7;
-    --pastel-lavender: #e6e6fa;
-    --pastel-peach: #ffdab9;
-    --pastel-blue: #ebb5ca;
-    --pastel-pink: #f2c8f8;
-    --pastel-lilac: #d8bfd8;
-    --white: #ffffff;
-    --light-gray: #f9f9f9;
-    --text-dark: #5a5a5a;
-    --text-light: #888888;
-    --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
+    --fl-purple-primary: #9d4edd;
+    --fl-purple-dark: #7b2cbf;
+    --fl-purple-darker: #5a189a;
+    --fl-purple-light: #c792df;
+    --fl-purple-soft: #e0aaff;
+    --fl-purple-bg: #f8f0fc;
+    --fl-purple-subtle: #f3e8ff;
+    --fl-text-dark: #241442;
+    --fl-text-muted: #6b5c7e;
+    --fl-border-soft: rgba(199, 146, 223, 0.28);
+    --fl-card-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.1);
+    --fl-card-shadow-hover: 0 16px 36px -6px rgba(157, 78, 221, 0.18);
+    --fl-radius-lg: 20px;
+    --fl-radius-md: 14px;
 }
 
+body, .admin-dashboard-root {
+    font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
+    color: var(--fl-text-dark);
+}
+
+/* Welcome Hero Section */
 .welcome-section {
-    background: linear-gradient(135deg, var(--pastel-mint), var(--pastel-blue));
-    border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: var(--shadow);
-    color: var(--text-dark);
+    background: linear-gradient(135deg, #ffffff 0%, #fbf6fe 50%, #f5e9fd 100%);
+    border: 1px solid var(--fl-border-soft);
+    border-radius: var(--fl-radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 25px;
+    box-shadow: var(--fl-card-shadow);
+    color: var(--fl-text-dark);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Quicksand', sans-serif;
+}
+
+.welcome-section::after {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(157, 78, 221, 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
 }
 
 .welcome-text h2 {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
-    font-weight: 600;
+    font-size: 1.55rem;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: var(--fl-text-dark);
 }
 
 .welcome-text p {
     margin: 0;
     font-size: 0.95rem;
-    color: var(--text-light);
+    color: var(--fl-text-muted);
 }
 
+/* Weather Info */
 .weather-info {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 12px 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 24px;
+    border-radius: var(--fl-radius-md);
+    border: 1px solid var(--fl-border-soft);
+    box-shadow: 0 4px 16px rgba(157, 78, 221, 0.08);
     backdrop-filter: blur(10px);
-    min-width: 200px;
+    min-width: 210px;
 }
 
 .weather-icon {
-    font-size: 2.5rem;
-    color: #dfb9df;
+    font-size: 2.4rem;
+    color: var(--fl-purple-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 50px;
+    min-width: 48px;
 }
 
 .weather-details {
@@ -69,22 +101,22 @@
 .weather-details h3 {
     font-size: 0.95rem;
     margin: 0;
-    font-weight: 600;
-    color: var(--text-dark);
+    font-weight: 700;
+    color: var(--fl-text-dark);
 }
 
 .weather-details p {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--text-light);
-    font-weight: 500;
+    color: var(--fl-text-muted);
+    font-weight: 600;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .welcome-section {
         flex-direction: column;
-        gap: 15px;
+        gap: 16px;
         text-align: center;
     }
 
@@ -101,27 +133,15 @@
 
 @media (max-width: 576px) {
     .welcome-section {
-        padding: 15px;
+        padding: 16px;
         margin-bottom: 20px;
     }
 
     .welcome-text h2 {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
     }
 
     .weather-info {
-        padding: 10px 15px;
-    }
-
-    .weather-icon {
-        font-size: 2rem;
-    }
-
-    .weather-details h3 {
-        font-size: 0.85rem;
-    }
-
-    .weather-details p {
-        font-size: 0.75rem;
+        padding: 10px 16px;
     }
 }

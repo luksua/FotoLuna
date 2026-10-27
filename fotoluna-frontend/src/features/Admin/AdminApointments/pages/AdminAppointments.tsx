@@ -108,15 +108,18 @@ const AdminAppointments: React.FC = () => {
                 }
             );
 
-            const data = response.data;
+            const data = response?.data;
+            const list = Array.isArray(data?.data)
+                ? data.data
+                : (Array.isArray(data) ? data : []);
 
-            setAppointments(data.data);
-            setCurrentPage(data.current_page);
-            setTotalPages(data.last_page);
-            setTotalItems(data.total);
+            setAppointments(list);
+            setCurrentPage(data?.current_page || 1);
+            setTotalPages(data?.last_page || 1);
+            setTotalItems(data?.total || list.length);
         } catch (error) {
             console.error("Error cargando las citas:", error);
-            // alert("Error cargando las citas del administrador."); // Reemplazado
+            setAppointments([]);
         } finally {
             setLoading(false);
         }
@@ -174,8 +177,11 @@ const AdminAppointments: React.FC = () => {
                     }
                 );
 
-                allAppointments = allAppointments.concat(response.data.data);
-                lastPageNum = response.data.last_page;
+                const rawList = Array.isArray(response?.data?.data)
+                    ? response.data.data
+                    : (Array.isArray(response?.data) ? response.data : []);
+                allAppointments = allAppointments.concat(rawList);
+                lastPageNum = response?.data?.last_page || 1;
                 pageNum++;
             } while (pageNum <= lastPageNum);
         } catch (error) {

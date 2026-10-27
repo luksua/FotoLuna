@@ -1,54 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
 /* --- LAYOUT GENERAL --- */
 .admin-container {
     padding: 24px;
-    color: #000000;
-    font-family: "Inter", sans-serif;
+    color: #241442;
+    font-family: "Quicksand", system-ui, -apple-system, sans-serif;
 }
 
 .admin-tabs button {
-    background-color: #DCABDF;
-    border-radius: 15px 15px 0 0;
+    background-color: #f3e8ff;
+    color: #7b2cbf;
+    border-radius: 12px 12px 0 0;
+    font-family: inherit;
+    font-weight: 600;
 }
 
 .admin-tabs button:hover {
-    background-color: #be93c0;
-    border-radius: 15px 15px 0 0;
+    background-color: #e9d5ff;
 }
 
 
 /* --- TÍTULOS --- */
 .admin-title {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 40px;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: #241442;
 }
 
 /* --- TABS --- */
 .admin-tabs {
     display: flex;
-    gap: 20px;
-    border-bottom: 2px solid #b680c2;
-    margin-bottom: 20px;
+    gap: 12px;
+    border-bottom: 2px solid rgba(199, 146, 223, 0.35);
+    margin-bottom: 24px;
 }
 
 .admin-tab {
-    padding-bottom: 8px;
+    padding: 10px 18px;
     font-size: 14px;
-    color: #ffffff;
+    color: #6b5c7e;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     transition: 0.2s ease;
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
 }
 
 .admin-tab:hover {
-    color: #ffffff;
-    border: 2px solid #9d74b1;
+    color: #7b2cbf;
 }
 
 .admin-tab.active {
-    color: #ffffff;
-    border-bottom: 2px solid #9d74b1;
+    color: #7b2cbf;
+    border-bottom: 3px solid #9d4edd;
 }
 
 /* --- CARDS DE RESUMEN --- */
@@ -60,30 +64,33 @@
 
 .summary-card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
+    border: 1px solid rgba(199, 146, 223, 0.28);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.08);
 }
 
 .summary-card-title {
-    font-size: 14px;
-    color: #000000;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b5c7e;
 }
 
 .summary-card-value {
     margin-top: 8px;
-    font-size: 22px;
-    font-weight: 600;
-    color: #1e293b;
+    font-size: 24px;
+    font-weight: 700;
+    color: #241442;
 }
 
 /* --- FORMULARIO DE FILTROS --- */
 .filter-box {
     background: #ffffff;
-    border: 1px solid #e1e1e1;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 15px;
+    border: 1px solid rgba(199, 146, 223, 0.28);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.08);
 }
 
 .filter-row {
@@ -95,26 +102,31 @@
 .filter-input,
 .filter-select {
     background: #ffffff;
-    border: 1px solid #d6d6d6;
-    border-radius: 8px;
-    padding: 10px 12px;
+    border: 1px solid rgba(199, 146, 223, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
     font-size: 14px;
-    color: #8f8f8f;
+    font-family: inherit;
+    color: #241442;
     flex: 1;
     min-width: 160px;
+    box-shadow: 0 2px 8px rgba(157, 78, 221, 0.04);
+    transition: all 0.2s ease;
 }
 
 .filter-input:focus,
 .filter-select:focus {
     outline: none;
-    border-color: #DCABDF;
+    border-color: #9d4edd;
+    box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
 }
 
 /* --- TABLAS --- */
 .table-wrapper {
     background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border: 1px solid rgba(199, 146, 223, 0.28);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.08);
     overflow: hidden;
 }
 
@@ -125,25 +137,25 @@
 }
 
 .table thead {
-    background: #f8fafc;
-    color: #64748b;
+    background: #fbf6fe;
+    color: #7b2cbf;
 }
 
 .table th {
-    padding: 12px 16px;
+    padding: 14px 18px;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-    font-weight: 500;
+    border-bottom: 1px solid rgba(199, 146, 223, 0.2);
+    font-weight: 700;
 }
 
 .table td {
-    padding: 12px 16px;
-    border-top: 1px solid #f1f5f9;
+    padding: 14px 18px;
+    border-top: 1px solid rgba(199, 146, 223, 0.12);
 }
 
 /* Hover fila */
 .table tbody tr:hover {
-    background: #f8fafc;
+    background: #faf5fd;
 }
 
 /* --- BADGES / ESTADOS --- */
@@ -232,8 +244,8 @@
 
 /* --- ACCENTO GLOBAL (excepto filtros de pagos) --- */
 :root {
-    --admin-accent: #ac98c4;
-    --admin-accent-dark: #967fb0;
+    --admin-accent: #9d4edd;
+    --admin-accent-dark: #7b2cbf;
 }
 
 .admin-container .btn:not(.filter-btn) {

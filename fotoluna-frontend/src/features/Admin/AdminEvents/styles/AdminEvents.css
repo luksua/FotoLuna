@@ -1,14 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
 /* CSS Variables - Tema consistente */
 :root {
-    --bg: #f6f7fb;
+    --bg: #fbf8fd;
     --card: #ffffff;
-    --muted: #6b7280;
-    --text: #111827;
-    --accent: #ac98c4;
-    --border: rgba(15, 23, 42, 0.06);
-    --radius: 10px;
+    --muted: #6b5c7e;
+    --text: #241442;
+    --accent: #9d4edd;
+    --border: rgba(199, 146, 223, 0.28);
+    --radius: 16px;
     --max-width: 1150px;
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-family: "Quicksand", system-ui, -apple-system, sans-serif;
 }
 
 /* AdminEvents Page Styles */
@@ -18,6 +20,7 @@
     margin: 0 auto;
     box-sizing: border-box;
     color: var(--text);
+    font-family: inherit;
 }
 
 /* Search Container */
@@ -29,14 +32,15 @@
     width: 100%;
     max-width: 420px;
     height: 42px;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(199, 146, 223, 0.35);
+    border-radius: 12px;
     font-size: 0.95rem;
     color: var(--text);
     background: white;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    box-shadow: 0 2px 8px rgba(157, 78, 221, 0.04);
     box-sizing: border-box;
+    font-family: inherit;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -46,8 +50,8 @@
 
 .admin-events-search-input:focus {
     outline: none;
-    border-color: rgba(172, 152, 196, 0.3);
-    box-shadow: 0 6px 20px rgba(172, 152, 196, 0.1);
+    border-color: #9d4edd;
+    box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
 }
 
 /* Section Styles */
@@ -61,11 +65,11 @@
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 2px solid rgba(199, 146, 223, 0.35);
 }
 
 .admin-events-title {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text);
     margin: 0;
@@ -73,20 +77,21 @@
 
 .admin-events-add-btn {
     padding: 10px 20px;
-    background: var(--accent);
+    background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-weight: 600;
+    border-radius: 12px;
+    font-weight: 700;
     cursor: pointer;
     font-size: 0.95rem;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-    box-shadow: 0 2px 6px rgba(172, 152, 196, 0.15);
+    font-family: inherit;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 14px rgba(157, 78, 221, 0.25);
 }
 
 .admin-events-add-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(172, 152, 196, 0.25);
+    box-shadow: 0 6px 18px rgba(157, 78, 221, 0.35);
 }
 
 /* Grid Layout */
@@ -99,24 +104,25 @@
 
 /* Card Styles */
 .admin-events-card {
-    background: linear-gradient(180deg, var(--card), var(--card));
+    background: #ffffff;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px 14px;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    padding: 18px 16px;
+    box-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.08);
     display: flex;
     flex-direction: column;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     min-height: auto;
 }
 
 .admin-events-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 16px 36px -6px rgba(157, 78, 221, 0.16);
+    border-color: rgba(157, 78, 221, 0.4);
 }
 
 .card-title {
-    font-size: 1.02rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text);
     margin: 0 0 8px 0;
@@ -137,10 +143,10 @@
 }
 
 .card-price {
-    font-size: 1.02rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--text);
-    margin: 10px 0 12px 0;
+    color: #7b2cbf;
+    margin: 10px 0 14px 0;
 }
 
 /* Card Actions */
@@ -153,43 +159,44 @@
 .btn-edit,
 .btn-toggle {
     flex: 1;
-    padding: 8px 12px;
+    padding: 8px 14px;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 0.9rem;
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.08s ease;
+    transition: all 0.15s ease;
 }
 
 .btn-edit {
-    background: rgba(172, 152, 196, 0.12);
-    color: var(--accent);
+    background: rgba(157, 78, 221, 0.12);
+    color: #7b2cbf;
 }
 
 .btn-edit:hover {
-    background: rgba(172, 152, 196, 0.2);
-    transform: translateY(-2px);
+    background: rgba(157, 78, 221, 0.22);
+    transform: translateY(-1px);
 }
 
 .btn-toggle.enabled {
     background: rgba(34, 197, 94, 0.12);
-    color: #22c55e;
+    color: #15803d;
 }
 
 .btn-toggle.enabled:hover {
-    background: rgba(34, 197, 94, 0.2);
-    transform: translateY(-2px);
+    background: rgba(34, 197, 94, 0.22);
+    transform: translateY(-1px);
 }
 
 .btn-toggle.disabled {
     background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
+    color: #b91c1c;
 }
 
 .btn-toggle.disabled:hover {
-    background: rgba(239, 68, 68, 0.2);
-    transform: translateY(-2px);
+    background: rgba(239, 68, 68, 0.22);
+    transform: translateY(-1px);
 }
 
 /* Empty State */

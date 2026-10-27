@@ -1,45 +1,171 @@
+/* ==========================================================================
+   FotoLuna - Admin Appointments Styles
+   Matching Employee Theme & Pastel Palette
+   ========================================================================== */
+
+:root {
+    --fl-purple-primary: #9d4edd;
+    --fl-purple-dark: #7b2cbf;
+    --fl-purple-darker: #5a189a;
+    --fl-purple-light: #c792df;
+    --fl-purple-soft: #e0aaff;
+    --fl-purple-bg: #f8f0fc;
+    --fl-purple-subtle: #f3e8ff;
+    --fl-text-dark: #241442;
+    --fl-text-muted: #6b5c7e;
+    --fl-border-soft: rgba(199, 146, 223, 0.28);
+    --fl-card-shadow: 0 8px 24px -6px rgba(157, 78, 221, 0.1);
+    --fl-radius-lg: 18px;
+    --fl-radius-md: 12px;
+}
+
+.container {
+    font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
+    color: var(--fl-text-dark);
+}
+
+.container h2 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    color: var(--fl-text-dark);
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.container h2::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--fl-purple-primary), var(--fl-purple-dark));
+    border-radius: 4px;
+}
+
+/* Filtros */
+.container .form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--fl-text-muted);
+}
+
+.container .form-control,
+.container .form-select {
+    font-family: 'Quicksand', sans-serif;
+    border-radius: var(--fl-radius-md);
+    border: 1px solid var(--fl-border-soft);
+    padding: 8px 14px;
+    background: #ffffff;
+    color: var(--fl-text-dark);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(157, 78, 221, 0.04);
+}
+
+.container .form-control:focus,
+.container .form-select:focus {
+    border-color: var(--fl-purple-primary);
+    box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
+    outline: none;
+}
+
+/* Tabla */
+.table-responsive {
+    background: #ffffff;
+    border-radius: var(--fl-radius-lg);
+    border: 1px solid var(--fl-border-soft);
+    box-shadow: var(--fl-card-shadow);
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.table {
+    margin-bottom: 0;
+    font-family: 'Quicksand', sans-serif;
+}
+
+.table thead th {
+    background: #fbf6fe !important;
+    color: var(--fl-purple-dark) !important;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 18px;
+    border-bottom: 2px solid var(--fl-purple-subtle);
+}
+
+.table tbody td {
+    padding: 14px 18px;
+    vertical-align: middle;
+    color: var(--fl-text-dark);
+    font-size: 0.92rem;
+    border-bottom: 1px solid #f8f1fc;
+    transition: background 0.15s ease;
+}
+
+.table tbody tr:hover td {
+    background: #fbf7fe !important;
+}
+
+/* Botón asignar */
 .admin-custom-btn {
-    background: #d1a3e2;
-    color: white;
+    background: linear-gradient(135deg, var(--fl-purple-primary), var(--fl-purple-dark));
+    color: #ffffff !important;
+    border: none;
+    border-radius: 10px;
+    padding: 6px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    font-family: 'Quicksand', sans-serif;
+    box-shadow: 0 4px 12px rgba(157, 78, 221, 0.2);
+    transition: all 0.2s ease;
 }
 
 .admin-custom-btn:hover {
-    background: #af7fc1;
-    color: white;
+    background: linear-gradient(135deg, var(--fl-purple-dark), var(--fl-purple-darker));
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(157, 78, 221, 0.3);
 }
 
 /* Paginación */
 .admin-pagination {
     margin: 22px 0 8px;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
     align-items: center;
+    font-family: 'Quicksand', sans-serif;
 }
 
 .admin-pagination button {
-    background: transparent;
-    border: 1px solid var(--border);
-    min-width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid var(--fl-border-soft);
+    min-width: 38px;
+    height: 38px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
-    color: var(--text);
-    transition: background .12s ease, color .12s ease, transform .08s ease;
+    color: var(--fl-text-dark);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(157, 78, 221, 0.05);
 }
 
 .admin-pagination button:hover:not([disabled]) {
     transform: translateY(-2px);
+    border-color: var(--fl-purple-primary);
+    color: var(--fl-purple-primary);
 }
 
 .admin-pagination button[disabled] {
-    opacity: 0.45;
-    cursor: default;
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .admin-pagination button.active {
-    background: var(--accent);
-    color: white;
-    border-color: transparent;
+    background: linear-gradient(135deg, var(--fl-purple-primary), var(--fl-purple-dark));
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(157, 78, 221, 0.25);
 }

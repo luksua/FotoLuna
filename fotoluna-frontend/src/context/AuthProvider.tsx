@@ -63,6 +63,10 @@ const normalizeUser = (serverUser: any): User => {
 // Helper para obtener el usuario almacenado de forma síncrona al cargar/recargar
 const getStoredUser = (): User | null => {
     try {
+        const token = localStorage.getItem("token");
+        // Si no hay token en localStorage, el usuario cerró sesión
+        if (!token) return null;
+
         const stored = localStorage.getItem("user");
         if (stored) {
             const parsed = JSON.parse(stored);
@@ -70,8 +74,7 @@ const getStoredUser = (): User | null => {
                 return normalizeUser(parsed);
             }
         }
-        const t = localStorage.getItem("token") || "";
-        if (t.includes("admin")) {
+        if (token.includes("admin")) {
             return normalizeUser({
                 id: 1,
                 name: "Administrador FotoLuna",
@@ -81,7 +84,7 @@ const getStoredUser = (): User | null => {
                 role: "admin",
             });
         }
-        if (t.includes("empleado")) {
+        if (token.includes("empleado")) {
             return normalizeUser({
                 id: 2,
                 name: "Carlos Fotógrafo",
@@ -92,7 +95,7 @@ const getStoredUser = (): User | null => {
                 employeeType: "Fotógrafo",
             });
         }
-        if (t.includes("cliente")) {
+        if (token.includes("cliente")) {
             return normalizeUser({
                 id: 3,
                 name: "Laura Gómez",
@@ -203,13 +206,16 @@ const AuthProvider: React.FC<Props> = ({ children }) => {
             console.warn("Logout backend error:", err);
         }
 
-        // limpiar estado
+        // limpiar estado completamente
         setUser(null);
         setToken(null);
         setAuthToken(null);
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("fotoluna_demo_mode");
 
-        // redirigir
+        // redirigir al inicio
         window.location.href = "/";
     };
 
